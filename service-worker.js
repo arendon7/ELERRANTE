@@ -1,11 +1,11 @@
-const CACHE = 'el-errante-v0-3-0';
+const CACHE = 'el-errante-v0-6-0';
 const CORE = [
-  './index.html','./tienda.html','./producto.html','./en-casa.html',
-  './en-movimiento.html','./bitacora.html','./recetas.html',
-  './herramientas.html','./cobertura.html','./ayuda.html',
-  './assets/styles.css','./assets/data.js','./assets/app.js',
-  './assets/preprod.js','./assets/logo-mark.svg','./assets/logo-lockup.svg',
-  './offline.html'
+  './index.html','./historia.html','./tienda.html','./producto.html','./en-casa.html',
+  './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
+  './herramientas.html','./cobertura.html','./ayuda.html','./checkout.html','./cuenta.html',
+  './assets/styles.css','./assets/data.js','./assets/runtime.js','./assets/app.js',
+  './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js',
+  './assets/logo-mark.svg','./assets/logo-lockup.svg','./offline.html'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));

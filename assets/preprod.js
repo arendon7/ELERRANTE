@@ -1,6 +1,9 @@
 (()=>{
   const files=[
-    "v040-preprod-001.b64",
+    "v040-preprod-001a.b64",
+    "v040-preprod-001b.b64",
+    "v040-preprod-001c.b64",
+    "v040-preprod-001d.b64",
     "v040-preprod-002.b64",
     "v040-preprod-003.b64"
   ];

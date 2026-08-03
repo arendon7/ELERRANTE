@@ -152,9 +152,7 @@ for product_id in PRODUCT_IDS:
 host_mode = (ROOT / "assets/host-mode.js").read_text(encoding="utf-8")
 service_worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 for asset in VISUAL_ASSETS:
-    if asset not in host_mode and asset not in {
-        "v040-pizzas-artesanales.svg",
-    }:
+    if asset not in host_mode and asset not in {"v040-pizzas-artesanales.svg"}:
         ISSUES.append(f"Mapa visual incompleto: {asset} no está activo en host-mode.js")
     if asset not in service_worker:
         ISSUES.append(f"Caché incompleta: {asset} no está incluido en service-worker.js")
@@ -177,10 +175,16 @@ for page, asset in direct_visuals.items():
 deploy_marker = (ROOT / "deploy-version.txt").read_text(encoding="utf-8")
 if "version=0.6.1" not in deploy_marker:
     ISSUES.append("deploy-version.txt no identifica la versión 0.6.1")
+if "cache=el-errante-v0-6-6" not in deploy_marker:
+    ISSUES.append("deploy-version.txt no identifica la caché el-errante-v0-6-6")
 
 workflow = (ROOT / ".github/workflows/pages.yml").read_text(encoding="utf-8")
 if 'branches: ["main"]' not in workflow:
-    ISSUES.append("El workflow de Pages debe desplegar exclusivamente desde main")
+    ISSUES.append("El workflow debe limitar push y pull request a main")
+if "pull_request:" not in workflow:
+    ISSUES.append("El workflow no valida los pull requests antes del merge")
+if "github.event_name != 'pull_request'" not in workflow:
+    ISSUES.append("El workflow no separa la validación del despliegue")
 if "python3 verificar_demo.py" not in workflow:
     ISSUES.append("El workflow no ejecuta la barrera de regresión verificar_demo.py")
 if "fix/v0.5.1-restore-gold-assets" in workflow:

@@ -2,7 +2,7 @@
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
   const PUBLIC_VERSION="0.6.1";
   const CACHE_PREFIX="el-errante-";
-  const ACTIVE_CACHE="el-errante-v0-6-2";
+  const ACTIVE_CACHE="el-errante-v0-6-3";
   const INTERNAL_PAGES=new Set(["equipo","admin","control","operacion","studio","presentacion"]);
 
   async function refreshPublicRuntime(){

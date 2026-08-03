@@ -2,7 +2,7 @@ name: Publicar El Errante en GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "fix/v0.5.1-restore-gold-assets"]
   workflow_dispatch:
 
 permissions:
@@ -49,6 +49,14 @@ jobs:
             --exclude 'studio.html' \
             --exclude 'presentacion.html'
           touch _site/.nojekyll
+
+      - name: Verificar versión pública
+        shell: bash
+        run: |
+          test -f _site/deploy-version.txt
+          grep -q 'version=0.6.1' _site/deploy-version.txt
+          grep -q 'Masa · Fuego · Territorio' _site/index.html
+          test -f _site/assets/products-v6.js
 
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4

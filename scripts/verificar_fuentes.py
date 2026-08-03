@@ -17,7 +17,10 @@ DATA_PARTS = [
     "assets/source/v040-data-004.b64",
 ]
 PREPROD_PARTS = [
-    "assets/source/v040-preprod-001.b64",
+    "assets/source/v040-preprod-001a.b64",
+    "assets/source/v040-preprod-001b.b64",
+    "assets/source/v040-preprod-001c.b64",
+    "assets/source/v040-preprod-001d.b64",
     "assets/source/v040-preprod-002.b64",
     "assets/source/v040-preprod-003.b64",
 ]
@@ -84,6 +87,8 @@ if "assets/chunks/data-" in data_loader:
     ISSUES.append("assets/data.js volvió a enlazar los chunks de datos truncados")
 if "assets/chunks/preprod-" in preprod_loader:
     ISSUES.append("assets/preprod.js volvió a enlazar los chunks funcionales heredados")
+if "v040-preprod-001.b64" in preprod_loader:
+    ISSUES.append("assets/preprod.js todavía enlaza el bloque funcional alterado")
 if "[... ELLIPSIZATION ...]" not in legacy_data:
     ISSUES.append("No se conserva la evidencia del truncamiento en data-003.txt")
 if "truncated-ellipsized-do-not-use" not in incident:

@@ -28,14 +28,16 @@ jobs:
         run: python3 verificar_demo.py
 
       - name: Reconstruir fuente canónica efectiva
+        id: canonical
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
 
-      - name: Publicar fuente canónica para auditoría
+      - name: Publicar fuente o diagnóstico para auditoría
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: fuente-canonica-${{ github.sha }}
           path: .artifacts/canonical
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
 
   deploy:

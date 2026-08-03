@@ -84,7 +84,9 @@ jobs:
           done
           for part in \
             v040-data-001.b64 v040-data-002.b64 v040-data-003.b64 v040-data-004.b64 \
-            v040-preprod-001.b64 v040-preprod-002.b64 v040-preprod-003.b64; do
+            v040-preprod-001a.b64 v040-preprod-001b.b64 \
+            v040-preprod-001c.b64 v040-preprod-001d.b64 \
+            v040-preprod-002.b64 v040-preprod-003.b64; do
               test -f "_site/assets/source/$part"
           done
           for asset in \
@@ -100,6 +102,7 @@ jobs:
           grep -q 'el-errante-v0-6-7' _site/service-worker.js
           ! grep -q 'assets/chunks/data-' _site/assets/data.js
           ! grep -q 'assets/chunks/preprod-' _site/assets/preprod.js
+          ! grep -q 'v040-preprod-001.b64' _site/assets/preprod.js
 
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4

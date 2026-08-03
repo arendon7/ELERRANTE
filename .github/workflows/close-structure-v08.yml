@@ -1,0 +1,61 @@
+name: Cerrar estructura v0.8
+
+on:
+  push:
+    branches: ["fix/v0.8-cierre-estructural"]
+    paths:
+      - "scripts/cerrar_estructura_v08.py"
+      - "scripts/ejecutar_cierre_estructural_v08.py"
+      - ".github/workflows/close-structure-v08.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: fix/v0.8-cierre-estructural
+          fetch-depth: 0
+
+      - name: Aplicar cierre estructural
+        run: python3 scripts/ejecutar_cierre_estructural_v08.py
+
+      - name: Ejecutar barreras estructurales
+        run: |
+          python3 verificar_demo.py
+          python3 scripts/verificar_fuentes.py
+          python3 scripts/verificar_runtime_canonico.py
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar Playwright
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Ejecutar regresión funcional
+        run: npm run test:e2e
+
+      - name: Retirar automatización temporal
+        run: |
+          rm -f scripts/cerrar_estructura_v08.py
+          rm -f scripts/ejecutar_cierre_estructural_v08.py
+          rm -f .github/workflows/close-structure-v08.yml
+
+      - name: Confirmar resultado en la rama
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: diferencia Historia, Nosotros y Demo integral"
+          git push origin HEAD:fix/v0.8-cierre-estructural

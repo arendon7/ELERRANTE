@@ -27,6 +27,17 @@ jobs:
       - name: Ejecutar barrera de regresión integral
         run: python3 verificar_demo.py
 
+      - name: Reconstruir fuente canónica efectiva
+        run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
+
+      - name: Publicar fuente canónica para auditoría
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuente-canonica-${{ github.sha }}
+          path: .artifacts/canonical
+          if-no-files-found: error
+          retention-days: 14
+
   deploy:
     name: Publicar GitHub Pages
     if: github.event_name != 'pull_request'
@@ -51,7 +62,8 @@ jobs:
             --exclude '.git/' \
             --exclude '.github/' \
             --exclude '_site/' \
-            --exclude '__pycache__/'
+            --exclude '__pycache__/' \
+            --exclude '.artifacts/'
           printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-6\nupdated=%s\n' \
             "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll

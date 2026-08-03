@@ -1,0 +1,12 @@
+{
+  "name": "el-errante-demo-integral",
+  "version": "0.8.0",
+  "private": true,
+  "description": "Pruebas funcionales de la experiencia pública y la demo integral de El Errante.",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.52.0"
+  }
+}

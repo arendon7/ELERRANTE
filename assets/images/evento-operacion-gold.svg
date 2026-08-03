@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="t d">
+<title id="t">Operación de pizzería móvil El Errante</title><desc id="d">Equipo montando hornos, mesa de trabajo, ingredientes y servicio alrededor de la unidad móvil.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#24201d"/><stop offset="1" stop-color="#151312"/></linearGradient>
+  <linearGradient id="unit" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bd5237"/><stop offset="1" stop-color="#7E2F20"/></linearGradient>
+  <radialGradient id="fire"><stop stop-color="#ffe0a0"/><stop offset=".35" stop-color="#ee8f39"/><stop offset=".78" stop-color="#A5432D"/><stop offset="1" stop-color="#37130e"/></radialGradient>
+  <filter id="s"><feDropShadow dx="0" dy="20" stdDeviation="18" flood-opacity=".45"/></filter>
+  <filter id="g"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<rect width="1200" height="900" fill="url(#bg)"/>
+<circle cx="930" cy="160" r="180" fill="#A5432D" opacity=".13" filter="url(#g)"/>
+<path d="M0 650c250-45 520-40 1200 20v230H0z" fill="#11100f"/>
+<g transform="translate(610 170)" filter="url(#s)"><path d="M75 100h370c55 0 100 45 100 100v255H25V155c0-30 22-55 50-55z" fill="url(#unit)" stroke="#191817" stroke-width="10"/><rect x="90" y="160" width="180" height="150" rx="16" fill="#110f0e"/><ellipse cx="180" cy="240" rx="72" ry="52" fill="url(#fire)" filter="url(#g)"/><path d="M140 285c18-60 42-85 54-142 25 40 20 69 48 97 24 24 18 55-7 70h-66c-35-14-40-36-29-25z" fill="url(#fire)"/><rect x="320" y="155" width="150" height="170" rx="10" fill="#F2ECE1"/><circle cx="395" cy="215" r="40" fill="none" stroke="#A5432D" stroke-width="8" stroke-dasharray="220 35" transform="rotate(-18 395 215)"/><path d="M370 201h50M370 215h40M370 229h50" stroke="#A5432D" stroke-width="7" stroke-linecap="round"/><text x="337" y="292" font-family="Arial Narrow,Arial,sans-serif" font-weight="900" font-size="24" fill="#191817">EL ERRANTE</text><circle cx="145" cy="455" r="52" fill="#0b0a09" stroke="#66645D" stroke-width="14"/><circle cx="430" cy="455" r="52" fill="#0b0a09" stroke="#66645D" stroke-width="14"/></g>
+<g transform="translate(95 400)" filter="url(#s)"><rect x="0" y="120" width="520" height="165" rx="18" fill="#4c382b" stroke="#191817" stroke-width="10"/><rect x="30" y="145" width="110" height="80" rx="10" fill="#F2ECE1"/><rect x="165" y="145" width="110" height="80" rx="10" fill="#A5432D"/><rect x="300" y="145" width="80" height="80" rx="10" fill="#C5A36A"/><rect x="405" y="145" width="80" height="80" rx="10" fill="#49633c"/><circle cx="80" cy="105" r="44" fill="#d6a06d"/><path d="M45 155h70l20 180H25z" fill="#191817"/><circle cx="430" cy="100" r="44" fill="#b9784f"/><path d="M395 150h70l20 185H375z" fill="#A5432D"/></g>
+<g transform="translate(380 250)"><rect x="0" y="0" width="180" height="130" rx="24" fill="#11100f" stroke="#C5A36A" stroke-width="8"/><ellipse cx="90" cy="70" rx="55" ry="38" fill="url(#fire)"/><path d="M65 97c12-40 29-55 37-92 17 25 14 43 32 61 16 15 12 34-5 44H84c-24-9-27-23-19-13z" fill="url(#fire)"/></g>
+<g fill="#F2ECE1" opacity=".58"><circle cx="130" cy="345" r="4"/><circle cx="220" cy="315" r="3"/><circle cx="340" cy="370" r="4"/><circle cx="980" cy="590" r="4"/><circle cx="1060" cy="540" r="3"/></g>
+<path d="M85 815c300 28 720 26 1030-5" stroke="#C5A36A" stroke-width="5" opacity=".5"/>
+</svg>

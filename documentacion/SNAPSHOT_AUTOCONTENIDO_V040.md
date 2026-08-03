@@ -11,7 +11,7 @@ Este snapshot conserva la última versión integral anterior a la migración a G
 - SHA-256: `7f3ed65f89bc746ea12548f33274644d80c33438662f94b84ead44dc4980e841`
 - Archivos incluidos: `67`
 - Imágenes: WebP optimizadas a partir de los PNG aprobados de v0.4.
-- Secretos reales: ninguno detectado.
+- Secretos reales detectados: ninguno.
 
 Respaldo temporal de trabajo:
 
@@ -21,56 +21,95 @@ Drive funciona únicamente como respaldo temporal. La web publicada no depende d
 
 ## Modelos preservados
 
-El snapshot conserva la experiencia pública, tienda, productos, pedidos, cobertura, cuenta, soporte, administración, operación, Studio, centro de control, presentación, datos maestros, inventarios, lotes, rutas, validaciones e importación/exportación local.
+El snapshot conserva:
 
-## Biblioteca visual de referencia
+- experiencia pública y navegación;
+- tienda, productos, variantes y carrito;
+- pedidos, cobertura, cuenta y soporte;
+- administración;
+- producción, lotes, inventarios y rutas;
+- Studio, validaciones y fuente maestra;
+- centro de control y escenarios;
+- presentación integral;
+- importación y exportación local.
 
-La v0.4 contiene 17 conceptos visuales aprobados: hero de escritorio y móvil, empaques, harina, manos, horno, fermentación, apertura, alveolos, pizza neo, pizza insignia, pizzas artesanales, colección, despensa, aplicaciones de empaque, bitácora y fuego, y pizzería móvil.
+## Aclaración sobre las fichas especiales
 
-## Recuperación integrada en GitHub
+La auditoría directa del snapshot confirmó que:
 
-Actualmente hay 14 activos v0.4 incorporados como SVG autocontenidos con WebP embebido:
+- `producto-harina.html` redirige a `producto.html?id=harina-aire-y-tiempo`;
+- `producto-crea-tuya.html` redirige a `producto.html?id=crea-la-tuya`.
 
-- `v040-hero-desktop.svg`
-- `v040-hero-mobile.svg`
-- `v040-harina-empaques.svg`
-- `v040-harina-manos.svg`
-- `v040-harina-horno.svg`
-- `v040-manos-masa.svg`
-- `v040-masa-apertura.svg`
-- `v040-alveolos.svg`
-- `v040-fermentacion.svg`
-- `v040-pizza-neo.svg`
-- `v040-pizza-errante.svg`
-- `v040-despensa.svg`
-- `v040-aplicaciones-empaque.svg`
-- `v040-pizzeria-movil.svg`
+Por tanto, la v0.4 ya utilizaba una ficha dinámica central. No existían dos páginas especiales más completas que deban reconstruirse. Ambos alias se conservan para compatibilidad y trazabilidad.
 
-La capa `assets/host-mode.js` sustituye referencias conceptuales tanto en HTML estático como en componentes generados por JavaScript. El mapa alcanza:
+## Biblioteca visual recuperada
 
-- hero adaptable;
-- Aire y Tiempo y sus galerías de proceso;
-- recetas, fermentación, apertura y alveolos;
-- La Errante;
-- contexto técnico de pizza;
-- despensa y aplicaciones de empaque;
-- En Movimiento y presentación integral.
+Los 17 conceptos visuales de v0.4 ya están dentro del repositorio:
 
-El service worker `v0.6.5` conserva estos activos y el workflow impide publicar si falta alguno.
+1. `v040-hero-desktop.svg`
+2. `v040-hero-mobile.svg`
+3. `v040-harina-empaques.svg`
+4. `v040-harina-manos.svg`
+5. `v040-harina-horno.svg`
+6. `v040-manos-masa.svg`
+7. `v040-masa-apertura.svg`
+8. `v040-alveolos.svg`
+9. `v040-fermentacion.svg`
+10. `v040-pizza-neo.svg`
+11. `v040-pizza-errante.svg`
+12. `v040-despensa.svg`
+13. `v040-aplicaciones-empaque.svg`
+14. `v040-pizzeria-movil.svg`
+15. `v040-bitacora-fuego.svg`
+16. `v040-pizzas-artesanales.svg`
+17. `v040-pizzas-coleccion.svg`
 
-## Pendientes visuales exactos
+Los activos se almacenan como SVG autocontenidos con imagen WebP embebida. No requieren Drive ni servicios externos.
 
-Quedan tres piezas del snapshot por incorporar como archivos independientes:
+### Duplicidad encontrada en el snapshot
 
-- `bitacora-fuego`;
-- `pizzas-artesanales`;
-- `pizzas-coleccion`.
+Los archivos originales `pizzas-artesanales` y `pizzas-coleccion` tienen exactamente la misma imagen binaria. El repositorio conserva ambos nombres canónicos, pero `v040-pizzas-coleccion.svg` referencia internamente el activo artesanal para evitar duplicar bytes.
 
-Mientras se integran, Bitácora usa el contexto técnico de `v040-pizza-neo` y las fichas conservan los visuales v0.6 específicos por sabor para evitar una colección homogénea.
+## Activación en la experiencia actual
+
+La recuperación está conectada mediante dos mecanismos complementarios:
+
+1. referencias directas en las páginas principales;
+2. `assets/host-mode.js` para contenido estático heredado y componentes generados por JavaScript.
+
+Las asociaciones principales son:
+
+- Inicio: hero de escritorio y móvil;
+- Aire y Tiempo: empaque, manos, horno, fermentación, apertura y alveolos;
+- Tienda y En Casa: colección de pizzas;
+- Bitácora: bitácora y fuego;
+- fichas y contenidos: pizza neo, La Errante y contexto artesanal;
+- Despensa: producto y aplicaciones de empaque;
+- En Movimiento: pizzería móvil;
+- Presentación: activos de marca, producto y experiencia.
+
+Las imágenes v0.6 específicas de Margherita, Diavola, Bosque y Cuatro Quesos se conservan para diferenciar sabores. Los activos v0.4 aportan contexto, proceso, empaque y narrativa general.
+
+## Barrera de regresión
+
+`verificar_demo.py` valida antes de cada publicación:
+
+- páginas públicas;
+- módulos integrales;
+- once productos;
+- diecisiete visuales v0.4;
+- referencias HTML y CSS;
+- alias históricos de producto;
+- caché y mapa visual;
+- versión de despliegue;
+- workflow limitado a `main`;
+- ausencia de patrones evidentes de secretos reales.
+
+El workflow ejecuta esta prueba en cada pull request. El despliegue de GitHub Pages solo se ejecuta después del merge a `main`.
 
 ## Seguridad
 
-La revisión automática no encontró tokens, claves API, contraseñas reales, llaves privadas ni credenciales de infraestructura. Los perfiles y datos operativos son de demostración.
+La revisión no encontró tokens, claves API, contraseñas reales, llaves privadas ni credenciales de infraestructura. Los perfiles y datos operativos son de demostración.
 
 ## Estado
 
@@ -79,7 +118,8 @@ La revisión automática no encontró tokens, claves API, contraseñas reales, l
 - [x] Centro integral del equipo creado.
 - [x] Presentación corregida y conectada.
 - [x] Workflow publica el sistema completo.
-- [x] 14 de 17 conceptos visuales incorporados y activados.
-- [ ] Tres piezas editoriales finales incorporadas.
+- [x] 17 de 17 conceptos visuales incorporados.
+- [x] Referencias principales activadas.
+- [x] Barrera automática de regresión integrada.
 - [ ] Fuente de datos consolidada sin overlay permanente.
-- [ ] Matriz de regresión visual y funcional final ejecutada.
+- [ ] Regresión funcional completa de carrito, formularios y módulos ejecutada.

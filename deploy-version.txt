@@ -2,5 +2,5 @@ EL ERRANTE PUBLIC RELEASE
 version=0.6.1
 deploy_source=main
 release_commit=resolved-by-github-actions
-cache=el-errante-v0-6-6
+cache=el-errante-v0-6-7
 updated=resolved-by-github-actions

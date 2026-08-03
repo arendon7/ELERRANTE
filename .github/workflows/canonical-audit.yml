@@ -1,0 +1,70 @@
+name: Auditar fuente canónica
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canonical:
+    name: Fuente canónica
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Validar fuentes recuperadas
+        run: python3 scripts/verificar_fuentes.py
+
+      - name: Reconstruir fuente efectiva
+        run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
+
+      - name: Mostrar auditoría estructurada
+        run: |
+          cat .artifacts/canonical/canonical-report.md
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.artifacts/canonical')
+          data = json.loads((root / 'canonical-data.json').read_text(encoding='utf-8'))
+          report = json.loads((root / 'canonical-report.json').read_text(encoding='utf-8'))
+          products = data.get('products', [])
+          values = {
+              'products': len(products),
+              'variants': sum(len(p.get('variants', [])) for p in products),
+              'recipes': len(data.get('recipes', [])),
+              'articles': len(data.get('articles', [])),
+              'faqs': len(data.get('faqs', [])),
+              'coverage': len(data.get('coverage', [])),
+          }
+          print('AUDITORÍA CANÓNICA ESTRUCTURADA')
+          for key, value in values.items():
+              print(f'{key}={value}')
+          print('product_ids=' + ','.join(p.get('id', '') for p in products))
+          print('canonical_json_sha256=' + report['canonical_json_sha256'])
+          print('legacy_status=' + report['legacy_chunks']['status'])
+          assert values == {
+              'products': 11,
+              'variants': 14,
+              'recipes': 5,
+              'articles': 5,
+              'faqs': 5,
+              'coverage': 6,
+          }
+          assert report['legacy_chunks']['status'] == 'truncated-ellipsized-do-not-use'
+          PY
+
+      - name: Conservar artefacto canónico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuente-canonica-${{ github.sha }}
+          path: .artifacts/canonical
+          if-no-files-found: error
+          retention-days: 14

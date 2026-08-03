@@ -1,1 +1,24 @@
-(()=>{const f=["preprod-001.txt", "preprod-002.txt", "preprod-003.txt", "preprod-004.txt"];let b="";for(const n of f){const x=new XMLHttpRequest();x.open("GET","assets/chunks/"+n,false);x.send(null);if(x.status!==200&&x.status!==0)throw new Error("No se pudo cargar "+n);b+=x.responseText.trim();}const s=decodeURIComponent(escape(atob(b)));(0,eval)(s);})();
+(()=>{
+  const files=[
+    "v040-preprod-001a.b64",
+    "v040-preprod-001b.b64",
+    "v040-preprod-001c.b64",
+    "v040-preprod-001d.b64",
+    "v040-preprod-002.b64",
+    "v040-preprod-003.b64"
+  ];
+
+  let encoded="";
+  for(const name of files){
+    const request=new XMLHttpRequest();
+    request.open("GET","assets/source/"+name,false);
+    request.send(null);
+    if(request.status!==200&&request.status!==0) throw new Error("No se pudo cargar la lógica íntegra "+name);
+    encoded+=request.responseText.trim();
+  }
+
+  const binary=atob(encoded);
+  const bytes=Uint8Array.from(binary,char=>char.charCodeAt(0));
+  const source=new TextDecoder("utf-8",{fatal:true}).decode(bytes);
+  (0,eval)(source);
+})();

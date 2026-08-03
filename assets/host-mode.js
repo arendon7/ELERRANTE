@@ -2,7 +2,7 @@
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
   const PUBLIC_VERSION="0.6.1";
   const CACHE_PREFIX="el-errante-";
-  const ACTIVE_CACHE="el-errante-v0-6-5";
+  const ACTIVE_CACHE="el-errante-v0-6-6";
   const INTERNAL_PAGES=new Set(["equipo","admin","control","operacion","studio","presentacion"]);
   const VISUAL_MAP=new Map([
     ["assets/images/hero-desktop.svg","assets/images/v040/v040-hero-desktop.svg"],
@@ -17,7 +17,9 @@
     ["assets/images/alveolos.svg","assets/images/v040/v040-alveolos.svg"],
     ["assets/images/fermentacion.svg","assets/images/v040/v040-fermentacion.svg"],
     ["assets/images/pizza-neo.svg","assets/images/v040/v040-pizza-neo.svg"],
-    ["assets/images/editorial-fuego.svg","assets/images/v040/v040-pizza-neo.svg"],
+    ["assets/images/editorial-fuego.svg","assets/images/v040/v040-bitacora-fuego.svg"],
+    ["assets/images/pizzas-artesanales.svg","assets/images/v040/v040-pizzas-artesanales.svg"],
+    ["assets/images/pizzas-coleccion.svg","assets/images/v040/v040-pizzas-coleccion.svg"],
     ["assets/images/despensa.svg","assets/images/v040/v040-despensa.svg"],
     ["assets/images/aplicaciones-empaque.svg","assets/images/v040/v040-aplicaciones-empaque.svg"],
     ["assets/images/v6-la-errante.svg","assets/images/v040/v040-pizza-errante.svg"],

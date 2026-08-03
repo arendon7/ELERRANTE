@@ -28,7 +28,7 @@ jobs:
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Preparar sitio público
+      - name: Preparar sitio completo
         shell: bash
         run: |
           mkdir -p _site
@@ -36,27 +36,23 @@ jobs:
             --exclude '.git/' \
             --exclude '.github/' \
             --exclude '_site/' \
-            --exclude '__pycache__/' \
-            --exclude 'documentacion/' \
-            --exclude 'docs/' \
-            --exclude '*.command' \
-            --exclude '*.bat' \
-            --exclude '*.py' \
-            --exclude '*.zip' \
-            --exclude 'admin.html' \
-            --exclude 'control.html' \
-            --exclude 'operacion.html' \
-            --exclude 'studio.html' \
-            --exclude 'presentacion.html'
+            --exclude '__pycache__/'
           touch _site/.nojekyll
 
-      - name: Verificar versión pública
+      - name: Verificar versión pública y demo integral
         shell: bash
         run: |
           test -f _site/deploy-version.txt
           grep -q 'version=0.6.1' _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           test -f _site/assets/products-v6.js
+          test -f _site/equipo.html
+          test -f _site/admin.html
+          test -f _site/control.html
+          test -f _site/operacion.html
+          test -f _site/studio.html
+          test -f _site/presentacion.html
+          test -f _site/documentacion/ACCESOS_DEMO.md
 
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4

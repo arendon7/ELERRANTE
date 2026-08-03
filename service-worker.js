@@ -1,10 +1,11 @@
-const CACHE = 'el-errante-v0-6-2';
+const CACHE = 'el-errante-v0-6-3';
 const CORE = [
   './index.html','./historia.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
   './herramientas.html','./cobertura.html','./ayuda.html','./checkout.html','./cuenta.html',
+  './equipo.html','./admin.html','./control.html','./operacion.html','./studio.html','./presentacion.html',
   './assets/styles.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
-  './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js',
+  './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
   './assets/logo-mark.svg','./assets/logo-lockup.svg','./offline.html','./deploy-version.txt'
 ];
 

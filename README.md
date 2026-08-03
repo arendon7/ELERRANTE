@@ -2,52 +2,111 @@
 
 **Masa · Fuego · Territorio**
 
-Repositorio maestro de la experiencia web pública y del entorno local de El Errante.
+Repositorio maestro de la experiencia pública, los modelos de negocio, la operación simulada y el entorno integral de demostración de El Errante.
 
 ## Estado actual
 
-- Versión pública: `v0.6.1 — Catálogo Gold`
+- Baseline técnico: `v0.6.1 — Catálogo Gold`
+- Baseline integral de referencia: `v0.4.0 — Local autocontenida`
 - Marca: identidad visual canónica consolidada
 - Catálogo: 11 referencias con fichas, galerías e instrucciones
-- Contenidos: historia, tienda, En Casa, En Movimiento, Bitácora, recetas y herramientas
+- Modelos: comercio, contenido, eventos, administración, operación y gobierno de datos
 - Tecnología: HTML, CSS y JavaScript sin dependencias externas
 - Publicación: GitHub Pages mediante GitHub Actions
+- Persistencia: datos simulados almacenados en el navegador
 - Pedidos: registro sujeto a confirmación de inventario, cobertura y pago
-- Datos comerciales, sanitarios y operativos: requieren validación final antes de venta real
 
-## Sitio público
+## Principio de recuperación
 
-El sitio se publica desde el workflow:
+La versión objetivo no es un rollback.
+
+Se conserva la arquitectura, los textos y la publicación de v0.6.1, mientras se recuperan la biblioteca visual, la presentación y la integridad de modelos de v0.4.0.
+
+La auditoría detallada está en:
+
+```text
+documentacion/AUDITORIA_REGRESION_V040_V061.md
+```
+
+## Entradas principales
+
+### Experiencia comercial
+
+- `index.html` — inicio
+- `historia.html` — historia y concepto
+- `tienda.html` — catálogo
+- `producto.html` — fichas de producto
+- `en-casa.html` — pizzas para terminar en casa
+- `en-movimiento.html` — pizzería móvil y eventos
+- `bitacora.html` — pruebas y aprendizaje
+- `recetas.html` — métodos y preparación
+- `herramientas.html` — calculadoras
+- `checkout.html` — pedido sujeto a confirmación
+
+### Demo integral del equipo
+
+- `equipo.html` — puerta de entrada general
+- `admin.html` — administración
+- `control.html` — centro de control
+- `operacion.html` — producción, lotes y rutas
+- `studio.html` — fuente de datos y validaciones
+- `presentacion.html` — presentación navegable
+
+Los accesos y perfiles ficticios se documentan en:
+
+```text
+documentacion/ACCESOS_DEMO.md
+```
+
+## Publicación completa
+
+El workflow:
 
 ```text
 .github/workflows/pages.yml
 ```
 
-El workflow:
+publica la superficie completa del repositorio, salvo archivos técnicos propios de Git y la carpeta temporal de compilación.
 
-1. toma la versión integrada en `main`;
-2. prepara únicamente la superficie pública;
-3. excluye paneles internos, documentación y lanzadores locales;
-4. valida `deploy-version.txt`, la identidad v0.6 y `assets/products-v6.js`;
-5. publica el artefacto mediante GitHub Pages.
+Esto permite presentar y validar desde GitHub Pages tanto la experiencia comercial como los modelos internos de demostración.
 
-Configuración requerida en GitHub:
+Configuración requerida:
 
 ```text
 Settings → Pages → Build and deployment → Source → GitHub Actions
 ```
 
-La rama `fix/v0.5.1-restore-gold-assets` se conserva temporalmente sincronizada con `main` para neutralizar configuraciones antiguas de Pages. No debe utilizarse para desarrollar.
+## Seguridad del repositorio público
 
-## Verificación de versión
+El repositorio puede contener:
 
-El archivo público:
+- modelos completos;
+- páginas públicas e internas de demostración;
+- datos simulados;
+- usuarios y contraseñas ficticios;
+- archivos de configuración de ejemplo;
+- documentación operativa y comercial;
+- snapshots autocontenidos sin secretos.
+
+No puede contener:
+
+- tokens reales;
+- claves API;
+- contraseñas reales;
+- llaves privadas;
+- secretos OAuth;
+- credenciales de bases de datos;
+- datos personales reales de clientes, trabajadores o proveedores.
+
+Los secretos de integraciones futuras deben manejarse mediante GitHub Secrets y variables de entorno.
+
+## Snapshot v0.4.0
+
+El paquete autocontenido fue extraído, auditado y optimizado. Su inventario, hash y estado de integración están documentados en:
 
 ```text
-deploy-version.txt
+documentacion/SNAPSHOT_AUTOCONTENIDO_V040.md
 ```
-
-identifica la versión y el commit que deben estar desplegados. El service worker usa documentos `network-first` y elimina cachés antiguas para evitar que instalaciones previas sigan mostrando v0.5.
 
 ## Abrir localmente en Mac
 
@@ -63,51 +122,30 @@ También puedes usar:
 python3 servidor_demo.py
 ```
 
-## Estructura pública principal
-
-```text
-/
-├── index.html
-├── historia.html
-├── tienda.html
-├── producto.html
-├── en-casa.html
-├── en-movimiento.html
-├── bitacora.html
-├── articulo.html
-├── recetas.html
-├── receta.html
-├── herramientas.html
-├── cobertura.html
-├── ayuda.html
-├── checkout.html
-├── cuenta.html
-├── assets/
-├── service-worker.js
-├── deploy-version.txt
-└── .github/workflows/pages.yml
-```
-
 ## Flujo de trabajo
 
-- `main`: versión estable, canónica y publicable.
-- `work/<versión>-<tema>` o `fix/<versión>-<tema>`: ramas de construcción.
-- Pull request: revisión de cambios y pruebas.
-- Merge a `main`: despliegue automático de GitHub Pages.
-- Tags: hitos estables, por ejemplo `v0.6.1`.
+- `main`: versión estable, canónica y publicada.
+- `recovery/v0.4-completa`: recuperación acumulativa del baseline integral.
+- `work/<versión>-<tema>`: construcción funcional o visual.
+- `fix/<versión>-<tema>`: correcciones puntuales.
+- Pull request: revisión y matriz de regresión.
+- Merge a `main`: despliegue automático.
 
 ## Reglas
 
-1. No desarrollar directamente sobre `main`, salvo reparación urgente de despliegue.
-2. No subir ZIP de entregas al repositorio.
+1. No reemplazar `main` por una versión antigua completa.
+2. Toda recuperación debe ser acumulativa: preservar lo mejor de v0.4 y v0.6.1.
 3. No reemplazar ni deformar el logo canónico.
-4. No publicar claves, credenciales o datos personales.
-5. Mantener `assets/data.js` como fuente maestra y `assets/products-v6.js` como capa comercial pública.
-6. Ejecutar las verificaciones disponibles antes de cada pull request.
-7. Confirmar etiquetado, vida útil, cadena de frío, costos y precios antes de venta real.
+4. No publicar secretos reales ni datos personales reales.
+5. Los perfiles ficticios deben identificarse como demostración.
+6. Mantener disponibles los modelos de administración, operación, control y Studio.
+7. Ejecutar verificaciones visuales, funcionales y de contenido antes de fusionar.
+8. Confirmar etiquetado, vida útil, cadena de frío, costos y precios antes de venta real.
 
 ## Identidad visual
 
-La edición web utiliza ilustraciones SVG locales optimizadas y una identidad basada en carbón, crema, terracota, trigo y acero. La firma de marca es:
+La firma de marca es:
 
 **Masa · Fuego · Territorio**
+
+La identidad utiliza carbón, crema, terracota, trigo y acero, con fotografía cálida y documental. Las ilustraciones SVG conceptuales se mantienen como apoyo o fallback; los activos visuales aprobados de v0.4 se recuperan como referencias principales.

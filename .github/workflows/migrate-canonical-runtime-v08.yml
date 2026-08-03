@@ -1,0 +1,62 @@
+name: Migrar runtime canónico v0.8
+
+on:
+  push:
+    branches: ["work/v0.8-runtime-canonical"]
+    paths:
+      - "scripts/migrar_runtime_canonico_v08.py"
+      - "scripts/verificar_runtime_canonico.py"
+      - ".github/workflows/migrate-canonical-runtime-v08.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "migrate-canonical-runtime-v08"
+  cancel-in-progress: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: work/v0.8-runtime-canonical
+          fetch-depth: 0
+
+      - name: Aplicar migración idempotente
+        run: python3 scripts/migrar_runtime_canonico_v08.py
+
+      - name: Ejecutar regresión integral
+        run: python3 verificar_demo.py
+
+      - name: Validar procedencia
+        run: python3 scripts/verificar_fuentes.py
+
+      - name: Reconstruir canónico
+        run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
+
+      - name: Comparar canónico generado y versionado
+        run: |
+          cmp .artifacts/canonical/canonical-data.js assets/canonical-data.js
+          cmp .artifacts/canonical/canonical-data.json assets/canonical-data.json
+          cmp .artifacts/canonical/canonical-report.json documentacion/CANONICAL_DATA_REPORT.json
+
+      - name: Validar runtime directo
+        run: python3 scripts/verificar_runtime_canonico.py
+
+      - name: Confirmar migración en la rama
+        run: |
+          if git diff --quiet; then
+            echo "La rama ya usa el runtime canónico directo."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/data.js assets/content-v5.js service-worker.js assets/host-mode.js \
+            deploy-version.txt verificar_demo.py scripts/verificar_fuentes.py \
+            .github/workflows/pages.yml .github/workflows/canonical-audit.yml
+          git commit -m "refactor: activa runtime canónico directo v0.8"
+          git push origin HEAD:work/v0.8-runtime-canonical

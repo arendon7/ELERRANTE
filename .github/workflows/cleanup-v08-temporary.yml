@@ -1,0 +1,50 @@
+name: Limpiar workflows temporales v0.8
+
+on:
+  push:
+    branches: ["work/v0.8-runtime-canonical"]
+    paths:
+      - ".github/workflows/cleanup-v08-temporary.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: work/v0.8-runtime-canonical
+          fetch-depth: 0
+
+      - name: Confirmar certificado y pruebas permanentes
+        run: |
+          grep -q 'status: `PASS`' documentacion/RUNTIME_CANONICAL_CERTIFICATE.md
+          python3 verificar_demo.py
+          python3 scripts/verificar_fuentes.py
+          node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
+          cmp .artifacts/canonical/canonical-data.js assets/canonical-data.js
+          cmp .artifacts/canonical/canonical-data.json assets/canonical-data.json
+          python3 scripts/verificar_runtime_canonico.py
+
+      - name: Eliminar automatizaciones transitorias
+        run: |
+          rm -f .github/workflows/materialize-canonical-v08.yml
+          rm -f .github/workflows/migrate-canonical-runtime-v08.yml
+          rm -f .github/workflows/certify-runtime-v08.yml
+          rm -f .github/workflows/cleanup-v08-temporary.yml
+
+      - name: Confirmar limpieza
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A .github/workflows
+          if git diff --cached --quiet; then
+            echo "No hay workflows temporales por retirar."
+            exit 0
+          fi
+          git commit -m "chore: retira workflows temporales v0.8"
+          git push origin HEAD:work/v0.8-runtime-canonical

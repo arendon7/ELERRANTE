@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="t d">
+<title id="t">Bitácora de masa y fuego</title><desc id="d">Cuaderno de pruebas, masa fermentada, termómetro y horno encendido sobre una mesa de trabajo.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#191817"/><stop offset="1" stop-color="#34261f"/></linearGradient>
+  <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FBF7EF"/><stop offset="1" stop-color="#dfd1bb"/></linearGradient>
+  <radialGradient id="fire"><stop stop-color="#ffe1a2"/><stop offset=".35" stop-color="#ed903a"/><stop offset=".8" stop-color="#A5432D"/><stop offset="1" stop-color="#38140e"/></radialGradient>
+  <radialGradient id="dough"><stop stop-color="#f3dbad"/><stop offset=".7" stop-color="#d1a369"/><stop offset="1" stop-color="#895631"/></radialGradient>
+  <filter id="s"><feDropShadow dx="0" dy="22" stdDeviation="20" flood-opacity=".48"/></filter>
+  <filter id="g"><feGaussianBlur stdDeviation="13"/></filter>
+</defs>
+<rect width="1200" height="900" fill="url(#bg)"/>
+<circle cx="970" cy="150" r="190" fill="#A5432D" opacity=".14" filter="url(#g)"/>
+<path d="M0 590c270-70 620-55 1200-110v420H0z" fill="#6d4b31"/>
+<g transform="translate(700 120)" filter="url(#s)"><rect x="0" y="0" width="340" height="330" rx="28" fill="#11100f" stroke="#4b3b34" stroke-width="12"/><rect x="42" y="45" width="255" height="210" rx="18" fill="#261711"/><ellipse cx="170" cy="175" rx="105" ry="72" fill="url(#fire)" filter="url(#g)"/><path d="M112 245c25-78 54-100 72-176 31 53 25 89 61 126 30 31 22 67-9 84h-83c-42-17-49-46-41-34z" fill="url(#fire)"/></g>
+<g transform="translate(115 180) rotate(-4 280 250)" filter="url(#s)"><rect x="0" y="0" width="560" height="500" rx="18" fill="url(#paper)"/><path d="M280 18v464" stroke="#c8b89f" stroke-width="4"/><g stroke="#b7a78f" stroke-width="3" opacity=".65"><path d="M45 95h190"/><path d="M45 145h185"/><path d="M45 195h160"/><path d="M45 245h175"/><path d="M330 100h175"/><path d="M330 150h155"/><path d="M330 200h180"/></g><text x="48" y="62" font-family="IBM Plex Mono,monospace" font-size="22" font-weight="700" fill="#A5432D">LOTE 024 · 24H</text><text x="330" y="62" font-family="IBM Plex Mono,monospace" font-size="22" font-weight="700" fill="#191817">MASA / FUEGO</text><circle cx="422" cy="330" r="92" fill="url(#dough)"/><path d="M345 335c50-38 110-46 160-10" fill="none" stroke="#f4e2bd" stroke-width="12" opacity=".65"/><g fill="#A5432D"><circle cx="85" cy="330" r="8"/><circle cx="125" cy="355" r="8"/><circle cx="165" cy="328" r="8"/></g><path d="M65 400c95-25 150-25 188 0" stroke="#191817" stroke-width="5" fill="none"/></g>
+<g transform="translate(625 520)" filter="url(#s)"><rect x="0" y="0" width="80" height="230" rx="38" fill="#F2ECE1" stroke="#191817" stroke-width="10"/><rect x="31" y="32" width="18" height="130" rx="9" fill="#A5432D"/><circle cx="40" cy="185" r="25" fill="#A5432D"/></g>
+<g fill="#F2ECE1" opacity=".55"><circle cx="245" cy="740" r="4"/><circle cx="310" cy="705" r="3"/><circle cx="470" cy="760" r="4"/><circle cx="775" cy="700" r="4"/></g>
+<path d="M90 820c305 24 720 24 1025-8" stroke="#C5A36A" stroke-width="5" opacity=".5"/>
+</svg>

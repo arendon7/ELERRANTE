@@ -1,9 +1,35 @@
 (()=>{
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
+  const PUBLIC_VERSION="0.6.1";
+  const CACHE_PREFIX="el-errante-";
+  const ACTIVE_CACHE="el-errante-v0-6-2";
+
+  async function refreshPublicRuntime(){
+    if(!hosted) return;
+
+    try{
+      if("caches" in window){
+        const keys=await caches.keys();
+        await Promise.all(keys
+          .filter(key=>key.startsWith(CACHE_PREFIX)&&key!==ACTIVE_CACHE)
+          .map(key=>caches.delete(key)));
+      }
+
+      if("serviceWorker" in navigator){
+        const registration=await navigator.serviceWorker.register("./service-worker.js",{updateViaCache:"none"});
+        await registration.update();
+      }
+
+      localStorage.setItem("ee_public_version",PUBLIC_VERSION);
+    }catch(error){
+      console.warn("No fue posible actualizar la caché pública de El Errante.",error);
+    }
+  }
 
   function enhancePublicUI(){
     if(hosted){
       document.documentElement.dataset.eeMode="public";
+      document.documentElement.dataset.eeVersion=PUBLIC_VERSION;
       document.querySelectorAll(".local-runtime-badge,[data-internal-only],.internal-only").forEach(el=>el.remove());
       document.querySelectorAll(".demo-badge").forEach(el=>{
         const text=(el.textContent||"").toLowerCase();
@@ -33,6 +59,7 @@
     }
   }
 
+  refreshPublicRuntime();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",enhancePublicUI);
   else enhancePublicUI();
 })();

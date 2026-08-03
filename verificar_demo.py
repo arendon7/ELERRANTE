@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""Valida la integridad estructural de El Errante antes de publicar.
+"""Barrera estructural, visual y de seguridad para El Errante."""
 
-La prueba evita que una migración o iteración elimine páginas, modelos, activos
-visuales aprobados o referencias locales necesarias para la demo integral.
-"""
+from __future__ import annotations
 
 from pathlib import Path
 from urllib.parse import unquote
@@ -12,7 +10,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parent
 ISSUES: list[str] = []
-CHECKS: list[str] = []
+CHECKED: list[str] = []
 
 PUBLIC_PAGES = [
     "index.html", "historia.html", "tienda.html", "producto.html",
@@ -22,19 +20,16 @@ PUBLIC_PAGES = [
     "checkout.html", "cuenta.html", "caso-evento.html", "legal.html",
     "nosotros.html", "offline.html",
 ]
-
 INTEGRAL_PAGES = [
     "equipo.html", "admin.html", "control.html", "operacion.html",
     "studio.html", "presentacion.html",
 ]
-
-REQUIRED_SCRIPTS = [
+SCRIPTS = [
     "assets/data.js", "assets/products-v6.js", "assets/runtime.js",
     "assets/app.js", "assets/preprod.js", "assets/content-v5.js",
     "assets/host-mode.js", "assets/control.js", "assets/presentation.js",
 ]
-
-VISUAL_ASSETS = [
+VISUALS = [
     "v040-hero-desktop.svg", "v040-hero-mobile.svg",
     "v040-harina-empaques.svg", "v040-harina-manos.svg",
     "v040-harina-horno.svg", "v040-manos-masa.svg",
@@ -45,152 +40,130 @@ VISUAL_ASSETS = [
     "v040-bitacora-fuego.svg", "v040-pizzas-artesanales.svg",
     "v040-pizzas-coleccion.svg",
 ]
-
-PRODUCT_IDS = [
+PRODUCTS = [
     "harina-aire-y-tiempo", "crea-la-tuya", "margherita-del-taller",
     "diavola-errante", "bosque", "cuatro-quesos-montana", "la-errante",
     "salsa-tomate", "reduccion-balsamica", "panela-maracuya",
     "combo-primera-ruta",
 ]
-
-REQUIRED_REPO_FILES = [
+REPO_FILES = [
     ".github/workflows/pages.yml", "README.md", ".gitignore",
     "service-worker.js", "manifest.webmanifest", "deploy-version.txt",
     "documentacion/AUDITORIA_REGRESION_V040_V061.md",
     "documentacion/SNAPSHOT_AUTOCONTENIDO_V040.md",
     "documentacion/ACCESOS_DEMO.md",
 ]
-
-EXTERNAL_PREFIXES = (
-    "http:", "https:", "//", "mailto:", "tel:", "javascript:",
-    "data:", "blob:", "#",
-)
+EXTERNAL = ("http:", "https:", "//", "mailto:", "tel:", "javascript:", "data:", "blob:", "#")
 
 
-def require_file(relative_path: str, label: str) -> None:
-    path = ROOT / relative_path
-    if not path.is_file():
-        ISSUES.append(f"{label} faltante: {relative_path}")
+def require(relative: str, label: str) -> None:
+    if not (ROOT / relative).is_file():
+        ISSUES.append(f"{label} faltante: {relative}")
     else:
-        CHECKS.append(relative_path)
+        CHECKED.append(relative)
 
 
-def clean_reference(reference: str) -> str | None:
-    reference = unquote(reference.strip())
-    if not reference or reference.startswith(EXTERNAL_PREFIXES):
+def text(relative: str) -> str:
+    path = ROOT / relative
+    return path.read_text(encoding="utf-8", errors="ignore") if path.is_file() else ""
+
+
+def clean_reference(value: str) -> str | None:
+    value = unquote(value.strip())
+    if not value or value.startswith(EXTERNAL) or "${" in value or "{{" in value:
         return None
-    if "${" in reference or "{{" in reference:
-        return None
-    reference = reference.split("#", 1)[0].split("?", 1)[0]
-    if not reference:
-        return None
-    return reference.removeprefix("./")
-
-
-def validate_reference(source: Path, reference: str) -> None:
-    cleaned = clean_reference(reference)
-    if cleaned is None:
-        return
-    target = ROOT / cleaned
-    if not target.exists():
-        ISSUES.append(f"{source.relative_to(ROOT)}: referencia faltante {reference}")
+    value = value.split("#", 1)[0].split("?", 1)[0].removeprefix("./")
+    return value or None
 
 
 for page in PUBLIC_PAGES:
-    require_file(page, "Página pública")
+    require(page, "Página pública")
 for page in INTEGRAL_PAGES:
-    require_file(page, "Módulo integral")
-for script in REQUIRED_SCRIPTS:
-    require_file(script, "Script")
-for file_name in REQUIRED_REPO_FILES:
-    require_file(file_name, "Archivo de repositorio")
-for asset in VISUAL_ASSETS:
-    require_file(f"assets/images/v040/{asset}", "Activo visual v0.4")
+    require(page, "Módulo integral")
+for script in SCRIPTS:
+    require(script, "Script")
+for required in REPO_FILES:
+    require(required, "Archivo de repositorio")
+for visual in VISUALS:
+    require(f"assets/images/v040/{visual}", "Visual v0.4")
 
-# Referencias estáticas de HTML.
+# Referencias locales de HTML y CSS.
 html_files = sorted(ROOT.glob("*.html"))
 attribute_pattern = re.compile(r'(?:href|src|poster|action)=["\']([^"\']+)["\']', re.I)
 srcset_pattern = re.compile(r'srcset=["\']([^"\']+)["\']', re.I)
-
 for html in html_files:
-    text = html.read_text(encoding="utf-8")
-    for reference in attribute_pattern.findall(text):
-        validate_reference(html, reference)
-    for srcset in srcset_pattern.findall(text):
-        for candidate in srcset.split(","):
-            reference = candidate.strip().split(" ", 1)[0]
-            validate_reference(html, reference)
-
-# Recursos locales usados desde CSS.
-for css in sorted((ROOT / "assets").rglob("*.css")):
-    text = css.read_text(encoding="utf-8")
-    for reference in re.findall(r'url\(["\']?([^\)"\']+)', text, re.I):
+    content = html.read_text(encoding="utf-8")
+    references = attribute_pattern.findall(content)
+    references += [candidate.strip().split(" ", 1)[0] for group in srcset_pattern.findall(content) for candidate in group.split(",")]
+    for reference in references:
         cleaned = clean_reference(reference)
-        if cleaned is None:
-            continue
-        target = (css.parent / cleaned).resolve()
-        if not target.exists():
-            ISSUES.append(f"{css.relative_to(ROOT)}: recurso CSS faltante {reference}")
+        if cleaned and not (ROOT / cleaned).exists():
+            ISSUES.append(f"{html.name}: referencia faltante {reference}")
 
-# Los alias históricos siguen funcionando y apuntan a la ficha dinámica.
-redirect_expectations = {
+for css in sorted((ROOT / "assets").rglob("*.css")):
+    for reference in re.findall(r'url\(["\']?([^\)"\']+)', css.read_text(encoding="utf-8"), re.I):
+        cleaned = clean_reference(reference)
+        if cleaned and not (css.parent / cleaned).resolve().exists():
+            ISSUES.append(f"{css.relative_to(ROOT)}: recurso faltante {reference}")
+
+# Alias históricos de producto.
+redirects = {
     "producto-harina.html": "producto.html?id=harina-aire-y-tiempo",
     "producto-crea-tuya.html": "producto.html?id=crea-la-tuya",
 }
-for file_name, target in redirect_expectations.items():
-    text = (ROOT / file_name).read_text(encoding="utf-8") if (ROOT / file_name).exists() else ""
-    if target not in text:
-        ISSUES.append(f"{file_name}: no conserva la redirección canónica a {target}")
+for file_name, target in redirects.items():
+    if target not in text(file_name):
+        ISSUES.append(f"{file_name}: no redirige a {target}")
 
-# Catálogo: las once referencias deben permanecer en la capa comercial.
-products_text = (ROOT / "assets/products-v6.js").read_text(encoding="utf-8")
-for product_id in PRODUCT_IDS:
-    if f'"{product_id}"' not in products_text:
-        ISSUES.append(f"Catálogo incompleto: falta el producto {product_id}")
+# Catálogo y visuales.
+products_source = text("assets/products-v6.js")
+for product_id in PRODUCTS:
+    if f'"{product_id}"' not in products_source:
+        ISSUES.append(f"Catálogo incompleto: falta {product_id}")
 
-# La capa de recuperación y la caché deben conocer los 17 visuales aprobados.
-host_mode = (ROOT / "assets/host-mode.js").read_text(encoding="utf-8")
-service_worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
-for asset in VISUAL_ASSETS:
-    if asset not in host_mode and asset not in {"v040-pizzas-artesanales.svg"}:
-        ISSUES.append(f"Mapa visual incompleto: {asset} no está activo en host-mode.js")
-    if asset not in service_worker:
-        ISSUES.append(f"Caché incompleta: {asset} no está incluido en service-worker.js")
+host_mode = text("assets/host-mode.js")
+service_worker = text("service-worker.js")
+for visual in VISUALS:
+    if visual != "v040-pizzas-artesanales.svg" and visual not in host_mode:
+        ISSUES.append(f"Mapa visual incompleto: {visual}")
+    if visual not in service_worker:
+        ISSUES.append(f"Caché visual incompleta: {visual}")
 
-if "el-errante-v0-6-6" not in service_worker:
-    ISSUES.append("service-worker.js no usa la caché esperada el-errante-v0-6-6")
-
-# Las tres superficies editoriales deben apuntar directamente a los activos restaurados.
-direct_visuals = {
+for page, visual in {
     "bitacora.html": "v040-bitacora-fuego.svg",
     "tienda.html": "v040-pizzas-coleccion.svg",
     "en-casa.html": "v040-pizzas-coleccion.svg",
-}
-for page, asset in direct_visuals.items():
-    text = (ROOT / page).read_text(encoding="utf-8")
-    if asset not in text:
-        ISSUES.append(f"{page}: no usa directamente el visual recuperado {asset}")
+}.items():
+    if visual not in text(page):
+        ISSUES.append(f"{page}: no usa directamente {visual}")
 
-# Versión, despliegue y barrera de CI.
-deploy_marker = (ROOT / "deploy-version.txt").read_text(encoding="utf-8")
+# Una única versión de caché declarada.
+deploy_marker = text("deploy-version.txt")
+cache_match = re.search(r"^cache=(.+)$", deploy_marker, re.M)
+cache_name = cache_match.group(1).strip() if cache_match else ""
 if "version=0.6.1" not in deploy_marker:
-    ISSUES.append("deploy-version.txt no identifica la versión 0.6.1")
-if "cache=el-errante-v0-6-6" not in deploy_marker:
-    ISSUES.append("deploy-version.txt no identifica la caché el-errante-v0-6-6")
+    ISSUES.append("deploy-version.txt no identifica version=0.6.1")
+if not cache_name:
+    ISSUES.append("deploy-version.txt no declara cache=")
+else:
+    if cache_name not in service_worker:
+        ISSUES.append(f"service-worker.js no usa la caché declarada {cache_name}")
+    if cache_name not in host_mode:
+        ISSUES.append(f"host-mode.js no usa la caché declarada {cache_name}")
 
-workflow = (ROOT / ".github/workflows/pages.yml").read_text(encoding="utf-8")
-if 'branches: ["main"]' not in workflow:
-    ISSUES.append("El workflow debe limitar push y pull request a main")
-if "pull_request:" not in workflow:
-    ISSUES.append("El workflow no valida los pull requests antes del merge")
-if "github.event_name != 'pull_request'" not in workflow:
-    ISSUES.append("El workflow no separa la validación del despliegue")
-if "python3 verificar_demo.py" not in workflow:
-    ISSUES.append("El workflow no ejecuta la barrera de regresión verificar_demo.py")
+# CI y despliegue.
+workflow = text(".github/workflows/pages.yml")
+for required in [
+    'branches: ["main"]', "pull_request:", "github.event_name != 'pull_request'",
+    "python3 verificar_demo.py", "python3 scripts/verificar_fuentes.py",
+    "node scripts/exportar-fuente-canonica.mjs",
+]:
+    if required not in workflow:
+        ISSUES.append(f"Workflow incompleto: falta {required}")
 if "fix/v0.5.1-restore-gold-assets" in workflow:
     ISSUES.append("El workflow todavía referencia la rama histórica bloqueada")
 
-# Evita secretos evidentes en texto plano. Las credenciales ficticias .demo son válidas.
+# Patrones evidentes de secretos reales.
 secret_patterns = {
     "llave privada": r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
     "token GitHub": r"\bgh[pousr]_[A-Za-z0-9]{20,}\b",
@@ -200,11 +173,11 @@ text_extensions = {".html", ".js", ".css", ".json", ".md", ".txt", ".py", ".yml"
 for path in ROOT.rglob("*"):
     if not path.is_file() or path.suffix.lower() not in text_extensions:
         continue
-    if any(part in {".git", "_site", "__pycache__"} for part in path.parts):
+    if any(part in {".git", "_site", ".artifacts", "__pycache__"} for part in path.parts):
         continue
-    text = path.read_text(encoding="utf-8", errors="ignore")
+    content = path.read_text(encoding="utf-8", errors="ignore")
     for label, pattern in secret_patterns.items():
-        if re.search(pattern, text):
+        if re.search(pattern, content):
             ISSUES.append(f"Posible {label} expuesta en {path.relative_to(ROOT)}")
 
 print("EL ERRANTE V0.6.1 — BARRERA DE REGRESIÓN INTEGRAL")
@@ -212,9 +185,10 @@ print("=" * 58)
 print(f"Páginas HTML encontradas: {len(html_files)}")
 print(f"Páginas públicas requeridas: {len(PUBLIC_PAGES)}")
 print(f"Módulos integrales requeridos: {len(INTEGRAL_PAGES)}")
-print(f"Productos requeridos: {len(PRODUCT_IDS)}")
-print(f"Visuales v0.4 requeridos: {len(VISUAL_ASSETS)}")
-print(f"Archivos obligatorios validados: {len(CHECKS)}")
+print(f"Productos requeridos: {len(PRODUCTS)}")
+print(f"Visuales v0.4 requeridos: {len(VISUALS)}")
+print(f"Caché declarada: {cache_name or 'NO DEFINIDA'}")
+print(f"Archivos obligatorios validados: {len(CHECKED)}")
 print(f"Problemas: {len(ISSUES)}")
 
 if ISSUES:

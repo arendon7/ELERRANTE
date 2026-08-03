@@ -17,7 +17,7 @@ Respaldo temporal de trabajo:
 
 `https://drive.google.com/file/d/19dsgXTMj7PjVZviaPQt7VbXSYKe2bT7H/view?usp=drivesdk`
 
-El enlace de Drive es un respaldo temporal de la cuenta conectada. La fuente canónica será el repositorio una vez termine la importación de los binarios.
+Drive funciona únicamente como respaldo temporal. La web publicada no depende de ese archivo ni de permisos externos.
 
 ## Contenido preservado
 
@@ -58,7 +58,7 @@ El enlace de Drive es un respaldo temporal de la cuenta conectada. La fuente can
 - escenarios del centro de control;
 - presentación navegable.
 
-### Biblioteca visual
+### Biblioteca visual de referencia
 
 - alveolos;
 - aplicaciones de empaque;
@@ -77,6 +77,40 @@ El enlace de Drive es un respaldo temporal de la cuenta conectada. La fuente can
 - colección de pizzas;
 - pizzería móvil.
 
+## Primera recuperación visual integrada
+
+Los siguientes activos ya están incorporados dentro del repositorio como SVG autocontenidos con la imagen WebP embebida:
+
+- `assets/images/v040/v040-hero-desktop.svg`
+- `assets/images/v040/v040-hero-mobile.svg`
+- `assets/images/v040/v040-harina-empaques.svg`
+- `assets/images/v040/v040-pizza-errante.svg`
+- `assets/images/v040/v040-pizzeria-movil.svg`
+- `assets/images/v040/v040-fermentacion.svg`
+
+La capa `assets/host-mode.js` sustituye las referencias conceptuales correspondientes tanto en HTML estático como en componentes generados por JavaScript. Esto alcanza actualmente:
+
+- portada de escritorio y móvil;
+- secciones de Aire y Tiempo;
+- tarjeta y ficha dinámica de la harina;
+- sección y ficha dinámica de La Errante;
+- portada y contenido de En Movimiento;
+- presentación integral.
+
+## Activos todavía pendientes de integración activa
+
+- alveolos;
+- aplicaciones de empaque;
+- bitácora y fuego;
+- despensa;
+- harina y horno;
+- harina y manos;
+- manos y masa;
+- apertura de masa;
+- pizza neo-napolitana;
+- pizzas artesanales;
+- colección completa de pizzas.
+
 ## Seguridad
 
 La revisión automática no encontró tokens, claves API, contraseñas reales, llaves privadas ni credenciales de infraestructura.
@@ -86,11 +120,12 @@ Los correos, pedidos, inventarios y perfiles contenidos en el snapshot son de de
 ## Estado de integración
 
 - [x] Snapshot extraído y auditado.
-- [x] Modelos internos publicados en la rama de recuperación.
+- [x] Modelos internos publicados.
 - [x] Centro integral del equipo creado.
 - [x] Presentación corregida y conectada.
 - [x] Workflow preparado para publicar el sistema completo.
-- [ ] Biblioteca visual binaria incorporada al repositorio.
-- [ ] Referencias principales reasignadas a los activos v0.4.
+- [x] Núcleo visual v0.4 incorporado al repositorio.
+- [x] Referencias principales de hero, harina, pizza insignia y eventos reasignadas.
+- [ ] Biblioteca visual secundaria incorporada y activada.
 - [ ] Fuente de datos consolidada sin overlay permanente.
-- [ ] Matriz de regresión final ejecutada.
+- [ ] Matriz de regresión visual completa ejecutada.

@@ -39,7 +39,7 @@ jobs:
             --exclude '__pycache__/'
           touch _site/.nojekyll
 
-      - name: Verificar versión pública y demo integral
+      - name: Verificar versión pública, demo integral y visuales recuperados
         shell: bash
         run: |
           test -f _site/deploy-version.txt
@@ -53,6 +53,13 @@ jobs:
           test -f _site/studio.html
           test -f _site/presentacion.html
           test -f _site/documentacion/ACCESOS_DEMO.md
+          test -f _site/assets/images/v040/v040-hero-desktop.svg
+          test -f _site/assets/images/v040/v040-hero-mobile.svg
+          test -f _site/assets/images/v040/v040-harina-empaques.svg
+          test -f _site/assets/images/v040/v040-pizza-errante.svg
+          test -f _site/assets/images/v040/v040-pizzeria-movil.svg
+          grep -q 'VISUAL_MAP' _site/assets/host-mode.js
+          grep -q 'el-errante-v0-6-4' _site/service-worker.js
 
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4

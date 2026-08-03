@@ -1,0 +1,123 @@
+name: Verificar publicación real
+
+on:
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+  EXPECTED_CACHE: el-errante-v0-6-8
+
+jobs:
+  health:
+    name: GitHub Pages corresponde a main
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Definir commit esperado
+        run: |
+          echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "Workflow fuente: ${{ github.event.workflow_run.html_url }}"
+
+      - name: Esperar propagación de GitHub Pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 24); do
+            marker="$(curl --fail --silent --show-error --location --max-time 20 \
+              -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" || true)"
+            printf '%s\n' "$marker" > deploy-version-observed.txt
+
+            if grep -q "release_commit=$EXPECTED_SHA" deploy-version-observed.txt \
+              && grep -q "cache=$EXPECTED_CACHE" deploy-version-observed.txt \
+              && grep -q 'deploy_source=main' deploy-version-observed.txt; then
+              success=1
+              echo "Pages propagó el commit esperado en el intento $attempt."
+              break
+            fi
+
+            echo "Intento $attempt: Pages aún no sirve $EXPECTED_SHA."
+            cat deploy-version-observed.txt || true
+            sleep 15
+          done
+
+          if [ "$success" -ne 1 ]; then
+            echo "GitHub Pages no propagó el commit esperado dentro del plazo."
+            exit 1
+          fi
+
+      - name: Verificar runtime canónico publicado
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 30 \
+            -H 'Cache-Control: no-cache' \
+            "$PUBLIC_BASE/assets/data.js?verify=$EXPECTED_SHA" > public-data-loader.js
+          curl --fail --silent --show-error --location --max-time 30 \
+            -H 'Cache-Control: no-cache' \
+            "$PUBLIC_BASE/assets/canonical-data.js?verify=$EXPECTED_SHA" > public-canonical-data.js
+
+          grep -q 'assets/canonical-data.js' public-data-loader.js
+          ! grep -q 'assets/chunks/data-' public-data-loader.js
+          ! grep -q 'assets/source/v040-data-' public-data-loader.js
+          ! grep -q 'assets/products-v6.js' public-data-loader.js
+          grep -q 'window.EE_DATA=' public-canonical-data.js
+          grep -q 'harina-aire-y-tiempo' public-canonical-data.js
+          grep -q 'combo-primera-ruta' public-canonical-data.js
+
+      - name: Verificar superficies diferenciadas
+        shell: bash
+        run: |
+          set -euo pipefail
+          for page in historia nosotros equipo; do
+            curl --fail --silent --show-error --location --max-time 30 \
+              -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
+          done
+
+          grep -q 'personas-proyecto' public-historia.html
+          grep -q 'nosotros.html' public-historia.html
+          grep -q 'Personas y proyecto' public-nosotros.html
+          grep -q 'historia.html' public-nosotros.html
+          grep -q 'Demo integral' public-equipo.html
+
+      - name: Generar informe
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "EL ERRANTE — PUBLIC HEALTH"
+            echo "expected_sha=$EXPECTED_SHA"
+            echo "expected_cache=$EXPECTED_CACHE"
+            echo "public_base=$PUBLIC_BASE"
+            echo
+            echo "--- deploy-version observado ---"
+            cat deploy-version-observed.txt 2>/dev/null || true
+            echo
+            echo "data_loader_bytes=$(wc -c < public-data-loader.js 2>/dev/null || echo 0)"
+            echo "canonical_data_bytes=$(wc -c < public-canonical-data.js 2>/dev/null || echo 0)"
+            echo "historia_bytes=$(wc -c < public-historia.html 2>/dev/null || echo 0)"
+            echo "nosotros_bytes=$(wc -c < public-nosotros.html 2>/dev/null || echo 0)"
+            echo "equipo_bytes=$(wc -c < public-equipo.html 2>/dev/null || echo 0)"
+          } > public-health-report.txt
+          cat public-health-report.txt
+
+      - name: Conservar evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-health-${{ github.event.workflow_run.head_sha }}
+          path: |
+            public-health-report.txt
+            deploy-version-observed.txt
+            public-data-loader.js
+          if-no-files-found: warn
+          retention-days: 14

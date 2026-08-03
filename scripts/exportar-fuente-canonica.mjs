@@ -26,13 +26,13 @@ function sha256(content){
 }
 
 const encodedParts=CHUNKS.map(name=>read(path.join("assets","chunks",name)).trim());
-const encoded=encodedParts.join("");
-let decoded;
+let decodedParts;
 try{
-  decoded=Buffer.from(encoded,"base64").toString("utf8");
+  decodedParts=encodedParts.map(part=>Buffer.from(part,"base64").toString("utf8"));
 }catch(error){
   fail(`No fue posible decodificar los chunks: ${error.message}`);
 }
+const decoded=decodedParts.join("");
 
 const sandbox={
   window:{},
@@ -118,10 +118,13 @@ const categories=products.reduce((acc,product)=>{
 const variantCount=products.reduce((total,product)=>total+product.variants.length,0);
 const report={
   generated_at:new Date().toISOString(),
+  decode_strategy:"decode-each-base64-chunk-then-concatenate-javascript",
   source_chunks:CHUNKS.map((name,index)=>({
     path:`assets/chunks/${name}`,
     encoded_chars:encodedParts[index].length,
-    sha256:sha256(encodedParts[index])
+    encoded_sha256:sha256(encodedParts[index]),
+    decoded_chars:decodedParts[index].length,
+    decoded_sha256:sha256(decodedParts[index])
   })),
   decoded_source_sha256:sha256(decoded),
   overlay_sha256:sha256(overlay),
@@ -140,11 +143,16 @@ fs.writeFileSync(path.join(OUTPUT,"canonical-report.md"),[
   "# Fuente canónica reconstruida",
   "",
   `- Generada: ${report.generated_at}`,
+  `- Estrategia: ${report.decode_strategy}`,
   `- Productos: ${report.product_count}`,
   `- Variantes: ${report.variant_count}`,
   `- SHA-256 JSON: \`${report.canonical_json_sha256}\``,
   `- SHA-256 fuente decodificada: \`${report.decoded_source_sha256}\``,
   `- SHA-256 overlay: \`${report.overlay_sha256}\``,
+  "",
+  "## Chunks",
+  "",
+  ...report.source_chunks.map(chunk=>`- \`${chunk.path}\`: ${chunk.decoded_chars} caracteres decodificados · \`${chunk.decoded_sha256}\``),
   "",
   "## Productos",
   "",

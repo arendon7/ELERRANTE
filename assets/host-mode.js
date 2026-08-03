@@ -2,14 +2,24 @@
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
   const PUBLIC_VERSION="0.6.1";
   const CACHE_PREFIX="el-errante-";
-  const ACTIVE_CACHE="el-errante-v0-6-4";
+  const ACTIVE_CACHE="el-errante-v0-6-5";
   const INTERNAL_PAGES=new Set(["equipo","admin","control","operacion","studio","presentacion"]);
   const VISUAL_MAP=new Map([
     ["assets/images/hero-desktop.svg","assets/images/v040/v040-hero-desktop.svg"],
     ["assets/images/hero-mobile.svg","assets/images/v040/v040-hero-mobile.svg"],
     ["assets/images/v6-harina-aire-tiempo.svg","assets/images/v040/v040-harina-empaques.svg"],
     ["assets/images/harina-packshot.svg","assets/images/v040/v040-harina-empaques.svg"],
-    ["assets/images/harina-manos.svg","assets/images/v040/v040-harina-empaques.svg"],
+    ["assets/images/harina-manos.svg","assets/images/v040/v040-harina-manos.svg"],
+    ["assets/images/harina-horno.svg","assets/images/v040/v040-harina-horno.svg"],
+    ["assets/images/manos-masa.svg","assets/images/v040/v040-manos-masa.svg"],
+    ["assets/images/masa-apertura-gold.svg","assets/images/v040/v040-masa-apertura.svg"],
+    ["assets/images/masa-apertura.svg","assets/images/v040/v040-masa-apertura.svg"],
+    ["assets/images/alveolos.svg","assets/images/v040/v040-alveolos.svg"],
+    ["assets/images/fermentacion.svg","assets/images/v040/v040-fermentacion.svg"],
+    ["assets/images/pizza-neo.svg","assets/images/v040/v040-pizza-neo.svg"],
+    ["assets/images/editorial-fuego.svg","assets/images/v040/v040-pizza-neo.svg"],
+    ["assets/images/despensa.svg","assets/images/v040/v040-despensa.svg"],
+    ["assets/images/aplicaciones-empaque.svg","assets/images/v040/v040-aplicaciones-empaque.svg"],
     ["assets/images/v6-la-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
     ["assets/images/pizza-la-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
     ["assets/images/pizza-errante.svg","assets/images/v040/v040-pizza-errante.svg"],

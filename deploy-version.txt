@@ -1,5 +1,5 @@
 EL ERRANTE PUBLIC RELEASE
 version=0.6.1
 deploy_source=main
-commit=e669e3174c77d053b096e8ddf5f4f042186e9e54
+commit=cae3fddf9a4d2e0f28062efa02c3bd85acf53414
 updated=2026-08-03T15:08:00-05:00

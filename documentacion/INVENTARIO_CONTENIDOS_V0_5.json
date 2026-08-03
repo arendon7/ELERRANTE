@@ -1,0 +1,164 @@
+{
+  "products": [
+    {
+      "id": "harina-aire-y-tiempo",
+      "name": "Harina Aire y Tiempo",
+      "headline": "La fuerza que sostiene el tiempo.",
+      "faq_count": 4
+    },
+    {
+      "id": "crea-la-tuya",
+      "name": "Crea la Tuya",
+      "headline": "Nosotros hacemos la parte difícil. Tú decides cómo termina.",
+      "faq_count": 4
+    },
+    {
+      "id": "margherita-del-taller",
+      "name": "Margherita del Taller",
+      "headline": "Cuando hay poco que esconder, todo debe estar en equilibrio.",
+      "faq_count": 3
+    },
+    {
+      "id": "diavola-errante",
+      "name": "Diavola Errante",
+      "headline": "Picante suficiente para despertar la pizza, no para ocultarla.",
+      "faq_count": 3
+    },
+    {
+      "id": "bosque",
+      "name": "Bosque",
+      "headline": "Una pizza profunda sin depender de la carne.",
+      "faq_count": 3
+    },
+    {
+      "id": "cuatro-quesos-montana",
+      "name": "Cuatro Quesos de Montaña",
+      "headline": "Cremosa y compleja, pero todavía una pizza.",
+      "faq_count": 3
+    },
+    {
+      "id": "la-errante",
+      "name": "La Errante",
+      "headline": "La pizza donde la búsqueda encuentra territorio.",
+      "faq_count": 3
+    },
+    {
+      "id": "salsa-tomate",
+      "name": "Salsa de tomate para pizza",
+      "headline": "Tomate suficiente para acompañar la masa, no para cubrirla.",
+      "faq_count": 3
+    },
+    {
+      "id": "reduccion-balsamica",
+      "name": "Reducción balsámica",
+      "headline": "Profundidad en pequeñas cantidades.",
+      "faq_count": 3
+    },
+    {
+      "id": "panela-maracuya",
+      "name": "Panela + maracuyá",
+      "headline": "Dulzor profundo. Acidez que despierta.",
+      "faq_count": 3
+    },
+    {
+      "id": "combo-primera-ruta",
+      "name": "Combo Primera Ruta",
+      "headline": "Tres formas de entrar a la misma búsqueda.",
+      "faq_count": 3
+    }
+  ],
+  "articles": [
+    {
+      "id": "proteina-no-cuenta",
+      "title": "La proteína no cuenta toda la historia.",
+      "sections": 4
+    },
+    {
+      "id": "fuerza-harina",
+      "title": "Qué significa realmente la fuerza de una harina.",
+      "sections": 4
+    },
+    {
+      "id": "masa-se-encoge",
+      "title": "Por qué una masa se encoge cuando intentas abrirla.",
+      "sections": 4
+    },
+    {
+      "id": "fermentacion-8-24-48",
+      "title": "Fermentación de 8, 24 y 48 horas.",
+      "sections": 4
+    },
+    {
+      "id": "masa-colapso",
+      "title": "La masa que creció y después colapsó.",
+      "sections": 4
+    },
+    {
+      "id": "horno-alta-temperatura",
+      "title": "Qué cambia cuando el horno trabaja a alta temperatura.",
+      "sections": 4
+    },
+    {
+      "id": "congelar-masa",
+      "title": "Congelar sin destruir la experiencia de la masa.",
+      "sections": 4
+    },
+    {
+      "id": "nacio-la-errante",
+      "title": "Cómo nació La Errante.",
+      "sections": 5
+    }
+  ],
+  "recipes": [
+    {
+      "id": "pizza-cotidiana",
+      "title": "Pizza cotidiana · mismo día",
+      "steps": 5
+    },
+    {
+      "id": "pizza-24h",
+      "title": "Masa de pizza · 24 horas",
+      "steps": 5
+    },
+    {
+      "id": "focaccia-aire-tiempo",
+      "title": "Focaccia Aire y Tiempo",
+      "steps": 5
+    },
+    {
+      "id": "crea-airfryer",
+      "title": "Crea la Tuya en airfryer",
+      "steps": 5
+    },
+    {
+      "id": "crea-horno",
+      "title": "Crea la Tuya en horno doméstico",
+      "steps": 5
+    },
+    {
+      "id": "margherita-casa",
+      "title": "Margherita del Taller en casa",
+      "steps": 5
+    },
+    {
+      "id": "la-errante-casa",
+      "title": "La Errante en horno doméstico",
+      "steps": 5
+    },
+    {
+      "id": "bosque-casa",
+      "title": "Bosque con acabado balsámico",
+      "steps": 4
+    },
+    {
+      "id": "salsa-tomate-uso",
+      "title": "Cómo usar la salsa de tomate para pizza",
+      "steps": 5
+    },
+    {
+      "id": "acabados-panela",
+      "title": "Acabados con panela y maracuyá",
+      "steps": 4
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 550 145" role="img" aria-labelledby="title">
+<title id="title">El Errante — Masa, Fuego, Territorio</title>
+<g transform="translate(5 8)">
+  <circle cx="56" cy="56" r="43" fill="none" stroke="#A5432D" stroke-width="9" stroke-linecap="round" stroke-dasharray="238 32" transform="rotate(-18 56 56)"/>
+  <path d="M33 40h45M33 56h37M33 72h45" fill="none" stroke="#A5432D" stroke-width="8" stroke-linecap="round"/>
+</g>
+<text x="125" y="68" font-family="Arial Narrow, Helvetica, sans-serif" font-size="55" font-weight="900" letter-spacing="1.2" fill="#191817">EL ERRANTE</text>
+<text x="128" y="104" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="4.2" fill="#66645D">MASA · FUEGO · TERRITORIO</text>
+</svg>

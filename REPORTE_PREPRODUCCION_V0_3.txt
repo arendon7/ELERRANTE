@@ -1,0 +1,16 @@
+EL ERRANTE V0.3.0 — REPORTE DE PREPRODUCCIÓN
+==========================================================
+Public/admin HTML pages: 21
+Master products: 11
+WooCommerce import rows: 13
+Content inventory rows: 26
+WordPress PHP files linted: 12
+JavaScript syntax checks: PASS
+Detected issues: 0
+
+RESULTADO: PASS
+- No se detectaron referencias locales rotas.
+- app.js, preprod.js y service-worker.js superan validación sintáctica.
+- Todos los archivos PHP superan php -l.
+- Los importadores CSV fueron generados correctamente.
+- Las páginas de operación, Studio y migración están incluidas.

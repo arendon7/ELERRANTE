@@ -1,0 +1,61 @@
+name: Publicar demo en GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v6
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Preparar sitio público
+        shell: bash
+        run: |
+          mkdir -p _site
+          rsync -av ./ _site/ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '_site/' \
+            --exclude '__pycache__/' \
+            --exclude 'documentacion/' \
+            --exclude 'docs/' \
+            --exclude '*.command' \
+            --exclude '*.bat' \
+            --exclude '*.py' \
+            --exclude '*.zip' \
+            --exclude '*.txt' \
+            --exclude 'admin.html' \
+            --exclude 'control.html' \
+            --exclude 'operacion.html' \
+            --exclude 'studio.html' \
+            --exclude 'presentacion.html'
+          touch _site/.nojekyll
+
+      - name: Cargar artefacto de Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: "_site"
+
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4

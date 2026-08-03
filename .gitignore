@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+.demo_port
+
+# Local exports and temporary files
+*.log
+*.tmp
+*.bak
+exports/
+_site/
+
+# Compressed deliveries
+*.zip
+
+# Editor
+.vscode/
+.idea/

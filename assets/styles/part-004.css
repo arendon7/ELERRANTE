@@ -1,0 +1,110 @@
+
+.status-chip.danger{background:rgba(142,44,35,.12);color:var(--danger)}
+
+/* Cookie banner */
+.cookie-banner{
+  position:fixed;z-index:1400;left:18px;bottom:18px;width:min(520px,calc(100% - 36px));
+  padding:20px;border-radius:16px;background:var(--carbon);color:var(--cream);
+  box-shadow:var(--shadow);display:none
+}
+.cookie-banner.show{display:block}
+.cookie-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
+
+/* Footer */
+.site-footer{padding:72px 0 24px;background:var(--carbon);color:var(--cream)}
+.footer-grid{display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:38px}
+.footer-brand img{width:230px;filter:brightness(0) invert(1)}
+.footer-brand p{max-width:320px;color:rgba(242,236,225,.65);margin-top:16px}
+.footer-col h4{margin-bottom:15px}
+.footer-col a{display:block;margin:8px 0;color:rgba(242,236,225,.68)}
+.footer-col a:hover{color:var(--cream)}
+.footer-bottom{
+  display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  margin-top:55px;padding-top:20px;border-top:1px solid rgba(242,236,225,.14);
+  color:rgba(242,236,225,.54);font-size:.78rem
+}
+
+/* Toast */
+.toast{
+  position:fixed;z-index:1500;right:20px;bottom:20px;
+  max-width:360px;padding:15px 18px;border-radius:12px;
+  background:var(--carbon);color:var(--cream);box-shadow:var(--shadow);
+  transform:translateY(140%);opacity:0;transition:.25s
+}
+.toast.show{transform:none;opacity:1}
+
+/* Responsive */
+@media (max-width:1020px){
+  .header-inner{grid-template-columns:200px 1fr auto}
+  .main-nav{display:none}
+  .menu-toggle{display:grid}
+  .header-actions .btn{display:none}
+  .grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .split,.split.reverse,.product-detail,.checkout-layout{grid-template-columns:1fr}
+  .product-buy,.checkout-summary{position:static}
+  .footer-grid{grid-template-columns:1.4fr repeat(2,1fr)}
+  .admin-shell{grid-template-columns:1fr}
+  .admin-sidebar{position:static;height:auto}
+  .admin-nav{grid-template-columns:repeat(4,1fr)}
+  .admin-kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:720px){
+  :root{--container:min(100% - 24px,1180px)}
+  .header-inner{min-height:68px;grid-template-columns:1fr auto}
+  .brand img{width:188px}
+  .header-actions .account-button{display:none}
+  .hero{min-height:760px}
+  .hero-content{padding:95px 0 50px}
+  .section{padding:72px 0}
+  .section-tight{padding:52px 0}
+  .section-head{display:block}
+  .section-head p{margin-top:18px}
+  .grid-2,.grid-3,.grid-4,.product-grid,.form-grid,.footer-grid,.payment-options,.account-layout,.product-tabs{grid-template-columns:1fr}
+  .visual-card img{height:440px}
+  .visual-card.short img{height:360px}
+  .product-actions{display:grid}
+  .tab-nav{display:flex;overflow:auto}
+  .tab-btn{white-space:nowrap;border-left:0;border-bottom:3px solid transparent}
+  .timeline{grid-template-columns:1fr;gap:0}
+  .timeline-step{text-align:left;padding:8px 0 8px 40px}
+  .timeline-step::before{left:9px;top:10px}
+  .timeline-step::after{left:9px;top:-50%;width:2px;height:100%}
+  .admin-main{padding:18px}
+  .admin-kpis,.admin-grid{grid-template-columns:1fr}
+  .admin-nav{grid-template-columns:repeat(2,1fr)}
+  .footer-bottom{display:block}
+  .footer-bottom p{margin-bottom:7px}
+  .cookie-banner{left:10px;bottom:10px;width:calc(100% - 20px)}
+}
+
+
+/* V0.2 Experiencia Gold */
+.product-meta{display:flex;justify-content:space-between;gap:12px;margin:14px 0;color:var(--steel);font:700 .68rem/1 var(--mono);text-transform:uppercase}
+.option:disabled{opacity:.45;cursor:not-allowed}
+.search-panel{position:fixed;z-index:1350;inset:0;background:rgba(25,24,23,.96);color:var(--cream);opacity:0;visibility:hidden;transform:translateY(-12px);transition:.22s;overflow:auto}
+.search-panel.open{opacity:1;visibility:visible;transform:none}
+.search-inner{width:min(900px,calc(100% - 32px));margin:80px auto}
+.search-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.search-panel input{width:100%;padding:19px 0;border:0;border-bottom:2px solid rgba(242,236,225,.35);background:transparent;color:var(--cream);font:900 clamp(1.6rem,4vw,3rem)/1.1 var(--display)}
+.search-panel input:focus{outline:none;border-color:var(--terracotta)}
+.search-results{display:grid;gap:10px;margin-top:28px}
+.search-result{display:grid;gap:6px;padding:18px;border:1px solid rgba(242,236,225,.14);border-radius:12px}
+.search-result:hover{background:rgba(242,236,225,.07)}
+.search-result small{color:rgba(242,236,225,.65)}
+.trace-card{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:28px;padding:22px;border:1px solid var(--border);border-radius:12px;background:var(--paper)}
+.form-alert{margin-top:12px;padding:13px;border-radius:9px;font-weight:700}
+.form-alert.ok{background:rgba(46,106,79,.1);color:var(--success)}
+.form-alert.warn{background:rgba(155,104,43,.1);color:var(--warning)}
+.form-alert.danger{background:rgba(142,44,35,.1);color:var(--danger)}
+.success-screen{max-width:850px;margin:auto;text-align:center;padding:45px}
+.success-screen .lead{margin:22px auto}
+.recipe-modal{position:fixed;z-index:1420;inset:0;background:rgba(25,24,23,.76);display:none;place-items:center;padding:20px;overflow:auto}
+.recipe-modal.open{display:grid}
+.recipe-sheet{position:relative;width:min(850px,100%);max-height:92vh;overflow:auto;padding:38px;border-radius:var(--radius);background:var(--paper);box-shadow:var(--shadow)}
+.recipe-close{position:absolute;right:20px;top:20px}
+.recipe-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:28px 0}
+.recipe-metrics>div{padding:18px;border:1px solid var(--border);border-radius:12px;background:var(--cream)}
+.recipe-metrics small{display:block;color:var(--steel);font:700 .65rem/1 var(--mono);text-transform:uppercase;margin-bottom:10px}
+.recipe-metrics strong{font:900 1.5rem/1 var(--display)}
+.tool-layout{display:grid;grid-template-columns:.8fr 1.2fr;gap:34px;align-items:start}

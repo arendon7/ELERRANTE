@@ -1,0 +1,17 @@
+{
+  "name": "El Errante — Experiencia de Preproducción",
+  "short_name": "El Errante",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F2ECE1",
+  "theme_color": "#191817",
+  "description": "Demo técnica de ecommerce, contenidos, eventos y operación El Errante.",
+  "icons": [
+    {
+      "src": "assets/logo-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+EL ERRANTE V0.2.0 — REPORTE DE INTEGRIDAD
+================================================
+HTML pages: 17
+Products in master data: 11
+Recipes: 5
+Coverage zones: 6
+Node JS syntax check: PASS
+Broken local asset references: 0
+
+RESULTADO: PASS
+- No se detectaron referencias locales rotas.
+- Las relaciones de productos son válidas.
+- app.js supera validación sintáctica.
+- Las páginas públicas y administrativas obligatorias existen.

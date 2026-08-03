@@ -10,6 +10,7 @@
     ["assets/images/v6-harina-aire-tiempo.svg","assets/images/v040/v040-harina-empaques.svg"],
     ["assets/images/harina-packshot.svg","assets/images/v040/v040-harina-empaques.svg"],
     ["assets/images/harina-manos.svg","assets/images/v040/v040-harina-empaques.svg"],
+    ["assets/images/v6-la-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
     ["assets/images/pizza-la-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
     ["assets/images/pizza-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
     ["assets/images/pizzeria-movil.svg","assets/images/v040/v040-pizzeria-movil.svg"],
@@ -19,20 +20,15 @@
 
   async function refreshPublicRuntime(){
     if(!hosted) return;
-
     try{
       if("caches" in window){
         const keys=await caches.keys();
-        await Promise.all(keys
-          .filter(key=>key.startsWith(CACHE_PREFIX)&&key!==ACTIVE_CACHE)
-          .map(key=>caches.delete(key)));
+        await Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==ACTIVE_CACHE).map(key=>caches.delete(key)));
       }
-
       if("serviceWorker" in navigator){
         const registration=await navigator.serviceWorker.register("./service-worker.js",{updateViaCache:"none"});
         await registration.update();
       }
-
       localStorage.setItem("ee_public_version",PUBLIC_VERSION);
     }catch(error){
       console.warn("No fue posible actualizar la caché pública de El Errante.",error);
@@ -58,7 +54,6 @@
         image.dataset.visualBaseline="v0.4";
       }
     });
-
     root.querySelectorAll("source[srcset]").forEach(source=>{
       const current=source.getAttribute("srcset");
       const replacement=VISUAL_MAP.get(current);
@@ -80,14 +75,12 @@
   function enhancePublicUI(){
     const page=document.body?.dataset?.page||"";
     const isInternal=INTERNAL_PAGES.has(page);
-
     recoverVisualAssets();
     observeDynamicVisuals();
 
     if(hosted){
       document.documentElement.dataset.eeMode=isInternal?"team-demo":"public";
       document.documentElement.dataset.eeVersion=PUBLIC_VERSION;
-
       if(!isInternal){
         document.querySelectorAll(".local-runtime-badge,[data-internal-only],.internal-only").forEach(el=>el.remove());
         document.querySelectorAll(".demo-badge").forEach(el=>{
@@ -100,11 +93,9 @@
     const desktop=document.querySelector(".main-nav");
     addNavigationLink(desktop,'a[href="historia.html"]',"Historia","historia.html",'a[href="bitacora.html"]');
     addNavigationLink(desktop,'a[href="equipo.html"]',"Equipo","equipo.html",null);
-
     const mobile=document.querySelector(".mobile-drawer .drawer-list");
     addNavigationLink(mobile,'a[href="historia.html"]',"Historia","historia.html",'a[href="bitacora.html"]',"btn btn-outline");
     addNavigationLink(mobile,'a[href="equipo.html"]',"Equipo","equipo.html",null,"btn btn-outline");
-
     if(page==="historia") document.querySelectorAll('a[href="historia.html"]').forEach(link=>link.classList.add("active"));
     if(page==="equipo") document.querySelectorAll('a[href="equipo.html"]').forEach(link=>link.classList.add("active"));
   }

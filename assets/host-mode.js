@@ -2,8 +2,20 @@
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
   const PUBLIC_VERSION="0.6.1";
   const CACHE_PREFIX="el-errante-";
-  const ACTIVE_CACHE="el-errante-v0-6-3";
+  const ACTIVE_CACHE="el-errante-v0-6-4";
   const INTERNAL_PAGES=new Set(["equipo","admin","control","operacion","studio","presentacion"]);
+  const VISUAL_MAP=new Map([
+    ["assets/images/hero-desktop.svg","assets/images/v040/v040-hero-desktop.svg"],
+    ["assets/images/hero-mobile.svg","assets/images/v040/v040-hero-mobile.svg"],
+    ["assets/images/v6-harina-aire-tiempo.svg","assets/images/v040/v040-harina-empaques.svg"],
+    ["assets/images/harina-packshot.svg","assets/images/v040/v040-harina-empaques.svg"],
+    ["assets/images/harina-manos.svg","assets/images/v040/v040-harina-empaques.svg"],
+    ["assets/images/pizza-la-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
+    ["assets/images/pizza-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
+    ["assets/images/pizzeria-movil.svg","assets/images/v040/v040-pizzeria-movil.svg"],
+    ["assets/images/eventos-noche-gold.svg","assets/images/v040/v040-pizzeria-movil.svg"],
+    ["assets/images/evento-operacion-gold.svg","assets/images/v040/v040-pizzeria-movil.svg"]
+  ]);
 
   async function refreshPublicRuntime(){
     if(!hosted) return;
@@ -37,9 +49,40 @@
     container.insertBefore(link,before||null);
   }
 
+  function recoverVisualAssets(root=document){
+    root.querySelectorAll("img[src]").forEach(image=>{
+      const source=image.getAttribute("src");
+      const replacement=VISUAL_MAP.get(source);
+      if(replacement){
+        image.setAttribute("src",replacement);
+        image.dataset.visualBaseline="v0.4";
+      }
+    });
+
+    root.querySelectorAll("source[srcset]").forEach(source=>{
+      const current=source.getAttribute("srcset");
+      const replacement=VISUAL_MAP.get(current);
+      if(replacement) source.setAttribute("srcset",replacement);
+    });
+  }
+
+  function observeDynamicVisuals(){
+    const observer=new MutationObserver(records=>{
+      records.forEach(record=>record.addedNodes.forEach(node=>{
+        if(node.nodeType!==Node.ELEMENT_NODE) return;
+        if(node.matches?.("img[src],source[srcset]")) recoverVisualAssets(node.parentElement||document);
+        else recoverVisualAssets(node);
+      }));
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
+  }
+
   function enhancePublicUI(){
     const page=document.body?.dataset?.page||"";
     const isInternal=INTERNAL_PAGES.has(page);
+
+    recoverVisualAssets();
+    observeDynamicVisuals();
 
     if(hosted){
       document.documentElement.dataset.eeMode=isInternal?"team-demo":"public";

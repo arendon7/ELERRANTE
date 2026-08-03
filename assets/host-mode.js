@@ -2,7 +2,7 @@
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
   const PUBLIC_VERSION="0.6.1";
   const CACHE_PREFIX="el-errante-";
-  const ACTIVE_CACHE="el-errante-v0-6-6";
+  const ACTIVE_CACHE="el-errante-v0-6-7";
   const INTERNAL_PAGES=new Set(["equipo","admin","control","operacion","studio","presentacion"]);
   const VISUAL_MAP=new Map([
     ["assets/images/hero-desktop.svg","assets/images/v040/v040-hero-desktop.svg"],

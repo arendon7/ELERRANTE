@@ -1,11 +1,11 @@
 {
-  "name": "El Errante — Experiencia de Preproducción",
+  "name": "El Errante — Masa, Fuego y Territorio",
   "short_name": "El Errante",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F2ECE1",
   "theme_color": "#191817",
-  "description": "Demo técnica de ecommerce, contenidos, eventos y operación El Errante.",
+  "description": "Masa propia, pizzas para terminar en casa y una pizzería móvil desarrollada en Colombia.",
   "icons": [
     {
       "src": "assets/logo-mark.svg",

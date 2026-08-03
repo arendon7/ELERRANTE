@@ -1,7 +1,9 @@
-name: Publicar El Errante en GitHub Pages
+name: Validar y publicar El Errante
 
 on:
   push:
+    branches: ["main"]
+  pull_request:
     branches: ["main"]
   workflow_dispatch:
 
@@ -11,11 +13,24 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
+  validate:
+    name: Regresión integral
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Ejecutar barrera de regresión integral
+        run: python3 verificar_demo.py
+
   deploy:
+    name: Publicar GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -37,6 +52,8 @@ jobs:
             --exclude '.github/' \
             --exclude '_site/' \
             --exclude '__pycache__/'
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-6\nupdated=%s\n' \
+            "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
 
       - name: Verificar versión pública, demo integral y visuales recuperados
@@ -44,6 +61,8 @@ jobs:
         run: |
           test -f _site/deploy-version.txt
           grep -q 'version=0.6.1' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v0-6-6' _site/deploy-version.txt
+          grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           test -f _site/assets/products-v6.js
           test -f _site/equipo.html
@@ -67,13 +86,16 @@ jobs:
             v040-pizza-errante.svg \
             v040-despensa.svg \
             v040-aplicaciones-empaque.svg \
-            v040-pizzeria-movil.svg; do
+            v040-pizzeria-movil.svg \
+            v040-bitacora-fuego.svg \
+            v040-pizzas-artesanales.svg \
+            v040-pizzas-coleccion.svg; do
               test -f "_site/assets/images/v040/$asset"
           done
           grep -q 'VISUAL_MAP' _site/assets/host-mode.js
-          grep -q 'v040-alveolos.svg' _site/assets/host-mode.js
-          grep -q 'v040-despensa.svg' _site/assets/host-mode.js
-          grep -q 'el-errante-v0-6-5' _site/service-worker.js
+          grep -q 'v040-bitacora-fuego.svg' _site/assets/host-mode.js
+          grep -q 'v040-pizzas-coleccion.svg' _site/assets/host-mode.js
+          grep -q 'el-errante-v0-6-6' _site/service-worker.js
 
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4

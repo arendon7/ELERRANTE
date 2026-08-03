@@ -1,4 +1,4 @@
-const CACHE = 'el-errante-v0-6-5';
+const CACHE = 'el-errante-v0-6-6';
 const CORE = [
   './index.html','./historia.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
@@ -13,6 +13,8 @@ const CORE = [
   './assets/images/v040/v040-fermentacion.svg','./assets/images/v040/v040-pizza-neo.svg',
   './assets/images/v040/v040-pizza-errante.svg','./assets/images/v040/v040-despensa.svg',
   './assets/images/v040/v040-aplicaciones-empaque.svg','./assets/images/v040/v040-pizzeria-movil.svg',
+  './assets/images/v040/v040-bitacora-fuego.svg','./assets/images/v040/v040-pizzas-artesanales.svg',
+  './assets/images/v040/v040-pizzas-coleccion.svg',
   './assets/logo-mark.svg','./assets/logo-lockup.svg','./offline.html','./deploy-version.txt'
 ];
 

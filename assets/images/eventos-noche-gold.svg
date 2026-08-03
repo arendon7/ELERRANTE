@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="t d">
+<title id="t">Pizzería móvil El Errante en un evento nocturno</title><desc id="d">Unidad móvil terracota con horno encendido, luces cálidas y servicio de pizza en vivo.</desc>
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#11100f"/><stop offset=".62" stop-color="#27201c"/><stop offset="1" stop-color="#191817"/></linearGradient>
+  <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bd5338"/><stop offset=".6" stop-color="#A5432D"/><stop offset="1" stop-color="#742b20"/></linearGradient>
+  <radialGradient id="fire"><stop stop-color="#ffe4a8"/><stop offset=".35" stop-color="#ef943c"/><stop offset=".75" stop-color="#A5432D"/><stop offset="1" stop-color="#3e1710"/></radialGradient>
+  <filter id="s"><feDropShadow dx="0" dy="24" stdDeviation="20" flood-opacity=".48"/></filter>
+  <filter id="g"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<rect width="1200" height="900" fill="url(#sky)"/>
+<circle cx="920" cy="150" r="190" fill="#A5432D" opacity=".12" filter="url(#g)"/>
+<g stroke="#C5A36A" stroke-width="3" opacity=".6"><path d="M20 110c330 70 710 80 1160 15"/></g>
+<g fill="#f5d89d"><circle cx="80" cy="120" r="8"/><circle cx="210" cy="142" r="8"/><circle cx="350" cy="160" r="8"/><circle cx="500" cy="169" r="8"/><circle cx="660" cy="168" r="8"/><circle cx="820" cy="160" r="8"/><circle cx="975" cy="145" r="8"/><circle cx="1110" cy="128" r="8"/></g>
+<path d="M0 680c250-60 515-42 780 4 190 33 330 28 420 4v212H0z" fill="#11100f"/>
+<g transform="translate(150 225)" filter="url(#s)">
+  <path d="M80 310h750l90 190H150z" fill="#272321" stroke="#C5A36A" stroke-width="6"/>
+  <path d="M165 105h530c64 0 115 51 115 115v250H85V185c0-44 36-80 80-80z" fill="url(#body)" stroke="#191817" stroke-width="12"/>
+  <path d="M85 185h-55v205h55" fill="#A5432D" stroke="#191817" stroke-width="12"/>
+  <path d="M705 245h145l65 115H705z" fill="#d9c8af" stroke="#191817" stroke-width="10"/>
+  <rect x="170" y="185" width="245" height="185" rx="16" fill="#100e0d" stroke="#191817" stroke-width="10"/>
+  <ellipse cx="292" cy="288" rx="95" ry="72" fill="url(#fire)" filter="url(#g)" opacity=".9"/>
+  <path d="M245 340c24-90 55-104 74-180 34 56 22 93 60 135 31 35 20 73-14 91h-87c-44-20-51-56-33-46z" fill="url(#fire)"/>
+  <rect x="465" y="175" width="185" height="205" rx="10" fill="#F2ECE1"/>
+  <circle cx="557" cy="245" r="48" fill="none" stroke="#A5432D" stroke-width="10" stroke-dasharray="265 36" transform="rotate(-18 557 245)"/>
+  <path d="M526 226h62M526 245h50M526 264h62" stroke="#A5432D" stroke-width="9" stroke-linecap="round"/>
+  <text x="487" y="338" font-family="Arial Narrow,Arial,sans-serif" font-weight="900" font-size="34" letter-spacing="2" fill="#191817">EL ERRANTE</text>
+  <circle cx="230" cy="500" r="72" fill="#0d0c0b" stroke="#66645D" stroke-width="18"/><circle cx="230" cy="500" r="24" fill="#C5A36A"/>
+  <circle cx="710" cy="500" r="72" fill="#0d0c0b" stroke="#66645D" stroke-width="18"/><circle cx="710" cy="500" r="24" fill="#C5A36A"/>
+</g>
+<g fill="#0a0908" opacity=".96"><circle cx="120" cy="600" r="42"/><path d="M82 650h78l18 150H66z"/><circle cx="1080" cy="585" r="42"/><path d="M1042 635h78l18 165h-112z"/><circle cx="970" cy="635" r="32"/><path d="M940 672h60l10 128h-80z"/></g>
+<g fill="#F2ECE1" opacity=".8"><ellipse cx="120" cy="555" rx="22" ry="10"/><ellipse cx="1080" cy="540" rx="22" ry="10"/></g>
+<path d="M90 815c315 30 710 27 1020-8" stroke="#C5A36A" stroke-width="5" opacity=".5"/>
+</svg>

@@ -1,0 +1,51 @@
+name: Refinar suite funcional v0.8
+
+on:
+  push:
+    branches: ["test/v0.8-regresion-funcional"]
+    paths:
+      - "scripts/refinar_suite_funcional_v08.py"
+      - ".github/workflows/refine-functional-suite-v08.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: test/v0.8-regresion-funcional
+          fetch-depth: 0
+
+      - name: Aplicar refinamiento
+        run: python3 scripts/refinar_suite_funcional_v08.py
+
+      - name: Confirmar suite en la rama
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/e2e/experiencia.spec.js
+          if ! git diff --cached --quiet; then
+            git commit -m "test: refina regresión funcional v0.8"
+            git push origin HEAD:test/v0.8-regresion-funcional
+          fi
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Ejecutar suite refinada
+        run: npm run test:e2e

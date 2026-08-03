@@ -1,0 +1,88 @@
+name: Finalizar certificación funcional v0.8
+
+on:
+  push:
+    branches: ["test/v0.8-regresion-funcional"]
+    paths:
+      - ".github/workflows/finalize-functional-v08.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: test/v0.8-regresion-funcional
+          fetch-depth: 0
+
+      - name: Exigir certificado previo
+        run: grep -q 'status: `PASS`' documentacion/FUNCTIONAL_TEST_CERTIFICATE.md
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias y Chromium
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Repetir regresión funcional completa
+        run: npm run test:e2e
+
+      - name: Crear marcador final y retirar automatizaciones temporales
+        run: |
+          cat > documentacion/FUNCTIONAL_FINAL_READY.md <<'EOF'
+          # Regresión funcional final v0.8
+
+          status: `PASS`
+
+          La suite Playwright completa fue ejecutada nuevamente antes de cerrar la rama.
+
+          ## Alcance certificado
+
+          - Chromium de escritorio.
+          - Chromium con perfil móvil Pixel 7.
+          - Fuente canónica y ausencia de solicitudes a chunks heredados.
+          - Inicio, Tienda y fichas dinámicas.
+          - Carrito y checkout.
+          - Cotización de eventos.
+          - Superficies públicas principales.
+          - Equipo, Administración, Control, Operación, Studio y Presentación.
+          - Menú móvil.
+          - Errores JavaScript, consola y recursos locales fallidos.
+
+          ## Artefactos permanentes
+
+          - `package.json`.
+          - `playwright.config.js`.
+          - `tests/e2e/experiencia.spec.js`.
+          - `.github/workflows/functional-regression.yml`.
+          - `documentacion/FUNCTIONAL_TEST_CERTIFICATE.md`.
+
+          Las automatizaciones auxiliares usadas para diagnóstico y certificación fueron retiradas de la rama final.
+          EOF
+
+          rm -f .github/workflows/functional-diagnostic-v08.yml
+          rm -f .github/workflows/refine-functional-suite-v08.yml
+          rm -f .github/workflows/certify-functional-v08.yml
+          rm -f .github/workflows/cleanup-functional-v08.yml
+          rm -f .github/workflows/finalize-functional-v08.yml
+          rm -f scripts/refinar_suite_funcional_v08.py
+
+      - name: Confirmar resultado final
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A .github/workflows scripts/refinar_suite_funcional_v08.py \
+            documentacion/FUNCTIONAL_FINAL_READY.md
+          git commit -m "test: finaliza regresión funcional v0.8"
+          git push origin HEAD:test/v0.8-regresion-funcional

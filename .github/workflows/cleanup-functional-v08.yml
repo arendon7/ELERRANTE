@@ -1,0 +1,57 @@
+name: Limpiar automatizaciones funcionales v0.8
+
+on:
+  push:
+    branches: ["test/v0.8-regresion-funcional"]
+    paths:
+      - ".github/workflows/cleanup-functional-v08.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: test/v0.8-regresion-funcional
+          fetch-depth: 0
+
+      - name: Confirmar certificado
+        run: grep -q 'status: `PASS`' documentacion/FUNCTIONAL_TEST_CERTIFICATE.md
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias y Chromium
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Repetir suite completa
+        run: npm run test:e2e
+
+      - name: Retirar automatizaciones transitorias
+        run: |
+          rm -f .github/workflows/functional-diagnostic-v08.yml
+          rm -f .github/workflows/refine-functional-suite-v08.yml
+          rm -f .github/workflows/certify-functional-v08.yml
+          rm -f .github/workflows/cleanup-functional-v08.yml
+          rm -f scripts/refinar_suite_funcional_v08.py
+
+      - name: Confirmar limpieza
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A .github/workflows scripts/refinar_suite_funcional_v08.py
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: retira automatizaciones funcionales temporales"
+            git push origin HEAD:test/v0.8-regresion-funcional
+          fi

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="t d">
+<title id="t">Pizza El Errante junto al fuego</title><desc id="d">Escena editorial de una pizza artesanal frente a un horno encendido, con masa, harina y luz cálida.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0f0e0d"/><stop offset=".55" stop-color="#241c18"/><stop offset="1" stop-color="#191817"/></linearGradient>
+  <radialGradient id="fire" cx="50%" cy="55%"><stop stop-color="#ffd78e"/><stop offset=".35" stop-color="#ef8a35"/><stop offset=".72" stop-color="#A5432D"/><stop offset="1" stop-color="#3d1710"/></radialGradient>
+  <radialGradient id="dough" cx="42%" cy="38%"><stop stop-color="#f4d9a6"/><stop offset=".65" stop-color="#d3a05e"/><stop offset="1" stop-color="#8a572e"/></radialGradient>
+  <linearGradient id="tomato" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#cb4d37"/><stop offset="1" stop-color="#7E2F20"/></linearGradient>
+  <filter id="shadow"><feDropShadow dx="0" dy="30" stdDeviation="24" flood-color="#000" flood-opacity=".55"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="18"/></filter>
+  <pattern id="grain" width="90" height="90" patternUnits="userSpaceOnUse"><circle cx="12" cy="22" r="1.2" fill="#F2ECE1" opacity=".16"/><circle cx="58" cy="64" r="1" fill="#F2ECE1" opacity=".12"/><circle cx="78" cy="16" r=".8" fill="#F2ECE1" opacity=".13"/></pattern>
+</defs>
+<rect width="1600" height="1000" fill="url(#bg)"/>
+<rect width="1600" height="1000" fill="url(#grain)" opacity=".7"/>
+<ellipse cx="1290" cy="430" rx="350" ry="360" fill="#A5432D" opacity=".17" filter="url(#glow)"/>
+<path d="M1070 105h410v550h-410z" fill="#0d0c0b" stroke="#3b2c25" stroke-width="14"/>
+<path d="M1115 175h320v420h-320z" fill="#150f0d"/>
+<ellipse cx="1278" cy="500" rx="195" ry="125" fill="url(#fire)" filter="url(#glow)" opacity=".95"/>
+<path d="M1185 565c45-160 105-160 132-300 58 95 23 142 88 222 48 59 24 135-32 165h-167c-64-27-82-90-21-87z" fill="url(#fire)"/>
+<path d="M0 770c310-95 565-94 855-20 300 77 493 62 745-13v263H0z" fill="#121110"/>
+<g transform="translate(230 435) rotate(-6 410 300)" filter="url(#shadow)">
+  <ellipse cx="430" cy="330" rx="395" ry="260" fill="#0c0b0a" opacity=".5"/>
+  <ellipse cx="410" cy="285" rx="375" ry="260" fill="url(#dough)"/>
+  <ellipse cx="410" cy="285" rx="325" ry="215" fill="url(#tomato)"/>
+  <g fill="#F2ECE1"><ellipse cx="260" cy="215" rx="74" ry="52"/><ellipse cx="465" cy="170" rx="68" ry="49"/><ellipse cx="585" cy="315" rx="80" ry="55"/><ellipse cx="342" cy="365" rx="72" ry="46"/></g>
+  <g fill="#7E2F20"><circle cx="330" cy="170" r="35"/><circle cx="535" cy="245" r="42"/><circle cx="250" cy="350" r="38"/><circle cx="635" cy="205" r="31"/><circle cx="430" cy="300" r="37"/></g>
+  <g fill="none" stroke="#8e562f" stroke-width="18" stroke-linecap="round" opacity=".95"><path d="M180 250c80-60 135 75 205 5"/><path d="M420 390c70-75 135 40 210-25"/></g>
+  <g fill="#48623e"><ellipse cx="215" cy="170" rx="14" ry="33" transform="rotate(-28 215 170)"/><ellipse cx="470" cy="245" rx="14" ry="34" transform="rotate(46 470 245)"/><ellipse cx="585" cy="390" rx="13" ry="31" transform="rotate(12 585 390)"/></g>
+  <path d="M180 170c110-70 315-95 475 10" fill="none" stroke="#f7c782" stroke-width="12" opacity=".55"/>
+</g>
+<g opacity=".7"><circle cx="180" cy="300" r="4" fill="#F2ECE1"/><circle cx="225" cy="255" r="3" fill="#F2ECE1"/><circle cx="275" cy="315" r="2.5" fill="#F2ECE1"/><circle cx="340" cy="245" r="3" fill="#F2ECE1"/><circle cx="370" cy="310" r="2" fill="#F2ECE1"/></g>
+<g transform="translate(1260 760)" opacity=".82"><circle cx="0" cy="0" r="82" fill="none" stroke="#A5432D" stroke-width="14" stroke-dasharray="450 68" transform="rotate(-18)"/><path d="M-42-28h84M-42 0h68M-42 28h84" stroke="#A5432D" stroke-width="13" stroke-linecap="round"/></g>
+<rect x="0" y="0" width="1600" height="1000" fill="url(#bg)" opacity=".08"/>
+</svg>

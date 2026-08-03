@@ -1,7 +1,9 @@
-name: Publicar El Errante en GitHub Pages
+name: Validar y publicar El Errante
 
 on:
   push:
+    branches: ["main"]
+  pull_request:
     branches: ["main"]
   workflow_dispatch:
 
@@ -11,11 +13,24 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
+  validate:
+    name: Regresión integral
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Ejecutar barrera de regresión integral
+        run: python3 verificar_demo.py
+
   deploy:
+    name: Publicar GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -24,9 +39,6 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-
-      - name: Ejecutar barrera de regresión integral
-        run: python3 verificar_demo.py
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5

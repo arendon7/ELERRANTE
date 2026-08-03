@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" role="img" aria-labelledby="t d">
+<title id="t">Pizza El Errante junto al fuego</title><desc id="d">Composición vertical de pizza artesanal, masa y horno encendido.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0e0d0c"/><stop offset=".52" stop-color="#241b17"/><stop offset="1" stop-color="#191817"/></linearGradient>
+  <radialGradient id="fire"><stop stop-color="#ffd58a"/><stop offset=".35" stop-color="#ed8734"/><stop offset=".72" stop-color="#A5432D"/><stop offset="1" stop-color="#3a150f"/></radialGradient>
+  <radialGradient id="dough" cx="42%" cy="35%"><stop stop-color="#f1d39a"/><stop offset=".68" stop-color="#cf9956"/><stop offset="1" stop-color="#84502b"/></radialGradient>
+  <filter id="s"><feDropShadow dx="0" dy="26" stdDeviation="22" flood-opacity=".58"/></filter>
+  <filter id="g"><feGaussianBlur stdDeviation="20"/></filter>
+</defs>
+<rect width="900" height="1200" fill="url(#bg)"/>
+<ellipse cx="670" cy="330" rx="285" ry="285" fill="#A5432D" opacity=".2" filter="url(#g)"/>
+<path d="M510 55h330v520H510z" fill="#0b0a09" stroke="#3b2b25" stroke-width="12"/>
+<ellipse cx="675" cy="445" rx="155" ry="105" fill="url(#fire)" filter="url(#g)"/>
+<path d="M575 520c40-135 85-165 118-290 42 85 31 137 85 198 47 54 39 111-7 148H615c-66-28-74-88-40-56z" fill="url(#fire)"/>
+<g transform="translate(40 470) rotate(-8 380 320)" filter="url(#s)">
+  <ellipse cx="380" cy="330" rx="350" ry="245" fill="url(#dough)"/>
+  <ellipse cx="380" cy="330" rx="300" ry="200" fill="#a43e2e"/>
+  <g fill="#F2ECE1"><ellipse cx="230" cy="275" rx="66" ry="47"/><ellipse cx="430" cy="220" rx="67" ry="45"/><ellipse cx="535" cy="385" rx="71" ry="48"/><ellipse cx="335" cy="430" rx="66" ry="43"/></g>
+  <g fill="#7E2F20"><circle cx="302" cy="218" r="34"/><circle cx="490" cy="308" r="39"/><circle cx="240" cy="410" r="35"/><circle cx="565" cy="250" r="30"/><circle cx="392" cy="355" r="35"/></g>
+  <g fill="none" stroke="#8c542d" stroke-width="17" stroke-linecap="round"><path d="M155 335c76-63 123 55 199 0"/><path d="M395 445c71-64 125 38 190-25"/></g>
+  <g fill="#49633c"><ellipse cx="205" cy="215" rx="13" ry="31" transform="rotate(-28 205 215)"/><ellipse cx="435" cy="330" rx="13" ry="31" transform="rotate(48 435 330)"/><ellipse cx="542" cy="455" rx="13" ry="29" transform="rotate(12 542 455)"/></g>
+</g>
+<path d="M0 1010c205-80 438-63 900-155v345H0z" fill="#11100f" opacity=".96"/>
+<g transform="translate(710 1010)" opacity=".78"><circle r="70" fill="none" stroke="#A5432D" stroke-width="12" stroke-dasharray="384 58" transform="rotate(-18)"/><path d="M-36-24h72M-36 0h58M-36 24h72" stroke="#A5432D" stroke-width="11" stroke-linecap="round"/></g>
+</svg>

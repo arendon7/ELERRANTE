@@ -53,13 +53,27 @@ jobs:
           test -f _site/studio.html
           test -f _site/presentacion.html
           test -f _site/documentacion/ACCESOS_DEMO.md
-          test -f _site/assets/images/v040/v040-hero-desktop.svg
-          test -f _site/assets/images/v040/v040-hero-mobile.svg
-          test -f _site/assets/images/v040/v040-harina-empaques.svg
-          test -f _site/assets/images/v040/v040-pizza-errante.svg
-          test -f _site/assets/images/v040/v040-pizzeria-movil.svg
+          for asset in \
+            v040-hero-desktop.svg \
+            v040-hero-mobile.svg \
+            v040-harina-empaques.svg \
+            v040-harina-manos.svg \
+            v040-harina-horno.svg \
+            v040-manos-masa.svg \
+            v040-masa-apertura.svg \
+            v040-alveolos.svg \
+            v040-fermentacion.svg \
+            v040-pizza-neo.svg \
+            v040-pizza-errante.svg \
+            v040-despensa.svg \
+            v040-aplicaciones-empaque.svg \
+            v040-pizzeria-movil.svg; do
+              test -f "_site/assets/images/v040/$asset"
+          done
           grep -q 'VISUAL_MAP' _site/assets/host-mode.js
-          grep -q 'el-errante-v0-6-4' _site/service-worker.js
+          grep -q 'v040-alveolos.svg' _site/assets/host-mode.js
+          grep -q 'v040-despensa.svg' _site/assets/host-mode.js
+          grep -q 'el-errante-v0-6-5' _site/service-worker.js
 
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4

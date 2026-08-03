@@ -1,0 +1,112 @@
+name: Certificar regresión funcional v0.8
+
+on:
+  push:
+    branches: ["test/v0.8-regresion-funcional"]
+    paths:
+      - "package.json"
+      - "playwright.config.js"
+      - "tests/e2e/**"
+      - ".github/workflows/certify-functional-v08.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "certify-functional-v08"
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: test/v0.8-regresion-funcional
+          fetch-depth: 0
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Ejecutar suite completa
+        run: npx playwright test --reporter=json > functional-certificate-results.json
+
+      - name: Generar certificado determinista
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path('functional-certificate-results.json').read_text(encoding='utf-8'))
+          passed = failed = skipped = 0
+          projects = set()
+
+          def walk(suite):
+              global passed, failed, skipped
+              for spec in suite.get('specs', []):
+                  for test in spec.get('tests', []):
+                      projects.add(test.get('projectName', 'unknown'))
+                      results = test.get('results', [])
+                      status = (results[-1].get('status') if results else test.get('status')) or 'unknown'
+                      if status == 'passed':
+                          passed += 1
+                      elif status == 'skipped':
+                          skipped += 1
+                      else:
+                          failed += 1
+              for child in suite.get('suites', []):
+                  walk(child)
+
+          for suite in report.get('suites', []):
+              walk(suite)
+
+          assert failed == 0, f'No se certifica una suite con {failed} fallos'
+          assert {'desktop-chromium', 'mobile-chromium'} <= projects, projects
+          total = passed + failed + skipped
+          content = f'''# Certificado de regresión funcional v0.8
+
+status: `PASS`
+
+- Total: {total}.
+- Aprobadas: {passed}.
+- Fallidas: {failed}.
+- Omitidas: {skipped}.
+- Perfiles: `desktop-chromium`, `mobile-chromium`.
+
+## Cobertura
+
+- Fuente canónica y ausencia de chunks heredados.
+- Inicio, Tienda y ficha dinámica.
+- Carrito y checkout.
+- Cotización de eventos.
+- Historia, En Casa, Bitácora, Recetas, Herramientas, Cobertura, Ayuda, Cuenta y Nosotros.
+- Equipo, Administración, Control, Operación, Studio y Presentación.
+- Menú móvil.
+- Excepciones JavaScript, errores de consola y recursos locales fallidos.
+
+Este archivo solo se genera cuando la suite Playwright completa termina sin fallos.
+'''
+          Path('documentacion/FUNCTIONAL_TEST_CERTIFICATE.md').write_text(content, encoding='utf-8')
+          PY
+
+      - name: Confirmar certificado
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add documentacion/FUNCTIONAL_TEST_CERTIFICATE.md
+          if ! git diff --cached --quiet; then
+            git commit -m "test: certifica regresión funcional v0.8"
+            git push origin HEAD:test/v0.8-regresion-funcional
+          fi

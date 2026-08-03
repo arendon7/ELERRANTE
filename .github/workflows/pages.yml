@@ -52,6 +52,8 @@ jobs:
             --exclude '.github/' \
             --exclude '_site/' \
             --exclude '__pycache__/'
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-6\nupdated=%s\n' \
+            "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
 
       - name: Verificar versión pública, demo integral y visuales recuperados
@@ -59,6 +61,8 @@ jobs:
         run: |
           test -f _site/deploy-version.txt
           grep -q 'version=0.6.1' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v0-6-6' _site/deploy-version.txt
+          grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           test -f _site/assets/products-v6.js
           test -f _site/equipo.html

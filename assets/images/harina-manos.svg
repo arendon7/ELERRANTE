@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="t d">
+<title id="t">Masa trabajada a mano</title><desc id="d">Manos abriendo una masa sobre una mesa enharinada, con luz cálida de taller.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#30251f"/><stop offset="1" stop-color="#171513"/></linearGradient>
+  <linearGradient id="wood" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#7b5637"/><stop offset=".45" stop-color="#b18456"/><stop offset="1" stop-color="#68472e"/></linearGradient>
+  <radialGradient id="dough" cx="45%" cy="40%"><stop stop-color="#f4dfb8"/><stop offset=".7" stop-color="#d7ae72"/><stop offset="1" stop-color="#ae7a42"/></radialGradient>
+  <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d7a16e"/><stop offset=".5" stop-color="#b9784f"/><stop offset="1" stop-color="#7f4d34"/></linearGradient>
+  <filter id="s"><feDropShadow dx="0" dy="22" stdDeviation="18" flood-opacity=".42"/></filter>
+  <filter id="blur"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="1200" height="900" fill="url(#bg)"/>
+<circle cx="940" cy="140" r="210" fill="#A5432D" opacity=".16" filter="url(#blur)"/>
+<path d="M0 470L1200 390v510H0z" fill="url(#wood)"/>
+<g opacity=".18" stroke="#2d2018" stroke-width="7"><path d="M0 610c270-68 540-52 1200-128"/><path d="M0 760c330-60 700-48 1200-94"/></g>
+<ellipse cx="610" cy="650" rx="360" ry="175" fill="#1a1410" opacity=".3"/>
+<path d="M300 620c95-155 254-230 430-195 110 22 205 95 268 215-101 117-218 173-357 165-155-9-268-65-341-185z" fill="url(#dough)" filter="url(#s)"/>
+<path d="M356 610c112-104 244-146 388-115 76 16 144 54 196 112-79 58-178 86-296 82-124-5-220-31-288-79z" fill="#f1d8aa" opacity=".55"/>
+<g filter="url(#s)">
+  <path d="M50 205c150 40 258 118 330 232 35 55 52 113 45 175l-132 26c-12-71-43-130-92-177-57-56-128-95-214-117z" fill="url(#skin)"/>
+  <path d="M1150 150c-148 56-250 143-309 262-30 60-40 120-26 180l137 14c4-73 28-135 72-187 52-61 118-108 202-139z" fill="url(#skin)"/>
+  <path d="M330 530c58-35 113-42 166-21l-41 116c-54-6-102 4-145 31z" fill="#b8744d"/>
+  <path d="M870 508c-60-28-116-28-166-2l51 112c53-11 102-5 147 18z" fill="#b8744d"/>
+</g>
+<g fill="#F2ECE1" opacity=".72"><circle cx="215" cy="455" r="8"/><circle cx="270" cy="510" r="5"/><circle cx="335" cy="450" r="6"/><circle cx="915" cy="438" r="7"/><circle cx="865" cy="500" r="5"/><circle cx="970" cy="485" r="6"/><circle cx="530" cy="375" r="5"/><circle cx="620" cy="345" r="4"/><circle cx="700" cy="388" r="5"/></g>
+<path d="M265 805c168 25 446 24 664-5" stroke="#C5A36A" stroke-width="5" opacity=".55"/>
+<g transform="translate(1020 745)" opacity=".7"><circle r="62" fill="none" stroke="#A5432D" stroke-width="10" stroke-dasharray="340 48" transform="rotate(-18)"/><path d="M-31-20h62M-31 0h50M-31 20h62" stroke="#A5432D" stroke-width="9" stroke-linecap="round"/></g>
+</svg>

@@ -1,4 +1,4 @@
-name: Publicar demo en GitHub Pages
+name: Publicar El Errante en GitHub Pages
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Descargar repositorio
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
@@ -43,7 +43,6 @@ jobs:
             --exclude '*.bat' \
             --exclude '*.py' \
             --exclude '*.zip' \
-            --exclude '*.txt' \
             --exclude 'admin.html' \
             --exclude 'control.html' \
             --exclude 'operacion.html' \

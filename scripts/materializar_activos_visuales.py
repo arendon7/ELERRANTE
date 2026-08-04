@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import json
-import re
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = [
@@ -16,14 +15,16 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 def read_assets(path: Path) -> dict[str, str]:
     text = path.read_text(encoding="utf-8")
-    match = re.search(
-        r"Object\.assign\(window\.EE_BRAND_ASSETS\|\|\{\},\s*(\{.*\})\);?\s*\}\)\(\);?$",
-        text,
-        re.S,
-    )
-    if not match:
-        raise RuntimeError(f"No se pudo leer el paquete visual: {path}")
-    return json.loads(match.group(1))
+    marker = "Object.assign(window.EE_BRAND_ASSETS||{},"
+    start = text.find(marker)
+    if start < 0:
+        raise RuntimeError(f"No se encontró el objeto visual en {path}")
+    payload = text[start + len(marker):].strip()
+    end = payload.rfind(");")
+    if end < 0:
+        raise RuntimeError(f"No se encontró el cierre del objeto visual en {path}")
+    payload = payload[:end].strip()
+    return json.loads(payload)
 
 
 assets: dict[str, str] = {}

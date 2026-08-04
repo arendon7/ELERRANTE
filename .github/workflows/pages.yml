@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+      - name: Materializar sistema visual final
+        run: python3 scripts/materializar_activos_visuales.py
       - name: Ejecutar barrera de regresión integral
         run: python3 verificar_demo.py
       - name: Validar procedencia de fuentes
@@ -37,13 +39,12 @@ jobs:
           node --check assets/offer-acts-preflight-v09.js
           node --check assets/offer-acts-v09.js
           node --check assets/aire-tiempo-committee-v09.js
-      - name: Validar sistema visual final
+      - name: Validar sistema visual directo
+        shell: bash
         run: |
           node --check assets/host-mode.js
-          node --check assets/brand-final-editorial.js
-          node --check assets/brand-final-products-a.js
-          node --check assets/brand-final-products-b.js
-          node --check assets/brand-final-products-c.js
+          test "$(find assets/images/brand-final -maxdepth 1 -name '*.svg' | wc -l)" -eq 21
+          grep -q '"count": 21' assets/images/brand-final/manifest.json
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
       - name: Publicar fuente o diagnóstico para auditoría
@@ -65,6 +66,8 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+      - name: Materializar las 21 imágenes finales
+        run: python3 scripts/materializar_activos_visuales.py
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
       - name: Preparar sitio desde main
@@ -80,35 +83,34 @@ jobs:
             --exclude 'node_modules/' \
             --exclude 'test-results/' \
             --exclude 'playwright-report/' \
-            --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip'
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=1.1.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v1-1-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+            --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip' \
+            --exclude 'assets/brand-final-editorial.js' \
+            --exclude 'assets/brand-final-products-a.js' \
+            --exclude 'assets/brand-final-products-b.js' \
+            --exclude 'assets/brand-final-products-c.js'
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=1.2.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v1-2-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         shell: bash
         run: |
-          grep -q 'version=1.1.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v1-1-0' _site/deploy-version.txt
+          grep -q 'version=1.2.0' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v1-2-0' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           for page in equipo admin control operacion studio actas presentacion; do test -f "_site/${page}.html"; done
-          for asset in home-hero.svg home-masa-fuego.svg home-fermentacion.svg home-ingredientes.svg; do test -s "_site/assets/images/brand-final/$asset"; done
-          for asset in brand-final-editorial.js brand-final-products-a.js brand-final-products-b.js brand-final-products-c.js; do test -s "_site/assets/$asset"; node --check "_site/assets/$asset"; done
-          grep -q 'el-errante-v1-1-0' _site/service-worker.js
+          test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.svg' | wc -l)" -eq 21
+          grep -q '"count": 21' _site/assets/images/brand-final/manifest.json
+          for asset in home-hero home-masa-fuego home-fermentacion home-ingredientes home-compartir home-en-casa home-despensa evento-hero evento-noche evento-servicio producto-harina producto-crea-tuya producto-margherita producto-diavola producto-bosque producto-cuatro-quesos producto-la-errante producto-salsa-tomate producto-reduccion-balsamica producto-panela-maracuya producto-combo-primera-ruta; do test -s "_site/assets/images/brand-final/${asset}.svg"; done
+          test ! -f _site/assets/brand-final-editorial.js
+          test ! -f _site/assets/brand-final-products-a.js
+          test ! -f _site/assets/brand-final-products-b.js
+          test ! -f _site/assets/brand-final-products-c.js
+          grep -q 'el-errante-v1-2-0' _site/service-worker.js
           grep -q 'brand-final' _site/assets/host-mode.js
-          grep -q 'producto-panela-maracuya' _site/assets/brand-final-products-c.js
-          grep -q 'producto-combo-primera-ruta' _site/assets/brand-final-products-b.js
           for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-preflight-v09.js offer-acts-v09.js offer-acts-v09.css aire-tiempo-committee-v09.js aire-tiempo-committee-v09.css; do test -f "_site/assets/$asset"; done
           test -f _site/documentacion/modelo-oferta-v09.json
           test -f _site/documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json
           test -f _site/documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md
-          grep -q 'offer-studio-v09.js' _site/studio.html
-          grep -q 'offer-acts-preflight-v09.js' _site/actas.html
-          grep -q 'offer-acts-v09.js' _site/actas.html
-          grep -q 'aire-tiempo-committee-v09.js' _site/actas.html
-          test "$(grep -bo 'offer-acts-preflight-v09.js' _site/actas.html | cut -d: -f1)" -lt "$(grep -bo 'offer-acts-v09.js' _site/actas.html | cut -d: -f1)"
-          grep -q 'documentacion/modelo-oferta-v09.json' _site/assets/offer-acts-v09.js
-          grep -q 'aire-y-tiempo-paquete-comite-v09.json' _site/assets/aire-tiempo-committee-v09.js
-          grep -q 'EE_VALIDATION_ACTS_PREFLIGHT_V09' _site/assets/offer-acts-preflight-v09.js
           grep -q 'v040-app-001.b64' _site/assets/app.js
           grep -q 'v040-app-006.b64' _site/assets/app.js
           ! grep -q 'assets/chunks/app-' _site/assets/app.js

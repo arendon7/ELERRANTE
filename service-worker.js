@@ -1,4 +1,4 @@
-const CACHE = 'el-errante-v1-1-0';
+const CACHE = 'el-errante-v1-2-0';
 const CORE = [
   './index.html','./historia.html','./nosotros.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
@@ -6,15 +6,11 @@ const CORE = [
   './equipo.html','./admin.html','./control.html','./operacion.html','./studio.html','./actas.html','./presentacion.html',
   './assets/styles.css','./assets/styles/brand-v1.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
   './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
-  './assets/brand-final-editorial.js','./assets/brand-final-products-a.js','./assets/brand-final-products-b.js','./assets/brand-final-products-c.js',
-  './assets/images/brand-final/home-hero.svg','./assets/images/brand-final/home-masa-fuego.svg',
-  './assets/images/brand-final/home-fermentacion.svg','./assets/images/brand-final/home-ingredientes.svg',
-  './assets/offer-studio-v09.js','./assets/offer-studio-v09.css','./assets/offer-governance-v09.js',
-  './assets/offer-acts-preflight-v09.js','./assets/offer-acts-v09.js','./assets/offer-acts-v09.css',
-  './assets/aire-tiempo-committee-v09.js','./assets/aire-tiempo-committee-v09.css',
-  './documentacion/modelo-oferta-v09.json',
-  './documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json',
-  './documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md',
+  './assets/images/brand-final/home-hero.svg','./assets/images/brand-final/home-masa-fuego.svg','./assets/images/brand-final/home-fermentacion.svg','./assets/images/brand-final/home-ingredientes.svg','./assets/images/brand-final/home-compartir.svg','./assets/images/brand-final/home-en-casa.svg','./assets/images/brand-final/home-despensa.svg',
+  './assets/images/brand-final/evento-hero.svg','./assets/images/brand-final/evento-noche.svg','./assets/images/brand-final/evento-servicio.svg',
+  './assets/images/brand-final/producto-harina.svg','./assets/images/brand-final/producto-crea-tuya.svg','./assets/images/brand-final/producto-margherita.svg','./assets/images/brand-final/producto-diavola.svg','./assets/images/brand-final/producto-bosque.svg','./assets/images/brand-final/producto-cuatro-quesos.svg','./assets/images/brand-final/producto-la-errante.svg','./assets/images/brand-final/producto-salsa-tomate.svg','./assets/images/brand-final/producto-reduccion-balsamica.svg','./assets/images/brand-final/producto-panela-maracuya.svg','./assets/images/brand-final/producto-combo-primera-ruta.svg','./assets/images/brand-final/manifest.json',
+  './assets/offer-studio-v09.js','./assets/offer-studio-v09.css','./assets/offer-governance-v09.js','./assets/offer-acts-preflight-v09.js','./assets/offer-acts-v09.js','./assets/offer-acts-v09.css','./assets/aire-tiempo-committee-v09.js','./assets/aire-tiempo-committee-v09.css',
+  './documentacion/modelo-oferta-v09.json','./documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json','./documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md',
   './assets/source/v040-app-001.b64','./assets/source/v040-app-002.b64','./assets/source/v040-app-003.b64','./assets/source/v040-app-004.b64','./assets/source/v040-app-005.b64','./assets/source/v040-app-006.b64',
   './assets/source/v040-data-001.b64','./assets/source/v040-data-002.b64','./assets/source/v040-data-003.b64','./assets/source/v040-data-004.b64',
   './assets/source/v040-preprod-001a.b64','./assets/source/v040-preprod-001b.b64','./assets/source/v040-preprod-001c.b64','./assets/source/v040-preprod-001d.b64','./assets/source/v040-preprod-002.b64','./assets/source/v040-preprod-003.b64',

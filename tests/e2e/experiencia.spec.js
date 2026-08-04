@@ -77,12 +77,15 @@ test.describe('Runtime recuperado', () => {
     await expect(page.locator('#site-header')).not.toBeEmpty();
     await expect(page.locator('#site-footer')).not.toBeEmpty();
 
-    const visualCount = await page.locator('img[src*="assets/images/v040/"]').count();
+    const visuals = page.locator('img[src*="assets/images/v040/"]');
+    const visualCount = await visuals.count();
     expect(visualCount).toBeGreaterThanOrEqual(2);
-    const unloaded = await page.locator('img[src*="assets/images/v040/"]').evaluateAll(images =>
+    await visuals.evaluateAll(images => images.forEach(image => {
+      image.loading = 'eager';
+    }));
+    await expect.poll(() => visuals.evaluateAll(images =>
       images.filter(image => !image.complete || image.naturalWidth === 0).map(image => image.getAttribute('src'))
-    );
-    expect(unloaded).toEqual([]);
+    )).toEqual([]);
     await clean();
   });
 

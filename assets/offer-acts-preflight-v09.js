@@ -8,6 +8,7 @@
     'instrucciones_validadas'
   ];
   const PLACEHOLDER_PATTERN=/(por asignar|pendiente de asignar|nombre pendiente|sin definir|n\/a)/i;
+  const boundButtons=new WeakSet();
 
   function lines(value){
     return String(value||'').split(/\n+/).map(item=>item.trim()).filter(Boolean);
@@ -69,6 +70,34 @@
     showIssues(form,issues);
   }
 
-  window.addEventListener('click',beforeFinalize,true);
-  window.EE_VALIDATION_ACTS_PREFLIGHT_V09={ready:true,product_id:PRODUCT_ID,critical_gates:CRITICAL_GATES.length};
+  function bindButtons(root=document){
+    root.querySelectorAll?.('[data-finalize-act]').forEach(button=>{
+      if(boundButtons.has(button)) return;
+      button.addEventListener('click',beforeFinalize,true);
+      boundButtons.add(button);
+    });
+  }
+
+  function init(){
+    window.addEventListener('click',beforeFinalize,true);
+    bindButtons();
+    const host=document.querySelector('#acts-app')||document.body;
+    const observer=new MutationObserver(records=>{
+      records.forEach(record=>record.addedNodes.forEach(node=>{
+        if(node.nodeType!==Node.ELEMENT_NODE) return;
+        if(node.matches?.('[data-finalize-act]')) bindButtons(node.parentElement||document);
+        else bindButtons(node);
+      }));
+    });
+    observer.observe(host,{childList:true,subtree:true});
+    window.EE_VALIDATION_ACTS_PREFLIGHT_V09={
+      ready:true,
+      product_id:PRODUCT_ID,
+      critical_gates:CRITICAL_GATES.length,
+      binding:'window-capture+button-capture'
+    };
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
 })();

@@ -25,7 +25,10 @@ jobs:
         run: |
           echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
           echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
+          echo "SOURCE_WORKFLOW_URL=${{ github.event.workflow_run.html_url }}" >> "$GITHUB_ENV"
+          echo "HEALTH_WORKFLOW_URL=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_ENV"
           echo "Workflow fuente: ${{ github.event.workflow_run.html_url }}"
+          echo "Health check: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Exigir despliegue fuente exitoso
         run: test "$SOURCE_CONCLUSION" = "success"
@@ -126,6 +129,8 @@ jobs:
           {
             echo "EL ERRANTE — PUBLIC HEALTH"
             echo "source_conclusion=$SOURCE_CONCLUSION"
+            echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
+            echo "health_workflow_url=$HEALTH_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
             echo "expected_cache=$EXPECTED_CACHE"
             echo "runtime=verified-v0.4-app-and-data-plus-products-v6-overlay"
@@ -161,9 +166,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const fs = require('fs');
             const marker = '<!-- el-errante-public-health -->';
             const sha = context.payload.workflow_run.head_sha;
-            const body = `${marker}\n## Public health: PASS\n\n- Commit servido: \`${sha}\`.\n- Fuente: \`main\`.\n- Caché: \`${process.env.EXPECTED_CACHE}\`.\n- Runtime verificado: aplicación y datos íntegros v0.4 + overlay comercial v0.6.1.\n- SHA de aplicación: \`9745984b131f5c1697d0700e5ad7b397e9b2fc17356842804f22bba140fe3e3c\`.\n- Historia, Nosotros y Demo integral: publicadas.\n- Verificación: ${new Date().toISOString()}.`;
+            const report = fs.existsSync('public-health-report.txt')
+              ? fs.readFileSync('public-health-report.txt', 'utf8').slice(0, 12000)
+              : 'Informe no disponible.';
+            const body = `${marker}\n## Public health: PASS\n\n- Commit servido: \`${sha}\`.\n- Fuente: \`main\`.\n- Caché: \`${process.env.EXPECTED_CACHE}\`.\n- Runtime verificado: aplicación y datos íntegros v0.4 + overlay comercial v0.6.1.\n- SHA de aplicación: \`9745984b131f5c1697d0700e5ad7b397e9b2fc17356842804f22bba140fe3e3c\`.\n- Historia, Nosotros y Demo integral: publicadas.\n- [Workflow fuente](${process.env.SOURCE_WORKFLOW_URL}).\n- [Health check](${process.env.HEALTH_WORKFLOW_URL}).\n- Verificación: ${new Date().toISOString()}.\n\n<details><summary>Informe observado</summary>\n\n\`\`\`text\n${report}\n\`\`\`\n</details>`;
             const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: 11, per_page: 100 });
             const existing = comments.find(comment => comment.body?.includes(marker));
             if (existing) await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });
@@ -174,9 +183,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const fs = require('fs');
             const marker = '<!-- el-errante-public-health -->';
             const sha = context.payload.workflow_run.head_sha;
-            const body = `${marker}\n## Public health: FAIL\n\nLa publicación no superó la verificación del commit \`${sha}\`.\n\n- Caché esperada: \`${process.env.EXPECTED_CACHE}\`.\n- El log distingue diferencias de SHA, caché, fuente y runtime.\n- Verificación: ${new Date().toISOString()}.`;
+            const report = fs.existsSync('public-health-report.txt')
+              ? fs.readFileSync('public-health-report.txt', 'utf8').slice(0, 12000)
+              : 'Informe no disponible.';
+            const body = `${marker}\n## Public health: FAIL\n\nLa publicación no superó la verificación del commit \`${sha}\`.\n\n- Conclusión del workflow fuente: \`${process.env.SOURCE_CONCLUSION}\`.\n- Caché esperada: \`${process.env.EXPECTED_CACHE}\`.\n- [Workflow fuente](${process.env.SOURCE_WORKFLOW_URL}).\n- [Health check](${process.env.HEALTH_WORKFLOW_URL}).\n- Verificación: ${new Date().toISOString()}.\n\n<details open><summary>Informe observado</summary>\n\n\`\`\`text\n${report}\n\`\`\`\n</details>`;
             const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: 11, per_page: 100 });
             const existing = comments.find(comment => comment.body?.includes(marker));
             if (existing) await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });

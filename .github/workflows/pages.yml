@@ -30,6 +30,9 @@ jobs:
       - name: Validar procedencia de fuentes
         run: python3 scripts/verificar_fuentes.py
 
+      - name: Validar matriz maestra de oferta
+        run: python3 scripts/verificar_oferta_v09.py
+
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
 

@@ -30,17 +30,20 @@ jobs:
           python3 scripts/verificar_studio_oferta_v09.py
           node --check assets/offer-studio-v09.js
           node --check assets/offer-governance-v09.js
-      - name: Validar sesiones y actas
+      - name: Validar sesiones, actas y comité
         run: |
           python3 scripts/verificar_actas_oferta_v09.py
-          node --check assets/offer-acts-v09.js
-      - name: Validar paquete de comité Aire y Tiempo
-        run: |
           python3 scripts/verificar_paquete_aire_tiempo_v09.py
           node --check assets/offer-acts-preflight-v09.js
+          node --check assets/offer-acts-v09.js
           node --check assets/aire-tiempo-committee-v09.js
-      - name: Validar aplicador visual opcional
-        run: python3 -m py_compile scripts/aplicar_paquete_visual_v1.py
+      - name: Validar sistema visual final
+        run: |
+          node --check assets/host-mode.js
+          node --check assets/brand-final-editorial.js
+          node --check assets/brand-final-products-a.js
+          node --check assets/brand-final-products-b.js
+          node --check assets/brand-final-products-c.js
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
       - name: Publicar fuente o diagnóstico para auditoría
@@ -64,38 +67,36 @@ jobs:
         uses: actions/checkout@v4
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Preparar sitio completo
+      - name: Preparar sitio desde main
         shell: bash
         run: |
           mkdir -p _site
-          rsync -av ./ _site/ --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' --exclude '.artifacts/' --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip'
-
-          if [ -f ELERRANTE_PAQUETE_VISUAL_V1_10.zip ]; then
-            echo "Aplicando paquete visual editorial V1."
-            rm -rf .artifacts/visual-v1
-            mkdir -p .artifacts/visual-v1
-            unzip -q ELERRANTE_PAQUETE_VISUAL_V1_10.zip -d .artifacts/visual-v1
-            test -d .artifacts/visual-v1/assets/images/brand-v1
-            mkdir -p _site/assets/images/brand-v1
-            rsync -av .artifacts/visual-v1/assets/images/brand-v1/ _site/assets/images/brand-v1/
-            cp .artifacts/visual-v1/manifest.json _site/assets/images/brand-v1/manifest.json
-            python3 scripts/aplicar_paquete_visual_v1.py _site
-          else
-            echo "Paquete visual V1 no presente: se conserva la línea visual estable v0.4."
-          fi
-
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-9\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          rsync -av ./ _site/ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '_site/' \
+            --exclude '__pycache__/' \
+            --exclude '.artifacts/' \
+            --exclude 'node_modules/' \
+            --exclude 'test-results/' \
+            --exclude 'playwright-report/' \
+            --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip'
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=1.1.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v1-1-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         shell: bash
         run: |
-          grep -q 'version=0.6.1' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v0-6-9' _site/deploy-version.txt
+          grep -q 'version=1.1.0' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v1-1-0' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           for page in equipo admin control operacion studio actas presentacion; do test -f "_site/${page}.html"; done
-          for part in v040-app-001.b64 v040-app-002.b64 v040-app-003.b64 v040-app-004.b64 v040-app-005.b64 v040-app-006.b64 v040-data-001.b64 v040-data-002.b64 v040-data-003.b64 v040-data-004.b64 v040-preprod-001a.b64 v040-preprod-001b.b64 v040-preprod-001c.b64 v040-preprod-001d.b64 v040-preprod-002.b64 v040-preprod-003.b64; do test -f "_site/assets/source/$part"; done
-          for asset in v040-hero-desktop.svg v040-hero-mobile.svg v040-harina-empaques.svg v040-harina-manos.svg v040-harina-horno.svg v040-manos-masa.svg v040-masa-apertura.svg v040-alveolos.svg v040-fermentacion.svg v040-pizza-neo.svg v040-pizza-errante.svg v040-despensa.svg v040-aplicaciones-empaque.svg v040-pizzeria-movil.svg v040-bitacora-fuego.svg v040-pizzas-artesanales.svg v040-pizzas-coleccion.svg; do test -f "_site/assets/images/v040/$asset"; done
+          for asset in home-hero.svg home-masa-fuego.svg home-fermentacion.svg home-ingredientes.svg; do test -s "_site/assets/images/brand-final/$asset"; done
+          for asset in brand-final-editorial.js brand-final-products-a.js brand-final-products-b.js brand-final-products-c.js; do test -s "_site/assets/$asset"; node --check "_site/assets/$asset"; done
+          grep -q 'el-errante-v1-1-0' _site/service-worker.js
+          grep -q 'brand-final' _site/assets/host-mode.js
+          grep -q 'producto-panela-maracuya' _site/assets/brand-final-products-c.js
+          grep -q 'producto-combo-primera-ruta' _site/assets/brand-final-products-b.js
           for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-preflight-v09.js offer-acts-v09.js offer-acts-v09.css aire-tiempo-committee-v09.js aire-tiempo-committee-v09.css; do test -f "_site/assets/$asset"; done
           test -f _site/documentacion/modelo-oferta-v09.json
           test -f _site/documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json
@@ -108,24 +109,12 @@ jobs:
           grep -q 'documentacion/modelo-oferta-v09.json' _site/assets/offer-acts-v09.js
           grep -q 'aire-y-tiempo-paquete-comite-v09.json' _site/assets/aire-tiempo-committee-v09.js
           grep -q 'EE_VALIDATION_ACTS_PREFLIGHT_V09' _site/assets/offer-acts-preflight-v09.js
-          grep -q 'el-errante-v0-6-9' _site/service-worker.js
           grep -q 'v040-app-001.b64' _site/assets/app.js
           grep -q 'v040-app-006.b64' _site/assets/app.js
           ! grep -q 'assets/chunks/app-' _site/assets/app.js
           ! grep -q 'assets/chunks/data-' _site/assets/data.js
           ! grep -q 'assets/chunks/preprod-' _site/assets/preprod.js
-
-          if [ -f ELERRANTE_PAQUETE_VISUAL_V1_10.zip ]; then
-            test -f _site/visual-package-version.txt
-            grep -q 'version=1' _site/visual-package-version.txt
-            grep -q 'assets=10' _site/visual-package-version.txt
-            for asset in home-hero-pizzeria-movil.webp home-masa-fuego.webp home-fermentacion.webp producto-margherita.webp producto-bosque.webp producto-cuatro-quesos.webp producto-la-errante-editorial.webp home-compartir.webp home-ingredientes.webp evento-noche.webp manifest.json; do
-              test -s "_site/assets/images/brand-v1/$asset"
-            done
-            grep -q 'assets/images/brand-v1/home-hero-pizzeria-movil.webp' _site/index.html
-            grep -q 'assets/images/brand-v1/evento-noche.webp' _site/en-movimiento.html
-            grep -q 'assets/images/brand-v1/producto-margherita.webp' _site/assets/products-v6.js
-          fi
+          test ! -f _site/ELERRANTE_PAQUETE_VISUAL_V1_10.zip
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4
         with:

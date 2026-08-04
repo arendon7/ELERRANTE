@@ -8,7 +8,7 @@ const CORE = [
   './assets/styles.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
   './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
   './assets/offer-studio-v09.js','./assets/offer-studio-v09.css','./assets/offer-governance-v09.js',
-  './assets/offer-acts-v09.js','./assets/offer-acts-v09.css',
+  './assets/offer-acts-preflight-v09.js','./assets/offer-acts-v09.js','./assets/offer-acts-v09.css',
   './assets/aire-tiempo-committee-v09.js','./assets/aire-tiempo-committee-v09.css',
   './documentacion/modelo-oferta-v09.json',
   './documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json',

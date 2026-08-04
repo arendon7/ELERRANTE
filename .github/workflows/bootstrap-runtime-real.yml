@@ -1,0 +1,72 @@
+name: Materializar runtime canónico real
+
+on:
+  push:
+    branches: ["fix/v0.8-pages-runtime-real"]
+    paths:
+      - "scripts/aplicar_fix_runtime_real.py"
+      - ".github/workflows/bootstrap-runtime-real.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: bootstrap-runtime-real
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama de corrección
+        uses: actions/checkout@v4
+        with:
+          ref: fix/v0.8-pages-runtime-real
+          fetch-depth: 0
+
+      - name: Recuperar artefacto canónico auditado
+        uses: actions/download-artifact@v4
+        with:
+          name: fuente-canonica-60d3a87a22e87679115e3ca9bb7af01ea11e03db
+          path: .bootstrap-canonical
+          github-token: ${{ github.token }}
+          repository: arendon7/ELERRANTE
+          run-id: 30860487301
+
+      - name: Aplicar corrección real
+        run: python3 scripts/aplicar_fix_runtime_real.py
+
+      - name: Validar regresión y procedencia
+        run: |
+          python3 verificar_demo.py
+          python3 scripts/verificar_fuentes.py
+          python3 scripts/verificar_runtime_canonico.py
+
+      - name: Reconstruir y comparar fuente
+        run: |
+          node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
+          cmp .artifacts/canonical/canonical-data.js assets/canonical-data.js
+          cmp .artifacts/canonical/canonical-data.json assets/canonical-data.json
+          cmp .artifacts/canonical/canonical-report.json documentacion/CANONICAL_DATA_REPORT.json
+
+      - name: Confirmar archivos físicos
+        run: |
+          test -s assets/canonical-data.js
+          test -s assets/canonical-data.json
+          grep -q 'assets/canonical-data.js' assets/data.js
+          ! grep -q 'assets/source/v040-data-' assets/data.js
+          ! grep -q 'assets/products-v6.js' assets/data.js
+          grep -q 'el-errante-v0-6-8' service-worker.js
+          grep -q 'cache=el-errante-v0-6-8' deploy-version.txt
+          test ! -f .github/workflows/bootstrap-runtime-real.yml
+          test ! -f .github/workflows/augment-public-health-evidence.yml
+
+      - name: Confirmar corrección en la rama
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: materializa runtime canónico y alinea Pages v0.8"
+          git push origin HEAD:fix/v0.8-pages-runtime-real

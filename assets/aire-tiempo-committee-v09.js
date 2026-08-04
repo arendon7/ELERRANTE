@@ -34,7 +34,7 @@
   }
 
   function currentProductId(form){
-    return form.querySelector('[data-product-select]')?.value||'';
+    return form?.querySelector('[data-product-select]')?.value||'';
   }
 
   function validateNames(form){
@@ -62,8 +62,7 @@
       if(status==='aprobado_con_condiciones'&&!validUntil) issues.push(`${label}: define la vigencia de la condición.`);
     });
 
-    const overall=form.elements.overall_decision?.value||'pendiente';
-    if(overall==='aprobado'){
+    if(form.elements.overall_decision?.value==='aprobado'){
       const unresolved=CRITICAL_GATES.filter(key=>{
         const row=gateRow(form,key);
         if(!row?.querySelector('[data-gate-reviewed]')?.checked) return true;
@@ -78,17 +77,12 @@
     const rows=[...form.querySelectorAll('[data-act-gate]')];
     const reviewed=rows.filter(row=>row.querySelector('[data-gate-reviewed]')?.checked);
     const withEvidence=reviewed.filter(row=>(row.querySelector('[data-gate-evidence]')?.value||'').trim());
-    const conditionalComplete=reviewed.filter(row=>{
-      if(row.querySelector('[data-gate-status]')?.value!=='aprobado_con_condiciones') return true;
-      return Boolean((row.querySelector('[data-gate-condition]')?.value||'').trim()&&row.querySelector('[data-gate-valid-until]')?.value);
-    });
     const namedParticipants=lines(form.elements.participants?.value).filter(item=>!PLACEHOLDER_PATTERN.test(item));
     const namedSignatories=lines(form.elements.signatories?.value).filter(item=>!PLACEHOLDER_PATTERN.test(item));
     return {
       total:rows.length,
       reviewed:reviewed.length,
       withEvidence:withEvidence.length,
-      conditionalComplete:conditionalComplete.length,
       participants:namedParticipants.length,
       signatories:namedSignatories.length,
       issues:guidedIssues(form).length
@@ -98,11 +92,19 @@
   function updateReadiness(form){
     const panel=document.querySelector('[data-committee-readiness]');
     if(!panel||!form) return;
+
     if(currentProductId(form)!==PRODUCT_ID){
+      const stateKey='inactive';
+      if(panel.dataset.readinessState===stateKey) return;
+      panel.dataset.readinessState=stateKey;
       panel.innerHTML='<p class="muted">La preparación guiada se activa al seleccionar Harina Aire y Tiempo.</p>';
       return;
     }
+
     const state=readiness(form);
+    const stateKey=JSON.stringify(state);
+    if(panel.dataset.readinessState===stateKey) return;
+    panel.dataset.readinessState=stateKey;
     panel.innerHTML=`
       <div><strong>${state.reviewed}/${state.total}</strong><span>puertas revisadas</span></div>
       <div><strong>${state.withEvidence}/${Math.max(state.reviewed,1)}</strong><span>con evidencia</span></div>
@@ -225,7 +227,7 @@
   }
 
   function interceptFinalize(event){
-    const button=event.target.closest('[data-finalize-act]');
+    const button=event.target.closest?.('[data-finalize-act]');
     if(!button) return;
     const form=button.closest('[data-act-form]');
     const issues=guidedIssues(form);
@@ -239,13 +241,25 @@
   function observeApp(){
     const host=document.querySelector('#acts-app');
     if(!host) return;
+    let refreshScheduled=false;
+
     const refresh=()=>{
+      refreshScheduled=false;
       renderPanel();
       const form=host.querySelector('[data-act-form]');
-      if(form&&form!==lastForm) decorateForm(form);
-      else if(form) decorateForm(form);
+      if(!form) return;
+      const guideCount=form.querySelectorAll('[data-committee-gate-guide]').length;
+      const expectedGuides=Object.keys(pack.gates).length;
+      if(form!==lastForm||guideCount!==expectedGuides) decorateForm(form);
     };
-    const observer=new MutationObserver(()=>queueMicrotask(refresh));
+
+    const scheduleRefresh=()=>{
+      if(refreshScheduled) return;
+      refreshScheduled=true;
+      setTimeout(refresh,0);
+    };
+
+    const observer=new MutationObserver(scheduleRefresh);
     observer.observe(host,{childList:true,subtree:true});
     refresh();
   }

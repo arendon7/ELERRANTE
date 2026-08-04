@@ -29,6 +29,22 @@ async function openOffer(page,path){
   await page.waitForTimeout(100);
 }
 
+async function activateVisibleButton(page,button,isMobile){
+  await button.evaluate(element=>element.scrollIntoView({block:'center',inline:'center',behavior:'instant'}));
+  await page.waitForTimeout(180);
+  const box=await button.boundingBox();
+  expect(box,'El botón de guardado debe tener geometría visible').not.toBeNull();
+  const point={x:box.x+box.width/2,y:box.y+box.height/2};
+  const hit=await page.evaluate(({x,y})=>{
+    const element=document.elementFromPoint(x,y);
+    const target=element?.closest('.offer-governance-form button[type="submit"]');
+    return {matches:Boolean(target),tag:element?.tagName||'',text:(element?.textContent||'').trim().slice(0,80)};
+  },point);
+  expect(hit.matches,`El centro del botón está interceptado por ${hit.tag}: ${hit.text}`).toBeTruthy();
+  if(isMobile) await page.touchscreen.tap(point.x,point.y);
+  else await page.mouse.click(point.x,point.y);
+}
+
 test.describe('Studio de Oferta v0.9',()=>{
   test('renderiza las 11 referencias, sus puertas y el filtro de ola 1',async({page})=>{
     const clean=observe(page);
@@ -49,7 +65,7 @@ test.describe('Studio de Oferta v0.9',()=>{
     await clean();
   });
 
-  test('guarda una decisión local sin modificar el catálogo público',async({page})=>{
+  test('guarda una decisión local sin modificar el catálogo público',async({page},testInfo)=>{
     const clean=observe(page);
     await openOffer(page,'/studio.html');
 
@@ -59,12 +75,13 @@ test.describe('Studio de Oferta v0.9',()=>{
     await form.locator('[name="next_review"]').fill('2026-09-01');
     await form.locator('[name="notes"]').fill('Validación local de demostración.');
     await page.locator('.offer-gate').first().locator('[data-gate-evidence]').fill('Acta de concepto pendiente de firma.');
-    await form.locator('button[type="submit"]').click();
+    await activateVisibleButton(page,form.locator('button[type="submit"]'),testInfo.project.name.includes('mobile'));
 
     await expect.poll(()=>page.evaluate(()=>{
       const state=JSON.parse(localStorage.getItem('ee_v09_offer_governance')||'{}');
       return state.products?.['harina-aire-y-tiempo']?.owner||'';
     })).toBe('Comité piloto');
+    await expect(form.locator('.offer-save-status')).toContainText('Decisión guardada');
 
     const publicState=await page.evaluate(()=>({
       products:window.EE_DATA.products.length,

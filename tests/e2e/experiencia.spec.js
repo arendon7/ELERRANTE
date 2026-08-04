@@ -12,7 +12,11 @@ function observe(page) {
   });
   page.on('request', request => {
     const url = request.url();
-    if (url.includes('/assets/chunks/data-') || url.includes('/assets/chunks/preprod-')) {
+    if (
+      url.includes('/assets/chunks/app-') ||
+      url.includes('/assets/chunks/data-') ||
+      url.includes('/assets/chunks/preprod-')
+    ) {
       damagedSourceRequests.push(url);
     }
   });
@@ -148,7 +152,8 @@ test.describe('Conversión', () => {
     await first.locator('input[type="date"]').fill('2026-12-12');
     await first.locator('input[required]').last().fill('Medellín');
     await first.locator('[data-next]').click();
-    await expect(form.locator('.form-step.active')).toBe(form.locator('.form-step').nth(1));
+    await expect(form.locator('.form-step').nth(1)).toHaveClass(/active/);
+    await expect(form.locator('.form-step.active')).toHaveCount(1);
     await clean();
   });
 });

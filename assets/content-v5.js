@@ -1,11 +1,12 @@
 (()=>{
   const data=window.EE_DATA;
+  const canonicalStatus=window.EE_CONTENT_STATUS||null;
   const required={products:11,articles:1,recipes:1,faqs:1};
   const counts={};
   const missing=[];
 
   if(!data){
-    window.EE_CONTENT_STATUS={ready:false,release:"v1.0-content",missing:["EE_DATA"],counts:{}};
+    window.EE_CONTENT_V1_STATUS={ready:false,release:"v1.0-content",missing:["EE_DATA"],counts:{}};
     document.documentElement.dataset.eeContent="missing";
     console.error("El Errante: la fuente maestra EE_DATA no está disponible.");
     return;
@@ -46,12 +47,20 @@
 
   const ready=missing.length===0;
   data.settings.content_ready=ready;
-  window.EE_CONTENT_STATUS={
+
+  /* Mantiene intacto el contrato histórico que valida la recuperación
+     de la fuente canónica. La renovación editorial publica su estado
+     de forma separada para no falsear ni romper ese marcador. */
+  if(canonicalStatus) window.EE_CONTENT_STATUS=canonicalStatus;
+
+  window.EE_CONTENT_V1_STATUS={
     ready,
     release:"v1.0-content",
-    source:"assets/data.js + assets/preprod.js + assets/products-v6.js + assets/content-v5.js",
+    source:"assets/content-v5.js",
+    canonical_source:canonicalStatus?.source||"assets/data.js + assets/preprod.js + assets/products-v6.js",
     missing,
     counts,
+    public_faqs:data.faqs.length,
     checkedAt:new Date().toISOString()
   };
 
@@ -65,6 +74,7 @@
 
   document.documentElement.dataset.eeContent=ready?"ready":"incomplete";
   document.documentElement.dataset.eeContentVersion="1.0";
-  document.dispatchEvent(new CustomEvent("ee:content-ready",{detail:window.EE_CONTENT_STATUS}));
-  if(!ready) console.warn("El Errante: contenido incompleto",window.EE_CONTENT_STATUS);
+  document.dispatchEvent(new CustomEvent("ee:content-ready",{detail:window.EE_CONTENT_STATUS||window.EE_CONTENT_V1_STATUS}));
+  document.dispatchEvent(new CustomEvent("ee:content-v1-ready",{detail:window.EE_CONTENT_V1_STATUS}));
+  if(!ready) console.warn("El Errante: contenido editorial incompleto",window.EE_CONTENT_V1_STATUS);
 })();

@@ -5,7 +5,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from urllib.parse import unquote
+import base64
 import re
+import struct
 import sys
 
 ROOT = Path(__file__).resolve().parent
@@ -87,6 +89,48 @@ for required in REPO_FILES:
 for visual in VISUALS:
     require(f"assets/images/v040/{visual}", "Visual v0.4")
 
+# Integridad real de SVG recuperados, referencias anidadas y WebP embebidos.
+visual_root = ROOT / "assets/images/v040"
+for svg in sorted(visual_root.glob("*.svg")):
+    content = svg.read_text(encoding="utf-8", errors="ignore")
+    for reference in re.findall(r'href=["\']([^"\']+)["\']', content, re.I):
+        if reference.startswith("data:image/webp;base64,"):
+            payload = "".join(reference.split(",", 1)[1].split())
+            payload += "=" * ((4 - len(payload) % 4) % 4)
+            try:
+                raw = base64.b64decode(payload, validate=False)
+                if len(raw) < 16 or raw[:4] != b"RIFF" or raw[8:12] != b"WEBP":
+                    ISSUES.append(f"{svg.relative_to(ROOT)}: WebP embebido inválido")
+                else:
+                    declared = struct.unpack("<I", raw[4:8])[0] + 8
+                    if declared != len(raw):
+                        ISSUES.append(f"{svg.relative_to(ROOT)}: WebP truncado ({len(raw)} != {declared})")
+            except Exception as error:
+                ISSUES.append(f"{svg.relative_to(ROOT)}: base64 WebP ilegible ({error})")
+        elif not reference.startswith(EXTERNAL):
+            target = (svg.parent / reference).resolve()
+            if not target.is_file():
+                ISSUES.append(f"{svg.relative_to(ROOT)}: referencia visual faltante {reference}")
+
+semantic_repairs = {
+    "v040-hero-mobile.svg": "v040-hero-desktop.svg",
+    "v040-pizza-neo.svg": "v040-pizzas-artesanales.svg",
+    "v040-pizzeria-movil.svg": "v040-pizza-errante.svg",
+}
+for file_name, expected_reference in semantic_repairs.items():
+    if expected_reference not in text(f"assets/images/v040/{file_name}"):
+        ISSUES.append(f"{file_name}: no conserva la reparación semántica {expected_reference}")
+for expected_reference in ["salsa-tomate-packshot.svg", "balsamica-packshot.svg", "v6-panela-maracuya.svg"]:
+    if expected_reference not in text("assets/images/v040/v040-despensa.svg"):
+        ISSUES.append(f"v040-despensa.svg: falta {expected_reference}")
+
+# Las pizzas públicas no pueden volver a usar la fotografía del vehículo.
+host_mode_semantics = text("assets/host-mode.js")
+for source in ["v6-la-errante.svg", "pizza-la-errante.svg", "pizza-errante.svg"]:
+    expected = f'["assets/images/{source}","assets/images/v040/v040-pizzas-artesanales.svg"]'
+    if expected not in host_mode_semantics:
+        ISSUES.append(f"Mapa visual semántico incorrecto para {source}")
+
 # Referencias locales de HTML y CSS.
 html_files = sorted(ROOT.glob("*.html"))
 attribute_pattern = re.compile(r'(?:href|src|poster|action)=["\']([^"\']+)["\']', re.I)
@@ -124,7 +168,7 @@ for product_id in PRODUCTS:
 host_mode = text("assets/host-mode.js")
 service_worker = text("service-worker.js")
 for visual in VISUALS:
-    if visual != "v040-pizzas-artesanales.svg" and visual not in host_mode:
+    if visual not in {"v040-pizzas-artesanales.svg", "v040-pizza-errante.svg"} and visual not in host_mode:
         ISSUES.append(f"Mapa visual incompleto: {visual}")
     if visual not in service_worker:
         ISSUES.append(f"Caché visual incompleta: {visual}")

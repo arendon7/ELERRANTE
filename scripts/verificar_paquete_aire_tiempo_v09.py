@@ -8,7 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PACK = ROOT / "documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json"
 GUIDE = ROOT / "documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md"
 HTML = ROOT / "actas.html"
-JS = ROOT / "assets/aire-tiempo-committee-v09.js"
+COMMITTEE = ROOT / "assets/aire-tiempo-committee-v09.js"
+BASE_ACTS = ROOT / "assets/offer-acts-v09.js"
 PREFLIGHT = ROOT / "assets/offer-acts-preflight-v09.js"
 CSS = ROOT / "assets/aire-tiempo-committee-v09.css"
 
@@ -27,7 +28,7 @@ def require(condition: bool, message: str) -> None:
 
 
 def main() -> None:
-    for path in (PACK, GUIDE, HTML, JS, PREFLIGHT, CSS):
+    for path in (PACK, GUIDE, HTML, COMMITTEE, BASE_ACTS, PREFLIGHT, CSS):
         require(path.is_file(), f"falta {path.relative_to(ROOT)}")
 
     data = json.loads(PACK.read_text(encoding="utf-8"))
@@ -54,13 +55,22 @@ def main() -> None:
     require("offer-acts-preflight-v09.js" in html, "actas.html no carga el preflight")
     require(html.index("offer-acts-preflight-v09.js") < html.index("offer-acts-v09.js"), "el preflight debe cargarse antes del editor base")
 
-    js = JS.read_text(encoding="utf-8")
+    committee = COMMITTEE.read_text(encoding="utf-8")
     for token in ("PACK_URL", "data-load-committee-pack", "interceptFinalize", "EE_AIRE_TIEMPO_COMMITTEE_V09"):
-        require(token in js, f"falta contrato JS {token}")
-    require("window.EE_DATA" not in js, "el paquete no debe mutar ni depender de EE_DATA")
+        require(token in committee, f"falta contrato JS {token}")
+    require("window.EE_DATA" not in committee, "el paquete no debe mutar ni depender de EE_DATA")
+
+    base_acts = BASE_ACTS.read_text(encoding="utf-8")
+    for token in ("new CustomEvent('ee:before-finalize-act'", "cancelable:true", "form.dispatchEvent(preflight)"):
+        require(token in base_acts, f"el editor base no emite el contrato cancelable: {token}")
 
     preflight = PREFLIGHT.read_text(encoding="utf-8")
-    for token in ("window.addEventListener('click'", "beforeFinalize", "stopImmediatePropagation", "EE_VALIDATION_ACTS_PREFLIGHT_V09"):
+    for token in (
+        "document.addEventListener('ee:before-finalize-act'",
+        "beforeFinalizeContract",
+        "event.preventDefault()",
+        "EE_VALIDATION_ACTS_PREFLIGHT_V09",
+    ):
         require(token in preflight, f"falta contrato de preflight {token}")
     require("window.EE_DATA" not in preflight, "el preflight no debe mutar ni depender de EE_DATA")
 

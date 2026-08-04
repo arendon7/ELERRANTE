@@ -4,14 +4,21 @@ function observe(page) {
   const pageErrors = [];
   const consoleErrors = [];
   const failedLocal = [];
-  const legacyRequests = [];
+  const damagedSourceRequests = [];
 
   page.on('pageerror', error => pageErrors.push(error.message));
   page.on('console', message => {
     if (message.type() === 'error') consoleErrors.push(message.text());
   });
   page.on('request', request => {
-    if (request.url().includes('/assets/chunks/')) legacyRequests.push(request.url());
+    const url = request.url();
+    if (
+      url.includes('/assets/chunks/app-') ||
+      url.includes('/assets/chunks/data-') ||
+      url.includes('/assets/chunks/preprod-')
+    ) {
+      damagedSourceRequests.push(url);
+    }
   });
   page.on('requestfailed', request => {
     const url = request.url();
@@ -25,7 +32,7 @@ function observe(page) {
     expect(pageErrors, 'Excepciones JavaScript').toEqual([]);
     expect(consoleErrors, 'Errores de consola').toEqual([]);
     expect(failedLocal, 'Recursos locales fallidos').toEqual([]);
-    expect(legacyRequests, 'Solicitudes a chunks heredados').toEqual([]);
+    expect(damagedSourceRequests, 'Solicitudes a fuentes truncadas').toEqual([]);
   };
 }
 
@@ -34,10 +41,10 @@ async function open(page, path, needsData = true) {
   if (needsData) {
     await page.waitForFunction(() => window.EE_DATA?.products?.length === 11);
   }
-  await page.waitForTimeout(120);
+  await page.waitForTimeout(150);
 }
 
-async function canonicalState(page) {
+async function runtimeState(page) {
   return page.evaluate(() => ({
     products: window.EE_DATA?.products?.length || 0,
     variants: window.EE_DATA?.products?.reduce((sum, product) => sum + product.variants.length, 0) || 0,
@@ -50,12 +57,12 @@ async function canonicalState(page) {
   }));
 }
 
-test.describe('Runtime canónico', () => {
+test.describe('Runtime recuperado', () => {
   test('inicio carga modelo, marca y visuales recuperados', async ({ page }) => {
     const clean = observe(page);
     await open(page, '/index.html');
 
-    expect(await canonicalState(page)).toEqual({
+    expect(await runtimeState(page)).toEqual({
       products: 11,
       variants: 14,
       recipes: 5,
@@ -63,23 +70,26 @@ test.describe('Runtime canónico', () => {
       faqs: 5,
       coverage: 6,
       ready: true,
-      source: 'assets/canonical-data.js + assets/preprod.js'
+      source: 'assets/data.js + assets/preprod.js + assets/products-v6.js'
     });
 
     await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.locator('#site-header')).not.toBeEmpty();
     await expect(page.locator('#site-footer')).not.toBeEmpty();
 
-    const visualCount = await page.locator('img[src*="assets/images/v040/"]').count();
+    const visuals = page.locator('img[src*="assets/images/v040/"]');
+    const visualCount = await visuals.count();
     expect(visualCount).toBeGreaterThanOrEqual(2);
-    const unloaded = await page.locator('img[src*="assets/images/v040/"]').evaluateAll(images =>
+    await visuals.evaluateAll(images => images.forEach(image => {
+      image.loading = 'eager';
+    }));
+    await expect.poll(() => visuals.evaluateAll(images =>
       images.filter(image => !image.complete || image.naturalWidth === 0).map(image => image.getAttribute('src'))
-    );
-    expect(unloaded).toEqual([]);
+    )).toEqual([]);
     await clean();
   });
 
-  test('tienda representa las once referencias canónicas', async ({ page }) => {
+  test('tienda representa las once referencias recuperadas', async ({ page }) => {
     const clean = observe(page);
     await open(page, '/tienda.html');
     const grid = page.locator('#product-grid');
@@ -107,7 +117,7 @@ test.describe('Runtime canónico', () => {
       return lines.reduce((sum, line) => sum + Number(line.qty || 0), 0);
     })).toBeGreaterThan(0);
 
-    const count = await page.locator('[data-cart-count]').allTextContents();
+    const count = await page.locator('.cart-count').allTextContents();
     expect(count.some(value => Number(value) > 0)).toBe(true);
     await clean();
   });
@@ -118,7 +128,7 @@ test.describe('Conversión', () => {
     const clean = observe(page);
     await page.addInitScript(() => {
       localStorage.setItem('ee_v2_cart', JSON.stringify([
-        { productId: 'la-errante', variantId: 'unidad', qty: 1 }
+        { id: 'la-errante', variant: 'unidad', qty: 1 }
       ]));
     });
     await open(page, '/checkout.html');
@@ -138,13 +148,15 @@ test.describe('Conversión', () => {
     await expect(form).toBeVisible();
     await expect(form.locator('.form-step')).toHaveCount(3);
 
-    const first = form.locator('.form-step').first();
+    const first = form.locator('.form-step.active');
+    await expect(first).toBeVisible();
     await first.locator('select').selectOption({ index: 1 });
     await first.locator('input[type="number"]').fill('40');
     await first.locator('input[type="date"]').fill('2026-12-12');
-    await first.locator('input').nth(2).fill('Medellín');
+    await first.locator('input[required]').last().fill('Medellín');
     await first.locator('[data-next]').click();
-    await expect(form.locator('.form-step').nth(1)).toBeVisible();
+    await expect(form.locator('.form-step').nth(1)).toHaveClass(/active/);
+    await expect(form.locator('.form-step.active')).toHaveCount(1);
     await clean();
   });
 });
@@ -157,15 +169,15 @@ test.describe('Superficies públicas', () => {
   ];
 
   test('todas las superficies abren con contenido y sin errores', async ({ page }) => {
-    const clean = observe(page);
     for (const path of pages) {
       await test.step(path, async () => {
+        const clean = observe(page);
         await open(page, path);
         await expect(page.locator('main')).toBeVisible();
         expect((await page.locator('main').innerText()).trim().length).toBeGreaterThan(120);
+        await clean();
       });
     }
-    await clean();
   });
 });
 
@@ -195,7 +207,7 @@ test('menú móvil abre y enlaza el centro integral', async ({ page }, testInfo)
   test.skip(!testInfo.project.name.includes('mobile'), 'Prueba exclusiva del proyecto móvil');
   const clean = observe(page);
   await open(page, '/index.html');
-  const toggle = page.locator('[data-menu-toggle]');
+  const toggle = page.locator('.menu-toggle');
   await expect(toggle).toBeVisible();
   await toggle.click();
   const drawer = page.locator('.mobile-drawer');

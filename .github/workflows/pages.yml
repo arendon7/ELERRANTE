@@ -68,7 +68,7 @@ jobs:
             --exclude '_site/' \
             --exclude '__pycache__/' \
             --exclude '.artifacts/'
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-7\nupdated=%s\n' \
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-8\nupdated=%s\n' \
             "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
 
@@ -76,13 +76,15 @@ jobs:
         shell: bash
         run: |
           grep -q 'version=0.6.1' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v0-6-7' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v0-6-8' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           for page in equipo admin control operacion studio presentacion; do
             test -f "_site/${page}.html"
           done
           for part in \
+            v040-app-001.b64 v040-app-002.b64 v040-app-003.b64 \
+            v040-app-004.b64 v040-app-005.b64 v040-app-006.b64 \
             v040-data-001.b64 v040-data-002.b64 v040-data-003.b64 v040-data-004.b64 \
             v040-preprod-001a.b64 v040-preprod-001b.b64 \
             v040-preprod-001c.b64 v040-preprod-001d.b64 \
@@ -99,7 +101,10 @@ jobs:
             v040-pizzas-coleccion.svg; do
               test -f "_site/assets/images/v040/$asset"
           done
-          grep -q 'el-errante-v0-6-7' _site/service-worker.js
+          grep -q 'el-errante-v0-6-8' _site/service-worker.js
+          grep -q 'v040-app-001.b64' _site/assets/app.js
+          grep -q 'v040-app-006.b64' _site/assets/app.js
+          ! grep -q 'assets/chunks/app-' _site/assets/app.js
           ! grep -q 'assets/chunks/data-' _site/assets/data.js
           ! grep -q 'assets/chunks/preprod-' _site/assets/preprod.js
           ! grep -q 'v040-preprod-001.b64' _site/assets/preprod.js

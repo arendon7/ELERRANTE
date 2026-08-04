@@ -26,6 +26,21 @@
   if(overlay.status!==200&&overlay.status!==0) throw new Error("No se pudo cargar assets/products-v6.js");
   (0,eval)(overlay.responseText);
 
+  const visualMap=new Map([
+    ["assets/images/fermentacion.png","assets/images/v040/v040-fermentacion.svg"],
+    ["assets/images/pizza-neo.png","assets/images/v040/v040-pizza-neo.svg"],
+    ["assets/images/alveolos.png","assets/images/v040/v040-alveolos.svg"],
+    ["assets/images/pizza-errante.png","assets/images/v040/v040-pizza-errante.svg"],
+    ["assets/images/masa-apertura.png","assets/images/v040/v040-masa-apertura.svg"]
+  ]);
+  const remap=value=>visualMap.get(value)||value;
+  for(const collection of [window.EE_DATA?.products,window.EE_DATA?.recipes,window.EE_DATA?.articles]){
+    for(const item of collection||[]){
+      if(item.image) item.image=remap(item.image);
+      if(Array.isArray(item.gallery)) item.gallery=item.gallery.map(remap);
+    }
+  }
+
   if(!window.EE_DATA||!Array.isArray(window.EE_DATA.products)||window.EE_DATA.products.length!==11){
     throw new Error("La fuente canónica no produjo los 11 productos esperados");
   }

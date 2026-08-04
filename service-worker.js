@@ -1,4 +1,4 @@
-const CACHE = 'el-errante-v0-6-7';
+const CACHE = 'el-errante-v0-6-8';
 const CORE = [
   './index.html','./historia.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
@@ -6,6 +6,9 @@ const CORE = [
   './equipo.html','./admin.html','./control.html','./operacion.html','./studio.html','./presentacion.html',
   './assets/styles.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
   './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
+  './assets/source/v040-app-001.b64','./assets/source/v040-app-002.b64',
+  './assets/source/v040-app-003.b64','./assets/source/v040-app-004.b64',
+  './assets/source/v040-app-005.b64','./assets/source/v040-app-006.b64',
   './assets/source/v040-data-001.b64','./assets/source/v040-data-002.b64',
   './assets/source/v040-data-003.b64','./assets/source/v040-data-004.b64',
   './assets/source/v040-preprod-001a.b64','./assets/source/v040-preprod-001b.b64',

@@ -9,6 +9,7 @@ PACK = ROOT / "documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json"
 GUIDE = ROOT / "documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md"
 HTML = ROOT / "actas.html"
 JS = ROOT / "assets/aire-tiempo-committee-v09.js"
+PREFLIGHT = ROOT / "assets/offer-acts-preflight-v09.js"
 CSS = ROOT / "assets/aire-tiempo-committee-v09.css"
 
 EXPECTED_GATES = {
@@ -26,7 +27,7 @@ def require(condition: bool, message: str) -> None:
 
 
 def main() -> None:
-    for path in (PACK, GUIDE, HTML, JS, CSS):
+    for path in (PACK, GUIDE, HTML, JS, PREFLIGHT, CSS):
         require(path.is_file(), f"falta {path.relative_to(ROOT)}")
 
     data = json.loads(PACK.read_text(encoding="utf-8"))
@@ -50,11 +51,18 @@ def main() -> None:
     html = HTML.read_text(encoding="utf-8")
     require("aire-tiempo-committee-v09.css" in html, "actas.html no carga el CSS")
     require("aire-tiempo-committee-v09.js" in html, "actas.html no carga el JS")
+    require("offer-acts-preflight-v09.js" in html, "actas.html no carga el preflight")
+    require(html.index("offer-acts-preflight-v09.js") < html.index("offer-acts-v09.js"), "el preflight debe cargarse antes del editor base")
 
     js = JS.read_text(encoding="utf-8")
     for token in ("PACK_URL", "data-load-committee-pack", "interceptFinalize", "EE_AIRE_TIEMPO_COMMITTEE_V09"):
         require(token in js, f"falta contrato JS {token}")
     require("window.EE_DATA" not in js, "el paquete no debe mutar ni depender de EE_DATA")
+
+    preflight = PREFLIGHT.read_text(encoding="utf-8")
+    for token in ("window.addEventListener('click'", "beforeFinalize", "stopImmediatePropagation", "EE_VALIDATION_ACTS_PREFLIGHT_V09"):
+        require(token in preflight, f"falta contrato de preflight {token}")
+    require("window.EE_DATA" not in preflight, "el preflight no debe mutar ni depender de EE_DATA")
 
     print("PASS paquete guiado Aire y Tiempo v0.9")
 

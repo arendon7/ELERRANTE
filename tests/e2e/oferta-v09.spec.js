@@ -30,19 +30,35 @@ async function openOffer(page,path){
 }
 
 async function activateVisibleButton(page,button,isMobile){
-  await button.evaluate(element=>element.scrollIntoView({block:'center',inline:'center',behavior:'instant'}));
-  await page.waitForTimeout(180);
-  const box=await button.boundingBox();
-  expect(box,'El botón de guardado debe tener geometría visible').not.toBeNull();
-  const point={x:box.x+box.width/2,y:box.y+box.height/2};
+  const point=await button.evaluate(element=>{
+    element.scrollIntoView({block:'center',inline:'center',behavior:'auto'});
+    const rect=element.getBoundingClientRect();
+    return {
+      x:rect.left+rect.width/2,
+      y:rect.top+rect.height/2,
+      width:rect.width,
+      height:rect.height,
+      viewportWidth:window.innerWidth,
+      viewportHeight:window.innerHeight
+    };
+  });
+  await page.waitForTimeout(120);
+  const refreshed=await button.evaluate(element=>{
+    const rect=element.getBoundingClientRect();
+    return {x:rect.left+rect.width/2,y:rect.top+rect.height/2,width:rect.width,height:rect.height};
+  });
+  expect(refreshed.width,'El botón debe tener ancho visible').toBeGreaterThan(0);
+  expect(refreshed.height,'El botón debe tener alto visible').toBeGreaterThan(0);
   const hit=await page.evaluate(({x,y})=>{
     const element=document.elementFromPoint(x,y);
     const target=element?.closest('.offer-governance-form button[type="submit"]');
     return {matches:Boolean(target),tag:element?.tagName||'',text:(element?.textContent||'').trim().slice(0,80)};
-  },point);
+  },refreshed);
   expect(hit.matches,`El centro del botón está interceptado por ${hit.tag}: ${hit.text}`).toBeTruthy();
-  if(isMobile) await page.touchscreen.tap(point.x,point.y);
-  else await page.mouse.click(point.x,point.y);
+  if(isMobile) await page.touchscreen.tap(refreshed.x,refreshed.y);
+  else await page.mouse.click(refreshed.x,refreshed.y);
+  expect(point.viewportWidth).toBeGreaterThan(0);
+  expect(point.viewportHeight).toBeGreaterThan(0);
 }
 
 test.describe('Studio de Oferta v0.9',()=>{

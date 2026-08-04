@@ -12,20 +12,12 @@ function observe(page) {
   });
   page.on('request', request => {
     const url = request.url();
-    if (
-      url.includes('/assets/chunks/app-') ||
-      url.includes('/assets/chunks/data-') ||
-      url.includes('/assets/chunks/preprod-')
-    ) {
-      damagedSourceRequests.push(url);
-    }
+    if (url.includes('/assets/chunks/app-') || url.includes('/assets/chunks/data-') || url.includes('/assets/chunks/preprod-')) damagedSourceRequests.push(url);
   });
   page.on('requestfailed', request => {
     const url = request.url();
     const reason = request.failure()?.errorText || 'unknown';
-    if (url.startsWith('http://127.0.0.1:4173') && !reason.includes('ERR_ABORTED')) {
-      failedLocal.push(`${url}: ${reason}`);
-    }
+    if (url.startsWith('http://127.0.0.1:4173') && !reason.includes('ERR_ABORTED')) failedLocal.push(`${url}: ${reason}`);
   });
 
   return async () => {
@@ -38,9 +30,7 @@ function observe(page) {
 
 async function open(page, path, needsData = true) {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  if (needsData) {
-    await page.waitForFunction(() => window.EE_DATA?.products?.length === 11);
-  }
+  if (needsData) await page.waitForFunction(() => window.EE_DATA?.products?.length === 11);
   await page.waitForTimeout(150);
 }
 
@@ -58,7 +48,7 @@ async function runtimeState(page) {
 }
 
 test.describe('Runtime recuperado', () => {
-  test('inicio carga modelo, marca y visuales recuperados', async ({ page }) => {
+  test('inicio carga modelo, marca y sistema visual final', async ({ page }) => {
     const clean = observe(page);
     await open(page, '/index.html');
 
@@ -76,30 +66,24 @@ test.describe('Runtime recuperado', () => {
     await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.locator('#site-header')).not.toBeEmpty();
     await expect(page.locator('#site-footer')).not.toBeEmpty();
+    await page.waitForFunction(() => document.documentElement.dataset.eeVisualSystem === 'brand-final');
 
-    const visuals = page.locator('img[src*="assets/images/v040/"]');
-    const visualCount = await visuals.count();
-    expect(visualCount).toBeGreaterThanOrEqual(2);
-    await visuals.evaluateAll(images => images.forEach(image => {
-      image.loading = 'eager';
-    }));
-    await expect.poll(() => visuals.evaluateAll(images =>
-      images.filter(image => !image.complete || image.naturalWidth === 0).map(image => image.getAttribute('src'))
-    )).toEqual([]);
+    const visuals = page.locator('img[data-visual-system="brand-final"]');
+    await expect.poll(() => visuals.count()).toBeGreaterThanOrEqual(2);
+    await visuals.evaluateAll(images => images.forEach(image => { image.loading = 'eager'; }));
+    await expect.poll(() => visuals.evaluateAll(images => images.filter(image => !image.complete || image.naturalWidth === 0).map(image => image.getAttribute('src')))).toEqual([]);
     await clean();
   });
 
-  test('tienda representa las once referencias recuperadas', async ({ page }) => {
+  test('tienda representa las once referencias y sus visuales finales', async ({ page }) => {
     const clean = observe(page);
     await open(page, '/tienda.html');
     const grid = page.locator('#product-grid');
     await expect(grid).toBeVisible();
     await expect.poll(() => grid.locator(':scope > *').count()).toBe(11);
-
-    const productTargets = await grid.locator('a[href*="producto.html?id="]').evaluateAll(links =>
-      [...new Set(links.map(link => new URL(link.href).searchParams.get('id')).filter(Boolean))]
-    );
+    const productTargets = await grid.locator('a[href*="producto.html?id="]').evaluateAll(links => [...new Set(links.map(link => new URL(link.href).searchParams.get('id')).filter(Boolean))]);
     expect(productTargets.length).toBe(11);
+    await expect.poll(() => grid.locator('img[data-visual-system="brand-final"]').count()).toBeGreaterThanOrEqual(8);
     await clean();
   });
 
@@ -107,16 +91,13 @@ test.describe('Runtime recuperado', () => {
     const clean = observe(page);
     await open(page, '/producto.html?id=harina-aire-y-tiempo');
     await expect(page.locator('main h1').first()).toContainText('Aire y Tiempo');
-
     const add = page.locator('.buy-product').first();
     await expect(add).toBeVisible();
     await add.click();
-
     await expect.poll(() => page.evaluate(() => {
       const lines = JSON.parse(localStorage.getItem('ee_v2_cart') || '[]');
       return lines.reduce((sum, line) => sum + Number(line.qty || 0), 0);
     })).toBeGreaterThan(0);
-
     const count = await page.locator('.cart-count').allTextContents();
     expect(count.some(value => Number(value) > 0)).toBe(true);
     await clean();
@@ -126,13 +107,8 @@ test.describe('Runtime recuperado', () => {
 test.describe('Conversión', () => {
   test('checkout lee el carrito y conserva total positivo', async ({ page }) => {
     const clean = observe(page);
-    await page.addInitScript(() => {
-      localStorage.setItem('ee_v2_cart', JSON.stringify([
-        { id: 'la-errante', variant: 'unidad', qty: 1 }
-      ]));
-    });
+    await page.addInitScript(() => localStorage.setItem('ee_v2_cart', JSON.stringify([{ id: 'la-errante', variant: 'unidad', qty: 1 }])));
     await open(page, '/checkout.html');
-
     const body = await page.locator('body').innerText();
     expect(body).toContain('La Errante');
     expect(body).toMatch(/\$\s?[\d.]+/);
@@ -143,13 +119,10 @@ test.describe('Conversión', () => {
   test('cotización contiene tres pasos y avanza al segundo', async ({ page }) => {
     const clean = observe(page);
     await open(page, '/en-movimiento.html#cotizar');
-
     const form = page.locator('form.multi-step');
     await expect(form).toBeVisible();
     await expect(form.locator('.form-step')).toHaveCount(3);
-
     const first = form.locator('.form-step.active');
-    await expect(first).toBeVisible();
     await first.locator('select').selectOption({ index: 1 });
     await first.locator('input[type="number"]').fill('40');
     await first.locator('input[type="date"]').fill('2026-12-12');
@@ -162,12 +135,7 @@ test.describe('Conversión', () => {
 });
 
 test.describe('Superficies públicas', () => {
-  const pages = [
-    '/historia.html', '/en-casa.html', '/bitacora.html', '/recetas.html',
-    '/herramientas.html', '/cobertura.html', '/ayuda.html', '/cuenta.html',
-    '/nosotros.html'
-  ];
-
+  const pages = ['/historia.html','/en-casa.html','/bitacora.html','/recetas.html','/herramientas.html','/cobertura.html','/ayuda.html','/cuenta.html','/nosotros.html'];
   test('todas las superficies abren con contenido y sin errores', async ({ page }) => {
     for (const path of pages) {
       await test.step(path, async () => {
@@ -190,7 +158,6 @@ test.describe('Demo integral', () => {
     ['/studio.html', '#studio-app', true],
     ['/presentacion.html', '.presentation-slide.active', false]
   ];
-
   for (const [path, selector, needsData] of modules) {
     test(`${path} renderiza su modelo`, async ({ page }) => {
       const clean = observe(page);

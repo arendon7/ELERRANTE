@@ -41,9 +41,20 @@
     return 'pending';
   }
 
+  function arrangeMobileDetail(studio){
+    if(!window.matchMedia('(max-width:760px)').matches) return;
+    const detail=studio.querySelector('[data-offer-detail]');
+    const gates=detail?.querySelector('.offer-gates');
+    const form=detail?.querySelector('.offer-governance-form');
+    const gateHeading=gates?.previousElementSibling;
+    if(!detail||!gates||!form||!gateHeading) return;
+    if(form.nextElementSibling!==gateHeading) detail.insertBefore(form,gateHeading);
+  }
+
   function applyTranslation(){
     const studio=document.querySelector('[data-offer-studio-v09]');
     if(!studio) return;
+    arrangeMobileDetail(studio);
     const productId=selectedProductId(studio);
     if(!productId) return;
     const saved=governance().products?.[productId]?.gates||{};
@@ -124,6 +135,8 @@
       event.stopImmediatePropagation();
       persistForm(form);
     },true);
+
+    window.matchMedia('(max-width:760px)').addEventListener?.('change',applyTranslation);
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);

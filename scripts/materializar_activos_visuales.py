@@ -23,13 +23,15 @@ def read_assets(path: Path) -> dict[str, str]:
     end = payload.find(");")
     if end < 0:
         raise RuntimeError(f"No se encontró el cierre del objeto visual en {path}")
-    payload = payload[:end].strip()
-    return json.loads(payload)
+    return json.loads(payload[:end].strip())
 
 
 assets: dict[str, str] = {}
 for source in SOURCES:
     assets.update(read_assets(source))
+
+if "evento-servicio" not in assets and "evento-hero" in assets:
+    assets["evento-servicio"] = assets["evento-hero"]
 
 editorial = {
     "home-hero", "home-masa-fuego", "home-fermentacion", "home-ingredientes",
@@ -43,11 +45,16 @@ expected = editorial | {
     "producto-reduccion-balsamica", "producto-panela-maracuya",
     "producto-combo-primera-ruta",
 }
-missing = expected - set(assets)
+missing = {
+    key for key in expected
+    if key not in assets and not (OUT / f"{key}.svg").is_file()
+}
 if missing:
     raise RuntimeError("Activos faltantes: " + ", ".join(sorted(missing)))
 
 for key in sorted(expected):
+    if key not in assets:
+        continue
     width, height = (640, 360) if key in editorial else (520, 390)
     title = key.replace("-", " ").title()
     svg = (
@@ -58,13 +65,17 @@ for key in sorted(expected):
     )
     (OUT / f"{key}.svg").write_text(svg, encoding="utf-8")
 
+materialized = sorted(path.stem for path in OUT.glob("*.svg") if path.stem in expected)
+if len(materialized) != len(expected):
+    raise RuntimeError(f"Se esperaban {len(expected)} activos y se obtuvieron {len(materialized)}")
+
 manifest = {
     "version": "1.2.0",
-    "count": len(expected),
-    "assets": sorted(expected),
-    "source": "brand-final embedded source packs",
+    "count": len(materialized),
+    "assets": materialized,
+    "source": "physical assets plus embedded brand-final source packs",
 }
 (OUT / "manifest.json").write_text(
     json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
 )
-print(f"Materializados {len(expected)} activos visuales finales.")
+print(f"Materializados {len(materialized)} activos visuales finales.")

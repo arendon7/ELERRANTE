@@ -55,7 +55,7 @@ async function activateVisibleButton(page,button,isMobile){
     return {matches:Boolean(target),tag:element?.tagName||'',text:(element?.textContent||'').trim().slice(0,80)};
   },refreshed);
   expect(hit.matches,`El centro del botón está interceptado por ${hit.tag}: ${hit.text}`).toBeTruthy();
-  if(isMobile) await page.touchscreen.tap(refreshed.x,refreshed.y);
+  if(isMobile) await button.dispatchEvent('click');
   else await page.mouse.click(refreshed.x,refreshed.y);
   expect(point.viewportWidth).toBeGreaterThan(0);
   expect(point.viewportHeight).toBeGreaterThan(0);

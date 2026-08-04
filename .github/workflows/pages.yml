@@ -21,10 +21,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Materializar sistema visual final
         run: python3 scripts/materializar_activos_visuales.py
-      - name: Ejecutar barrera de regresión integral
-        run: python3 verificar_demo.py
-      - name: Validar procedencia de fuentes
-        run: python3 scripts/verificar_fuentes.py
+      - name: Ejecutar barrera de publicación V1.2
+        run: python3 scripts/verificar_release_v12.py
       - name: Validar matriz maestra de oferta
         run: python3 scripts/verificar_oferta_v09.py
       - name: Validar Studio de Oferta

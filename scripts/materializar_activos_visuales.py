@@ -20,7 +20,7 @@ def read_assets(path: Path) -> dict[str, str]:
     if start < 0:
         raise RuntimeError(f"No se encontró el objeto visual en {path}")
     payload = text[start + len(marker):].strip()
-    end = payload.rfind(");")
+    end = payload.find(");")
     if end < 0:
         raise RuntimeError(f"No se encontró el cierre del objeto visual en {path}")
     payload = payload[:end].strip()

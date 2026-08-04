@@ -58,28 +58,39 @@
     box.scrollIntoView({block:'center',behavior:'auto'});
   }
 
-  function beforeFinalize(event){
+  function blockWhenNeeded(event,form){
+    const issues=collectIssues(form);
+    if(!issues.length) return false;
+    event.preventDefault();
+    showIssues(form,issues);
+    return true;
+  }
+
+  function beforeFinalizeClick(event){
     const button=event.composedPath().find(node=>node?.matches?.('[data-finalize-act]'));
     if(!button) return;
     const form=button.closest('[data-act-form]');
-    const issues=collectIssues(form);
-    if(!issues.length) return;
-    event.preventDefault();
+    if(!blockWhenNeeded(event,form)) return;
     event.stopPropagation();
     event.stopImmediatePropagation();
-    showIssues(form,issues);
+  }
+
+  function beforeFinalizeContract(event){
+    const form=event.detail?.form||event.target?.closest?.('[data-act-form]')||null;
+    blockWhenNeeded(event,form);
   }
 
   function bindButtons(root=document){
     root.querySelectorAll?.('[data-finalize-act]').forEach(button=>{
       if(boundButtons.has(button)) return;
-      button.addEventListener('click',beforeFinalize,true);
+      button.addEventListener('click',beforeFinalizeClick,true);
       boundButtons.add(button);
     });
   }
 
   function init(){
-    window.addEventListener('click',beforeFinalize,true);
+    document.addEventListener('ee:before-finalize-act',beforeFinalizeContract);
+    window.addEventListener('click',beforeFinalizeClick,true);
     bindButtons();
     const host=document.querySelector('#acts-app')||document.body;
     const observer=new MutationObserver(records=>{
@@ -94,7 +105,7 @@
       ready:true,
       product_id:PRODUCT_ID,
       critical_gates:CRITICAL_GATES.length,
-      binding:'window-capture+button-capture'
+      binding:'cancelable-contract+window-capture+button-capture'
     };
   }
 

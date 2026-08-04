@@ -1,4 +1,4 @@
-const CACHE = 'el-errante-v0-6-8';
+const CACHE = 'el-errante-v0-6-9';
 const CORE = [
   './index.html','./historia.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
@@ -7,7 +7,11 @@ const CORE = [
   './assets/styles.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
   './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
   './assets/offer-studio-v09.js','./assets/offer-studio-v09.css','./assets/offer-governance-v09.js',
-  './assets/offer-acts-v09.js','./assets/offer-acts-v09.css','./documentacion/modelo-oferta-v09.json',
+  './assets/offer-acts-v09.js','./assets/offer-acts-v09.css',
+  './assets/aire-tiempo-committee-v09.js','./assets/aire-tiempo-committee-v09.css',
+  './documentacion/modelo-oferta-v09.json',
+  './documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json',
+  './documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md',
   './assets/source/v040-app-001.b64','./assets/source/v040-app-002.b64','./assets/source/v040-app-003.b64','./assets/source/v040-app-004.b64','./assets/source/v040-app-005.b64','./assets/source/v040-app-006.b64',
   './assets/source/v040-data-001.b64','./assets/source/v040-data-002.b64','./assets/source/v040-data-003.b64','./assets/source/v040-data-004.b64',
   './assets/source/v040-preprod-001a.b64','./assets/source/v040-preprod-001b.b64','./assets/source/v040-preprod-001c.b64','./assets/source/v040-preprod-001d.b64','./assets/source/v040-preprod-002.b64','./assets/source/v040-preprod-003.b64',

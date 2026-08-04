@@ -6,6 +6,28 @@ async function openActs(page){
   await page.waitForFunction(()=>window.EE_AIRE_TIEMPO_COMMITTEE_V09?.ready===true);
 }
 
+async function activateVerifiedButton(button){
+  const geometry=await button.evaluate(element=>{
+    element.scrollIntoView({block:'center',inline:'center',behavior:'auto'});
+    const rect=element.getBoundingClientRect();
+    const point={x:rect.left+rect.width/2,y:rect.top+rect.height/2};
+    const hit=document.elementFromPoint(point.x,point.y);
+    return {
+      width:rect.width,
+      height:rect.height,
+      inViewport:point.x>=0&&point.y>=0&&point.x<=window.innerWidth&&point.y<=window.innerHeight,
+      hitMatches:Boolean(hit&&(hit===element||element.contains(hit))),
+      hitTag:hit?.tagName||'',
+      hitText:(hit?.textContent||'').trim().slice(0,80)
+    };
+  });
+  expect(geometry.width,'El botón debe tener ancho visible').toBeGreaterThan(0);
+  expect(geometry.height,'El botón debe tener alto visible').toBeGreaterThan(0);
+  expect(geometry.inViewport,'El centro del botón debe quedar dentro del viewport').toBeTruthy();
+  expect(geometry.hitMatches,`El botón está interceptado por ${geometry.hitTag}: ${geometry.hitText}`).toBeTruthy();
+  await button.evaluate(element=>element.click());
+}
+
 test.describe('Actas de validación v0.9',()=>{
   test('inicia con Aire y Tiempo, las 17 puertas y el paquete de comité',async({page})=>{
     await openActs(page);
@@ -41,7 +63,7 @@ test.describe('Actas de validación v0.9',()=>{
     await form.locator('[name="signatories"]').fill('Por asignar | Responsable técnico');
     await form.locator('[name="overall_decision"]').selectOption('en_prueba');
     await form.locator('[data-act-gate]').first().locator('[data-gate-reviewed]').check();
-    await form.locator('[data-finalize-act]').click();
+    await activateVerifiedButton(form.locator('[data-finalize-act]'));
     await expect(form.locator('[data-act-message]')).toContainText('No se puede finalizar');
     await expect(form.locator('[data-act-message]')).toContainText('nombres reales');
     expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v09_validation_acts')||'[]').length)).toBe(0);
@@ -60,7 +82,7 @@ test.describe('Actas de validación v0.9',()=>{
     await firstGate.locator('[data-gate-evidence]').fill('Acta de concepto revisada.');
     await form.locator('[data-save-draft]').click();
     await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v09_validation_acts')||'[]').length)).toBe(1);
-    await form.locator('[data-finalize-act]').click();
+    await activateVerifiedButton(form.locator('[data-finalize-act]'));
     await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v09_validation_acts')||'[]')[0]?.status)).toBe('finalizada');
     page.once('dialog',dialog=>dialog.accept());
     await form.locator('[data-apply-act]').click();

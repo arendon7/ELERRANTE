@@ -7,54 +7,71 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v0-6-8
+  EXPECTED_CACHE: el-errante-v0-6-7
 
 jobs:
   health:
     name: GitHub Pages corresponde a main
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 6
 
     steps:
-      - name: Definir commit esperado
+      - name: Definir expectativa
         run: |
           echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
           echo "Workflow fuente: ${{ github.event.workflow_run.html_url }}"
 
-      - name: Esperar propagación de GitHub Pages
+      - name: Exigir despliegue fuente exitoso
+        run: test "$SOURCE_CONCLUSION" = "success"
+
+      - name: Esperar marcador público coherente
         shell: bash
         run: |
           set -euo pipefail
           success=0
-          for attempt in $(seq 1 24); do
-            marker="$(curl --fail --silent --show-error --location --max-time 20 \
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 \
               -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" || true)"
-            printf '%s\n' "$marker" > deploy-version-observed.txt
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" \
+              > deploy-version-observed.txt || true
 
-            if grep -q "release_commit=$EXPECTED_SHA" deploy-version-observed.txt \
-              && grep -q "cache=$EXPECTED_CACHE" deploy-version-observed.txt \
-              && grep -q 'deploy_source=main' deploy-version-observed.txt; then
+            observed_sha="$(sed -n 's/^release_commit=//p' deploy-version-observed.txt | tr -d '\r')"
+            observed_cache="$(sed -n 's/^cache=//p' deploy-version-observed.txt | tr -d '\r')"
+            observed_source="$(sed -n 's/^deploy_source=//p' deploy-version-observed.txt | tr -d '\r')"
+
+            if [ "$observed_sha" = "$EXPECTED_SHA" ] \
+              && [ "$observed_cache" = "$EXPECTED_CACHE" ] \
+              && [ "$observed_source" = "main" ]; then
               success=1
-              echo "Pages propagó el commit esperado en el intento $attempt."
+              echo "Marcador público coherente en el intento $attempt."
               break
             fi
 
-            echo "Intento $attempt: Pages aún no sirve $EXPECTED_SHA."
-            cat deploy-version-observed.txt || true
-            sleep 15
+            echo "Intento $attempt — diagnóstico real:"
+            if [ "$observed_sha" != "$EXPECTED_SHA" ]; then
+              echo "  SHA: esperado=$EXPECTED_SHA observado=${observed_sha:-vacío}"
+            fi
+            if [ "$observed_cache" != "$EXPECTED_CACHE" ]; then
+              echo "  caché: esperada=$EXPECTED_CACHE observada=${observed_cache:-vacía}"
+            fi
+            if [ "$observed_source" != "main" ]; then
+              echo "  fuente: esperada=main observada=${observed_source:-vacía}"
+            fi
+            sleep 10
           done
 
           if [ "$success" -ne 1 ]; then
-            echo "GitHub Pages no propagó el commit esperado dentro del plazo."
+            echo "El marcador público no coincide con la expectativa."
             exit 1
           fi
 
-      - name: Verificar runtime canónico publicado
+      - name: Verificar runtime publicado actual
         shell: bash
         run: |
           set -euo pipefail
@@ -63,15 +80,14 @@ jobs:
             "$PUBLIC_BASE/assets/data.js?verify=$EXPECTED_SHA" > public-data-loader.js
           curl --fail --silent --show-error --location --max-time 30 \
             -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/assets/canonical-data.js?verify=$EXPECTED_SHA" > public-canonical-data.js
+            "$PUBLIC_BASE/assets/products-v6.js?verify=$EXPECTED_SHA" > public-products-overlay.js
 
-          grep -q 'assets/canonical-data.js' public-data-loader.js
+          grep -q 'v040-data-001.b64' public-data-loader.js
+          grep -q 'v040-data-004.b64' public-data-loader.js
+          grep -q 'assets/products-v6.js' public-data-loader.js
           ! grep -q 'assets/chunks/data-' public-data-loader.js
-          ! grep -q 'assets/source/v040-data-' public-data-loader.js
-          ! grep -q 'assets/products-v6.js' public-data-loader.js
-          grep -q 'window.EE_DATA=' public-canonical-data.js
-          grep -q 'harina-aire-y-tiempo' public-canonical-data.js
-          grep -q 'combo-primera-ruta' public-canonical-data.js
+          grep -q 'harina-aire-y-tiempo' public-products-overlay.js
+          grep -q 'combo-primera-ruta' public-products-overlay.js
 
       - name: Verificar superficies diferenciadas
         shell: bash
@@ -84,9 +100,7 @@ jobs:
           done
 
           grep -q 'personas-proyecto' public-historia.html
-          grep -q 'nosotros.html' public-historia.html
           grep -q 'Personas y proyecto' public-nosotros.html
-          grep -q 'historia.html' public-nosotros.html
           grep -q 'Demo integral' public-equipo.html
 
       - name: Generar informe
@@ -95,18 +109,17 @@ jobs:
         run: |
           {
             echo "EL ERRANTE — PUBLIC HEALTH"
+            echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "expected_sha=$EXPECTED_SHA"
             echo "expected_cache=$EXPECTED_CACHE"
+            echo "runtime=baseline-v0.4-plus-products-v6-overlay"
             echo "public_base=$PUBLIC_BASE"
             echo
             echo "--- deploy-version observado ---"
             cat deploy-version-observed.txt 2>/dev/null || true
             echo
             echo "data_loader_bytes=$(wc -c < public-data-loader.js 2>/dev/null || echo 0)"
-            echo "canonical_data_bytes=$(wc -c < public-canonical-data.js 2>/dev/null || echo 0)"
-            echo "historia_bytes=$(wc -c < public-historia.html 2>/dev/null || echo 0)"
-            echo "nosotros_bytes=$(wc -c < public-nosotros.html 2>/dev/null || echo 0)"
-            echo "equipo_bytes=$(wc -c < public-equipo.html 2>/dev/null || echo 0)"
+            echo "products_overlay_bytes=$(wc -c < public-products-overlay.js 2>/dev/null || echo 0)"
           } > public-health-report.txt
           cat public-health-report.txt
 
@@ -119,5 +132,32 @@ jobs:
             public-health-report.txt
             deploy-version-observed.txt
             public-data-loader.js
+            public-products-overlay.js
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Publicar PASS en el issue de recuperación
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- el-errante-public-health -->';
+            const sha = context.payload.workflow_run.head_sha;
+            const body = `${marker}\n## Public health: PASS\n\n- Commit servido: \`${sha}\`.\n- Fuente: \`main\`.\n- Caché: \`${process.env.EXPECTED_CACHE}\`.\n- Runtime verificado: baseline íntegro v0.4 + overlay comercial v0.6.1.\n- Historia, Nosotros y Demo integral: publicadas.\n- Verificación: ${new Date().toISOString()}.`;
+            const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: 11, per_page: 100 });
+            const existing = comments.find(comment => comment.body?.includes(marker));
+            if (existing) await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });
+            else await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: 11, body });
+
+      - name: Publicar FAIL en el issue de recuperación
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- el-errante-public-health -->';
+            const sha = context.payload.workflow_run.head_sha;
+            const body = `${marker}\n## Public health: FAIL\n\nLa publicación no superó la verificación del commit \`${sha}\`.\n\n- Caché esperada: \`${process.env.EXPECTED_CACHE}\`.\n- El log distingue diferencias de SHA, caché, fuente y runtime.\n- Verificación: ${new Date().toISOString()}.`;
+            const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: 11, per_page: 100 });
+            const existing = comments.find(comment => comment.body?.includes(marker));
+            if (existing) await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });
+            else await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: 11, body });

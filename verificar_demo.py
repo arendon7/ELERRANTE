@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Barrera estructural, visual y de seguridad para El Errante."""
+"""Barrera estructural, visual y de seguridad para El Errante V1.1."""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ from pathlib import Path
 from urllib.parse import unquote
 import base64
 import re
-import struct
 import sys
 
 ROOT = Path(__file__).resolve().parent
@@ -24,24 +23,33 @@ PUBLIC_PAGES = [
 ]
 INTEGRAL_PAGES = [
     "equipo.html", "admin.html", "control.html", "operacion.html",
-    "studio.html", "presentacion.html",
+    "studio.html", "actas.html", "presentacion.html",
 ]
 SCRIPTS = [
     "assets/data.js", "assets/products-v6.js", "assets/runtime.js",
     "assets/app.js", "assets/preprod.js", "assets/content-v5.js",
     "assets/host-mode.js", "assets/control.js", "assets/presentation.js",
 ]
-VISUALS = [
-    "v040-hero-desktop.svg", "v040-hero-mobile.svg",
-    "v040-harina-empaques.svg", "v040-harina-manos.svg",
-    "v040-harina-horno.svg", "v040-manos-masa.svg",
-    "v040-masa-apertura.svg", "v040-alveolos.svg",
-    "v040-fermentacion.svg", "v040-pizza-neo.svg",
-    "v040-pizza-errante.svg", "v040-despensa.svg",
-    "v040-aplicaciones-empaque.svg", "v040-pizzeria-movil.svg",
-    "v040-bitacora-fuego.svg", "v040-pizzas-artesanales.svg",
-    "v040-pizzas-coleccion.svg",
+DIRECT_VISUALS = [
+    "assets/images/brand-final/home-hero.svg",
+    "assets/images/brand-final/home-masa-fuego.svg",
+    "assets/images/brand-final/home-fermentacion.svg",
+    "assets/images/brand-final/home-ingredientes.svg",
 ]
+VISUAL_PACKS = {
+    "assets/brand-final-editorial.js": [
+        "home-compartir", "home-en-casa", "home-despensa", "evento-hero",
+    ],
+    "assets/brand-final-products-a.js": [
+        "producto-harina", "producto-crea-tuya", "producto-margherita", "producto-diavola",
+    ],
+    "assets/brand-final-products-b.js": [
+        "producto-bosque", "producto-cuatro-quesos", "producto-la-errante", "producto-combo-primera-ruta",
+    ],
+    "assets/brand-final-products-c.js": [
+        "producto-salsa-tomate", "producto-reduccion-balsamica", "producto-panela-maracuya", "evento-noche",
+    ],
+}
 PRODUCTS = [
     "harina-aire-y-tiempo", "crea-la-tuya", "margherita-del-taller",
     "diavola-errante", "bosque", "cuatro-quesos-montana", "la-errante",
@@ -49,10 +57,9 @@ PRODUCTS = [
     "combo-primera-ruta",
 ]
 REPO_FILES = [
-    ".github/workflows/pages.yml", "README.md", ".gitignore",
-    "service-worker.js", "manifest.webmanifest", "deploy-version.txt",
-    "documentacion/AUDITORIA_REGRESION_V040_V061.md",
-    "documentacion/SNAPSHOT_AUTOCONTENIDO_V040.md",
+    ".github/workflows/pages.yml", ".github/workflows/public-health.yml",
+    "README.md", ".gitignore", "service-worker.js", "manifest.webmanifest",
+    "deploy-version.txt", "assets/logo-mark.svg", "assets/logo-lockup.svg",
     "documentacion/ACCESOS_DEMO.md",
 ]
 EXTERNAL = ("http:", "https:", "//", "mailto:", "tel:", "javascript:", "data:", "blob:", "#")
@@ -78,6 +85,18 @@ def clean_reference(value: str) -> str | None:
     return value or None
 
 
+def validate_avif_payload(payload: str, label: str) -> None:
+    compact = "".join(payload.split())
+    compact += "=" * ((4 - len(compact) % 4) % 4)
+    try:
+        raw = base64.b64decode(compact, validate=False)
+    except Exception as error:
+        ISSUES.append(f"{label}: AVIF base64 ilegible ({error})")
+        return
+    if len(raw) < 20 or b"ftypavif" not in raw[:32]:
+        ISSUES.append(f"{label}: contenido AVIF inválido")
+
+
 for page in PUBLIC_PAGES:
     require(page, "Página pública")
 for page in INTEGRAL_PAGES:
@@ -86,52 +105,46 @@ for script in SCRIPTS:
     require(script, "Script")
 for required in REPO_FILES:
     require(required, "Archivo de repositorio")
-for visual in VISUALS:
-    require(f"assets/images/v040/{visual}", "Visual v0.4")
+for visual in DIRECT_VISUALS:
+    require(visual, "Visual final")
+for pack in VISUAL_PACKS:
+    require(pack, "Paquete visual final")
 
-# Integridad real de SVG recuperados, referencias anidadas y WebP embebidos.
-visual_root = ROOT / "assets/images/v040"
-for svg in sorted(visual_root.glob("*.svg")):
-    content = svg.read_text(encoding="utf-8", errors="ignore")
-    for reference in re.findall(r'href=["\']([^"\']+)["\']', content, re.I):
-        if reference.startswith("data:image/webp;base64,"):
-            payload = "".join(reference.split(",", 1)[1].split())
-            payload += "=" * ((4 - len(payload) % 4) % 4)
-            try:
-                raw = base64.b64decode(payload, validate=False)
-                if len(raw) < 16 or raw[:4] != b"RIFF" or raw[8:12] != b"WEBP":
-                    ISSUES.append(f"{svg.relative_to(ROOT)}: WebP embebido inválido")
-                else:
-                    declared = struct.unpack("<I", raw[4:8])[0] + 8
-                    if declared != len(raw):
-                        ISSUES.append(f"{svg.relative_to(ROOT)}: WebP truncado ({len(raw)} != {declared})")
-            except Exception as error:
-                ISSUES.append(f"{svg.relative_to(ROOT)}: base64 WebP ilegible ({error})")
-        elif not reference.startswith(EXTERNAL):
-            target = (svg.parent / reference).resolve()
-            if not target.is_file():
-                ISSUES.append(f"{svg.relative_to(ROOT)}: referencia visual faltante {reference}")
+for relative in DIRECT_VISUALS:
+    content = text(relative)
+    match = re.search(r"data:image/avif;base64,([^'\"]+)", content)
+    if not match:
+        ISSUES.append(f"{relative}: no contiene AVIF autocontenido")
+    else:
+        validate_avif_payload(match.group(1), relative)
 
-semantic_repairs = {
-    "v040-hero-mobile.svg": "v040-hero-desktop.svg",
-    "v040-pizza-neo.svg": "v040-pizzas-artesanales.svg",
-    "v040-pizzeria-movil.svg": "v040-pizza-errante.svg",
-}
-for file_name, expected_reference in semantic_repairs.items():
-    if expected_reference not in text(f"assets/images/v040/{file_name}"):
-        ISSUES.append(f"{file_name}: no conserva la reparación semántica {expected_reference}")
-for expected_reference in ["salsa-tomate-packshot.svg", "balsamica-packshot.svg", "v6-panela-maracuya.svg"]:
-    if expected_reference not in text("assets/images/v040/v040-despensa.svg"):
-        ISSUES.append(f"v040-despensa.svg: falta {expected_reference}")
+for relative, expected_keys in VISUAL_PACKS.items():
+    content = text(relative)
+    for key in expected_keys:
+        if f'"{key}"' not in content:
+            ISSUES.append(f"{relative}: falta activo {key}")
+    payloads = re.findall(r"data:image/avif;base64,([A-Za-z0-9+/=]+)", content)
+    if len(payloads) != len(expected_keys):
+        ISSUES.append(f"{relative}: contiene {len(payloads)} AVIF; se esperaban {len(expected_keys)}")
+    for index, payload in enumerate(payloads, start=1):
+        validate_avif_payload(payload, f"{relative} activo {index}")
 
-# Las pizzas públicas no pueden volver a usar la fotografía del vehículo.
-host_mode_semantics = text("assets/host-mode.js")
-for source in ["v6-la-errante.svg", "pizza-la-errante.svg", "pizza-errante.svg"]:
-    expected = f'["assets/images/{source}","assets/images/v040/v040-pizzas-artesanales.svg"]'
-    if expected not in host_mode_semantics:
-        ISSUES.append(f"Mapa visual semántico incorrecto para {source}")
+host_mode = text("assets/host-mode.js")
+service_worker = text("service-worker.js")
+for marker in [
+    'PUBLIC_VERSION="1.1.0"', 'ACTIVE_CACHE="el-errante-v1-1-0"',
+    'dataset.visualSystem="brand-final"', 'dataset.eeVisualSystem="brand-final"',
+    *DIRECT_VISUALS, *VISUAL_PACKS.keys(),
+]:
+    if marker not in host_mode and marker not in service_worker:
+        ISSUES.append(f"Sistema visual final incompleto: falta {marker}")
+for keys in VISUAL_PACKS.values():
+    for key in keys:
+        if key not in host_mode and key not in text(next(pack for pack, pack_keys in VISUAL_PACKS.items() if key in pack_keys)):
+            ISSUES.append(f"Activo visual sin asociación: {key}")
+if "assets/images/v040/" in service_worker:
+    ISSUES.append("La caché pública todavía depende de visuales v0.4")
 
-# Referencias locales de HTML y CSS.
 html_files = sorted(ROOT.glob("*.html"))
 attribute_pattern = re.compile(r'(?:href|src|poster|action)=["\']([^"\']+)["\']', re.I)
 srcset_pattern = re.compile(r'srcset=["\']([^"\']+)["\']', re.I)
@@ -150,7 +163,6 @@ for css in sorted((ROOT / "assets").rglob("*.css")):
         if cleaned and not (css.parent / cleaned).resolve().exists():
             ISSUES.append(f"{css.relative_to(ROOT)}: recurso faltante {reference}")
 
-# Alias históricos de producto.
 redirects = {
     "producto-harina.html": "producto.html?id=harina-aire-y-tiempo",
     "producto-crea-tuya.html": "producto.html?id=crea-la-tuya",
@@ -159,55 +171,39 @@ for file_name, target in redirects.items():
     if target not in text(file_name):
         ISSUES.append(f"{file_name}: no redirige a {target}")
 
-# Catálogo y visuales.
 products_source = text("assets/products-v6.js")
 for product_id in PRODUCTS:
     if f'"{product_id}"' not in products_source:
         ISSUES.append(f"Catálogo incompleto: falta {product_id}")
+if "reducción balsámica endulzada con panela e infusionada con maracuyá" not in products_source.lower():
+    ISSUES.append("Panela y Maracuyá no conserva su definición balsámica correcta")
 
-host_mode = text("assets/host-mode.js")
-service_worker = text("service-worker.js")
-for visual in VISUALS:
-    if visual not in {"v040-pizzas-artesanales.svg", "v040-pizza-errante.svg"} and visual not in host_mode:
-        ISSUES.append(f"Mapa visual incompleto: {visual}")
-    if visual not in service_worker:
-        ISSUES.append(f"Caché visual incompleta: {visual}")
-
-for page, visual in {
-    "bitacora.html": "v040-bitacora-fuego.svg",
-    "tienda.html": "v040-pizzas-coleccion.svg",
-    "en-casa.html": "v040-pizzas-coleccion.svg",
-}.items():
-    if visual not in text(page):
-        ISSUES.append(f"{page}: no usa directamente {visual}")
-
-# Una única versión de caché declarada.
 deploy_marker = text("deploy-version.txt")
 cache_match = re.search(r"^cache=(.+)$", deploy_marker, re.M)
 cache_name = cache_match.group(1).strip() if cache_match else ""
-if "version=0.6.1" not in deploy_marker:
-    ISSUES.append("deploy-version.txt no identifica version=0.6.1")
-if not cache_name:
-    ISSUES.append("deploy-version.txt no declara cache=")
-else:
-    if cache_name not in service_worker:
-        ISSUES.append(f"service-worker.js no usa la caché declarada {cache_name}")
-    if cache_name not in host_mode:
-        ISSUES.append(f"host-mode.js no usa la caché declarada {cache_name}")
+if "version=1.1.0" not in deploy_marker:
+    ISSUES.append("deploy-version.txt no identifica version=1.1.0")
+if cache_name != "el-errante-v1-1-0":
+    ISSUES.append(f"Caché declarada incorrecta: {cache_name or 'vacía'}")
+for relative, content in [("service-worker.js", service_worker), ("assets/host-mode.js", host_mode)]:
+    if cache_name not in content:
+        ISSUES.append(f"{relative} no usa la caché declarada {cache_name}")
 
-# CI y despliegue.
 workflow = text(".github/workflows/pages.yml")
 for required in [
     'branches: ["main"]', "pull_request:", "github.event_name != 'pull_request'",
     "python3 verificar_demo.py", "python3 scripts/verificar_fuentes.py",
-    "node scripts/exportar-fuente-canonica.mjs",
+    "node scripts/exportar-fuente-canonica.mjs", "version=1.1.0",
+    "cache=el-errante-v1-1-0", "brand-final-products-c.js",
 ]:
     if required not in workflow:
         ISSUES.append(f"Workflow incompleto: falta {required}")
-if "fix/v0.5.1-restore-gold-assets" in workflow:
-    ISSUES.append("El workflow todavía referencia la rama histórica bloqueada")
+for obsolete in ["aplicar_paquete_visual_v1.py", "unzip -q", "se conserva la línea visual estable v0.4"]:
+    if obsolete in workflow:
+        ISSUES.append(f"Workflow conserva flujo obsoleto: {obsolete}")
+if (ROOT / "scripts/aplicar_paquete_visual_v1.py").exists():
+    ISSUES.append("El aplicador ZIP visual obsoleto todavía existe")
 
-# Patrones evidentes de secretos reales.
 secret_patterns = {
     "llave privada": r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
     "token GitHub": r"\bgh[pousr]_[A-Za-z0-9]{20,}\b",
@@ -217,20 +213,20 @@ text_extensions = {".html", ".js", ".css", ".json", ".md", ".txt", ".py", ".yml"
 for path in ROOT.rglob("*"):
     if not path.is_file() or path.suffix.lower() not in text_extensions:
         continue
-    if any(part in {".git", "_site", ".artifacts", "__pycache__"} for part in path.parts):
+    if any(part in {".git", "_site", ".artifacts", "__pycache__", "node_modules"} for part in path.parts):
         continue
     content = path.read_text(encoding="utf-8", errors="ignore")
     for label, pattern in secret_patterns.items():
         if re.search(pattern, content):
             ISSUES.append(f"Posible {label} expuesta en {path.relative_to(ROOT)}")
 
-print("EL ERRANTE V0.6.1 — BARRERA DE REGRESIÓN INTEGRAL")
-print("=" * 58)
+print("EL ERRANTE V1.1.0 — BARRERA DE REGRESIÓN INTEGRAL")
+print("=" * 59)
 print(f"Páginas HTML encontradas: {len(html_files)}")
 print(f"Páginas públicas requeridas: {len(PUBLIC_PAGES)}")
 print(f"Módulos integrales requeridos: {len(INTEGRAL_PAGES)}")
 print(f"Productos requeridos: {len(PRODUCTS)}")
-print(f"Visuales v0.4 requeridos: {len(VISUALS)}")
+print(f"Visuales finales validados: {len(DIRECT_VISUALS) + sum(map(len, VISUAL_PACKS.values()))}")
 print(f"Caché declarada: {cache_name or 'NO DEFINIDA'}")
 print(f"Archivos obligatorios validados: {len(CHECKED)}")
 print(f"Problemas: {len(ISSUES)}")

@@ -1,4 +1,5 @@
 const CACHE = 'el-errante-v0-6-9';
+const LEGACY_CACHES = ['el-errante-v0-6-8'];
 const CORE = [
   './index.html','./historia.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',

@@ -39,6 +39,8 @@ jobs:
           python3 scripts/verificar_paquete_aire_tiempo_v09.py
           node --check assets/offer-acts-preflight-v09.js
           node --check assets/aire-tiempo-committee-v09.js
+      - name: Validar aplicador visual opcional
+        run: python3 -m py_compile scripts/aplicar_paquete_visual_v1.py
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
       - name: Publicar fuente o diagnóstico para auditoría
@@ -66,7 +68,22 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site
-          rsync -av ./ _site/ --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' --exclude '.artifacts/'
+          rsync -av ./ _site/ --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' --exclude '.artifacts/' --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip'
+
+          if [ -f ELERRANTE_PAQUETE_VISUAL_V1_10.zip ]; then
+            echo "Aplicando paquete visual editorial V1."
+            rm -rf .artifacts/visual-v1
+            mkdir -p .artifacts/visual-v1
+            unzip -q ELERRANTE_PAQUETE_VISUAL_V1_10.zip -d .artifacts/visual-v1
+            test -d .artifacts/visual-v1/assets/images/brand-v1
+            mkdir -p _site/assets/images/brand-v1
+            rsync -av .artifacts/visual-v1/assets/images/brand-v1/ _site/assets/images/brand-v1/
+            cp .artifacts/visual-v1/manifest.json _site/assets/images/brand-v1/manifest.json
+            python3 scripts/aplicar_paquete_visual_v1.py _site
+          else
+            echo "Paquete visual V1 no presente: se conserva la línea visual estable v0.4."
+          fi
+
           printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-9\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
@@ -97,6 +114,18 @@ jobs:
           ! grep -q 'assets/chunks/app-' _site/assets/app.js
           ! grep -q 'assets/chunks/data-' _site/assets/data.js
           ! grep -q 'assets/chunks/preprod-' _site/assets/preprod.js
+
+          if [ -f ELERRANTE_PAQUETE_VISUAL_V1_10.zip ]; then
+            test -f _site/visual-package-version.txt
+            grep -q 'version=1' _site/visual-package-version.txt
+            grep -q 'assets=10' _site/visual-package-version.txt
+            for asset in home-hero-pizzeria-movil.webp home-masa-fuego.webp home-fermentacion.webp producto-margherita.webp producto-bosque.webp producto-cuatro-quesos.webp producto-la-errante-editorial.webp home-compartir.webp home-ingredientes.webp evento-noche.webp manifest.json; do
+              test -s "_site/assets/images/brand-v1/$asset"
+            done
+            grep -q 'assets/images/brand-v1/home-hero-pizzeria-movil.webp' _site/index.html
+            grep -q 'assets/images/brand-v1/evento-noche.webp' _site/en-movimiento.html
+            grep -q 'assets/images/brand-v1/producto-margherita.webp' _site/assets/products-v6.js
+          fi
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4
         with:

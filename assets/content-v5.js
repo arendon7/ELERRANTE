@@ -6,6 +6,7 @@
   const missing=[];
 
   if(!data){
+    window.EE_CONTENT_STATUS={ready:false,source:"assets/data.js + assets/preprod.js + assets/products-v6.js"};
     window.EE_CONTENT_V1_STATUS={ready:false,release:"v1.0-content",missing:["EE_DATA"],counts:{}};
     document.documentElement.dataset.eeContent="missing";
     console.error("El Errante: la fuente maestra EE_DATA no está disponible.");
@@ -48,16 +49,23 @@
   const ready=missing.length===0;
   data.settings.content_ready=ready;
 
-  /* Mantiene intacto el contrato histórico que valida la recuperación
-     de la fuente canónica. La renovación editorial publica su estado
-     y sus contenidos extendidos por separado. */
-  if(canonicalStatus) window.EE_CONTENT_STATUS=canonicalStatus;
+  /* Contrato estable de la fuente recuperada. El contenido editorial V1
+     se publica en un estado paralelo y no modifica estos indicadores. */
+  window.EE_CONTENT_STATUS=canonicalStatus||{
+    ready:
+      Array.isArray(data.products)&&data.products.length===11&&
+      Array.isArray(data.recipes)&&data.recipes.length===5&&
+      Array.isArray(data.articles)&&data.articles.length===5&&
+      Array.isArray(data.faqs)&&data.faqs.length===5&&
+      Array.isArray(data.coverage)&&data.coverage.length===6,
+    source:"assets/data.js + assets/preprod.js + assets/products-v6.js"
+  };
 
   window.EE_CONTENT_V1_STATUS={
     ready,
     release:"v1.0-content",
     source:"assets/content-v5.js",
-    canonical_source:canonicalStatus?.source||"assets/data.js + assets/preprod.js + assets/products-v6.js",
+    canonical_source:window.EE_CONTENT_STATUS.source,
     missing,
     counts,
     public_faqs:data.public_faqs.length,
@@ -74,7 +82,7 @@
 
   document.documentElement.dataset.eeContent=ready?"ready":"incomplete";
   document.documentElement.dataset.eeContentVersion="1.0";
-  document.dispatchEvent(new CustomEvent("ee:content-ready",{detail:window.EE_CONTENT_STATUS||window.EE_CONTENT_V1_STATUS}));
+  document.dispatchEvent(new CustomEvent("ee:content-ready",{detail:window.EE_CONTENT_STATUS}));
   document.dispatchEvent(new CustomEvent("ee:content-v1-ready",{detail:window.EE_CONTENT_V1_STATUS}));
   if(!ready) console.warn("El Errante: contenido editorial incompleto",window.EE_CONTENT_V1_STATUS);
 })();

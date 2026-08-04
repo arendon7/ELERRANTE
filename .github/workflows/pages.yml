@@ -34,6 +34,11 @@ jobs:
         run: |
           python3 scripts/verificar_actas_oferta_v09.py
           node --check assets/offer-acts-v09.js
+      - name: Validar paquete de comité Aire y Tiempo
+        run: |
+          python3 scripts/verificar_paquete_aire_tiempo_v09.py
+          node --check assets/offer-acts-preflight-v09.js
+          node --check assets/aire-tiempo-committee-v09.js
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
       - name: Publicar fuente o diagnóstico para auditoría
@@ -62,24 +67,31 @@ jobs:
         run: |
           mkdir -p _site
           rsync -av ./ _site/ --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' --exclude '.artifacts/'
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-8\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=0.6.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v0-6-9\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         shell: bash
         run: |
           grep -q 'version=0.6.1' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v0-6-8' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v0-6-9' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           for page in equipo admin control operacion studio actas presentacion; do test -f "_site/${page}.html"; done
           for part in v040-app-001.b64 v040-app-002.b64 v040-app-003.b64 v040-app-004.b64 v040-app-005.b64 v040-app-006.b64 v040-data-001.b64 v040-data-002.b64 v040-data-003.b64 v040-data-004.b64 v040-preprod-001a.b64 v040-preprod-001b.b64 v040-preprod-001c.b64 v040-preprod-001d.b64 v040-preprod-002.b64 v040-preprod-003.b64; do test -f "_site/assets/source/$part"; done
           for asset in v040-hero-desktop.svg v040-hero-mobile.svg v040-harina-empaques.svg v040-harina-manos.svg v040-harina-horno.svg v040-manos-masa.svg v040-masa-apertura.svg v040-alveolos.svg v040-fermentacion.svg v040-pizza-neo.svg v040-pizza-errante.svg v040-despensa.svg v040-aplicaciones-empaque.svg v040-pizzeria-movil.svg v040-bitacora-fuego.svg v040-pizzas-artesanales.svg v040-pizzas-coleccion.svg; do test -f "_site/assets/images/v040/$asset"; done
-          for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-v09.js offer-acts-v09.css; do test -f "_site/assets/$asset"; done
+          for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-preflight-v09.js offer-acts-v09.js offer-acts-v09.css aire-tiempo-committee-v09.js aire-tiempo-committee-v09.css; do test -f "_site/assets/$asset"; done
           test -f _site/documentacion/modelo-oferta-v09.json
+          test -f _site/documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json
+          test -f _site/documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md
           grep -q 'offer-studio-v09.js' _site/studio.html
+          grep -q 'offer-acts-preflight-v09.js' _site/actas.html
           grep -q 'offer-acts-v09.js' _site/actas.html
+          grep -q 'aire-tiempo-committee-v09.js' _site/actas.html
+          test "$(grep -bo 'offer-acts-preflight-v09.js' _site/actas.html | cut -d: -f1)" -lt "$(grep -bo 'offer-acts-v09.js' _site/actas.html | cut -d: -f1)"
           grep -q 'documentacion/modelo-oferta-v09.json' _site/assets/offer-acts-v09.js
-          grep -q 'el-errante-v0-6-8' _site/service-worker.js
+          grep -q 'aire-y-tiempo-paquete-comite-v09.json' _site/assets/aire-tiempo-committee-v09.js
+          grep -q 'EE_VALIDATION_ACTS_PREFLIGHT_V09' _site/assets/offer-acts-preflight-v09.js
+          grep -q 'el-errante-v0-6-9' _site/service-worker.js
           grep -q 'v040-app-001.b64' _site/assets/app.js
           grep -q 'v040-app-006.b64' _site/assets/app.js
           ! grep -q 'assets/chunks/app-' _site/assets/app.js

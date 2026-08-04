@@ -1,0 +1,162 @@
+{
+  "schema": "ee-committee-pack-v09",
+  "version": "0.9.1",
+  "status": "preparacion_sin_aprobaciones",
+  "product_id": "harina-aire-y-tiempo",
+  "product_name": "Harina Aire y Tiempo",
+  "disclaimer": "Este paquete organiza la sesión. No contiene fórmulas, costos, evidencias, nombres, firmas ni aprobaciones reales y no autoriza venta, producción o comunicación pública.",
+  "session": {
+    "title": "Comité de validación para piloto — Aire y Tiempo",
+    "objective": "Definir con evidencia qué formato de Aire y Tiempo puede entrar al piloto, bajo qué condiciones y qué puertas permanecen bloqueadas.",
+    "scope": "Revisión interna del producto, sus variantes, fórmula, proceso, economía, empaque, regulación, vida útil, capacidad, inventario, cobertura, fotografía e instrucciones. Toda decisión debe identificar evidencia, responsable y vigencia.",
+    "proposed_place": "Medellín",
+    "duration_minutes": 150,
+    "agenda": [
+      {"minutes": 10, "topic": "Apertura y reglas de decisión", "output": "Alcance, participantes y autoridad de cada disciplina confirmados."},
+      {"minutes": 15, "topic": "Rol del producto y variantes", "output": "Decisión preliminar sobre 1 kg, 2,5 kg y 5 kg."},
+      {"minutes": 30, "topic": "Fórmula, proceso y métodos", "output": "Versión de fórmula identificada y brechas de repetibilidad registradas."},
+      {"minutes": 25, "topic": "Costo, precio y margen", "output": "Fuentes de costo, supuestos y responsables definidos por SKU."},
+      {"minutes": 25, "topic": "Empaque, etiqueta y sanitario", "output": "Prototipo, revisión aplicable y bloqueos documentados."},
+      {"minutes": 20, "topic": "Vida útil, conservación y calidad", "output": "Protocolo, evidencia existente y fechas de revisión definidas."},
+      {"minutes": 15, "topic": "Capacidad, inventario y cobertura", "output": "Escenario de piloto realista con límites operativos."},
+      {"minutes": 10, "topic": "Decisión, condiciones y cierre", "output": "Resultado general, responsables, vigencias y próximos pasos."}
+    ]
+  },
+  "roles_required": [
+    {"discipline": "Dirección de producto", "role": "Preside, define alcance y resuelve decisiones transversales.", "name": ""},
+    {"discipline": "Gastronomía e I+D", "role": "Responde por fórmula, método, desempeño y pruebas.", "name": ""},
+    {"discipline": "Operación y calidad", "role": "Responde por proceso, lote, controles, empaque, conservación y capacidad.", "name": ""},
+    {"discipline": "Finanzas", "role": "Responde por costo completo, precio, margen y sensibilidad.", "name": ""},
+    {"discipline": "Marca y comercial", "role": "Responde por narrativa, formatos, canal, fotografía y materiales de venta.", "name": ""},
+    {"discipline": "Jurídico y regulatorio", "role": "Define requisitos aplicables, etiqueta, declaraciones y límites de comunicación.", "name": ""},
+    {"discipline": "Logística y cobertura", "role": "Responde por inventario, despacho, rutas, protección y costo de entrega.", "name": ""}
+  ],
+  "variant_proposal": [
+    {"sku": "EE-HAT-1000", "format": "1 kg", "proposal": "Formato principal del piloto", "decision_required": "Aprobar, aprobar con condiciones o bloquear según costo, empaque, etiqueta, vida útil y capacidad."},
+    {"sku": "EE-HAT-2500", "format": "2,5 kg", "proposal": "Recompra o usuario avanzado", "decision_required": "Definir si entra en la primera ola o queda sujeto a demanda, margen y empaque."},
+    {"sku": "EE-HAT-5000", "format": "5 kg", "proposal": "Referencia futura", "decision_required": "Mantener fuera del piloto salvo evidencia de canal profesional y operación repetible."}
+  ],
+  "gates": {
+    "concepto_y_rol": {
+      "owner_role": "Dirección de producto",
+      "question": "¿Aire y Tiempo se ratifica como producto plataforma y cuál es su función exacta dentro del piloto?",
+      "expected_evidence": ["Ficha maestra vigente", "Mapa de portafolio", "Decisión de dirección"],
+      "minimum_decision": "Ratificar, ajustar o descartar el rol; identificar autoridad y vigencia."
+    },
+    "narrativa_comercial": {
+      "owner_role": "Marca y comercial + Gastronomía e I+D",
+      "question": "¿Qué afirmaciones pueden publicarse hoy y cuáles permanecen condicionadas a prueba?",
+      "expected_evidence": ["Inventario de afirmaciones", "Resultados técnicos vinculados", "Revisión de comunicación"],
+      "minimum_decision": "Aprobar lenguaje permitido y lista expresa de afirmaciones bloqueadas."
+    },
+    "visual_editorial": {
+      "owner_role": "Marca y comercial",
+      "question": "¿Qué referencias visuales se conservan y qué fotografías físicas faltan para vender?",
+      "expected_evidence": ["Visuales canónicos v0.4", "Prototipo de empaque", "Plan de fotografía física"],
+      "minimum_decision": "Distinguir referencia editorial de material final y asignar producción pendiente."
+    },
+    "formula": {
+      "owner_role": "Gastronomía e I+D + Operación y calidad",
+      "question": "¿Existe una fórmula versionada, repetible y trazable para el lote piloto?",
+      "expected_evidence": ["Fórmula con versión y porcentajes", "Especificación de componentes", "Registros de lotes repetidos", "Criterios de liberación y rechazo"],
+      "minimum_decision": "Identificar versión aprobable o mantener bloqueada la producción comercial."
+    },
+    "costo_unitario": {
+      "owner_role": "Finanzas + Operación y calidad",
+      "question": "¿Cuál es el costo completo y verificable por SKU y bajo qué volumen?",
+      "expected_evidence": ["Materias primas", "Empaque y etiqueta", "Mano de obra y energía", "Merma", "Logística, comisiones e impuestos"],
+      "minimum_decision": "Aprobar una fuente de costo por formato o asignar fecha y responsable para completarla."
+    },
+    "precio_final": {
+      "owner_role": "Finanzas + Marca y comercial",
+      "question": "¿Qué precio puede sostener el piloto sin tratar los precios demo como aprobados?",
+      "expected_evidence": ["Costo completo", "Comparables pertinentes", "Escenarios de canal y envío", "Política promocional"],
+      "minimum_decision": "Definir precio, condición de revisión y fecha de vigencia por SKU."
+    },
+    "margen": {
+      "owner_role": "Finanzas + Dirección de producto",
+      "question": "¿Qué margen objetivo, mínimo y promocional se acepta para cada formato?",
+      "expected_evidence": ["Margen bruto por SKU", "Sensibilidad por volumen", "Costo de adquisición y contenido", "Subsidio de envío"],
+      "minimum_decision": "Aprobar umbrales y bloquear descuentos que los vulneren."
+    },
+    "empaque_fisico": {
+      "owner_role": "Operación y calidad + Marca y comercial",
+      "question": "¿El empaque protege el blend y funciona en producción, almacenamiento y despacho?",
+      "expected_evidence": ["Prototipo físico", "Material y barrera de humedad", "Sistema de cierre", "Dimensiones y costo", "Prueba de transporte y apilamiento"],
+      "minimum_decision": "Aprobar prototipo o definir pruebas y cambios obligatorios antes del piloto."
+    },
+    "etiqueta": {
+      "owner_role": "Jurídico y regulatorio + Marca y comercial",
+      "question": "¿La etiqueta contiene la información exigible y limita correctamente las afirmaciones?",
+      "expected_evidence": ["Arte de etiqueta", "Ingredientes y alérgenos", "Contenido neto", "Lote y fechas", "Responsable, contacto y conservación"],
+      "minimum_decision": "Aprobar arte para piloto o emitir lista cerrada de correcciones."
+    },
+    "sanitario": {
+      "owner_role": "Jurídico y regulatorio + Operación y calidad",
+      "question": "¿Qué requisitos sanitarios, de planta, empaque y comercialización aplican y quién responde por ellos?",
+      "expected_evidence": ["Matriz regulatoria aplicable", "Condiciones de planta y proceso", "Trazabilidad de proveedores", "Concepto o revisión responsable"],
+      "minimum_decision": "Definir requisitos, responsable, evidencia faltante y condición de salida."
+    },
+    "vida_util": {
+      "owner_role": "Operación y calidad + Gastronomía e I+D",
+      "question": "¿Qué vida útil puede respaldarse y con qué protocolo?",
+      "expected_evidence": ["Protocolo de estabilidad", "Muestras y fechas", "Criterios sensoriales y funcionales", "Integridad del empaque", "Criterio de vencimiento"],
+      "minimum_decision": "Aprobar una vigencia respaldada o mantener una fecha provisional bloqueada para venta."
+    },
+    "conservacion_validada": {
+      "owner_role": "Operación y calidad",
+      "question": "¿Las condiciones de conservación cerrada y después de abrir están definidas y probadas?",
+      "expected_evidence": ["Rango de almacenamiento", "Control de humedad, plagas y olores", "Instrucción posapertura", "Registros de prueba"],
+      "minimum_decision": "Aprobar instrucción y límites o asignar prueba pendiente."
+    },
+    "fotografia_fisica": {
+      "owner_role": "Marca y comercial + Gastronomía e I+D",
+      "question": "¿Existe fotografía fiel del empaque, proceso y resultado real?",
+      "expected_evidence": ["Frente y reverso 1 kg", "Formato 2,5 kg si aplica", "Masa, fermentación y apertura", "Borde, miga, base y pizza terminada"],
+      "minimum_decision": "Aprobar lista de imágenes utilizables y separar faltantes de referencias conceptuales."
+    },
+    "capacidad_produccion": {
+      "owner_role": "Operación y calidad",
+      "question": "¿Cuántos lotes y unidades pueden producirse repetiblemente sin comprometer control y almacenamiento?",
+      "expected_evidence": ["Tamaño de lote", "Tiempo por etapa", "Rendimiento y merma", "Personal y equipos", "Capacidad de almacenamiento"],
+      "minimum_decision": "Definir capacidad del piloto y límite de pedidos."
+    },
+    "inventario_real": {
+      "owner_role": "Operación y calidad + Logística y cobertura",
+      "question": "¿Qué inventario inicial, punto de reposición y trazabilidad se usarán?",
+      "expected_evidence": ["Conteo físico", "Lotes y ubicaciones", "Unidades liberadas, retenidas y rechazadas", "Punto de reposición"],
+      "minimum_decision": "Aprobar inventario inicial real o bloquear disponibilidad."
+    },
+    "cobertura_real": {
+      "owner_role": "Logística y cobertura + Finanzas",
+      "question": "¿En qué ciudad, canales y rutas se ejecutará el piloto y cuál es el costo real de entrega?",
+      "expected_evidence": ["Zona de cobertura", "Tarifas y tiempos", "Protección de despacho", "Política de incidencias", "Costo por pedido"],
+      "minimum_decision": "Aprobar cobertura, restricciones y promesa de entrega."
+    },
+    "instrucciones_validadas": {
+      "owner_role": "Gastronomía e I+D + Marca y comercial",
+      "question": "¿Qué métodos oficiales acompañarán la compra y bajo qué condiciones fueron probados?",
+      "expected_evidence": ["Método cotidiano", "Método de 24 horas", "Método avanzado si aplica", "Cantidades, tiempos y temperaturas", "Errores, correcciones y equipos"],
+      "minimum_decision": "Aprobar instrucciones publicables y bloquear resultados no respaldados."
+    }
+  },
+  "preflight_rules": [
+    "Ninguna puerta revisada puede finalizar sin evidencia o referencia verificable.",
+    "Toda aprobación con condiciones debe indicar condición y vigencia.",
+    "Una decisión general de aprobado exige que todas las puertas críticas estén revisadas y resueltas.",
+    "Los nombres de participantes y firmantes no pueden permanecer como marcadores genéricos.",
+    "Los precios, inventarios y rendimientos demo no se aceptan como evidencia.",
+    "La aplicación al expediente es posterior, explícita y reversible; nunca modifica la tienda pública."
+  ],
+  "initial_next_steps": [
+    "Asignar nombres concretos a los siete roles requeridos.",
+    "Confirmar si la sesión decide solo 1 kg o también 2,5 kg.",
+    "Reunir fórmula versionada y registros de lotes repetidos.",
+    "Completar costo por SKU y escenarios de margen.",
+    "Presentar prototipo de empaque y arte de etiqueta.",
+    "Definir protocolo y evidencia de vida útil y conservación.",
+    "Confirmar capacidad, inventario inicial y cobertura del piloto.",
+    "Producir fotografía física y aprobar métodos oficiales.",
+    "Finalizar y aplicar el acta únicamente después de la decisión humana."
+  ]
+}

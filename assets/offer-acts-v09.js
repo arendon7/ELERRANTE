@@ -305,6 +305,12 @@
         renderHistory();renderPreview();
       });
       form.querySelector('[data-finalize-act]')?.addEventListener('click',()=>{
+        const preflight=new CustomEvent('ee:before-finalize-act',{
+          bubbles:true,
+          cancelable:true,
+          detail:{form,act_id:current?.id||null,product_id:product.id}
+        });
+        if(!form.dispatchEvent(preflight)) return;
         const candidate=actFromForm(form,current,product);
         const issues=validateAct(candidate);
         if(issues.length){

@@ -1,4 +1,4 @@
-# Recuperación visual v0.6
+# Recuperación visual v0.6 — cierre de integridad
 
 ## Identidad obligatoria
 - Logotipo condensado negro.
@@ -8,17 +8,21 @@
 - Tipografías: Oswald/condensada, Montserrat e IBM Plex Mono.
 - No usar serif, manuscritas, dorado, mariposas, espigas, monogramas alternos ni clichés italianos.
 
-## Recuperado en portada
-- Hero desktop y móvil.
-- Escena de masa trabajada a mano.
-- Pizza insignia La Errante.
-- Pizzería móvil en evento nocturno.
-- Relato de origen y cuatro pilares.
-- Catálogo sin rótulos de demo.
-- Cierre de marca.
+## Estado consolidado
+- Hero desktop y móvil recuperados.
+- Escenas de masa, fermentación, alveolos, harina y horno recuperadas.
+- Colección de pizzas y pizza insignia con visual gastronómico.
+- Pizzería móvil asociada correctamente a eventos.
+- Despensa diferenciada con sus tres líneas de producto.
+- Catálogo, páginas editoriales y demo integral publicados desde `main`.
 
-## Siguiente etapa
-1. Auditar tienda y fichas de los 11 productos.
-2. Sustituir recursos conceptuales repetitivos.
-3. Recuperar páginas de historia, eventos, Bitácora y recetas.
-4. Verificar responsive, accesibilidad y enlaces.
+## Correcciones de integridad v0.6.9
+- El hero móvil corrupto fue sustituido por un recorte estable del hero documental.
+- El recurso `pizza-neo` truncado ahora utiliza una composición gastronómica válida.
+- Las superficies de pizza dejaron de mostrar por error la fotografía del vehículo.
+- La pizzería móvil conserva la fotografía documental recuperada, mediante un alias estable del activo legado.
+- Despensa dejó de duplicar una lámina de aplicaciones de empaque y presenta sus tres líneas.
+- La barrera de regresión valida estructura RIFF/WebP, referencias SVG anidadas y asociaciones semánticas.
+
+## Regla para siguientes iteraciones
+Toda modificación debe partir de `main`, conservar estas asociaciones visuales y superar la barrera de regresión antes de publicarse.

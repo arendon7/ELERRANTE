@@ -1,5 +1,4 @@
-const CACHE = 'el-errante-v0-6-9';
-const LEGACY_CACHES = ['el-errante-v0-6-8'];
+const CACHE = 'el-errante-v1-1-0';
 const CORE = [
   './index.html','./historia.html','./nosotros.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
@@ -7,6 +6,9 @@ const CORE = [
   './equipo.html','./admin.html','./control.html','./operacion.html','./studio.html','./actas.html','./presentacion.html',
   './assets/styles.css','./assets/styles/brand-v1.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
   './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
+  './assets/brand-final-editorial.js','./assets/brand-final-products-a.js','./assets/brand-final-products-b.js','./assets/brand-final-products-c.js',
+  './assets/images/brand-final/home-hero.svg','./assets/images/brand-final/home-masa-fuego.svg',
+  './assets/images/brand-final/home-fermentacion.svg','./assets/images/brand-final/home-ingredientes.svg',
   './assets/offer-studio-v09.js','./assets/offer-studio-v09.css','./assets/offer-governance-v09.js',
   './assets/offer-acts-preflight-v09.js','./assets/offer-acts-v09.js','./assets/offer-acts-v09.css',
   './assets/aire-tiempo-committee-v09.js','./assets/aire-tiempo-committee-v09.css',
@@ -16,7 +18,6 @@ const CORE = [
   './assets/source/v040-app-001.b64','./assets/source/v040-app-002.b64','./assets/source/v040-app-003.b64','./assets/source/v040-app-004.b64','./assets/source/v040-app-005.b64','./assets/source/v040-app-006.b64',
   './assets/source/v040-data-001.b64','./assets/source/v040-data-002.b64','./assets/source/v040-data-003.b64','./assets/source/v040-data-004.b64',
   './assets/source/v040-preprod-001a.b64','./assets/source/v040-preprod-001b.b64','./assets/source/v040-preprod-001c.b64','./assets/source/v040-preprod-001d.b64','./assets/source/v040-preprod-002.b64','./assets/source/v040-preprod-003.b64',
-  './assets/images/v040/v040-hero-desktop.svg','./assets/images/v040/v040-hero-mobile.svg','./assets/images/v040/v040-harina-empaques.svg','./assets/images/v040/v040-harina-manos.svg','./assets/images/v040/v040-harina-horno.svg','./assets/images/v040/v040-manos-masa.svg','./assets/images/v040/v040-masa-apertura.svg','./assets/images/v040/v040-alveolos.svg','./assets/images/v040/v040-fermentacion.svg','./assets/images/v040/v040-pizza-neo.svg','./assets/images/v040/v040-pizza-errante.svg','./assets/images/v040/v040-despensa.svg','./assets/images/v040/v040-aplicaciones-empaque.svg','./assets/images/v040/v040-pizzeria-movil.svg','./assets/images/v040/v040-bitacora-fuego.svg','./assets/images/v040/v040-pizzas-artesanales.svg','./assets/images/v040/v040-pizzas-coleccion.svg',
   './assets/logo-mark.svg','./assets/logo-lockup.svg','./offline.html','./deploy-version.txt'
 ];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));self.skipWaiting();});

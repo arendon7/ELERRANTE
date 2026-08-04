@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.9-draft-1",
+  "status": "propuesta_para_validacion_humana",
+  "currency": "COP",
+  "disclaimer": "Precios, stock, rendimientos y cobertura provienen de datos de demostración. No están aprobados para venta real.",
+  "waves": {
+    "ola_1_nucleo": {
+      "purpose": "Explicar y probar el sistema completo con una oferta controlable.",
+      "products": [
+        "harina-aire-y-tiempo",
+        "crea-la-tuya",
+        "margherita-del-taller",
+        "la-errante",
+        "panela-maracuya",
+        "combo-primera-ruta"
+      ]
+    },
+    "ola_2_extension": {
+      "purpose": "Ampliar variedad después de validar producción, demanda, margen y cadena de frío.",
+      "products": [
+        "diavola-errante",
+        "bosque",
+        "cuatro-quesos-montana",
+        "salsa-tomate",
+        "reduccion-balsamica"
+      ]
+    }
+  },
+  "gate_definitions": {
+    "formula": "Ingredientes, gramajes, proceso, tolerancias y proveedores.",
+    "cost": "Materia prima, empaque, mano de obra, energía, merma y logística.",
+    "price_margin": "Precio, impuestos, descuentos y margen.",
+    "packaging_label": "Empaque físico, etiqueta, alérgenos, lote y conservación.",
+    "sanitary_shelf_life": "Requisitos sanitarios, vida útil y criterios de rechazo.",
+    "operations": "Capacidad, inventario real, cobertura y cadena de frío.",
+    "evidence": "Fotografía física, ficha técnica y aprobación fechada."
+  },
+  "products": [
+    {
+      "id": "harina-aire-y-tiempo",
+      "name": "Harina Aire y Tiempo",
+      "line": "harina",
+      "entry": "Desde cero",
+      "cold_chain": false,
+      "proposed_wave": "ola_1_nucleo",
+      "portfolio_role": "producto_plataforma",
+      "priority": "alta",
+      "rationale": "Fija la credibilidad técnica de la marca y habilita contenido, recetas y recompra.",
+      "variants": [
+        {"id":"1kg","label":"1 kg","sku":"EE-HAT-1000","demo_price_cop":18900,"demo_stock":42,"status":"demostracion"},
+        {"id":"25kg","label":"2,5 kg","sku":"EE-HAT-2500","demo_price_cop":39900,"demo_stock":18,"status":"demostracion"},
+        {"id":"5kg","label":"5 kg · próxima fase","sku":"EE-HAT-5000","demo_price_cop":69900,"demo_stock":0,"status":"futura"}
+      ],
+      "gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"en_revision","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},
+      "next_decision": "Aprobar fórmula final, rendimientos, empaques 1 kg/2,5 kg y precio piloto."
+    },
+    {
+      "id":"crea-la-tuya","name":"Crea la Tuya","line":"crea","entry":"Personalizar","cold_chain":true,"proposed_wave":"ola_1_nucleo","portfolio_role":"producto_plataforma","priority":"alta","rationale":"Reduce fricción de entrada y conecta personalización, airfryer y horno.",
+      "variants":[{"id":"mediana","label":"Mediana ×2 · airfryer","sku":"EE-CTM-02","demo_price_cop":15000,"demo_stock":28,"status":"demostracion"},{"id":"grande","label":"Grande ×2 · horno","sku":"EE-CTG-02","demo_price_cop":22000,"demo_stock":20,"status":"demostracion"}],
+      "gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"en_revision","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},
+      "next_decision":"Cerrar tamaño, precocción, congelación, vida útil, empaque e instrucciones por equipo."
+    },
+    {"id":"margherita-del-taller","name":"Margherita del Taller","line":"en-casa","entry":"Solo hornear","cold_chain":true,"proposed_wave":"ola_1_nucleo","portfolio_role":"referencia_esencial","priority":"alta","rationale":"Sirve como referencia de equilibrio, comparación y entrada a pizzas completas.","variants":[{"id":"unidad","label":"Pizza completa","sku":"EE-MAR-01","demo_price_cop":27900,"demo_stock":24,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"pendiente_validacion","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Validar gramajes, comportamiento congelado, costo y acabado posterior."},
+    {"id":"diavola-errante","name":"Diavola Errante","line":"en-casa","entry":"Solo hornear","cold_chain":true,"proposed_wave":"ola_2_extension","portfolio_role":"pizza_extension","priority":"media","rationale":"Amplía variedad con un perfil intenso y reconocible.","variants":[{"id":"unidad","label":"Pizza completa","sku":"EE-DIA-01","demo_price_cop":30900,"demo_stock":14,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"pendiente_validacion","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Validar proveedor/gramaje del embutido, nivel de picante y estabilidad."},
+    {"id":"bosque","name":"Bosque","line":"en-casa","entry":"Solo hornear","cold_chain":true,"proposed_wave":"ola_2_extension","portfolio_role":"pizza_extension","priority":"media","rationale":"Aporta opción vegetariana con identidad propia.","variants":[{"id":"unidad","label":"Pizza completa","sku":"EE-BOS-01","demo_price_cop":30900,"demo_stock":8,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"pendiente_validacion","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Validar tratamiento de hongos, humedad y estabilidad después de congelación."},
+    {"id":"cuatro-quesos-montana","name":"Cuatro Quesos de Montaña","line":"en-casa","entry":"Solo hornear","cold_chain":true,"proposed_wave":"ola_2_extension","portfolio_role":"pizza_extension","priority":"media","rationale":"Amplía el portafolio hacia indulgencia y contraste.","variants":[{"id":"unidad","label":"Pizza completa","sku":"EE-CQM-01","demo_price_cop":32900,"demo_stock":10,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"pendiente_validacion","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Cerrar mezcla de quesos, exudación, costo y comportamiento al recalentar."},
+    {"id":"la-errante","name":"La Errante","line":"en-casa","entry":"Solo hornear","cold_chain":true,"proposed_wave":"ola_1_nucleo","portfolio_role":"producto_insignia","priority":"alta","rationale":"Concentra la identidad de territorio y diferencia la marca.","variants":[{"id":"unidad","label":"Pizza completa","sku":"EE-ERR-01","demo_price_cop":32900,"demo_stock":16,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"en_revision","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Aprobar fórmula insignia, gramajes, reducción y estándar de terminación."},
+    {"id":"salsa-tomate","name":"Salsa de tomate para pizza","line":"despensa","entry":"Completar","cold_chain":false,"proposed_wave":"ola_2_extension","portfolio_role":"despensa_base","priority":"media","rationale":"Conecta harina, Crea la Tuya y recetas, pero exige cerrar formulación y conservación.","variants":[{"id":"500g","label":"500 g","sku":"EE-STP-500","demo_price_cop":18900,"demo_stock":32,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"pendiente_validacion","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Cerrar formulación, tratamiento térmico, envase, conservación y vida útil."},
+    {"id":"reduccion-balsamica","name":"Reducción balsámica","line":"despensa","entry":"Completar","cold_chain":false,"proposed_wave":"ola_2_extension","portfolio_role":"acabado_extension","priority":"media","rationale":"Complementa Bosque y quesos; no es crítica para explicar el sistema inicial.","variants":[{"id":"250ml","label":"250 ml","sku":"EE-RBA-250","demo_price_cop":22900,"demo_stock":18,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"pendiente_validacion","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Cerrar formulación, proveedor, viscosidad, envase y vida útil."},
+    {"id":"panela-maracuya","name":"Panela + maracuyá","line":"despensa","entry":"Completar","cold_chain":false,"proposed_wave":"ola_1_nucleo","portfolio_role":"acabado_insignia","priority":"alta","rationale":"Completa La Errante y permite venta cruzada con bajo requerimiento de frío.","variants":[{"id":"250ml","label":"250 ml","sku":"EE-PYM-250","demo_price_cop":21900,"demo_stock":22,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"pendiente_validacion","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Cerrar formulación, viscosidad, dosificación, envase y vida útil."},
+    {"id":"combo-primera-ruta","name":"Combo Primera Ruta","line":"combo","entry":"Descubrir","cold_chain":true,"proposed_wave":"ola_1_nucleo","portfolio_role":"ruta_descubrimiento","priority":"alta","rationale":"Explica el sistema completo: hacer, personalizar y terminar.","variants":[{"id":"combo","label":"Combo completo","sku":"EE-CPR-01","demo_price_cop":49900,"demo_stock":12,"status":"demostracion"}],"gates":{"concepto_y_rol":"aprobado_base","narrativa_comercial":"aprobado_base","visual_editorial":"aprobado_referencia","formula":"pendiente_validacion","costo_unitario":"pendiente","precio_final":"provisional_demo","margen":"pendiente","empaque_fisico":"pendiente","etiqueta":"pendiente","sanitario":"pendiente","vida_util":"pendiente","conservacion_validada":"pendiente","fotografia_fisica":"pendiente","capacidad_produccion":"pendiente","inventario_real":"pendiente","cobertura_real":"provisional_demo","instrucciones_validadas":"en_revision"},"next_decision":"Definir composición fija, reglas de sustitución, empaque mixto y margen."}
+  ]
+}

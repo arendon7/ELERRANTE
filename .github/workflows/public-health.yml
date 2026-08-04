@@ -11,7 +11,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v0-6-8
+  EXPECTED_CACHE: el-errante-v0-6-9
 
 jobs:
   health:

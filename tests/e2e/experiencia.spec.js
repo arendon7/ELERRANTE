@@ -37,7 +37,7 @@ async function open(page, path, needsData = true) {
   await page.waitForTimeout(120);
 }
 
-async function canonicalState(page) {
+async function runtimeState(page) {
   return page.evaluate(() => ({
     products: window.EE_DATA?.products?.length || 0,
     variants: window.EE_DATA?.products?.reduce((sum, product) => sum + product.variants.length, 0) || 0,
@@ -50,12 +50,12 @@ async function canonicalState(page) {
   }));
 }
 
-test.describe('Runtime canónico', () => {
+test.describe('Runtime recuperado', () => {
   test('inicio carga modelo, marca y visuales recuperados', async ({ page }) => {
     const clean = observe(page);
     await open(page, '/index.html');
 
-    expect(await canonicalState(page)).toEqual({
+    expect(await runtimeState(page)).toEqual({
       products: 11,
       variants: 14,
       recipes: 5,
@@ -63,7 +63,7 @@ test.describe('Runtime canónico', () => {
       faqs: 5,
       coverage: 6,
       ready: true,
-      source: 'assets/canonical-data.js + assets/preprod.js'
+      source: 'assets/data.js + assets/preprod.js + assets/products-v6.js'
     });
 
     await expect(page.locator('main h1').first()).toBeVisible();
@@ -79,7 +79,7 @@ test.describe('Runtime canónico', () => {
     await clean();
   });
 
-  test('tienda representa las once referencias canónicas', async ({ page }) => {
+  test('tienda representa las once referencias recuperadas', async ({ page }) => {
     const clean = observe(page);
     await open(page, '/tienda.html');
     const grid = page.locator('#product-grid');

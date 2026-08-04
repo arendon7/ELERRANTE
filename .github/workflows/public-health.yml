@@ -118,9 +118,23 @@ jobs:
               "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
           done
 
-          grep -q 'personas-proyecto' public-historia.html
-          grep -q 'Personas y proyecto' public-nosotros.html
-          grep -q 'Demo integral' public-equipo.html
+          check_surface() {
+            local page="$1"
+            local marker_one="$2"
+            local marker_two="$3"
+            local file="public-${page}.html"
+            for marker in "$marker_one" "$marker_two"; do
+              if ! grep -Fq "$marker" "$file"; then
+                echo "::error file=${file}::La superficie ${page} no contiene el marcador estable: ${marker}"
+                exit 1
+              fi
+            done
+            echo "Superficie ${page}: PASS"
+          }
+
+          check_surface historia 'data-page="historia"' 'Viajar hasta el origen'
+          check_surface nosotros 'data-page="nosotros"' 'Equipo fundador'
+          check_surface equipo 'data-page="equipo"' 'Centro integral'
 
       - name: Generar informe
         if: always()
@@ -158,6 +172,9 @@ jobs:
             public-app-reconstructed.js
             public-data-loader.js
             public-products-overlay.js
+            public-historia.html
+            public-nosotros.html
+            public-equipo.html
           if-no-files-found: warn
           retention-days: 14
 

@@ -22,9 +22,9 @@
     ["assets/images/pizzas-coleccion.svg","assets/images/v040/v040-pizzas-coleccion.svg"],
     ["assets/images/despensa.svg","assets/images/v040/v040-despensa.svg"],
     ["assets/images/aplicaciones-empaque.svg","assets/images/v040/v040-aplicaciones-empaque.svg"],
-    ["assets/images/v6-la-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
-    ["assets/images/pizza-la-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
-    ["assets/images/pizza-errante.svg","assets/images/v040/v040-pizza-errante.svg"],
+    ["assets/images/v6-la-errante.svg","assets/images/v040/v040-pizzas-artesanales.svg"],
+    ["assets/images/pizza-la-errante.svg","assets/images/v040/v040-pizzas-artesanales.svg"],
+    ["assets/images/pizza-errante.svg","assets/images/v040/v040-pizzas-artesanales.svg"],
     ["assets/images/pizzeria-movil.svg","assets/images/v040/v040-pizzeria-movil.svg"],
     ["assets/images/eventos-noche-gold.svg","assets/images/v040/v040-pizzeria-movil.svg"],
     ["assets/images/evento-operacion-gold.svg","assets/images/v040/v040-pizzeria-movil.svg"]

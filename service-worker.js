@@ -1,11 +1,11 @@
 const CACHE = 'el-errante-v0-6-9';
 const LEGACY_CACHES = ['el-errante-v0-6-8'];
 const CORE = [
-  './index.html','./historia.html','./tienda.html','./producto.html','./en-casa.html',
+  './index.html','./historia.html','./nosotros.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
-  './herramientas.html','./cobertura.html','./ayuda.html','./checkout.html','./cuenta.html',
+  './herramientas.html','./cobertura.html','./ayuda.html','./checkout.html','./cuenta.html','./legal.html',
   './equipo.html','./admin.html','./control.html','./operacion.html','./studio.html','./actas.html','./presentacion.html',
-  './assets/styles.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
+  './assets/styles.css','./assets/styles/brand-v1.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
   './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
   './assets/offer-studio-v09.js','./assets/offer-studio-v09.css','./assets/offer-governance-v09.js',
   './assets/offer-acts-preflight-v09.js','./assets/offer-acts-v09.js','./assets/offer-acts-v09.css',

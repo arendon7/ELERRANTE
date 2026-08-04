@@ -24,6 +24,9 @@ jobs:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
+      - name: Materializar sistema visual final
+        run: python3 scripts/materializar_activos_visuales.py
+
       - name: Configurar Node
         uses: actions/setup-node@v4
         with:

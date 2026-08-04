@@ -22,7 +22,7 @@
     commercial_signature:"Pizza napolitana, donde sea."
   };
 
-  data.faqs=[
+  data.public_faqs=[
     ["¿Qué tipo de pizza hace El Errante?","Desarrollamos una interpretación contemporánea de la pizza napolitana, con masas de fermentación lenta, apertura manual y cocción a alta temperatura."],
     ["¿Las pizzas llegan listas para comer?","Depende del producto. Algunas referencias están diseñadas para terminarse en casa y requieren cocción según las instrucciones del empaque. Consulta la ficha antes de comprar."],
     ["¿Debo descongelar la pizza antes de hornearla?","Sigue siempre la instrucción específica del producto. Algunas referencias pueden cocinarse directamente desde congeladas y otras pueden requerir un manejo diferente."],
@@ -50,7 +50,7 @@
 
   /* Mantiene intacto el contrato histórico que valida la recuperación
      de la fuente canónica. La renovación editorial publica su estado
-     de forma separada para no falsear ni romper ese marcador. */
+     y sus contenidos extendidos por separado. */
   if(canonicalStatus) window.EE_CONTENT_STATUS=canonicalStatus;
 
   window.EE_CONTENT_V1_STATUS={
@@ -60,7 +60,7 @@
     canonical_source:canonicalStatus?.source||"assets/data.js + assets/preprod.js + assets/products-v6.js",
     missing,
     counts,
-    public_faqs:data.faqs.length,
+    public_faqs:data.public_faqs.length,
     checkedAt:new Date().toISOString()
   };
 

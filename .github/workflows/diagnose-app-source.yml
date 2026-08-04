@@ -25,56 +25,84 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reconstruir fuente y generar informe
+      - name: Reconstruir estrategias y generar informe
         shell: bash
         run: |
           mkdir -p .app-diagnostic
           python3 - <<'PY'
           from pathlib import Path
-          import base64, hashlib, json
+          import base64, hashlib, json, re
 
           root=Path('.')
           names=[f'app-{i:03d}.txt' for i in range(1,9)]
-          blocks=[]
-          report={'chunks':[], 'markers':{}}
+          encoded=[]
+          report={'chunks':[], 'strategies':{}}
+
           for name in names:
-              path=root/'assets/chunks'/name
-              encoded=path.read_text(encoding='utf-8').strip()
-              raw=base64.b64decode(encoded, validate=True)
-              blocks.append(raw)
+              text=(root/'assets/chunks'/name).read_text(encoding='utf-8').strip()
+              encoded.append(text)
+              invalid=sorted(set(re.sub(r'[A-Za-z0-9+/=]', '', text)))
               report['chunks'].append({
                   'name':name,
-                  'base64_chars':len(encoded),
-                  'bytes':len(raw),
-                  'sha256':hashlib.sha256(raw).hexdigest(),
-                  'padding':len(encoded)-len(encoded.rstrip('=')),
+                  'base64_chars':len(text),
+                  'mod4':len(text)%4,
+                  'padding':len(text)-len(text.rstrip('=')),
+                  'invalid_characters':invalid,
               })
-          joined=b''.join(blocks)
-          source=joined.decode('utf-8', errors='strict')
-          (root/'.app-diagnostic/app-reconstructed.js').write_text(source,encoding='utf-8')
-          for marker in ('[... ELLIPSIZATION ...]','ELLIPSIZATION'):
-              positions=[]
-              start=0
-              while True:
-                  pos=source.find(marker,start)
-                  if pos<0: break
-                  positions.append(pos)
-                  start=pos+1
-              report['markers'][marker]=positions[:50]
-          report['total_bytes']=len(joined)
-          report['source_chars']=len(source)
-          report['source_sha256']=hashlib.sha256(joined).hexdigest()
-          (root/'.app-diagnostic/report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
-          lines=['# Diagnóstico de app.js','',f'- Bytes: {len(joined)}',f'- SHA-256: `{report["source_sha256"]}`','']
+
+          def inspect(name, raw):
+              item={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+              try:
+                  source=raw.decode('utf-8',errors='strict')
+                  item['utf8']='valid'
+                  item['source_chars']=len(source)
+                  item['ellipsis_positions']=[m.start() for m in re.finditer(re.escape('[... ELLIPSIZATION ...]'),source)][:20]
+                  (root/f'.app-diagnostic/{name}.js').write_text(source,encoding='utf-8')
+              except Exception as error:
+                  item['utf8']='invalid'
+                  item['error']=repr(error)
+                  (root/f'.app-diagnostic/{name}.bin').write_bytes(raw)
+              report['strategies'][name]=item
+
+          combined=''.join(encoded)
+          try:
+              inspect('combined-base64',base64.b64decode(combined + '='*((-len(combined))%4),validate=True))
+          except Exception as error:
+              report['strategies']['combined-base64']={'decode_error':repr(error)}
+
+          blocks=[]
+          errors=[]
+          for index,text in enumerate(encoded,1):
+              try:
+                  blocks.append(base64.b64decode(text + '='*((-len(text))%4),validate=True))
+              except Exception as error:
+                  errors.append({'chunk':index,'error':repr(error)})
+          if errors:
+              report['strategies']['per-chunk-padded']={'decode_errors':errors}
+          else:
+              inspect('per-chunk-padded',b''.join(blocks))
+
+          (root/'.app-diagnostic/report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False),encoding='utf-8')
+          lines=['# Diagnóstico de app.js','','## Chunks']
           for item in report['chunks']:
-              lines.append(f'- `{item["name"]}`: {item["bytes"]} bytes · padding {item["padding"]} · `{item["sha256"]}`')
-          lines+=['','## Marcadores',json.dumps(report['markers'],indent=2)]
+              lines.append(f'- `{item["name"]}`: {item["base64_chars"]} caracteres · mod4 {item["mod4"]} · padding {item["padding"]} · inválidos {item["invalid_characters"]}')
+          lines+=['','## Estrategias','```json',json.dumps(report['strategies'],indent=2,ensure_ascii=False),'```']
           (root/'.app-diagnostic/report.md').write_text('\n'.join(lines),encoding='utf-8')
+          print((root/'.app-diagnostic/report.md').read_text(encoding='utf-8'))
           PY
 
-      - name: Validar sintaxis JavaScript
+      - name: Validar sintaxis de estrategias UTF-8
+        if: always()
+        shell: bash
         run: |
-          node --check .app-diagnostic/app-reconstructed.js 2>&1 | tee .app-diagnostic/node-check.txt
+          set +e
+          : > .app-diagnostic/node-check.txt
+          for file in .app-diagnostic/*.js; do
+            [ -e "$file" ] || continue
+            echo "=== $file ===" | tee -a .app-diagnostic/node-check.txt
+            node --check "$file" 2>&1 | tee -a .app-diagnostic/node-check.txt
+          done
+          exit 0
 
       - name: Conservar diagnóstico
         if: always()

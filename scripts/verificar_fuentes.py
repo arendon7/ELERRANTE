@@ -123,8 +123,8 @@ if "[... ELLIPSIZATION ...]" not in legacy_data:
     ISSUES.append("No se conserva la evidencia del truncamiento en data-003.txt")
 if "truncated-ellipsized-do-not-use" not in incident:
     ISSUES.append("La documentación no clasifica los chunks como no utilizables")
-if "el-errante-v0-6-8" not in service_worker:
-    ISSUES.append("service-worker.js no usa la caché v0.6.8")
+if "el-errante-v1-1-0" not in service_worker:
+    ISSUES.append("service-worker.js no usa la caché pública v1.1.0")
 if "python3 scripts/verificar_fuentes.py" not in workflow:
     ISSUES.append("El workflow no ejecuta verificar_fuentes.py")
 if "node scripts/exportar-fuente-canonica.mjs" not in workflow:

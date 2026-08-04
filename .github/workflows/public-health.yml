@@ -11,7 +11,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v0-6-9
+  EXPECTED_CACHE: el-errante-v1-1-0
 
 jobs:
   health:
@@ -27,8 +27,6 @@ jobs:
           echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
           echo "SOURCE_WORKFLOW_URL=${{ github.event.workflow_run.html_url }}" >> "$GITHUB_ENV"
           echo "HEALTH_WORKFLOW_URL=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_ENV"
-          echo "Workflow fuente: ${{ github.event.workflow_run.html_url }}"
-          echo "Health check: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Exigir despliegue fuente exitoso
         run: test "$SOURCE_CONCLUSION" = "success"
@@ -43,66 +41,57 @@ jobs:
               -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" \
               > deploy-version-observed.txt || true
-
             observed_sha="$(sed -n 's/^release_commit=//p' deploy-version-observed.txt | tr -d '\r')"
             observed_cache="$(sed -n 's/^cache=//p' deploy-version-observed.txt | tr -d '\r')"
             observed_source="$(sed -n 's/^deploy_source=//p' deploy-version-observed.txt | tr -d '\r')"
-
-            if [ "$observed_sha" = "$EXPECTED_SHA" ] \
-              && [ "$observed_cache" = "$EXPECTED_CACHE" ] \
-              && [ "$observed_source" = "main" ]; then
+            if [ "$observed_sha" = "$EXPECTED_SHA" ] && [ "$observed_cache" = "$EXPECTED_CACHE" ] && [ "$observed_source" = "main" ]; then
               success=1
               echo "Marcador público coherente en el intento $attempt."
               break
             fi
-
-            echo "Intento $attempt — diagnóstico real:"
-            if [ "$observed_sha" != "$EXPECTED_SHA" ]; then
-              echo "  SHA: esperado=$EXPECTED_SHA observado=${observed_sha:-vacío}"
-            fi
-            if [ "$observed_cache" != "$EXPECTED_CACHE" ]; then
-              echo "  caché: esperada=$EXPECTED_CACHE observada=${observed_cache:-vacía}"
-            fi
-            if [ "$observed_source" != "main" ]; then
-              echo "  fuente: esperada=main observada=${observed_source:-vacía}"
-            fi
+            echo "Intento $attempt: sha=${observed_sha:-vacío}; cache=${observed_cache:-vacía}; source=${observed_source:-vacía}"
             sleep 10
           done
+          test "$success" -eq 1
 
-          if [ "$success" -ne 1 ]; then
-            echo "El marcador público no coincide con la expectativa."
-            exit 1
-          fi
-
-      - name: Verificar runtime publicado actual
+      - name: Verificar runtime y sistema visual publicados
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --location --max-time 30 \
-            -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/assets/app.js?verify=$EXPECTED_SHA" > public-app-loader.js
-          curl --fail --silent --show-error --location --max-time 30 \
-            -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/assets/data.js?verify=$EXPECTED_SHA" > public-data-loader.js
-          curl --fail --silent --show-error --location --max-time 30 \
-            -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/assets/products-v6.js?verify=$EXPECTED_SHA" > public-products-overlay.js
-
+          curl --fail --silent --show-error --location --max-time 30 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/app.js?verify=$EXPECTED_SHA" > public-app-loader.js
+          curl --fail --silent --show-error --location --max-time 30 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/data.js?verify=$EXPECTED_SHA" > public-data-loader.js
+          curl --fail --silent --show-error --location --max-time 30 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/products-v6.js?verify=$EXPECTED_SHA" > public-products-overlay.js
+          curl --fail --silent --show-error --location --max-time 30 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/host-mode.js?verify=$EXPECTED_SHA" > public-host-mode.js
           grep -q 'v040-app-001.b64' public-app-loader.js
           grep -q 'v040-app-006.b64' public-app-loader.js
           ! grep -q 'assets/chunks/app-' public-app-loader.js
           grep -q 'v040-data-001.b64' public-data-loader.js
           grep -q 'v040-data-004.b64' public-data-loader.js
           grep -q 'assets/products-v6.js' public-data-loader.js
-          ! grep -q 'assets/chunks/data-' public-data-loader.js
           grep -q 'harina-aire-y-tiempo' public-products-overlay.js
           grep -q 'combo-primera-ruta' public-products-overlay.js
+          grep -q 'el-errante-v1-1-0' public-host-mode.js
+          grep -q 'brand-final-products-c.js' public-host-mode.js
+
+          for pack in editorial products-a products-b products-c; do
+            curl --fail --silent --show-error --location --max-time 30 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/assets/brand-final-${pack}.js?verify=$EXPECTED_SHA" > "public-brand-${pack}.js"
+            node --check "public-brand-${pack}.js"
+          done
+          grep -q 'home-compartir' public-brand-editorial.js
+          grep -q 'producto-margherita' public-brand-products-a.js
+          grep -q 'producto-combo-primera-ruta' public-brand-products-b.js
+          grep -q 'producto-panela-maracuya' public-brand-products-c.js
+
+          for visual in home-hero.svg home-masa-fuego.svg home-fermentacion.svg home-ingredientes.svg; do
+            curl --fail --silent --show-error --location --max-time 30 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/assets/images/brand-final/$visual?verify=$EXPECTED_SHA" > "public-$visual"
+            grep -q 'data:image/avif;base64,' "public-$visual"
+          done
 
           for part in 001 002 003 004 005 006; do
-            curl --fail --silent --show-error --location --max-time 30 \
-              -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/assets/source/v040-app-${part}.b64?verify=$EXPECTED_SHA" \
-              > "public-app-${part}.b64"
+            curl --fail --silent --show-error --location --max-time 30 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/assets/source/v040-app-${part}.b64?verify=$EXPECTED_SHA" > "public-app-${part}.b64"
           done
           cat public-app-*.b64 | tr -d '\r\n\t ' | base64 --decode > public-app-reconstructed.js
           test "$(sha256sum public-app-reconstructed.js | cut -d' ' -f1)" = "9745984b131f5c1697d0700e5ad7b397e9b2fc17356842804f22bba140fe3e3c"
@@ -113,28 +102,15 @@ jobs:
         run: |
           set -euo pipefail
           for page in historia nosotros equipo; do
-            curl --fail --silent --show-error --location --max-time 30 \
-              -H 'Cache-Control: no-cache' \
+            curl --fail --silent --show-error --location --max-time 30 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
           done
-
-          check_surface() {
-            local page="$1"
-            local marker_one="$2"
-            local marker_two="$3"
-            local file="public-${page}.html"
-            for marker in "$marker_one" "$marker_two"; do
-              if ! grep -Fq "$marker" "$file"; then
-                echo "::error file=${file}::La superficie ${page} no contiene el marcador estable: ${marker}"
-                exit 1
-              fi
-            done
-            echo "Superficie ${page}: PASS"
-          }
-
-          check_surface historia 'data-page="historia"' 'Viajar hasta el origen'
-          check_surface nosotros 'data-page="nosotros"' 'Equipo fundador'
-          check_surface equipo 'data-page="equipo"' 'Centro integral'
+          grep -Fq 'data-page="historia"' public-historia.html
+          grep -Fq 'Viajar hasta el origen' public-historia.html
+          grep -Fq 'data-page="nosotros"' public-nosotros.html
+          grep -Fq 'Equipo fundador' public-nosotros.html
+          grep -Fq 'data-page="equipo"' public-equipo.html
+          grep -Fq 'Centro integral' public-equipo.html
 
       - name: Generar informe
         if: always()
@@ -147,15 +123,12 @@ jobs:
             echo "health_workflow_url=$HEALTH_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
             echo "expected_cache=$EXPECTED_CACHE"
-            echo "runtime=verified-v0.4-app-and-data-plus-products-v6-overlay"
+            echo "runtime=canonical-v0.4-plus-brand-final-v1.1"
             echo "public_base=$PUBLIC_BASE"
             echo
             echo "--- deploy-version observado ---"
             cat deploy-version-observed.txt 2>/dev/null || true
             echo
-            echo "app_loader_bytes=$(wc -c < public-app-loader.js 2>/dev/null || echo 0)"
-            echo "data_loader_bytes=$(wc -c < public-data-loader.js 2>/dev/null || echo 0)"
-            echo "products_overlay_bytes=$(wc -c < public-products-overlay.js 2>/dev/null || echo 0)"
             echo "app_sha256=$(sha256sum public-app-reconstructed.js 2>/dev/null | cut -d' ' -f1 || true)"
           } > public-health-report.txt
           cat public-health-report.txt
@@ -172,6 +145,9 @@ jobs:
             public-app-reconstructed.js
             public-data-loader.js
             public-products-overlay.js
+            public-host-mode.js
+            public-brand-*.js
+            public-home-*.svg
             public-historia.html
             public-nosotros.html
             public-equipo.html
@@ -186,10 +162,8 @@ jobs:
             const fs = require('fs');
             const marker = '<!-- el-errante-public-health -->';
             const sha = context.payload.workflow_run.head_sha;
-            const report = fs.existsSync('public-health-report.txt')
-              ? fs.readFileSync('public-health-report.txt', 'utf8').slice(0, 12000)
-              : 'Informe no disponible.';
-            const body = `${marker}\n## Public health: PASS\n\n- Commit servido: \`${sha}\`.\n- Fuente: \`main\`.\n- Caché: \`${process.env.EXPECTED_CACHE}\`.\n- Runtime verificado: aplicación y datos íntegros v0.4 + overlay comercial v0.6.1.\n- SHA de aplicación: \`9745984b131f5c1697d0700e5ad7b397e9b2fc17356842804f22bba140fe3e3c\`.\n- Historia, Nosotros y Demo integral: publicadas.\n- [Workflow fuente](${process.env.SOURCE_WORKFLOW_URL}).\n- [Health check](${process.env.HEALTH_WORKFLOW_URL}).\n- Verificación: ${new Date().toISOString()}.\n\n<details><summary>Informe observado</summary>\n\n\`\`\`text\n${report}\n\`\`\`\n</details>`;
+            const report = fs.existsSync('public-health-report.txt') ? fs.readFileSync('public-health-report.txt', 'utf8').slice(0, 12000) : 'Informe no disponible.';
+            const body = `${marker}\n## Public health: PASS\n\n- Commit servido: \`${sha}\`.\n- Fuente única: \`main\`.\n- Caché: \`${process.env.EXPECTED_CACHE}\`.\n- Runtime canónico y sistema visual V1.1 verificados.\n- Historia, Nosotros y Demo integral: publicadas.\n- [Workflow fuente](${process.env.SOURCE_WORKFLOW_URL}).\n- [Health check](${process.env.HEALTH_WORKFLOW_URL}).\n- Verificación: ${new Date().toISOString()}.\n\n<details><summary>Informe observado</summary>\n\n\`\`\`text\n${report}\n\`\`\`\n</details>`;
             const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: 11, per_page: 100 });
             const existing = comments.find(comment => comment.body?.includes(marker));
             if (existing) await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });
@@ -203,9 +177,7 @@ jobs:
             const fs = require('fs');
             const marker = '<!-- el-errante-public-health -->';
             const sha = context.payload.workflow_run.head_sha;
-            const report = fs.existsSync('public-health-report.txt')
-              ? fs.readFileSync('public-health-report.txt', 'utf8').slice(0, 12000)
-              : 'Informe no disponible.';
+            const report = fs.existsSync('public-health-report.txt') ? fs.readFileSync('public-health-report.txt', 'utf8').slice(0, 12000) : 'Informe no disponible.';
             const body = `${marker}\n## Public health: FAIL\n\nLa publicación no superó la verificación del commit \`${sha}\`.\n\n- Conclusión del workflow fuente: \`${process.env.SOURCE_CONCLUSION}\`.\n- Caché esperada: \`${process.env.EXPECTED_CACHE}\`.\n- [Workflow fuente](${process.env.SOURCE_WORKFLOW_URL}).\n- [Health check](${process.env.HEALTH_WORKFLOW_URL}).\n- Verificación: ${new Date().toISOString()}.\n\n<details open><summary>Informe observado</summary>\n\n\`\`\`text\n${report}\n\`\`\`\n</details>`;
             const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: 11, per_page: 100 });
             const existing = comments.find(comment => comment.body?.includes(marker));

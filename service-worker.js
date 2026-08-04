@@ -6,6 +6,8 @@ const CORE = [
   './equipo.html','./admin.html','./control.html','./operacion.html','./studio.html','./presentacion.html',
   './assets/styles.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
   './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
+  './assets/offer-studio-v09.js','./assets/offer-studio-v09.css','./assets/offer-governance-v09.js',
+  './documentacion/modelo-oferta-v09.json',
   './assets/source/v040-app-001.b64','./assets/source/v040-app-002.b64',
   './assets/source/v040-app-003.b64','./assets/source/v040-app-004.b64',
   './assets/source/v040-app-005.b64','./assets/source/v040-app-006.b64',

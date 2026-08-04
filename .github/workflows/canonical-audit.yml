@@ -18,8 +18,11 @@ jobs:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Validar fuentes recuperadas
-        run: python3 scripts/verificar_fuentes.py
+      - name: Materializar sistema visual final
+        run: python3 scripts/materializar_activos_visuales.py
+
+      - name: Validar release público
+        run: python3 scripts/verificar_release_v12.py
 
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
@@ -30,7 +33,6 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-
           root = Path('.artifacts/canonical')
           data = json.loads((root / 'canonical-data.json').read_text(encoding='utf-8'))
           report = json.loads((root / 'canonical-report.json').read_text(encoding='utf-8'))
@@ -44,19 +46,11 @@ jobs:
               'coverage': len(data.get('coverage', [])),
           }
           print('AUDITORÍA CANÓNICA ESTRUCTURADA')
-          for key, value in values.items():
-              print(f'{key}={value}')
+          for key, value in values.items(): print(f'{key}={value}')
           print('product_ids=' + ','.join(p.get('id', '') for p in products))
           print('canonical_json_sha256=' + report['canonical_json_sha256'])
           print('legacy_status=' + report['legacy_chunks']['status'])
-          assert values == {
-              'products': 11,
-              'variants': 14,
-              'recipes': 5,
-              'articles': 5,
-              'faqs': 5,
-              'coverage': 6,
-          }
+          assert values == {'products':11,'variants':14,'recipes':5,'articles':5,'faqs':5,'coverage':6}
           assert report['legacy_chunks']['status'] == 'truncated-ellipsized-do-not-use'
           PY
 

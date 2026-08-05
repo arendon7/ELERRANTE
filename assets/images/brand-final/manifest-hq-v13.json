@@ -1,0 +1,194 @@
+{
+  "version": "1.3.0",
+  "source": "Google Drive / ELERRANTE_WEB_HQ_V13",
+  "unique_assets": 23,
+  "aliases": {
+    "evento-servicio.webp": "evento-operacion.webp"
+  },
+  "assets": [
+    {
+      "file": "home-hero.webp",
+      "drive_id": "1f5dmcuMYUBZ8cixzZa6qahASQv0I71AT",
+      "bytes": 363842,
+      "width": 1672,
+      "height": 941,
+      "sha256": "b7c6daecd8ac68e572926cf360a1b3425a6bcca2ab4b541c5cc1ef280e7f02d4"
+    },
+    {
+      "file": "home-hero-mobile.webp",
+      "drive_id": "12cxs2_yGceEFNcBj2tash0vHGMfZ23-H",
+      "bytes": 243476,
+      "width": 960,
+      "height": 1200,
+      "sha256": "c0b89ddd1f42398b32ebeecd9cb3f5ecc7909cd78a1873a518d45abf15531d82"
+    },
+    {
+      "file": "home-masa-fuego.webp",
+      "drive_id": "1ZQ_2VAlba6Zt-Q0_2pJn4qEYT0xe5CAG",
+      "bytes": 166906,
+      "width": 1254,
+      "height": 940,
+      "sha256": "92c3b06bddd0916780ad7d886f93f7b1dcdefdeef131909605fd123a5ad45097"
+    },
+    {
+      "file": "home-fermentacion.webp",
+      "drive_id": "1Lj8XPRw-2nMz1i1VNViFvu_RgyH5mU_o",
+      "bytes": 213738,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "02242332b155f8e58d884e0b488540f7a5a55bb393e7d27fc264af6bdfa090c5"
+    },
+    {
+      "file": "home-ingredientes.webp",
+      "drive_id": "177ifFiZl_RnQaqPmGwoAtsb8_v_RojNP",
+      "bytes": 244138,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "3476d5025457acc4be1fbbc3233c7c56afe0429554aac77d5bc4f85711fef5f3"
+    },
+    {
+      "file": "home-compartir.webp",
+      "drive_id": "1r1BiUCmzzce9Hey-l9tM4oD9T8TNIdVK",
+      "bytes": 202416,
+      "width": 1672,
+      "height": 941,
+      "sha256": "98b4102cf9869c764ffbadf5f9900f9a477017f66fa6c42eeb93ff9a2be4e2a2"
+    },
+    {
+      "file": "home-en-casa.webp",
+      "drive_id": "1jnvsh4eVvkwebbl6Aj2FfkBSuouzeemp",
+      "bytes": 261826,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "3686123f422b4e11b8552fb770615fc3604e3e99eaa7ed1248f8002899c50bdf"
+    },
+    {
+      "file": "home-despensa.webp",
+      "drive_id": "1Mw0suBw4k_mNSv87JraNOzEsHwOVSN8N",
+      "bytes": 254464,
+      "width": 1254,
+      "height": 940,
+      "sha256": "604069523975c166d177a9e3b9f1282608e67b951aed9359b13ecf06776da46d"
+    },
+    {
+      "file": "evento-hero.webp",
+      "drive_id": "1vHrsXCnPF2gcLoSKAjRRpwKD6Xjdh4_2",
+      "bytes": 387948,
+      "width": 1672,
+      "height": 941,
+      "sha256": "dde272f7e174ea97431ab1ad66b694935bd94c0a431bccc934a2bc9ef85a6ce4"
+    },
+    {
+      "file": "evento-noche.webp",
+      "drive_id": "1hA9goVB2Y9QJGhiSb2LGVGdDLgzEtpDs",
+      "bytes": 277806,
+      "width": 1672,
+      "height": 941,
+      "sha256": "a8867980651f05b0ce02cd05ef04373c98887745711d96060bf0f47af63cd624"
+    },
+    {
+      "file": "evento-operacion.webp",
+      "drive_id": "1v72n0Zkr-ZNt1YIeOXyZDQJmryTUps5h",
+      "bytes": 363842,
+      "width": 1672,
+      "height": 941,
+      "sha256": "b7c6daecd8ac68e572926cf360a1b3425a6bcca2ab4b541c5cc1ef280e7f02d4"
+    },
+    {
+      "file": "og-el-errante.webp",
+      "drive_id": "1LcpCn6dEwbjtMkyxvtXC38W7bcXHZ_3A",
+      "bytes": 212966,
+      "width": 1200,
+      "height": 630,
+      "sha256": "a68865ad4f803c8daebc781c13b326eb332cf1d6c2b8b47c1499080f06735048"
+    },
+    {
+      "file": "producto-harina.webp",
+      "drive_id": "1EOClxOJvXOXluYwIEY0NDKR0uLHWKhS1",
+      "bytes": 191020,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "dad03d52b2155de0e08d787b472cdb99b297a22f66ebf60240039655c1cf796f"
+    },
+    {
+      "file": "producto-crea-tuya.webp",
+      "drive_id": "15QT0MUJKp4RZ4EuACbd16sVhTe2cKSKF",
+      "bytes": 388710,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "73920aa35c9c5ada4d558d699d66a2d8a3feef2cf40e699ac2a039f82e0d1135"
+    },
+    {
+      "file": "producto-margherita.webp",
+      "drive_id": "1xgWtV0AJZy5LjiGKiin6z1G6Ya_qpGz5",
+      "bytes": 266474,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "83c72d9c90370245a2c7c105cdca5cee36d49dd21a12657971b2cdf68b75a388"
+    },
+    {
+      "file": "producto-diavola.webp",
+      "drive_id": "1r-eSiqvJB28VdemK4GR4JaosalIo08Np",
+      "bytes": 309254,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "118f2495eb2e32f44a2d8101d4866a11d19bc514d0daa5ce0e872b90687d13ba"
+    },
+    {
+      "file": "producto-bosque.webp",
+      "drive_id": "1oNJJ6RGRoenlGcRrghOdZ4F5gIsI-Y0w",
+      "bytes": 343572,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "98be0d4a741998d90462cbd42bd5eeb7f907b63800c5e143703a6981ca7c84cb"
+    },
+    {
+      "file": "producto-cuatro-quesos.webp",
+      "drive_id": "1sVPMKV_lBgZsBx8IxG0oFYPILMvNCj0v",
+      "bytes": 337706,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "18dd7766b4d6753a1a34b8ca55d0e294a394f14de668018d7fe3bea0bfad649e"
+    },
+    {
+      "file": "producto-la-errante.webp",
+      "drive_id": "1LY49SOwOciK-6gDd3MUOLeL27waT71Ny",
+      "bytes": 211336,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "ee590bf9ad50c42ff4c3136a9240e6c8f4c0b0c6ce634bdf0b1518d2608903b7"
+    },
+    {
+      "file": "producto-salsa-tomate.webp",
+      "drive_id": "1t6RqkE5cgTh4D_TAUbxNt7K2jpHSdM2e",
+      "bytes": 181468,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "d0314a88096f48c40a8d5e678c2dcff093cabf33a6e05d06ccb44c4c6254af85"
+    },
+    {
+      "file": "producto-reduccion-balsamica.webp",
+      "drive_id": "1h7liTiZ7vPeJKFo_wH-rOkQOWivrD6fb",
+      "bytes": 114694,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "d4da39f27a5c9b395560a239b44955dceeba41c4736ddd4369cf7246c6d98937"
+    },
+    {
+      "file": "producto-panela-maracuya.webp",
+      "drive_id": "1LbQG1U87h_dtjwErLJvXVkZmPZxtAiJp",
+      "bytes": 223202,
+      "width": 1122,
+      "height": 1402,
+      "sha256": "662159f9d9a9386487a32c0d26e97936ee4824e392df31baaee6fd552cfa5772"
+    },
+    {
+      "file": "producto-combo-primera-ruta.webp",
+      "drive_id": "1_z4X7QNcJTu6rosuv3JSF5AnTZvjJ7mU",
+      "bytes": 279918,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "1cf57d686ff842412c4561f9288d136440347450c214ee38b81d890f1509a33e"
+    }
+  ]
+}

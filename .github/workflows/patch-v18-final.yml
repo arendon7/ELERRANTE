@@ -46,15 +46,11 @@ jobs:
           if old_loop not in js:
               raise SystemExit('No se encontró el ciclo de secciones esperado')
           js = js.replace(old_loop, new_loop)
-          old_empty = """    layout.hidden=true;
-                layout.insertAdjacentHTML('beforebegin',`<section class=\"ee-v18-empty\" data-v18=\"empty-cart\">"""
-          new_empty = """    document.body.classList.add('ee-v18-empty-cart');
-                layout.hidden=true;
-                layout.setAttribute('aria-hidden','true');
-                layout.insertAdjacentHTML('beforebegin',`<section class=\"ee-v18-empty\" data-v18=\"empty-cart\">"""
+          old_empty = "    layout.hidden=true;"
+          new_empty = "    document.body.classList.add('ee-v18-empty-cart');\n    layout.hidden=true;\n    layout.setAttribute('aria-hidden','true');"
           if old_empty not in js:
               raise SystemExit('No se encontró el estado vacío esperado')
-          js_path.write_text(js.replace(old_empty, new_empty), encoding='utf-8')
+          js_path.write_text(js.replace(old_empty, new_empty, 1), encoding='utf-8')
 
           css_path = Path('assets/commerce-v18.css')
           css = css_path.read_text(encoding='utf-8')

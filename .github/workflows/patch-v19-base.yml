@@ -60,9 +60,14 @@ jobs:
               'scripts/verificar_operacion_v14.py',
               'scripts/verificar_backend_v15.py',
               'scripts/verificar_operacion_v16.py',
-              'scripts/verificar_contenido_v17.py',
-              'scripts/verificar_experiencia_compra_v18.py',
           ):
+              file=Path(path)
+              text=file.read_text(encoding='utf-8')
+              text=text.replace('1.8.0','1.9.0').replace('v1-8-0','v1-9-0')
+              text=text.replace('Operación y finanzas · V1.6','Operación, finanzas y confianza · V1.9')
+              file.write_text(text,encoding='utf-8')
+
+          for path in ('scripts/verificar_contenido_v17.py','scripts/verificar_experiencia_compra_v18.py'):
               file=Path(path)
               text=file.read_text(encoding='utf-8')
               text=text.replace('PUBLIC_VERSION="1.8.0"','PUBLIC_VERSION="1.9.0"')
@@ -70,8 +75,6 @@ jobs:
               text=text.replace('"el-errante-v1-8-0"','"el-errante-v1-9-0"')
               text=text.replace('"version=1.8.0"','"version=1.9.0"')
               text=text.replace('"cache=el-errante-v1-8-0"','"cache=el-errante-v1-9-0"')
-              text=text.replace("'version: \"1.8.0\"'","'version: \"1.9.0\"'")
-              text=text.replace('"Operación y finanzas · V1.6"','"Operación, finanzas y confianza · V1.9"')
               file.write_text(text,encoding='utf-8')
 
           roadmap=Path('documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md')

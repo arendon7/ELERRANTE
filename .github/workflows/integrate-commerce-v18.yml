@@ -91,3 +91,5 @@ jobs:
           git add assets/host-mode.js assets/commerce-config-v14.js deploy-version.txt service-worker.js scripts tests/e2e/commerce-v14.spec.js documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md
           git commit -m 'feat(commerce): integra base de experiencia V1.8'
           git push origin HEAD:feat/experiencia-compra-v18
+
+# retry after protected workflows were aligned directly

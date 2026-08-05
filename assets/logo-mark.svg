@@ -1,5 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title">
-<title id="title">Símbolo El Errante</title>
-<circle cx="60" cy="60" r="46" fill="none" stroke="#A5432D" stroke-width="10" stroke-linecap="round" stroke-dasharray="255 34" transform="rotate(-18 60 60)"/>
-<path d="M35 42h48M35 60h39M35 78h48" fill="none" stroke="#A5432D" stroke-width="9" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
+  <title id="title">E terracota de El Errante</title>
+  <desc id="desc">Isotipo oficial de El Errante: una letra E geométrica en color terracota.</desc>
+  <g fill="#A5432D">
+    <rect x="22" y="16" width="22" height="88" rx="5"/>
+    <rect x="38" y="16" width="60" height="20" rx="5"/>
+    <rect x="38" y="50" width="48" height="20" rx="5"/>
+    <rect x="38" y="84" width="60" height="20" rx="5"/>
+  </g>
 </svg>

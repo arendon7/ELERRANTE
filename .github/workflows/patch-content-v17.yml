@@ -94,4 +94,4 @@ jobs:
           git commit -m 'feat(content): integra experiencia gastronómica premium V1.7'
           git push origin HEAD:feat/contenido-conversion-v17
 
-# retry after Public Health V1.7 alignment
+# final editorial integration run

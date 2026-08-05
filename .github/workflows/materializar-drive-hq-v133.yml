@@ -1,0 +1,164 @@
+name: Materializar originales HQ desde Drive
+
+on:
+  push:
+    branches: ["feat/visuales-hq-v133-materializados"]
+    paths:
+      - ".github/workflows/materializar-drive-hq-v133.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materializar-drive-hq-v133
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: feat/visuales-hq-v133-materializados
+          fetch-depth: 0
+
+      - name: Descargar y validar originales
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import shutil
+          import subprocess
+
+          FILES = {
+              "home-hero.webp": ("1f5dmcuMYUBZ8cixzZa6qahASQv0I71AT", 363842),
+              "home-hero-mobile.webp": ("12cxs2_yGceEFNcBj2tash0vHGMfZ23-H", 243476),
+              "home-masa-fuego.webp": ("1ZQ_2VAlba6Zt-Q0_2pJn4qEYT0xe5CAG", 166906),
+              "home-fermentacion.webp": ("1Lj8XPRw-2nMz1i1VNViFvu_RgyH5mU_o", 213738),
+              "home-ingredientes.webp": ("177ifFiZl_RnQaqPmGwoAtsb8_v_RojNP", 244138),
+              "home-compartir.webp": ("1r1BiUCmzzce9Hey-l9tM4oD9T8TNIdVK", 202416),
+              "home-en-casa.webp": ("1jnvsh4eVvkwebbl6Aj2FfkBSuouzeemp", 261826),
+              "home-despensa.webp": ("1Mw0suBw4k_mNSv87JraNOzEsHwOVSN8N", 254464),
+              "evento-hero.webp": ("1vHrsXCnPF2gcLoSKAjRRpwKD6Xjdh4_2", 387948),
+              "evento-noche.webp": ("1hA9goVB2Y9QJGhiSb2LGVGdDLgzEtpDs", 277806),
+              "evento-operacion.webp": ("1v72n0Zkr-ZNt1YIeOXyZDQJmryTUps5h", 363842),
+              "og-el-errante.webp": ("1LcpCn6dEwbjtMkyxvtXC38W7bcXHZ_3A", 212966),
+              "producto-harina.webp": ("1EOClxOJvXOXluYwIEY0NDKR0uLHWKhS1", 191020),
+              "producto-crea-tuya.webp": ("15QT0MUJKp4RZ4EuACbd16sVhTe2cKSKF", 388710),
+              "producto-margherita.webp": ("1xgWtV0AJZy5LjiGKiin6z1G6Ya_qpGz5", 266474),
+              "producto-diavola.webp": ("1r-eSiqvJB28VdemK4GR4JaosalIo08Np", 309254),
+              "producto-bosque.webp": ("1oNJJ6RGRoenlGcRrghOdZ4F5gIsI-Y0w", 343572),
+              "producto-cuatro-quesos.webp": ("1sVPMKV_lBgZsBx8IxG0oFYPILMvNCj0v", 337706),
+              "producto-la-errante.webp": ("1LY49SOwOciK-6gDd3MUOLeL27waT71Ny", 211336),
+              "producto-salsa-tomate.webp": ("1t6RqkE5cgTh4D_TAUbxNt7K2jpHSdM2e", 181468),
+              "producto-reduccion-balsamica.webp": ("1h7liTiZ7vPeJKFo_wH-rOkQOWivrD6fb", 114694),
+              "producto-panela-maracuya.webp": ("1LbQG1U87h_dtjwErLJvXVkZmPZxtAiJp", 223202),
+              "producto-combo-primera-ruta.webp": ("1_z4X7QNcJTu6rosuv3JSF5AnTZvjJ7mU", 279918),
+          }
+
+          def dimensions(data: bytes) -> tuple[int, int]:
+              if data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+                  raise ValueError("firma RIFF/WEBP ausente")
+              kind = data[12:16]
+              if kind == b"VP8X":
+                  width = 1 + int.from_bytes(data[24:27], "little")
+                  height = 1 + int.from_bytes(data[27:30], "little")
+                  return width, height
+              if kind == b"VP8L":
+                  if data[20] != 0x2F:
+                      raise ValueError("firma VP8L inválida")
+                  b1, b2, b3, b4 = data[21:25]
+                  width = 1 + (((b2 & 0x3F) << 8) | b1)
+                  height = 1 + (((b4 & 0x0F) << 10) | (b3 << 2) | ((b2 & 0xC0) >> 6))
+                  return width, height
+              marker = data.find(b"\x9d\x01\x2a", 20, 128)
+              if marker < 0:
+                  raise ValueError(f"cabecera WebP no reconocida: {kind!r}")
+              width = int.from_bytes(data[marker + 3:marker + 5], "little") & 0x3FFF
+              height = int.from_bytes(data[marker + 5:marker + 7], "little") & 0x3FFF
+              return width, height
+
+          target = Path("assets/images/brand-final")
+          staging = Path(".tmp-drive-hq-v133")
+          shutil.rmtree(target, ignore_errors=True)
+          shutil.rmtree(staging, ignore_errors=True)
+          target.mkdir(parents=True, exist_ok=True)
+          staging.mkdir(parents=True, exist_ok=True)
+
+          manifest = {
+              "version": "1.3.0",
+              "source": "Google Drive / ELERRANTE_WEB_HQ_V13",
+              "unique_assets": 23,
+              "aliases": {"evento-servicio.webp": "evento-operacion.webp"},
+              "assets": [],
+          }
+
+          for name, (file_id, expected_size) in FILES.items():
+              temp = staging / name
+              urls = [
+                  f"https://drive.usercontent.google.com/download?id={file_id}&export=download&confirm=t",
+                  f"https://drive.google.com/uc?export=download&id={file_id}&confirm=t",
+              ]
+              success = False
+              errors = []
+              for url in urls:
+                  if temp.exists():
+                      temp.unlink()
+                  result = subprocess.run([
+                      "curl", "-L", "--fail", "--silent", "--show-error",
+                      "--retry", "4", "--retry-delay", "2",
+                      "--connect-timeout", "20", "--max-time", "120",
+                      url, "-o", str(temp),
+                  ], text=True, capture_output=True)
+                  size = temp.stat().st_size if temp.exists() else 0
+                  if result.returncode == 0 and size == expected_size:
+                      success = True
+                      break
+                  errors.append(f"url={url}; code={result.returncode}; size={size}; stderr={result.stderr.strip()}")
+              if not success:
+                  raise SystemExit(f"No se pudo recuperar {name}: {' | '.join(errors)}")
+
+              data = temp.read_bytes()
+              width, height = dimensions(data)
+              if width < 960 or height < 630:
+                  raise SystemExit(f"Resolución insuficiente en {name}: {width}x{height}")
+              output = target / name
+              shutil.move(temp, output)
+              digest = hashlib.sha256(data).hexdigest()
+              manifest["assets"].append({
+                  "file": name,
+                  "drive_id": file_id,
+                  "bytes": len(data),
+                  "width": width,
+                  "height": height,
+                  "sha256": digest,
+              })
+              print(f"OK {name}: {len(data)} bytes, {width}x{height}, sha256={digest}")
+
+          shutil.copyfile(target / "evento-operacion.webp", target / "evento-servicio.webp")
+          (target / "manifest-hq-v13.json").write_text(
+              json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          shutil.rmtree(staging, ignore_errors=True)
+
+          webps = list(target.glob("*.webp"))
+          if len(webps) != 24:
+              raise SystemExit(f"Se esperaban 24 rutas WebP y se obtuvieron {len(webps)}")
+          print("Colección HQ validada: 23 originales + 1 alias técnico.")
+          PY
+
+      - name: Crear commit binario validado
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/images/brand-final
+          git commit -m 'feat(visual): materializa originales HQ desde Drive [materialized]'
+          git push origin HEAD:feat/visuales-hq-v133-materializados

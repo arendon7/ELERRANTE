@@ -54,10 +54,13 @@ jobs:
               'scripts/verificar_operacion_v14.py',
               'scripts/verificar_backend_v15.py',
               'scripts/verificar_operacion_v16.py',
-              'scripts/verificar_contenido_v17.py',
           ):
               replace_required(path, '1.7.0', '1.8.0')
               replace_required(path, 'v1-7-0', 'v1-8-0')
+
+          replace_required('scripts/verificar_contenido_v17.py', 'PUBLIC_VERSION="1.7.0"', 'PUBLIC_VERSION="1.8.0"')
+          replace_required('scripts/verificar_contenido_v17.py', 'el-errante-v1-7-0', 'el-errante-v1-8-0')
+          replace_required('scripts/verificar_contenido_v17.py', 'version=1.7.0', 'version=1.8.0')
 
           replace_required(
               'tests/e2e/commerce-v14.spec.js',

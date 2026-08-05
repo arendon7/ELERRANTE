@@ -36,6 +36,9 @@ jobs:
       - name: Validar contenido y conversión V1.7
         run: python3 scripts/verificar_contenido_v17.py
 
+      - name: Validar experiencia de compra V1.8
+        run: python3 scripts/verificar_experiencia_compra_v18.py
+
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
 

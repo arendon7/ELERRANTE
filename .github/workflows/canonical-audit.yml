@@ -30,6 +30,9 @@ jobs:
       - name: Validar backend y acceso privado V1.5
         run: python3 scripts/verificar_backend_v15.py
 
+      - name: Validar operación y finanzas V1.6
+        run: python3 scripts/verificar_operacion_v16.py
+
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
 

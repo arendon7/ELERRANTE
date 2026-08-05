@@ -54,9 +54,9 @@ for forbidden in ["service_role", "SUPABASE_SERVICE", "postgres://"]:
 for marker in ["assets/operations-v16.js", "assets/commerce-v16.css"]:
     if marker not in worker:
         ISSUES.append(f"Activo V1.6 no precargado: {marker}")
-if "el-errante-v1-6-0" not in worker:
+if "el-errante-v1-7-0" not in worker:
     ISSUES.append("Service worker no usa caché V1.6")
-if 'PUBLIC_VERSION="1.6.0"' not in host or 'ACTIVE_CACHE="el-errante-v1-6-0"' not in host:
+if 'PUBLIC_VERSION="1.7.0"' not in host or 'ACTIVE_CACHE="el-errante-v1-7-0"' not in host:
     ISSUES.append("Host público no declara versión/caché V1.6")
 
 print("EL ERRANTE V1.6 — BARRERA DE OPERACIÓN Y FINANZAS")

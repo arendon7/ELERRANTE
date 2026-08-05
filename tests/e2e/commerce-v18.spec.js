@@ -6,14 +6,41 @@ async function seedCart(page) {
   ])));
 }
 
-async function seedBank(page) {
-  await page.addInitScript(() => localStorage.setItem('ee_v14_settings', JSON.stringify({
-    payment: {
-      accountHolder: 'El Errante Cocina',
-      accountNumber: '123456789',
-      key: 'errante@banco'
-    }
-  })));
+async function configurePreviewBank(page) {
+  await page.route('**/assets/commerce-config-v14.js', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/javascript; charset=utf-8',
+      body: `(()=>{
+        window.EL_ERRANTE_COMMERCE_CONFIG = Object.freeze({
+          version: '1.8.0',
+          environment: 'preview',
+          backend: {
+            provider: 'supabase',
+            url: '',
+            publishableKey: '',
+            receiptBucket: 'payment-receipts',
+            shopperStorageKey: 'ee-shopper-auth-v15',
+            adminStorageKey: 'ee-admin-auth-v15'
+          },
+          payment: {
+            bank: 'Bancolombia',
+            accountType: 'Cuenta de ahorros',
+            accountNumber: '123456789',
+            key: 'errante@banco',
+            accountHolder: 'El Errante Cocina',
+            instructions: 'Realiza la transferencia por el valor total del pedido y adjunta el comprobante.'
+          },
+          finance: { currency: 'COP', monthlyFixedCosts: [] },
+          ordering: {
+            deliveryPolicy: 'Cobertura abierta sujeta a coordinación logística',
+            requireReceipt: true,
+            maxReceiptBytesPreview: 5000000
+          }
+        });
+      })();`
+    });
+  });
 }
 
 test.describe('Experiencia de compra V1.8', () => {
@@ -35,9 +62,9 @@ test.describe('Experiencia de compra V1.8', () => {
     await expect(page.getByText('La etiqueta y el empaque real prevalecen')).toBeVisible();
   });
 
-  test('checkout guía datos entrega y pago sin alterar la transferencia', async ({ page }) => {
+  test('checkout guía datos entrega y pago con banco configurado', async ({ page }) => {
     await seedCart(page);
-    await seedBank(page);
+    await configurePreviewBank(page);
     await page.goto('/checkout.html');
     await expect(page.getByRole('heading', { name: 'Confirma tu pedido con claridad.' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Tus datos/ })).toBeVisible();
@@ -49,10 +76,21 @@ test.describe('Experiencia de compra V1.8', () => {
     await expect(page.locator('[data-checkout-step="2"]')).toBeVisible();
     await expect(page.locator('[data-checkout-step="3"]')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Confirmar solicitud y enviar comprobante' })).toBeVisible();
+    await expect(page.getByText('123456789')).toBeVisible();
+    await expect(page.getByText('errante@banco')).toBeVisible();
     await expect(page.getByRole('button', { name: /Copiar número de cuenta/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Copiar llave/i })).toBeVisible();
     await expect(page.getByText('Ningún archivo seleccionado')).toBeVisible();
     await expect(page.getByText('Qué ocurre después')).toBeVisible();
+  });
+
+  test('modo previo no inventa datos bancarios ni ofrece copiar pendientes', async ({ page }) => {
+    await seedCart(page);
+    await page.goto('/checkout.html');
+    await expect(page.getByText('Número de cuenta')).toBeVisible();
+    await expect(page.getByText('Pendiente de configuración').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /Copiar número de cuenta/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Copiar llave/i })).toHaveCount(0);
   });
 
   test('checkout vacío evita pedir datos innecesarios', async ({ page }) => {

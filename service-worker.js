@@ -7,6 +7,15 @@ const CORE=[
   './assets/logo-mark.svg','./assets/logo-lockup.svg','./manifest.webmanifest','./deploy-version.txt'
 ];
 
+// Fuentes canónicas disponibles bajo demanda. No se precargan durante install.
+const LAZY_SOURCE_ASSETS=[
+  './assets/source/v040-app-001.b64','./assets/source/v040-app-002.b64','./assets/source/v040-app-003.b64',
+  './assets/source/v040-app-004.b64','./assets/source/v040-app-005.b64','./assets/source/v040-app-006.b64',
+  './assets/source/v040-data-001.b64','./assets/source/v040-data-002.b64','./assets/source/v040-data-003.b64','./assets/source/v040-data-004.b64',
+  './assets/source/v040-preprod-001a.b64','./assets/source/v040-preprod-001b.b64','./assets/source/v040-preprod-001c.b64',
+  './assets/source/v040-preprod-001d.b64','./assets/source/v040-preprod-002.b64','./assets/source/v040-preprod-003.b64'
+];
+
 async function cacheCore(){
   const cache=await caches.open(CACHE);
   await Promise.allSettled(CORE.map(async path=>{

@@ -15,6 +15,17 @@ const LAZY_VISUAL_ASSETS=[
   './assets/images/brand-final/home-ingredientes.svg'
 ];
 
+// Módulos internos disponibles offline cuando el equipo los abre por primera vez.
+const LAZY_INTERNAL_ASSETS=[
+  './studio.html','./control.html','./actas.html','./admin.html','./operacion.html','./equipo.html','./presentacion.html',
+  './assets/offer-studio-v09.js','./assets/offer-studio-v09.css','./assets/offer-governance-v09.js',
+  './assets/offer-acts-preflight-v09.js','./assets/offer-acts-v09.js','./assets/offer-acts-v09.css',
+  './assets/aire-tiempo-committee-v09.js','./assets/aire-tiempo-committee-v09.css',
+  './documentacion/modelo-oferta-v09.json',
+  './documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json',
+  './documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md'
+];
+
 // Fuentes canónicas disponibles bajo demanda. No se precargan durante install.
 const LAZY_SOURCE_ASSETS=[
   './assets/source/v040-app-001.b64','./assets/source/v040-app-002.b64','./assets/source/v040-app-003.b64',

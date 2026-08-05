@@ -123,3 +123,13 @@ Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta 
 - Once fichas de producto reescritas con deseo, criterio técnico y claridad de uso.
 - Mensajes de conversión sustentados en masa, fermentación, fuego, balance y servicio.
 - Prohibición de superlativos o certificaciones no demostradas.
+
+
+## Iteración 5 — experiencia de compra V1.8
+
+- Checkout guiado en tres pasos: datos, entrega y pago.
+- Total persistente y acceso rápido al formulario en móvil.
+- Copia segura de cuenta y llave; comprobante con nombre y peso visibles.
+- Estados honestos para carrito vacío, solicitud recibida y coordinación posterior.
+- Señales de confianza en Tienda y compra informada en las once fichas.
+- Sin promesas de disponibilidad, entrega o devolución no sustentadas.

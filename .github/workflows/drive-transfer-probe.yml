@@ -1,0 +1,21 @@
+name: Probar descarga temporal desde Drive
+
+on:
+  push:
+    branches: ["feat/v1-3-visuales-hq"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar paquete HQ
+        run: |
+          set -euxo pipefail
+          curl --fail --location --silent --show-error 'https://drive.usercontent.google.com/download?id=1K-10Vh1QnDAhdBHNcZa8iBj1sKM5aeQJ&export=download&confirm=t' -o brand-hq.tar
+          file brand-hq.tar
+          stat --printf='bytes=%s\n' brand-hq.tar
+          sha256sum brand-hq.tar

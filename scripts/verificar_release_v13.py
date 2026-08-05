@@ -75,7 +75,7 @@ host = (ROOT / "assets/host-mode.js").read_text(encoding="utf-8")
 worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 workflow = (ROOT / ".github/workflows/pages.yml").read_text(encoding="utf-8")
 for marker in [
-    'PUBLIC_VERSION="1.5.0"', 'ACTIVE_CACHE="el-errante-v1-5-0"',
+    'PUBLIC_VERSION="1.6.0"', 'ACTIVE_CACHE="el-errante-v1-6-0"',
     'brand-final-hq', 'home-hero-mobile.webp', 'producto-panela-maracuya.webp',
 ]:
     if marker not in host:
@@ -85,7 +85,7 @@ if "home-compartir.webp" not in host or "home-ingredientes.webp" not in host:
     ISSUES.append("Los editoriales Compartir e Ingredientes no están integrados en el runtime")
 if "og-el-errante.webp" not in index_html or 'property="og:image"' not in index_html:
     ISSUES.append("La portada social oficial no está integrada en index.html")
-if "el-errante-v1-5-0" not in worker:
+if "el-errante-v1-6-0" not in worker:
     ISSUES.append("Service worker no usa la caché V1.3")
 if "home-hero.webp" not in worker or "producto-margherita.webp" not in worker:
     ISSUES.append("Service worker no precarga los WebP HQ")

@@ -227,7 +227,7 @@
     const note=String(data.get("note")||"").trim();
     const products=read(KEYS.products,{});
     const base=catalogProducts().find(item=>item.id===productId);
-    products[productId]={...(products[productId]||{}),inventory:number(base?.inventory)+delta};
+    products[productId]={...(products[productId]||{}),inventory:number(products[productId]?.inventory ?? base?.inventory)+delta};
     if(unitCost>0 && ["purchase","production"].includes(type)) products[productId].unitCost=unitCost;
     write(KEYS.products,products);
     const movements=read(KEYS.movements,[]);
@@ -246,7 +246,7 @@
     const movements=read(KEYS.movements,[]);
     normalizedOrderItems(order).forEach(item=>{
       const base=catalogProducts().find(product=>product.id===item.productId);
-      products[item.productId]={...(products[item.productId]||{}),inventory:number(base?.inventory)+(direction*item.quantity)};
+      products[item.productId]={...(products[item.productId]||{}),inventory:number(products[item.productId]?.inventory ?? base?.inventory)+(direction*item.quantity)};
       movements.unshift({id:uid("mov"),productId:item.productId,productName:item.name,type:shouldCommit?"sale":"return",delta:direction*item.quantity,unitCost:item.unitCost,orderId:order.id,createdAt:new Date().toISOString()});
     });
     order.inventoryCommitted=shouldCommit;
@@ -266,9 +266,9 @@
       return;
     }
     const client=await adminClient();
-    const rows=inputs.map(input=>({product_id:input.dataset.v16Threshold,low_stock_threshold:number(input.value),updated_at:new Date().toISOString()}));
-    const result=await client.from("product_operations").upsert(rows,{onConflict:"product_id"});
-    if(result.error) throw result.error;
+    const results=await Promise.all(inputs.map(input=>client.from("product_operations").update({low_stock_threshold:number(input.value),updated_at:new Date().toISOString()}).eq("product_id",input.dataset.v16Threshold)));
+    const failed=results.find(result=>result.error);
+    if(failed) throw failed.error;
   }
 
   async function submitMovement(state,data){

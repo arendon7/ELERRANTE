@@ -97,19 +97,19 @@ for part in APP_PARTS:
     if name not in app_loader:
         ISSUES.append(f"assets/app.js no carga {name}")
     if f"./{part}" not in service_worker:
-        ISSUES.append(f"service-worker.js no cachea {part}")
+        ISSUES.append(f"service-worker.js no declara {part} para carga bajo demanda")
 for part in DATA_PARTS:
     name = Path(part).name
     if name not in data_loader:
         ISSUES.append(f"assets/data.js no carga {name}")
     if f"./{part}" not in service_worker:
-        ISSUES.append(f"service-worker.js no cachea {part}")
+        ISSUES.append(f"service-worker.js no declara {part} para carga bajo demanda")
 for part in PREPROD_PARTS:
     name = Path(part).name
     if name not in preprod_loader:
         ISSUES.append(f"assets/preprod.js no carga {name}")
     if f"./{part}" not in service_worker:
-        ISSUES.append(f"service-worker.js no cachea {part}")
+        ISSUES.append(f"service-worker.js no declara {part} para carga bajo demanda")
 
 if "assets/chunks/app-" in app_loader:
     ISSUES.append("assets/app.js volvió a enlazar los chunks de aplicación truncados")
@@ -123,8 +123,10 @@ if "[... ELLIPSIZATION ...]" not in legacy_data:
     ISSUES.append("No se conserva la evidencia del truncamiento en data-003.txt")
 if "truncated-ellipsized-do-not-use" not in incident:
     ISSUES.append("La documentación no clasifica los chunks como no utilizables")
-if "el-errante-v1-1-0" not in service_worker:
-    ISSUES.append("service-worker.js no usa la caché pública v1.1.0")
+if "el-errante-v1-1-1" not in service_worker:
+    ISSUES.append("service-worker.js no usa la caché pública v1.1.1")
+if "LAZY_SOURCE_ASSETS" not in service_worker:
+    ISSUES.append("service-worker.js no separa las fuentes canónicas del precache crítico")
 if "python3 scripts/verificar_fuentes.py" not in workflow:
     ISSUES.append("El workflow no ejecuta verificar_fuentes.py")
 if "node scripts/exportar-fuente-canonica.mjs" not in workflow:

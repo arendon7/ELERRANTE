@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v1-3-1
+  EXPECTED_CACHE: el-errante-v1-4-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -62,20 +62,21 @@ jobs:
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
           node --check public-host-mode.js
           node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="1.3.1"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v1-3-1"' public-host-mode.js
+          grep -q 'PUBLIC_VERSION="1.4.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v1-4-0"' public-host-mode.js
           grep -q 'brand-final-hq' public-host-mode.js
           grep -q 'home-hero-mobile.webp' public-host-mode.js
           ! grep -q 'BRAND_PACKS' public-host-mode.js
-          grep -q 'el-errante-v1-3-1' public-service-worker.js
+          grep -q 'el-errante-v1-4-0' public-service-worker.js
           grep -q 'assets/images/brand-final/home-hero.webp' public-service-worker.js
           grep -q 'assets/images/brand-final/producto-margherita.webp' public-service-worker.js
+          grep -q 'assets/commerce-v14.js' public-service-worker.js
           ! grep -q "'./assets/brand-final-editorial.js'" public-service-worker.js
       - name: Verificar superficies públicas críticas
         shell: bash
         run: |
           set -euo pipefail
-          for page in index tienda producto en-movimiento; do
+          for page in index tienda producto en-movimiento checkout admin; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
           done
@@ -92,6 +93,10 @@ jobs:
           assert_contains public-tienda.html 'data-page="tienda"' 'Tienda no conserva su contrato de página.'
           assert_contains public-producto.html 'id="dynamic-product"' 'La ficha dinámica de producto no está disponible.'
           assert_contains public-en-movimiento.html 'data-page="movimiento"' 'En Movimiento no conserva su contrato de página.'
+          assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva el flujo de transferencia.'
+          assert_contains public-checkout.html 'assets/commerce-v14.js' 'Checkout no carga el runtime comercial V1.4.'
+          assert_contains public-admin.html 'Operación comercial · V1.4' 'Administración no conserva el contrato V1.4.'
+          assert_contains public-admin.html 'assets/commerce-v14.js' 'Administración no carga el runtime comercial V1.4.'
       - name: Verificar imágenes WebP HQ críticas
         shell: bash
         run: |
@@ -114,7 +119,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V1.3.1 HQ"
+            echo "EL ERRANTE — PUBLIC HEALTH V1.4.0 OPERACIÓN COMERCIAL"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -139,6 +144,8 @@ jobs:
             public-tienda.html
             public-producto.html
             public-en-movimiento.html
+            public-checkout.html
+            public-admin.html
             public-home-hero.webp
             public-home-hero-mobile.webp
             public-producto-margherita.webp

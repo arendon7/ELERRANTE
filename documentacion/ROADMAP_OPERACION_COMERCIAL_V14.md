@@ -79,3 +79,25 @@ Cada iteración se integra a `main` únicamente después de:
 3. Pruebas de regresión.
 4. Publicación correcta en Pages.
 5. Registro de cambios y pendientes reales.
+
+## Estado de avance — V1.5 / Iteración 2
+
+Implementado en código:
+
+- Configuración runtime sin credenciales privadas versionadas.
+- Sesiones separadas para comprador anónimo y administrador permanente.
+- Inicio de sesión administrativo mediante Supabase Auth.
+- Verificación de autorización contra `admin_users` y RLS.
+- Lectura sincronizada de pedidos, comprobantes, catálogo, inventario, costos y gastos fijos.
+- Comprobantes privados abiertos mediante enlaces firmados de corta duración.
+- Escritura remota de estados, catálogo, costos y datos públicos de transferencia.
+- Migración V1.5 con auditoría administrativa y disparadores `updated_at`.
+
+Pendiente externo de activación:
+
+- Crear o seleccionar el proyecto Supabase.
+- Ejecutar `schema-v14.sql` y `schema-v15.sql`.
+- Registrar `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` en GitHub.
+- Crear el usuario de Juan e incluir su UUID en `admin_users`.
+- Sustituir datos bancarios, precios, costos e inventarios demo por información real.
+

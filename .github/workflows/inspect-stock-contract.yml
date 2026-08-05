@@ -1,0 +1,41 @@
+name: Inspeccionar contrato de inventario
+
+on:
+  push:
+    branches: ["feat/experiencia-compra-v18"]
+    paths:
+      - ".github/workflows/inspect-stock-contract.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/experiencia-compra-v18
+      - name: Decodificar y localizar contrato
+        run: |
+          python3 - <<'PY'
+          import base64
+          from pathlib import Path
+          parts=[]
+          for path in sorted(Path('assets/source').glob('v040-app-*.b64')):
+              parts.append(path.read_text(encoding='utf-8').strip())
+          source=base64.b64decode(''.join(parts)).decode('utf-8')
+          Path('/tmp/app-source.js').write_text(source,encoding='utf-8')
+          needles=['despensa demo','stock suficiente','inventory','inventario','stock','ee_v2_','ee_v14_']
+          lines=source.splitlines()
+          found=False
+          for i,line in enumerate(lines):
+              low=line.lower()
+              if any(n.lower() in low for n in needles):
+                  found=True
+                  print(f'--- línea {i+1} ---')
+                  for j in range(max(0,i-4),min(len(lines),i+5)):
+                      print(f'{j+1}: {lines[j]}')
+          if not found:
+              raise SystemExit('No se localizaron marcadores de inventario')
+          PY

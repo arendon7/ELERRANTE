@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v1-2-0
+  EXPECTED_CACHE: el-errante-v1-3-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -21,7 +21,7 @@ jobs:
     name: GitHub Pages corresponde a main
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
       - name: Definir expectativa
         run: |
@@ -35,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           success=0
-          for attempt in $(seq 1 6); do
+          for attempt in $(seq 1 8); do
             curl --fail --silent --show-error --location --max-time 12 \
               -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" \
@@ -62,13 +62,14 @@ jobs:
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
           node --check public-host-mode.js
           node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="1.2.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v1-2-0"' public-host-mode.js
-          grep -q 'brand-final-direct' public-host-mode.js
+          grep -q 'PUBLIC_VERSION="1.3.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v1-3-0"' public-host-mode.js
+          grep -q 'brand-final-hq' public-host-mode.js
+          grep -q 'home-hero-mobile.webp' public-host-mode.js
           ! grep -q 'BRAND_PACKS' public-host-mode.js
-          grep -q 'el-errante-v1-2-0' public-service-worker.js
-          grep -q 'assets/images/brand-final/home-hero.svg' public-service-worker.js
-          grep -q 'assets/images/brand-final/producto-margherita.svg' public-service-worker.js
+          grep -q 'el-errante-v1-3-0' public-service-worker.js
+          grep -q 'assets/images/brand-final/home-hero.webp' public-service-worker.js
+          grep -q 'assets/images/brand-final/producto-margherita.webp' public-service-worker.js
           ! grep -q "'./assets/brand-final-editorial.js'" public-service-worker.js
       - name: Verificar superficies públicas críticas
         shell: bash
@@ -91,22 +92,29 @@ jobs:
           assert_contains public-tienda.html 'data-page="tienda"' 'Tienda no conserva su contrato de página.'
           assert_contains public-producto.html 'id="dynamic-product"' 'La ficha dinámica de producto no está disponible.'
           assert_contains public-en-movimiento.html 'data-page="movimiento"' 'En Movimiento no conserva su contrato de página.'
-      - name: Verificar imágenes directas críticas
+      - name: Verificar imágenes WebP HQ críticas
         shell: bash
         run: |
           set -euo pipefail
-          for image in home-hero producto-margherita evento-hero; do
-            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/assets/images/brand-final/${image}.svg?verify=$EXPECTED_SHA" \
-              > "public-${image}.svg"
-            grep -q '<svg' "public-${image}.svg"
+          for image in home-hero home-hero-mobile producto-margherita evento-hero; do
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/assets/images/brand-final/${image}.webp?verify=$EXPECTED_SHA" \
+              > "public-${image}.webp"
           done
+          python3 - <<'PY'
+          from pathlib import Path
+          for path in Path('.').glob('public-*.webp'):
+              data = path.read_bytes()
+              assert len(data) > 100_000, f'{path} no conserva peso HQ'
+              assert data[:4] == b'RIFF' and data[8:12] == b'WEBP', f'{path} no es WebP válido'
+          assert Path('public-home-hero.webp').read_bytes() != Path('public-home-hero-mobile.webp').read_bytes()
+          PY
       - name: Generar informe
         if: always()
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V1.2.0"
+            echo "EL ERRANTE — PUBLIC HEALTH V1.3.0 HQ"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -131,8 +139,9 @@ jobs:
             public-tienda.html
             public-producto.html
             public-en-movimiento.html
-            public-home-hero.svg
-            public-producto-margherita.svg
-            public-evento-hero.svg
+            public-home-hero.webp
+            public-home-hero-mobile.webp
+            public-producto-margherita.webp
+            public-evento-hero.webp
           if-no-files-found: warn
           retention-days: 7

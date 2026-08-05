@@ -18,11 +18,11 @@ jobs:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Materializar sistema visual final
+      - name: Materializar fallback visual legado
         run: python3 scripts/materializar_activos_visuales.py
 
-      - name: Validar release público
-        run: python3 scripts/verificar_release_v12.py
+      - name: Validar release público HQ
+        run: python3 scripts/verificar_release_v13.py
 
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical

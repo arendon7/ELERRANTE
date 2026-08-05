@@ -19,10 +19,10 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-      - name: Materializar sistema visual final
+      - name: Materializar fallback visual legado
         run: python3 scripts/materializar_activos_visuales.py
-      - name: Ejecutar barrera de publicación V1.2
-        run: python3 scripts/verificar_release_v12.py
+      - name: Ejecutar barrera de publicación V1.3 HQ
+        run: python3 scripts/verificar_release_v13.py
       - name: Validar matriz maestra de oferta
         run: python3 scripts/verificar_oferta_v09.py
       - name: Validar Studio de Oferta
@@ -37,12 +37,14 @@ jobs:
           node --check assets/offer-acts-preflight-v09.js
           node --check assets/offer-acts-v09.js
           node --check assets/aire-tiempo-committee-v09.js
-      - name: Validar sistema visual directo
+      - name: Validar sistema visual HQ directo
         shell: bash
         run: |
           node --check assets/host-mode.js
-          test "$(find assets/images/brand-final -maxdepth 1 -name '*.svg' | wc -l)" -eq 21
-          grep -q '"count": 21' assets/images/brand-final/manifest.json
+          test "$(find assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
+          grep -q '"version": "1.3.0"' assets/images/brand-final/manifest-hq-v13.json
+          grep -q '"unique_assets": 23' assets/images/brand-final/manifest-hq-v13.json
+          ! cmp -s assets/images/brand-final/home-hero.webp assets/images/brand-final/home-hero-mobile.webp
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
       - name: Publicar fuente o diagnóstico para auditoría
@@ -64,7 +66,7 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-      - name: Materializar las 21 imágenes finales
+      - name: Materializar fallback visual legado
         run: python3 scripts/materializar_activos_visuales.py
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
@@ -86,25 +88,27 @@ jobs:
             --exclude 'assets/brand-final-products-a.js' \
             --exclude 'assets/brand-final-products-b.js' \
             --exclude 'assets/brand-final-products-c.js'
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=1.2.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v1-2-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=1.3.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v1-3-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         shell: bash
         run: |
-          grep -q 'version=1.2.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v1-2-0' _site/deploy-version.txt
+          grep -q 'version=1.3.0' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v1-3-0' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           for page in equipo admin control operacion studio actas presentacion; do test -f "_site/${page}.html"; done
-          test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.svg' | wc -l)" -eq 21
-          grep -q '"count": 21' _site/assets/images/brand-final/manifest.json
-          for asset in home-hero home-masa-fuego home-fermentacion home-ingredientes home-compartir home-en-casa home-despensa evento-hero evento-noche evento-servicio producto-harina producto-crea-tuya producto-margherita producto-diavola producto-bosque producto-cuatro-quesos producto-la-errante producto-salsa-tomate producto-reduccion-balsamica producto-panela-maracuya producto-combo-primera-ruta; do test -s "_site/assets/images/brand-final/${asset}.svg"; done
+          test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
+          grep -q '"version": "1.3.0"' _site/assets/images/brand-final/manifest-hq-v13.json
+          grep -q '"unique_assets": 23' _site/assets/images/brand-final/manifest-hq-v13.json
+          for asset in home-hero home-hero-mobile home-masa-fuego home-fermentacion home-ingredientes home-compartir home-en-casa home-despensa evento-hero evento-noche evento-operacion evento-servicio og-el-errante producto-harina producto-crea-tuya producto-margherita producto-diavola producto-bosque producto-cuatro-quesos producto-la-errante producto-salsa-tomate producto-reduccion-balsamica producto-panela-maracuya producto-combo-primera-ruta; do test -s "_site/assets/images/brand-final/${asset}.webp"; done
           test ! -f _site/assets/brand-final-editorial.js
           test ! -f _site/assets/brand-final-products-a.js
           test ! -f _site/assets/brand-final-products-b.js
           test ! -f _site/assets/brand-final-products-c.js
-          grep -q 'el-errante-v1-2-0' _site/service-worker.js
-          grep -q 'brand-final' _site/assets/host-mode.js
+          grep -q 'el-errante-v1-3-0' _site/service-worker.js
+          grep -q 'brand-final-hq' _site/assets/host-mode.js
+          grep -q 'home-hero-mobile.webp' _site/assets/host-mode.js
           for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-preflight-v09.js offer-acts-v09.js offer-acts-v09.css aire-tiempo-committee-v09.js aire-tiempo-committee-v09.css; do test -f "_site/assets/$asset"; done
           test -f _site/documentacion/modelo-oferta-v09.json
           test -f _site/documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json

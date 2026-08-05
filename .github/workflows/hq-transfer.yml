@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: feat/hq-visual-v13-atomic
-      - name: Descargar paquete firmado y validar integridad
+      - name: Descargar paquete y diagnosticar respuesta
         shell: bash
         env:
           FILE_ID: 1djt5hr3PWj3fyMDpM2Efvl9anfxCaO-c
@@ -30,7 +30,14 @@ jobs:
           curl --fail --location --silent --show-error --max-time 90 \
             "https://drive.usercontent.google.com/download?id=${FILE_ID}&export=download&confirm=t" \
             --output /tmp/elerrante-hq-v13.zip
-          echo "${EXPECTED_SHA256}  /tmp/elerrante-hq-v13.zip" | sha256sum --check -
+          echo "bytes=$(wc -c < /tmp/elerrante-hq-v13.zip)"
+          file /tmp/elerrante-hq-v13.zip
+          echo "observed_sha256=$(sha256sum /tmp/elerrante-hq-v13.zip | cut -d' ' -f1)"
+          if ! echo "${EXPECTED_SHA256}  /tmp/elerrante-hq-v13.zip" | sha256sum --check -; then
+            echo "Primeros bytes de la respuesta:"
+            head -c 200 /tmp/elerrante-hq-v13.zip | strings | head -n 5 || true
+            exit 1
+          fi
           rm -rf assets/images/hq-v13
           mkdir -p assets/images/hq-v13
           unzip -q /tmp/elerrante-hq-v13.zip -d assets/images/hq-v13

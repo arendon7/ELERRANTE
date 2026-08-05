@@ -45,8 +45,9 @@ test.describe('Operación y finanzas V1.6', () => {
     await form.locator('input[name="note"]').fill('Lote de prueba');
     await form.getByRole('button', { name: 'Registrar movimiento' }).click();
     await expect(panel.getByText('Movimiento registrado y balance actualizado.')).toBeVisible();
-    await expect(panel.getByText('Producción')).toBeVisible();
-    const productRow = panel.locator('tbody tr').filter({ hasText: 'la-errante' }).first();
+    await expect(panel.getByRole('cell', { name: 'Producción', exact: true })).toBeVisible();
+    const profitabilityCard = panel.locator('.ee-v14-card').filter({ has: panel.getByRole('heading', { name: 'Precio, costo, margen e inventario' }) });
+    const productRow = profitabilityCard.locator('tbody tr').filter({ hasText: 'la-errante' });
     await expect(productRow).toContainText('15');
   });
 
@@ -56,8 +57,9 @@ test.describe('Operación y finanzas V1.6', () => {
     await page.getByRole('button', { name: 'Abrir simulación local' }).click();
     await page.locator('[data-order-status="EE-TEST-V16"]').selectOption('preparing');
     const panel = page.locator('#operations-v16');
-    await expect(panel.getByText('Salida por pedido')).toBeVisible();
-    const productRow = panel.locator('tbody tr').filter({ hasText: 'la-errante' }).first();
+    await expect(panel.getByRole('cell', { name: 'Salida por pedido', exact: true })).toBeVisible();
+    const profitabilityCard = panel.locator('.ee-v14-card').filter({ has: panel.getByRole('heading', { name: 'Precio, costo, margen e inventario' }) });
+    const productRow = profitabilityCard.locator('tbody tr').filter({ hasText: 'la-errante' });
     await expect(productRow).toContainText('9');
     const movements = await page.evaluate(() => JSON.parse(localStorage.getItem('ee_v16_inventory_movements') || '[]'));
     expect(movements.filter(item => item.orderId === 'EE-TEST-V16' && item.type === 'sale')).toHaveLength(1);

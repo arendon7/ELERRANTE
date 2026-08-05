@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Barrera estructural, visual y de seguridad para El Errante V1.1."""
+"""Barrera estructural, visual y de seguridad para El Errante V1.1.1."""
 
 from __future__ import annotations
 
@@ -132,7 +132,7 @@ for relative, expected_keys in VISUAL_PACKS.items():
 host_mode = text("assets/host-mode.js")
 service_worker = text("service-worker.js")
 for marker in [
-    'PUBLIC_VERSION="1.1.0"', 'ACTIVE_CACHE="el-errante-v1-1-0"',
+    'PUBLIC_VERSION="1.1.1"', 'ACTIVE_CACHE="el-errante-v1-1-1"',
     'dataset.visualSystem="brand-final"', 'dataset.eeVisualSystem="brand-final"',
     *DIRECT_VISUALS, *VISUAL_PACKS.keys(),
 ]:
@@ -144,6 +144,12 @@ for keys in VISUAL_PACKS.values():
             ISSUES.append(f"Activo visual sin asociación: {key}")
 if "assets/images/v040/" in service_worker:
     ISSUES.append("La caché pública todavía depende de visuales v0.4")
+if "Promise.allSettled(BRAND_PACKS.map(loadScript))" not in host_mode:
+    ISSUES.append("Los paquetes visuales no cargan en paralelo")
+if "window.addEventListener(\"load\",run" not in host_mode:
+    ISSUES.append("La actualización de caché no está diferida hasta después de load")
+if "LAZY_SOURCE_ASSETS" not in service_worker:
+    ISSUES.append("El service worker no declara las fuentes canónicas bajo demanda")
 
 html_files = sorted(ROOT.glob("*.html"))
 attribute_pattern = re.compile(r'(?:href|src|poster|action)=["\']([^"\']+)["\']', re.I)
@@ -181,9 +187,9 @@ if "reducción balsámica endulzada con panela e infusionada con maracuyá" not 
 deploy_marker = text("deploy-version.txt")
 cache_match = re.search(r"^cache=(.+)$", deploy_marker, re.M)
 cache_name = cache_match.group(1).strip() if cache_match else ""
-if "version=1.1.0" not in deploy_marker:
-    ISSUES.append("deploy-version.txt no identifica version=1.1.0")
-if cache_name != "el-errante-v1-1-0":
+if "version=1.1.1" not in deploy_marker:
+    ISSUES.append("deploy-version.txt no identifica version=1.1.1")
+if cache_name != "el-errante-v1-1-1":
     ISSUES.append(f"Caché declarada incorrecta: {cache_name or 'vacía'}")
 for relative, content in [("service-worker.js", service_worker), ("assets/host-mode.js", host_mode)]:
     if cache_name not in content:
@@ -193,8 +199,8 @@ workflow = text(".github/workflows/pages.yml")
 for required in [
     'branches: ["main"]', "pull_request:", "github.event_name != 'pull_request'",
     "python3 verificar_demo.py", "python3 scripts/verificar_fuentes.py",
-    "node scripts/exportar-fuente-canonica.mjs", "version=1.1.0",
-    "cache=el-errante-v1-1-0", "brand-final-products-c.js",
+    "node scripts/exportar-fuente-canonica.mjs", "version=1.1.1",
+    "cache=el-errante-v1-1-1", "brand-final-products-c.js",
 ]:
     if required not in workflow:
         ISSUES.append(f"Workflow incompleto: falta {required}")
@@ -220,7 +226,7 @@ for path in ROOT.rglob("*"):
         if re.search(pattern, content):
             ISSUES.append(f"Posible {label} expuesta en {path.relative_to(ROOT)}")
 
-print("EL ERRANTE V1.1.0 — BARRERA DE REGRESIÓN INTEGRAL")
+print("EL ERRANTE V1.1.1 — BARRERA DE REGRESIÓN INTEGRAL")
 print("=" * 59)
 print(f"Páginas HTML encontradas: {len(html_files)}")
 print(f"Páginas públicas requeridas: {len(PUBLIC_PAGES)}")

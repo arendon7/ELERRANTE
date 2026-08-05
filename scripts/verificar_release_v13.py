@@ -80,6 +80,11 @@ for marker in [
 ]:
     if marker not in host:
         ISSUES.append(f"Host HQ incompleto: {marker}")
+index_html = (ROOT / "index.html").read_text(encoding="utf-8")
+if "home-compartir.webp" not in host or "home-ingredientes.webp" not in host:
+    ISSUES.append("Los editoriales Compartir e Ingredientes no están integrados en el runtime")
+if "og-el-errante.webp" not in index_html or 'property="og:image"' not in index_html:
+    ISSUES.append("La portada social oficial no está integrada en index.html")
 if "el-errante-v1-3-0" not in worker:
     ISSUES.append("Service worker no usa la caché V1.3")
 if "home-hero.webp" not in worker or "producto-margherita.webp" not in worker:

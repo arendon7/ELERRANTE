@@ -1,0 +1,111 @@
+name: Ajustar confirmación V1.8
+
+on:
+  push:
+    branches: ["feat/experiencia-compra-v18"]
+    paths:
+      - ".github/workflows/patch-commerce-v18-success.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/experiencia-compra-v18
+          fetch-depth: 0
+
+      - name: Corregir observador y ampliar prueba
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          js_path = Path('assets/commerce-ux-v18.js')
+          js = js_path.read_text(encoding='utf-8')
+          old = '''  function watchCheckoutSuccess(){
+            const card=qs('.form-card');
+            if(!card)return;
+            const observer=new MutationObserver(()=>{
+              const success=qs('.ee-v14-order-success',card);
+              if(!success||success.dataset.v18Ready==='true')return;
+              success.insertAdjacentHTML('beforeend',`<div class="ee-v18-success-steps"><strong>Ahora sigue esto:</strong><ol><li>Guarda la referencia del pedido.</li><li>Espera la confirmación del pago y la disponibilidad.</li><li>Recibe el horario acordado de preparación o entrega.</li></ol></div>`);
+              const title=qs('h2',success);if(title)title.textContent='Tu solicitud quedó registrada.';
+              const bar=qs('[data-v18="mobile-total"]');if(bar)bar.hidden=true;
+              success.dataset.v18Ready='true';
+            });
+            observer.observe(card,{childList:true,subtree:true});
+          }
+          '''
+          new = '''  function watchCheckoutSuccess(){
+            const root=qs('main');
+            if(!root)return;
+            const enhance=()=>{
+              const success=qs('.ee-v14-order-success',root);
+              if(!success||success.dataset.v18Ready==='true')return;
+              success.insertAdjacentHTML('beforeend',`<div class="ee-v18-success-steps"><strong>Ahora sigue esto:</strong><ol><li>Guarda la referencia del pedido.</li><li>Espera la confirmación del pago y la disponibilidad.</li><li>Recibe el horario acordado de preparación o entrega.</li></ol></div>`);
+              const title=qs('h2',success);if(title)title.textContent='Tu solicitud quedó registrada.';
+              const bar=qs('[data-v18="mobile-total"]');if(bar)bar.hidden=true;
+              success.dataset.v18Ready='true';
+            };
+            enhance();
+            const observer=new MutationObserver(enhance);
+            observer.observe(root,{childList:true,subtree:true});
+            window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
+          }
+          '''
+          if old not in js:
+              raise SystemExit('No se encontró el observador V1.8 esperado')
+          js_path.write_text(js.replace(old,new), encoding='utf-8')
+
+          test_path = Path('tests/e2e/commerce-v18.spec.js')
+          test = test_path.read_text(encoding='utf-8')
+          marker = "  test('checkout vacío evita pedir datos innecesarios', async ({ page }) => {\n"
+          addition = '''  test('la confirmación posterior explica los siguientes pasos', async ({ page }) => {
+            await seedCart(page);
+            await configurePreviewBank(page);
+            await page.goto('/checkout.html');
+            await page.locator('#ee-name').fill('Cliente de prueba');
+            await page.locator('#ee-phone').fill('3000000000');
+            await page.locator('#ee-email').fill('cliente@example.com');
+            await page.locator('#ee-city').fill('Medellín');
+            await page.locator('#ee-neighborhood').fill('Laureles');
+            await page.locator('#ee-address').fill('Carrera 70 # 10-20');
+            await page.locator('#ee-receipt').setInputFiles({
+              name: 'comprobante.pdf',
+              mimeType: 'application/pdf',
+              buffer: Buffer.from('%PDF-1.4\\n%%EOF')
+            });
+            await page.locator('input[name="consent"]').check();
+            await page.getByRole('button', { name: 'Confirmar solicitud y enviar comprobante' }).click();
+            await expect(page.getByRole('heading', { name: 'Tu solicitud quedó registrada.' })).toBeVisible();
+            await expect(page.getByText('Ahora sigue esto:')).toBeVisible();
+            await expect(page.getByText('Guarda la referencia del pedido.')).toBeVisible();
+            await expect(page.getByText('Espera la confirmación del pago y la disponibilidad.')).toBeVisible();
+          });
+
+'''
+          if marker not in test:
+              raise SystemExit('No se encontró el punto de inserción de la prueba')
+          test_path.write_text(test.replace(marker, addition + marker), encoding='utf-8')
+          PY
+
+      - name: Validar sintaxis y barrera
+        shell: bash
+        run: |
+          node --check assets/commerce-ux-v18.js
+          node --check tests/e2e/commerce-v18.spec.js
+          python3 scripts/verificar_experiencia_compra_v18.py
+
+      - name: Consolidar corrección
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/commerce-ux-v18.js tests/e2e/commerce-v18.spec.js
+          git commit -m 'fix(commerce): protege confirmación posterior al pedido V1.8'
+          git push origin HEAD:feat/experiencia-compra-v18

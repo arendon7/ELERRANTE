@@ -76,10 +76,19 @@ jobs:
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
           done
-          grep -Fq 'Masa · Fuego · Territorio' public-index.html
-          grep -Fq 'data-page="tienda"' public-tienda.html
-          grep -Fq 'data-page="producto"' public-producto.html
-          grep -Fq 'data-page="movimiento"' public-en-movimiento.html
+          assert_contains(){
+            local file="$1" marker="$2" label="$3"
+            if ! grep -Fq "$marker" "$file"; then
+              echo "::error title=Public Health::$label"
+              echo "Archivo: $file"
+              echo "Marcador esperado: $marker"
+              exit 1
+            fi
+          }
+          assert_contains public-index.html 'Masa · Fuego · Territorio' 'Inicio no conserva el claim principal.'
+          assert_contains public-tienda.html 'data-page="tienda"' 'Tienda no conserva su contrato de página.'
+          assert_contains public-producto.html 'id="dynamic-product"' 'La ficha dinámica de producto no está disponible.'
+          assert_contains public-en-movimiento.html 'data-page="movimiento"' 'En Movimiento no conserva su contrato de página.'
       - name: Generar informe
         if: always()
         shell: bash

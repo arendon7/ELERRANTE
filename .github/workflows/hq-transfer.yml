@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           test -f .transfer/READY
-          test "$(find .transfer -maxdepth 1 -name 'chunk-*.b64' | wc -l)" -eq 94
+          test "$(find .transfer -maxdepth 1 -name 'chunk-*.b64' | wc -l)" -eq 24
           cat .transfer/chunk-*.b64 | tr -d '\r\n' | base64 --decode > /tmp/elerrante-hq-v13.zip
           echo "${EXPECTED_SHA256}  /tmp/elerrante-hq-v13.zip" | sha256sum --check -
           rm -rf assets/images/hq-v13
@@ -39,6 +39,7 @@ jobs:
           test "$(find assets/images/hq-v13 -maxdepth 1 -name '*.avif' | wc -l)" -eq 23
           test -s assets/images/hq-v13/manifest.json
           python3 - <<'PY'
+          import hashlib
           import json
           from pathlib import Path
           root = Path('assets/images/hq-v13')
@@ -48,8 +49,9 @@ jobs:
               path = root / item['file']
               raw = path.read_bytes()
               assert len(raw) == item['bytes']
+              assert hashlib.sha256(raw).hexdigest() == item['sha256']
               assert b'ftypavif' in raw[:32]
-          print('23 AVIF HQ validados.')
+          print('23 AVIF HQ validados por tamaño, formato y SHA-256.')
           PY
       - name: Retirar puentes y consolidar binarios
         shell: bash

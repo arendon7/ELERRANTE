@@ -1,10 +1,17 @@
 const { test, expect } = require('@playwright/test');
 
+async function seedCart(page) {
+  await page.addInitScript(() => localStorage.setItem('ee_v2_cart', JSON.stringify([
+    { id: 'la-errante', variant: 'unidad', qty: 1 }
+  ])));
+}
+
 test.describe('Operación comercial V1.4', () => {
   test('checkout usa transferencia, comprobante y cobertura abierta', async ({ page }) => {
+    await seedCart(page);
     await page.goto('/checkout.html');
     await expect(page.getByRole('heading', { name: 'Tu pedido comienza aquí.' })).toBeVisible();
-    await expect(page.getByText('Transferencia y comprobante')).toBeVisible();
+    await expect(page.getByRole('heading', { name: '3. Transferencia y comprobante' })).toBeVisible();
     await expect(page.locator('#ee-receipt')).toBeVisible();
     await expect(page.locator('#ee-city')).toHaveAttribute('type', 'text');
     await expect(page.getByText('No cerramos el pedido por rutas fijas ni por días predeterminados.')).toBeVisible();
@@ -21,7 +28,7 @@ test.describe('Operación comercial V1.4', () => {
     await expect(page.getByText('Balance del mes')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Precios, costos e inventario' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Gastos fijos' })).toBeVisible();
-    await expect(page.getByText('$ 6.000.000')).toBeVisible();
+    await expect(page.getByText('$ 6.000.000', { exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Datos bancarios visibles en checkout' })).toBeVisible();
   });
 
@@ -32,6 +39,7 @@ test.describe('Operación comercial V1.4', () => {
     await page.locator('#ee-bank-account').fill('123456789');
     await page.locator('#ee-bank-key').fill('errante@banco');
     await page.getByRole('button', { name: 'Guardar datos de transferencia' }).click();
+    await seedCart(page);
     await page.goto('/checkout.html');
     await expect(page.getByText('El Errante Cocina')).toBeVisible();
     await expect(page.getByText('123456789')).toBeVisible();

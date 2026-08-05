@@ -83,7 +83,7 @@
       const productId = row.productId || row.product_id || row.id;
       const product = catalog.find(item => item.id === productId) || {};
       const variants = Array.isArray(product.variants) ? product.variants : [];
-      const variantId = row.variantId || row.variant_id;
+      const variantId = row.variantId || row.variant_id || row.variant;
       const variant = variants.find(item => item.id === variantId) || variants[0] || {};
       const saved = overrides[productId] || {};
       const quantity = Math.max(1, number(row.quantity ?? row.qty ?? 1));
@@ -197,7 +197,7 @@
       <h3 style="margin-top:34px">2. ¿Dónde y cuándo coordinamos la entrega?</h3>
       <p class="ee-v14-help">No cerramos el pedido por rutas fijas ni por días predeterminados. Recibimos tu solicitud y coordinamos contigo la alternativa logística disponible.</p>
       <div class="ee-v14-form-grid" style="margin-top:18px">
-        <div class="ee-v14-field"><label for="ee-city">Ciudad o municipio</label><input id="ee-city" name="city" required placeholder="Medellín, Envigado, Bello…"></div>
+        <div class="ee-v14-field"><label for="ee-city">Ciudad o municipio</label><input id="ee-city" name="city" type="text" required placeholder="Medellín, Envigado, Bello…"></div>
         <div class="ee-v14-field"><label for="ee-neighborhood">Barrio o sector</label><input id="ee-neighborhood" name="neighborhood" required></div>
         <div class="ee-v14-field full"><label for="ee-address">Dirección</label><input id="ee-address" name="address" autocomplete="street-address" required></div>
         <div class="ee-v14-field"><label for="ee-date">Fecha preferida</label><input id="ee-date" name="requestedDate" type="date"></div>

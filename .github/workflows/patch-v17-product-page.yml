@@ -40,7 +40,7 @@ jobs:
           validator = Path('scripts/verificar_contenido_v17.py')
           value = validator.read_text(encoding='utf-8')
           needle = '    "dataset.contentVersion=\'1.7.0\'",\n'
-          replacement = needle + '    "data-v17-product-promise",\n    "root.dataset.v17Product",\n'
+          replacement = needle + '    "dataset.v17ProductPromise",\n    "root.dataset.v17Product",\n'
           if needle not in value:
               raise SystemExit('No se encontró marcador en el validador V1.7')
           validator.write_text(value.replace(needle, replacement), encoding='utf-8')

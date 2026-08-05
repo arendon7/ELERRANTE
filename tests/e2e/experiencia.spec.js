@@ -66,7 +66,7 @@ test.describe('Runtime recuperado', () => {
     await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.locator('#site-header')).not.toBeEmpty();
     await expect(page.locator('#site-footer')).not.toBeEmpty();
-    await page.waitForFunction(() => document.documentElement.dataset.eeVisualSystem === 'brand-final');
+    await page.waitForFunction(() => document.documentElement.dataset.eeVisualSystem === 'brand-final-direct');
 
     const visuals = page.locator('img[data-visual-system="brand-final"]');
     await expect.poll(() => visuals.count()).toBeGreaterThanOrEqual(2);

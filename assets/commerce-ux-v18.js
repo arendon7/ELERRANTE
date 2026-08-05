@@ -95,7 +95,7 @@
       heading.id=`ee-v18-step-${index+1}`;
       heading.before(section);
       let node=heading;
-      while(node&&(!node.matches('h3')||node===heading)){
+      while(node){
         const next=node.nextSibling;
         section.appendChild(node);
         node=next;
@@ -213,7 +213,9 @@
     if(readCart().length)return false;
     const layout=qs('.checkout-layout');
     if(!layout)return false;
+    document.body.classList.add('ee-v18-empty-cart');
     layout.hidden=true;
+    layout.setAttribute('aria-hidden','true');
     layout.insertAdjacentHTML('beforebegin',`<section class="ee-v18-empty" data-v18="empty-cart">
       <p class="eyebrow">Tu selección está vacía</p>
       <h2>Primero elige qué quieres llevar al fuego.</h2>

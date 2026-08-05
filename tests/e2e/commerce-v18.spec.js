@@ -1,9 +1,9 @@
 const { test, expect } = require('@playwright/test');
 
-async function seedCart(page, stock = 10) {
-  await page.addInitScript(({ available }) => {
+async function seedCart(page, stock = 10, qty = 1) {
+  await page.addInitScript(({ available, quantity }) => {
     localStorage.setItem('ee_v2_cart', JSON.stringify([
-      { id: 'la-errante', variant: 'unidad', qty: 1 }
+      { id: 'la-errante', variant: 'unidad', qty: quantity }
     ]));
     localStorage.setItem('ee_v4_overrides', JSON.stringify({
       products: {
@@ -17,7 +17,7 @@ async function seedCart(page, stock = 10) {
     localStorage.setItem('ee_v14_products', JSON.stringify({
       'la-errante': { inventory: available }
     }));
-  }, { available: stock });
+  }, { available: stock, quantity: qty });
 }
 
 async function configurePreviewBank(page) {
@@ -135,7 +135,7 @@ test.describe('Experiencia de compra V1.8', () => {
   });
 
   test('inventario insuficiente bloquea el pedido con un mensaje claro', async ({ page }) => {
-    await seedCart(page, 0);
+    await seedCart(page, 1, 2);
     await configurePreviewBank(page);
     await page.goto('/checkout.html');
     await completeCheckoutForm(page);

@@ -30,6 +30,8 @@ ux = require(
     "Tu solicitud quedó registrada.",
     "Ahora sigue esto:",
     "observer.observe(root,{childList:true,subtree:true})",
+    "node?.nodeType===1",
+    "ee-v18-empty-cart",
 )
 
 require(

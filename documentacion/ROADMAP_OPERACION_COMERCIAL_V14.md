@@ -133,3 +133,12 @@ Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta 
 - Estados honestos para carrito vacío, solicitud recibida y coordinación posterior.
 - Señales de confianza en Tienda y compra informada en las once fichas.
 - Sin promesas de disponibilidad, entrega o devolución no sustentadas.
+
+
+## Iteración 6 — confianza comercial y cierre operativo V1.9
+
+- Consulta limitada de pedidos por referencia y correo.
+- Historial de estados y trazabilidad en Supabase.
+- Cobertura, tarifa, soporte y tiempo de respuesta configurables.
+- Enlace de seguimiento posterior al checkout.
+- Plantillas de actualización para WhatsApp desde Administración.

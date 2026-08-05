@@ -21,21 +21,25 @@ jobs:
           python3 - <<'PY'
           import base64
           from pathlib import Path
-          parts=[]
-          for path in sorted(Path('assets/source').glob('v040-app-*.b64')):
-              parts.append(path.read_text(encoding='utf-8').strip())
-          source=base64.b64decode(''.join(parts)).decode('utf-8')
-          Path('/tmp/app-source.js').write_text(source,encoding='utf-8')
-          needles=['despensa demo','stock suficiente','inventory','inventario','stock','ee_v2_','ee_v14_']
-          lines=source.splitlines()
-          found=False
-          for i,line in enumerate(lines):
-              low=line.lower()
-              if any(n.lower() in low for n in needles):
-                  found=True
-                  print(f'--- línea {i+1} ---')
-                  for j in range(max(0,i-4),min(len(lines),i+5)):
-                      print(f'{j+1}: {lines[j]}')
-          if not found:
-              raise SystemExit('No se localizaron marcadores de inventario')
+
+          groups={
+            'app': sorted(Path('assets/source').glob('v040-app-*.b64')),
+            'preprod': sorted(Path('assets/source').glob('v040-preprod-*.b64')),
+          }
+          needles=['despensa demo','stock suficiente','inventory','inventario','stock','ee_v2_','ee_v14_','stockdemo','despensa']
+          for name,paths in groups.items():
+              encoded=''.join(path.read_text(encoding='utf-8').strip() for path in paths)
+              source=base64.b64decode(encoded).decode('utf-8')
+              print(f'========== {name.upper()} =========')
+              lines=source.splitlines()
+              found=False
+              for i,line in enumerate(lines):
+                  low=line.lower()
+                  if any(n.lower() in low for n in needles):
+                      found=True
+                      print(f'--- línea {i+1} ---')
+                      for j in range(max(0,i-5),min(len(lines),i+6)):
+                          print(f'{j+1}: {lines[j]}')
+              if not found:
+                  print('Sin marcadores relevantes')
           PY

@@ -63,7 +63,7 @@
       const replacement=VISUALS[normalize(image.getAttribute("src"))];
       if(replacement&&replacement!==image.getAttribute("src")){
         image.setAttribute("src",replacement);
-        image.dataset.visualSystem="brand-final-direct";
+        image.dataset.visualSystem="brand-final";
         image.dataset.visualVersion=PUBLIC_VERSION;
       }
     });

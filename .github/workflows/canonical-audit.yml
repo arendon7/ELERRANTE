@@ -24,6 +24,9 @@ jobs:
       - name: Validar release público HQ
         run: python3 scripts/verificar_release_v13.py
 
+      - name: Validar operación comercial V1.4
+        run: python3 scripts/verificar_operacion_v14.py
+
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
 

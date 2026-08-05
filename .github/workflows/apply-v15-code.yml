@@ -1,0 +1,37 @@
+name: Aplicar código V1.5
+
+on:
+  push:
+    branches: ["feat/backend-auth-v15-iteracion-2"]
+    paths:
+      - ".github/workflows/apply-v15-code.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: feat/backend-auth-v15-iteracion-2
+          fetch-depth: 0
+      - name: Aplicar versionado y documentación
+        run: python3 scripts/aplicar_parche_v15.py
+      - name: Validar JavaScript y release
+        run: |
+          node --check assets/checkout-v15.js
+          node --check assets/admin-v15.js
+          node --check assets/commerce-config-v14.js
+          node --check assets/host-mode.js
+          node --check service-worker.js
+          python3 scripts/verificar_release_v13.py
+      - name: Consolidar código
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/host-mode.js scripts/verificar_release_v13.py deploy-version.txt documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md
+          git commit -m "chore(release): consolida versionado V1.5"
+          git push origin HEAD:feat/backend-auth-v15-iteracion-2

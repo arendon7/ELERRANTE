@@ -1,0 +1,89 @@
+name: Materializar visuales HQ V1.3.2
+
+on:
+  push:
+    branches: ["feat/visual-hq-direct-v132"]
+    paths:
+      - ".transfer8/READY"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materializar-hq-v132
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: feat/visual-hq-direct-v132
+          fetch-depth: 0
+
+      - name: Validar y concatenar transferencia
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=8
+          found=$(find .transfer8 -maxdepth 1 -name 'chunk-*.b64' -type f | wc -l | tr -d ' ')
+          echo "Fragmentos encontrados: $found/$expected"
+          test "$found" -eq "$expected"
+          for n in $(seq -w 1 8); do
+            file=".transfer8/chunk-00${n}.b64"
+            test -f "$file"
+            size=$(wc -c < "$file" | tr -d ' ')
+            echo "$file: $size bytes"
+            test "$size" -eq 88611
+          done
+          cat .transfer8/chunk-*.b64 | tr -d '\r\n' | base64 -d > /tmp/elerrante-hq-v132.zip
+          echo 'd90f68adbb1bd4e9490d7d52e3b53b9ea41ceed4453f6e97c680cd8d2b0c1632  /tmp/elerrante-hq-v132.zip' | sha256sum -c -
+
+      - name: Extraer y validar 23 AVIF
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/hq-v132 assets/images/hq-v132
+          mkdir -p /tmp/hq-v132 assets/images/hq-v132
+          unzip -q /tmp/elerrante-hq-v132.zip -d /tmp/hq-v132
+          find /tmp/hq-v132 -type f -name '*.avif' -exec cp {} assets/images/hq-v132/ \;
+          count=$(find assets/images/hq-v132 -maxdepth 1 -type f -name '*.avif' | wc -l | tr -d ' ')
+          echo "AVIF materializados: $count"
+          test "$count" -eq 23
+          python3 - <<'PY'
+          from pathlib import Path
+          folder = Path('assets/images/hq-v132')
+          expected = {
+              'evento-hero.avif','evento-noche.avif','evento-servicio.avif',
+              'home-compartir.avif','home-despensa.avif','home-en-casa.avif',
+              'home-fermentacion.avif','home-hero-desktop.avif','home-hero-mobile.avif',
+              'home-horno.avif','home-ingredientes.avif','home-masa-fuego.avif',
+              'producto-bosque.avif','producto-combo-primera-ruta.avif',
+              'producto-crea-tuya.avif','producto-cuatro-quesos.avif',
+              'producto-diavola.avif','producto-harina.avif','producto-la-errante.avif',
+              'producto-margherita.avif','producto-panela-maracuya.avif',
+              'producto-reduccion-balsamica.avif','producto-salsa-tomate.avif',
+          }
+          actual = {p.name for p in folder.glob('*.avif')}
+          assert actual == expected, (expected-actual, actual-expected)
+          for path in folder.glob('*.avif'):
+              data = path.read_bytes()
+              assert len(data) >= 8000, (path, len(data))
+              assert b'ftypavif' in data[:32], path
+          print('Colección AVIF válida.')
+          PY
+
+      - name: Limpiar puente y crear commit binario
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .transfer8
+          rm -f .github/workflows/materializar-hq-v132.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat(visual): materializa 23 AVIF HQ directos V1.3.2'
+          git push origin HEAD:feat/visual-hq-direct-v132

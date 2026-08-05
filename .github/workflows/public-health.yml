@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v1-6-0
+  EXPECTED_CACHE: el-errante-v1-7-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -56,7 +56,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js; do
+          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
@@ -67,13 +67,15 @@ jobs:
           node --check public-checkout-v15.js
           node --check public-admin-v15.js
           node --check public-operations-v16.js
+          node --check public-content-v17.js
           node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="1.6.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v1-6-0"' public-host-mode.js
+          grep -q 'PUBLIC_VERSION="1.7.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v1-7-0"' public-host-mode.js
           grep -q 'brand-final-hq' public-host-mode.js
           grep -q 'home-hero-mobile.webp' public-host-mode.js
           ! grep -q 'BRAND_PACKS' public-host-mode.js
-          grep -q 'el-errante-v1-6-0' public-service-worker.js
+          grep -q 'el-errante-v1-7-0' public-service-worker.js
+          grep -q 'assets/content-v17.js' public-service-worker.js
           grep -q 'assets/images/brand-final/home-hero.webp' public-service-worker.js
           grep -q 'assets/images/brand-final/producto-margherita.webp' public-service-worker.js
           grep -q 'assets/checkout-v15.js' public-service-worker.js
@@ -87,6 +89,9 @@ jobs:
           grep -q 'record_inventory_movement_v16' public-operations-v16.js
           grep -q 'Ventas de equilibrio' public-operations-v16.js
           grep -q 'ee_v16_inventory_movements' public-operations-v16.js
+          grep -q 'Masa con tiempo. Fuego con carácter.' public-content-v17.js
+          grep -q 'Nuestra pizza insignia' public-content-v17.js
+          grep -q "contentVersion='1.7.0'" public-content-v17.js
           ! grep -qi 'service_role' public-commerce-runtime-config.js
           ! grep -qi 'service_role' public-admin-v15.js
           ! grep -qi 'service_role' public-checkout-v15.js
@@ -96,7 +101,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for page in index tienda producto en-movimiento checkout admin; do
+          for page in index tienda producto historia en-casa en-movimiento checkout admin; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
           done
@@ -110,9 +115,15 @@ jobs:
             fi
           }
           assert_contains public-index.html 'Masa · Fuego · Territorio' 'Inicio no conserva el claim principal.'
+          assert_contains public-index.html 'assets/content-v17.js' 'Inicio no carga el contenido premium V1.7.'
           assert_contains public-tienda.html 'data-page="tienda"' 'Tienda no conserva su contrato de página.'
+          assert_contains public-tienda.html 'assets/content-v17.js' 'Tienda no carga el contenido premium V1.7.'
           assert_contains public-producto.html 'id="dynamic-product"' 'La ficha dinámica de producto no está disponible.'
+          assert_contains public-producto.html 'assets/content-v17.js' 'Producto no carga el contenido premium V1.7.'
+          assert_contains public-historia.html 'assets/content-v17.js' 'Historia no carga la narrativa V1.7.'
+          assert_contains public-en-casa.html 'assets/content-v17.js' 'En Casa no carga la narrativa V1.7.'
           assert_contains public-en-movimiento.html 'data-page="movimiento"' 'En Movimiento no conserva su contrato de página.'
+          assert_contains public-en-movimiento.html 'assets/content-v17.js' 'En Movimiento no carga la narrativa V1.7.'
           assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva el flujo de transferencia.'
           assert_contains public-checkout.html 'assets/checkout-v15.js' 'Checkout no carga el bootstrap aislado.'
           assert_contains public-admin.html 'Operación y finanzas · V1.6' 'Administración no conserva el contrato V1.6.'
@@ -145,7 +156,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V1.6.0 OPERACIÓN Y FINANZAS"
+            echo "EL ERRANTE — PUBLIC HEALTH V1.7.0 CONTENIDO Y CONVERSIÓN"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -170,9 +181,12 @@ jobs:
             public-checkout-v15.js
             public-admin-v15.js
             public-operations-v16.js
+            public-content-v17.js
             public-index.html
             public-tienda.html
             public-producto.html
+            public-historia.html
+            public-en-casa.html
             public-en-movimiento.html
             public-checkout.html
             public-admin.html

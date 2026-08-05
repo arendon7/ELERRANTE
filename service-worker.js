@@ -1,1 +1,2 @@
-/mnt/data/service-worker-v13.js
+şiíıÖ­kû®øœ{
++‘êï×xì

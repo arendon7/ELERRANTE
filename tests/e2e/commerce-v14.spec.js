@@ -25,12 +25,13 @@ test.describe('Operación comercial V1.5', () => {
     await expect(page.getByRole('heading', { name: 'Acceso administrativo seguro.' })).toBeVisible();
     await expect(page.getByText('No existe una contraseña maestra dentro del código.')).toBeVisible();
     await page.getByRole('button', { name: 'Abrir simulación local' }).click();
-    await expect(page.getByText('Ventas aprobadas')).toBeVisible();
-    await expect(page.getByText('Balance del mes')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Precios, costos e inventario' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Gastos fijos' })).toBeVisible();
-    await expect(page.getByText('$ 6.000.000', { exact: true })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Datos bancarios visibles en checkout' })).toBeVisible();
+    const adminPanel = page.locator('#admin-dynamic');
+    await expect(adminPanel.getByText('Ventas aprobadas')).toBeVisible();
+    await expect(adminPanel.getByText('Balance del mes')).toBeVisible();
+    await expect(adminPanel.getByRole('heading', { name: 'Precios, costos e inventario' })).toBeVisible();
+    await expect(adminPanel.getByRole('heading', { name: 'Gastos fijos' })).toBeVisible();
+    await expect(adminPanel.getByText('$ 6.000.000', { exact: true })).toBeVisible();
+    await expect(adminPanel.getByRole('heading', { name: 'Datos bancarios visibles en checkout' })).toBeVisible();
   });
 
   test('datos bancarios de simulación persisten en el checkout', async ({ page }) => {

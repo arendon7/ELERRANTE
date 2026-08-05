@@ -101,3 +101,17 @@ Pendiente externo de activación:
 - Crear el usuario de Juan e incluir su UUID en `admin_users`.
 - Sustituir datos bancarios, precios, costos e inventarios demo por información real.
 
+## Estado de avance — V1.6 / Iteración 3
+
+Implementado en código:
+
+- Kardex básico de inventario con entradas, salidas, producción, compras, ajustes y mermas.
+- Descuento automático al iniciar preparación y reintegro al volver a un estado no operativo.
+- Ciclos idempotentes para impedir descuentos duplicados por pedido.
+- Umbral de inventario bajo por producto y alertas operativas.
+- Margen de contribución por producto y consolidado mensual.
+- Resultado operativo: ventas aprobadas menos costos variables y gastos fijos.
+- Ventas y unidades de punto de equilibrio estimadas.
+- Registro manual de movimientos en modo local y mediante RPC segura en Supabase.
+
+Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta recibir la base real.

@@ -224,17 +224,20 @@
   }
 
   function watchCheckoutSuccess(){
-    const card=qs('.form-card');
-    if(!card)return;
-    const observer=new MutationObserver(()=>{
-      const success=qs('.ee-v14-order-success',card);
+    const root=qs('main');
+    if(!root)return;
+    const enhance=()=>{
+      const success=qs('.ee-v14-order-success',root);
       if(!success||success.dataset.v18Ready==='true')return;
       success.insertAdjacentHTML('beforeend',`<div class="ee-v18-success-steps"><strong>Ahora sigue esto:</strong><ol><li>Guarda la referencia del pedido.</li><li>Espera la confirmación del pago y la disponibilidad.</li><li>Recibe el horario acordado de preparación o entrega.</li></ol></div>`);
       const title=qs('h2',success);if(title)title.textContent='Tu solicitud quedó registrada.';
       const bar=qs('[data-v18="mobile-total"]');if(bar)bar.hidden=true;
       success.dataset.v18Ready='true';
-    });
-    observer.observe(card,{childList:true,subtree:true});
+    };
+    enhance();
+    const observer=new MutationObserver(enhance);
+    observer.observe(root,{childList:true,subtree:true});
+    window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
   }
 
   function initCheckout(){

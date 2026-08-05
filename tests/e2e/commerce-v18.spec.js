@@ -93,6 +93,29 @@ test.describe('Experiencia de compra V1.8', () => {
     await expect(page.getByRole('button', { name: /Copiar llave/i })).toHaveCount(0);
   });
 
+  test('la confirmación posterior explica los siguientes pasos', async ({ page }) => {
+    await seedCart(page);
+    await configurePreviewBank(page);
+    await page.goto('/checkout.html');
+    await page.locator('#ee-name').fill('Cliente de prueba');
+    await page.locator('#ee-phone').fill('3000000000');
+    await page.locator('#ee-email').fill('cliente@example.com');
+    await page.locator('#ee-city').fill('Medellín');
+    await page.locator('#ee-neighborhood').fill('Laureles');
+    await page.locator('#ee-address').fill('Carrera 70 # 10-20');
+    await page.locator('#ee-receipt').setInputFiles({
+      name: 'comprobante.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4\n%%EOF')
+    });
+    await page.locator('input[name="consent"]').check();
+    await page.getByRole('button', { name: 'Confirmar solicitud y enviar comprobante' }).click();
+    await expect(page.getByRole('heading', { name: 'Tu solicitud quedó registrada.' })).toBeVisible();
+    await expect(page.getByText('Ahora sigue esto:')).toBeVisible();
+    await expect(page.getByText('Guarda la referencia del pedido.')).toBeVisible();
+    await expect(page.getByText('Espera la confirmación del pago y la disponibilidad.')).toBeVisible();
+  });
+
   test('checkout vacío evita pedir datos innecesarios', async ({ page }) => {
     await page.goto('/checkout.html');
     await expect(page.getByRole('heading', { name: 'Primero elige qué quieres llevar al fuego.' })).toBeVisible();

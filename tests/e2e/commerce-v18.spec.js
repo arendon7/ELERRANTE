@@ -1,9 +1,23 @@
 const { test, expect } = require('@playwright/test');
 
-async function seedCart(page) {
-  await page.addInitScript(() => localStorage.setItem('ee_v2_cart', JSON.stringify([
-    { id: 'la-errante', variant: 'unidad', qty: 1 }
-  ])));
+async function seedCart(page, stock = 10) {
+  await page.addInitScript(({ available }) => {
+    localStorage.setItem('ee_v2_cart', JSON.stringify([
+      { id: 'la-errante', variant: 'unidad', qty: 1 }
+    ]));
+    localStorage.setItem('ee_v4_overrides', JSON.stringify({
+      products: {
+        'la-errante': {
+          variants: {
+            unidad: { stock: available }
+          }
+        }
+      }
+    }));
+    localStorage.setItem('ee_v14_products', JSON.stringify({
+      'la-errante': { inventory: available }
+    }));
+  }, { available: stock });
 }
 
 async function configurePreviewBank(page) {
@@ -41,6 +55,21 @@ async function configurePreviewBank(page) {
       })();`
     });
   });
+}
+
+async function completeCheckoutForm(page) {
+  await page.locator('#ee-name').fill('Cliente de prueba');
+  await page.locator('#ee-phone').fill('3000000000');
+  await page.locator('#ee-email').fill('cliente@example.com');
+  await page.locator('#ee-city').fill('Medellín');
+  await page.locator('#ee-neighborhood').fill('Laureles');
+  await page.locator('#ee-address').fill('Carrera 70 # 10-20');
+  await page.locator('#ee-receipt').setInputFiles({
+    name: 'comprobante.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from('%PDF-1.4\n%%EOF')
+  });
+  await page.locator('input[name="consent"]').check();
 }
 
 test.describe('Experiencia de compra V1.8', () => {
@@ -94,26 +123,25 @@ test.describe('Experiencia de compra V1.8', () => {
   });
 
   test('la confirmación posterior explica los siguientes pasos', async ({ page }) => {
-    await seedCart(page);
+    await seedCart(page, 10);
     await configurePreviewBank(page);
     await page.goto('/checkout.html');
-    await page.locator('#ee-name').fill('Cliente de prueba');
-    await page.locator('#ee-phone').fill('3000000000');
-    await page.locator('#ee-email').fill('cliente@example.com');
-    await page.locator('#ee-city').fill('Medellín');
-    await page.locator('#ee-neighborhood').fill('Laureles');
-    await page.locator('#ee-address').fill('Carrera 70 # 10-20');
-    await page.locator('#ee-receipt').setInputFiles({
-      name: 'comprobante.pdf',
-      mimeType: 'application/pdf',
-      buffer: Buffer.from('%PDF-1.4\n%%EOF')
-    });
-    await page.locator('input[name="consent"]').check();
+    await completeCheckoutForm(page);
     await page.getByRole('button', { name: 'Confirmar solicitud y enviar comprobante' }).click();
     await expect(page.getByRole('heading', { name: 'Tu solicitud quedó registrada.' })).toBeVisible();
     await expect(page.getByText('Ahora sigue esto:')).toBeVisible();
     await expect(page.getByText('Guarda la referencia del pedido.')).toBeVisible();
     await expect(page.getByText('Espera la confirmación del pago y la disponibilidad.')).toBeVisible();
+  });
+
+  test('inventario insuficiente bloquea el pedido con un mensaje claro', async ({ page }) => {
+    await seedCart(page, 0);
+    await configurePreviewBank(page);
+    await page.goto('/checkout.html');
+    await completeCheckoutForm(page);
+    await page.getByRole('button', { name: 'Confirmar solicitud y enviar comprobante' }).click();
+    await expect(page.getByText(/no tiene stock suficiente para La Errante/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tu solicitud quedó registrada.' })).toHaveCount(0);
   });
 
   test('checkout vacío evita pedir datos innecesarios', async ({ page }) => {

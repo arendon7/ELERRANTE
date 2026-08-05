@@ -4,7 +4,7 @@ on:
   push:
     branches: ["feat/hq-visual-v13-atomic"]
     paths:
-      - ".transfer/READY"
+      - ".transfer-web/READY"
 
 permissions:
   contents: write
@@ -29,9 +29,9 @@ jobs:
           EXPECTED_SHA256: d90f68adbb1bd4e9490d7d52e3b53b9ea41ceed4453f6e97c680cd8d2b0c1632
         run: |
           set -euo pipefail
-          test -f .transfer/READY
-          test "$(find .transfer -maxdepth 1 -name 'chunk-*.b64' | wc -l)" -eq 36
-          cat .transfer/chunk-*.b64 | tr -d '\r\n' | base64 --decode > /tmp/elerrante-hq-v13.zip
+          test -f .transfer-web/READY
+          test "$(find .transfer-web -maxdepth 1 -name 'chunk-*.b64' | wc -l)" -eq 36
+          cat .transfer-web/chunk-*.b64 | tr -d '\r\n' | base64 --decode > /tmp/elerrante-hq-v13.zip
           echo "${EXPECTED_SHA256}  /tmp/elerrante-hq-v13.zip" | sha256sum --check -
           rm -rf assets/images/hq-v13
           mkdir -p assets/images/hq-v13
@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf .transfer
+          rm -rf .transfer .transfer-web
           rm -f .github/workflows/hq-transfer.yml
           rm -f assets/brand-final-editorial.js
           rm -f assets/brand-final-products-a.js

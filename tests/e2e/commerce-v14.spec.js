@@ -10,7 +10,7 @@ test.describe('Operación comercial V1.5', () => {
   test('checkout conserva transferencia y usa bootstrap aislado', async ({ page }) => {
     await seedCart(page);
     await page.goto('/checkout.html');
-    await expect(page.getByRole('heading', { name: 'Tu pedido comienza aquí.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Confirma tu pedido con claridad.' })).toBeVisible();
     await expect(page.getByRole('heading', { name: '3. Transferencia y comprobante' })).toBeVisible();
     await expect(page.locator('#ee-receipt')).toBeVisible();
     await expect(page.locator('#ee-city')).toHaveAttribute('type', 'text');

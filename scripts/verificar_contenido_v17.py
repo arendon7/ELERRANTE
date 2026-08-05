@@ -24,7 +24,7 @@ content = require(
     "Una pizzería encendida dentro de tu evento.",
     "Nuestra pizza insignia",
     "Balsámico, panela y maracuyá",
-    "data.contentVersion='1.7.0'",
+    "dataset.contentVersion='1.7.0'",
 )
 
 for product_id in (

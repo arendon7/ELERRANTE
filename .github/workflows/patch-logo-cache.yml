@@ -1,0 +1,62 @@
+name: Ajustar caché del logo E
+
+on:
+  push:
+    branches: ["fix/logo-e-terracota"]
+    paths:
+      - ".github/workflows/patch-logo-cache.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: fix/logo-e-terracota
+          fetch-depth: 0
+
+      - name: Actualizar runtime y validación
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          host_path = Path('assets/host-mode.js')
+          host = host_path.read_text(encoding='utf-8')
+          host = host.replace('PUBLIC_VERSION="1.3.0"', 'PUBLIC_VERSION="1.3.1"')
+          host = host.replace('ACTIVE_CACHE="el-errante-v1-3-0"', 'ACTIVE_CACHE="el-errante-v1-3-1"')
+          host_path.write_text(host, encoding='utf-8')
+
+          verify_path = Path('scripts/verificar_release_v13.py')
+          verify = verify_path.read_text(encoding='utf-8')
+          verify = verify.replace("'PUBLIC_VERSION=\"1.3.0\"', 'ACTIVE_CACHE=\"el-errante-v1-3-0\"'", "'PUBLIC_VERSION=\"1.3.1\"', 'ACTIVE_CACHE=\"el-errante-v1-3-1\"'")
+          verify = verify.replace('if "el-errante-v1-3-0" not in worker:', 'if "el-errante-v1-3-1" not in worker:')
+          verify_path.write_text(verify, encoding='utf-8')
+          PY
+
+      - name: Validar identidad y caché
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'E terracota de El Errante' assets/logo-mark.svg
+          grep -q 'fill="#A5432D"' assets/logo-mark.svg
+          grep -q 'PUBLIC_VERSION="1.3.1"' assets/host-mode.js
+          grep -q 'el-errante-v1-3-1' service-worker.js
+          node --check assets/host-mode.js
+          python3 scripts/verificar_release_v13.py
+
+      - name: Consolidar cambio
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/patch-logo-cache.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix(brand): publica la E terracota y renueva caché'
+          git push origin HEAD:fix/logo-e-terracota

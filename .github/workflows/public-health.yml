@@ -79,7 +79,7 @@ jobs:
           grep -Fq 'Masa · Fuego · Territorio' public-index.html
           grep -Fq 'data-page="tienda"' public-tienda.html
           grep -Fq 'data-page="producto"' public-producto.html
-          grep -Fq 'data-page="en-movimiento"' public-en-movimiento.html
+          grep -Fq 'data-page="movimiento"' public-en-movimiento.html
       - name: Generar informe
         if: always()
         shell: bash

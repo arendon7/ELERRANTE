@@ -88,13 +88,13 @@ jobs:
             --exclude 'assets/brand-final-products-a.js' \
             --exclude 'assets/brand-final-products-b.js' \
             --exclude 'assets/brand-final-products-c.js'
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=1.3.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v1-3-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=1.3.1\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v1-3-1\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         shell: bash
         run: |
-          grep -q 'version=1.3.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v1-3-0' _site/deploy-version.txt
+          grep -q 'version=1.3.1' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v1-3-1' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
           for page in equipo admin control operacion studio actas presentacion; do test -f "_site/${page}.html"; done
@@ -106,7 +106,7 @@ jobs:
           test ! -f _site/assets/brand-final-products-a.js
           test ! -f _site/assets/brand-final-products-b.js
           test ! -f _site/assets/brand-final-products-c.js
-          grep -q 'el-errante-v1-3-0' _site/service-worker.js
+          grep -q 'el-errante-v1-3-1' _site/service-worker.js
           grep -q 'brand-final-hq' _site/assets/host-mode.js
           grep -q 'home-hero-mobile.webp' _site/assets/host-mode.js
           for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-preflight-v09.js offer-acts-v09.js offer-acts-v09.css aire-tiempo-committee-v09.js aire-tiempo-committee-v09.css; do test -f "_site/assets/$asset"; done

@@ -1,0 +1,39 @@
+name: Aplicar parche V1.4
+
+on:
+  push:
+    branches:
+      - feat/operacion-comercial-v14-iteracion-1
+    paths:
+      - .github/workflows/apply-commerce-v14.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: feat/operacion-comercial-v14-iteracion-1
+          fetch-depth: 0
+      - name: Aplicar parche
+        run: python3 scripts/aplicar_parche_operacion_v14.py
+      - name: Validar archivos
+        run: |
+          node --check assets/commerce-v14.js
+          node --check assets/host-mode.js
+          node --check service-worker.js
+          python3 scripts/verificar_release_v13.py
+          python3 scripts/verificar_operacion_v14.py
+      - name: Consolidar
+        run: |
+          rm -f .github/workflows/apply-commerce-v14.yml
+          rm -f scripts/aplicar_parche_operacion_v14.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "fix(commerce): estabiliza checkout, móvil y caché V1.4"
+          git push origin HEAD:feat/operacion-comercial-v14-iteracion-1

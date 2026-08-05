@@ -26,6 +26,10 @@ ux = require(
     "Compra con criterio",
     "La etiqueta y el empaque real prevalecen",
     "commerceUxVersion=VERSION",
+    "const root=qs('main')",
+    "Tu solicitud quedó registrada.",
+    "Ahora sigue esto:",
+    "observer.observe(root,{childList:true,subtree:true})",
 )
 
 require(
@@ -34,6 +38,7 @@ require(
     ".ee-v18-mobile-total",
     ".ee-v18-store-trust",
     ".ee-v18-product-assurance",
+    ".ee-v18-success-steps",
 )
 
 for page in ("checkout.html", "tienda.html", "producto.html"):

@@ -2,7 +2,7 @@
   const runtime = window.EL_ERRANTE_RUNTIME_CONFIG || {};
   const runtimeBackend = runtime.backend || {};
   window.EL_ERRANTE_COMMERCE_CONFIG = Object.freeze({
-    version: "1.8.0",
+    version: "1.9.0",
     environment: runtime.environment || "preview",
     backend: {
       provider: runtimeBackend.provider || "supabase",
@@ -31,6 +31,11 @@
     },
     ordering: {
       deliveryPolicy: "Cobertura abierta sujeta a coordinación logística",
+      deliveryFeePolicy: "La tarifa se confirma según dirección, volumen y alternativa de entrega.",
+      coverageDetails: "Recibimos solicitudes sin rutas ni días fijos. Confirmamos disponibilidad y logística antes de preparar.",
+      supportWhatsapp: "",
+      supportEmail: "",
+      expectedResponseHours: 24,
       requireReceipt: true,
       maxReceiptBytesPreview: 5000000
     }

@@ -66,25 +66,21 @@ jobs:
 
           roadmap=Path('documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md')
           text=roadmap.read_text(encoding='utf-8')
-          status='''
-
-## Estado de avance — V1.6 / Iteración 3
-
-Implementado en código:
-
-- Kardex básico de inventario con entradas, salidas, producción, compras, ajustes y mermas.
-- Descuento automático al iniciar preparación y reintegro al volver a un estado no operativo.
-- Ciclos idempotentes para impedir descuentos duplicados por pedido.
-- Umbral de inventario bajo por producto y alertas operativas.
-- Margen de contribución por producto y consolidado mensual.
-- Resultado operativo: ventas aprobadas menos costos variables y gastos fijos.
-- Ventas y unidades de punto de equilibrio estimadas.
-- Registro manual de movimientos en modo local y mediante RPC segura en Supabase.
-
-Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta recibir la base real.
-'''
+          status=(
+              '\n\n## Estado de avance — V1.6 / Iteración 3\n\n'
+              'Implementado en código:\n\n'
+              '- Kardex básico de inventario con entradas, salidas, producción, compras, ajustes y mermas.\n'
+              '- Descuento automático al iniciar preparación y reintegro al volver a un estado no operativo.\n'
+              '- Ciclos idempotentes para impedir descuentos duplicados por pedido.\n'
+              '- Umbral de inventario bajo por producto y alertas operativas.\n'
+              '- Margen de contribución por producto y consolidado mensual.\n'
+              '- Resultado operativo: ventas aprobadas menos costos variables y gastos fijos.\n'
+              '- Ventas y unidades de punto de equilibrio estimadas.\n'
+              '- Registro manual de movimientos en modo local y mediante RPC segura en Supabase.\n\n'
+              'Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta recibir la base real.\n'
+          )
           if '## Estado de avance — V1.6 / Iteración 3' not in text:
-              roadmap.write_text(text.rstrip()+status+'\n',encoding='utf-8')
+              roadmap.write_text(text.rstrip()+status,encoding='utf-8')
           PY
       - name: Validar código V1.6
         shell: bash

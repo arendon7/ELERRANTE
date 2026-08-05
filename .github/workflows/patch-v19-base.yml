@@ -46,7 +46,6 @@ jobs:
           ])
           replace('service-worker.js',[
               ("const CACHE = 'el-errante-v1-8-0';","const CACHE = 'el-errante-v1-9-0';"),
-              ("'./herramientas.html','./cobertura.html','./ayuda.html','./checkout.html','./cuenta.html','./legal.html',","'./herramientas.html','./cobertura.html','./ayuda.html','./checkout.html','./cuenta.html','./legal.html',"),
               ("'./assets/preprod.js','./assets/content-v5.js','./assets/content-v17.js','./assets/commerce-ux-v18.js','./assets/host-mode.js'","'./assets/preprod.js','./assets/content-v5.js','./assets/content-v17.js','./assets/commerce-ux-v18.js','./assets/trust-v19.js','./assets/host-mode.js'"),
               ("'./assets/commerce-v14.js','./assets/commerce-v14.css','./assets/commerce-v15.css','./assets/commerce-v16.css','./assets/commerce-v18.css','./assets/operations-v16.js'","'./assets/commerce-v14.js','./assets/commerce-v14.css','./assets/commerce-v15.css','./assets/commerce-v16.css','./assets/commerce-v18.css','./assets/trust-v19.css','./assets/operations-v16.js'"),
               ("'./documentacion/modelo-oferta-v09.json'","'./backend/supabase/schema-v19.sql','./documentacion/modelo-oferta-v09.json'")
@@ -66,8 +65,8 @@ jobs:
           ):
               file=Path(path)
               text=file.read_text(encoding='utf-8')
-              text=text.replace('PUBLIC_VERSION=\\"1.8.0\\"','PUBLIC_VERSION=\\"1.9.0\\"')
-              text=text.replace('ACTIVE_CACHE=\\"el-errante-v1-8-0\\"','ACTIVE_CACHE=\\"el-errante-v1-9-0\\"')
+              text=text.replace('PUBLIC_VERSION="1.8.0"','PUBLIC_VERSION="1.9.0"')
+              text=text.replace('ACTIVE_CACHE="el-errante-v1-8-0"','ACTIVE_CACHE="el-errante-v1-9-0"')
               text=text.replace('"el-errante-v1-8-0"','"el-errante-v1-9-0"')
               text=text.replace('"version=1.8.0"','"version=1.9.0"')
               text=text.replace('"cache=el-errante-v1-8-0"','"cache=el-errante-v1-9-0"')
@@ -83,6 +82,7 @@ jobs:
       - name: Validar base V1.9
         shell: bash
         run: |
+          set -euo pipefail
           node --check assets/trust-v19.js
           node --check assets/commerce-config-v14.js
           node --check assets/host-mode.js
@@ -97,6 +97,7 @@ jobs:
       - name: Consolidar
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/commerce-config-v14.js assets/host-mode.js service-worker.js deploy-version.txt scripts documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md

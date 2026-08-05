@@ -115,3 +115,11 @@ Implementado en código:
 - Registro manual de movimientos en modo local y mediante RPC segura en Supabase.
 
 Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta recibir la base real.
+
+
+## Iteración 4 — contenido y conversión V1.7
+
+- Voz gastronómica premium aplicada a inicio, tienda, historia, En Casa y En Movimiento.
+- Once fichas de producto reescritas con deseo, criterio técnico y claridad de uso.
+- Mensajes de conversión sustentados en masa, fermentación, fuego, balance y servicio.
+- Prohibición de superlativos o certificaciones no demostradas.

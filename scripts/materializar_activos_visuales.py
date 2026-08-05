@@ -12,6 +12,21 @@ SOURCES = [
 OUT = ROOT / "assets/images/brand-final"
 OUT.mkdir(parents=True, exist_ok=True)
 
+# V1.3 mantiene originales WebP físicos. Cuando la colección validada existe,
+# esta utilidad heredada no debe reconstruir ni sobrescribirla con SVG reducidos.
+hq_manifest_path = OUT / "manifest-hq-v13.json"
+if hq_manifest_path.is_file():
+    hq_manifest = json.loads(hq_manifest_path.read_text(encoding="utf-8"))
+    webps = sorted(OUT.glob("*.webp"))
+    if (
+        hq_manifest.get("version") == "1.3.0"
+        and hq_manifest.get("unique_assets") == 23
+        and len(webps) == 24
+        and all(path.stat().st_size > 100_000 for path in webps)
+    ):
+        print("Colección WebP HQ V1.3 detectada: se omite el fallback SVG legado.")
+        raise SystemExit(0)
+
 
 def read_assets(path: Path) -> dict[str, str]:
     text = path.read_text(encoding="utf-8")

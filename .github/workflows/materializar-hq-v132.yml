@@ -5,6 +5,7 @@ on:
     branches: ["feat/visual-hq-direct-v132"]
     paths:
       - "assets/staging-v132/READY"
+      - ".github/workflows/materializar-hq-v132.yml"
 
 permissions:
   contents: write
@@ -32,6 +33,11 @@ jobs:
           from pathlib import Path
           import base64, re
 
+          def decode(payload: str) -> bytes:
+              clean = ''.join(payload.split())
+              clean += '=' * (-len(clean) % 4)
+              return base64.b64decode(clean)
+
           staging = Path('assets/staging-v132')
           target = Path('assets/images/hq-v132')
           target.mkdir(parents=True, exist_ok=True)
@@ -49,13 +55,13 @@ jobs:
               match = re.search(r'data:image/avif;base64,([^"\']+)', source)
               if not match:
                   raise SystemExit(f'AVIF ausente en {source_name}')
-              (target / output_name).write_bytes(base64.b64decode(match.group(1)))
+              (target / output_name).write_bytes(decode(match.group(1)))
 
           products = {}
           for source_name in ('products-a.js', 'products-b.js', 'products-c.js'):
               source = (staging / source_name).read_text(encoding='utf-8')
               for key, payload in re.findall(r'"([^"]+)":"data:image/avif;base64,([A-Za-z0-9+/=]+)"', source):
-                  products[key] = base64.b64decode(payload)
+                  products[key] = decode(payload)
 
           product_outputs = {
               'producto-harina': 'producto-harina.avif',

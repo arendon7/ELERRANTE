@@ -1,4 +1,4 @@
-name: Integrar experiencia de compra V1.8
+name: Integrar base de compra V1.8
 
 on:
   push:
@@ -18,27 +18,19 @@ jobs:
           ref: feat/experiencia-compra-v18
           fetch-depth: 0
 
-      - name: Integrar versión, caché y barreras
+      - name: Integrar versión, caché y verificadores
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
 
-          def replace_required(path, old, new, count=None):
+          def replace_required(path, old, new):
               file = Path(path)
               text = file.read_text(encoding='utf-8')
               if old not in text:
                   raise SystemExit(f'{path} no contiene marcador requerido: {old}')
-              text = text.replace(old, new, count if count is not None else -1)
-              file.write_text(text, encoding='utf-8')
-
-          def append_once(path, marker, block):
-              file = Path(path)
-              text = file.read_text(encoding='utf-8')
-              if marker not in text:
-                  text += block
-                  file.write_text(text, encoding='utf-8')
+              file.write_text(text.replace(old, new), encoding='utf-8')
 
           replace_required('assets/host-mode.js', 'PUBLIC_VERSION="1.7.0"', 'PUBLIC_VERSION="1.8.0"')
           replace_required('assets/host-mode.js', 'ACTIVE_CACHE="el-errante-v1-7-0"', 'ACTIVE_CACHE="el-errante-v1-8-0"')
@@ -61,64 +53,21 @@ jobs:
           replace_required('scripts/verificar_contenido_v17.py', 'PUBLIC_VERSION="1.7.0"', 'PUBLIC_VERSION="1.8.0"')
           replace_required('scripts/verificar_contenido_v17.py', 'el-errante-v1-7-0', 'el-errante-v1-8-0')
           replace_required('scripts/verificar_contenido_v17.py', 'version=1.7.0', 'version=1.8.0')
-
           replace_required(
               'tests/e2e/commerce-v14.spec.js',
               "heading', { name: 'Tu pedido comienza aquí.' }",
               "heading', { name: 'Confirma tu pedido con claridad.' }",
           )
 
-          pages = Path('.github/workflows/pages.yml')
-          text = pages.read_text(encoding='utf-8')
-          marker = '      - name: Validar contenido y conversión V1.7\n        run: python3 scripts/verificar_contenido_v17.py\n'
-          addition = marker + '      - name: Validar experiencia de compra V1.8\n        run: python3 scripts/verificar_experiencia_compra_v18.py\n'
+          roadmap = Path('documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md')
+          text = roadmap.read_text(encoding='utf-8')
+          marker = '## Iteración 5 — experiencia de compra V1.8'
           if marker not in text:
-              raise SystemExit('pages.yml no contiene el paso V1.7')
-          text = text.replace(marker, addition)
-          text = text.replace('node --check assets/content-v17.js', 'node --check assets/content-v17.js\n          node --check assets/commerce-ux-v18.js')
-          text = text.replace('version=1.7.0', 'version=1.8.0')
-          text = text.replace('cache=el-errante-v1-7-0', 'cache=el-errante-v1-8-0')
-          text = text.replace('el-errante-v1-7-0', 'el-errante-v1-8-0')
-          text = text.replace('PUBLIC_VERSION="1.7.0"', 'PUBLIC_VERSION="1.8.0"')
-          text = text.replace('operations-v16.js content-v17.js;', 'operations-v16.js content-v17.js commerce-ux-v18.js;')
-          text = text.replace('commerce-v14.css commerce-v15.css commerce-v16.css;', 'commerce-v14.css commerce-v15.css commerce-v16.css commerce-v18.css;')
-          text = text.replace("grep -q 'assets/content-v17.js' _site/service-worker.js", "grep -q 'assets/content-v17.js' _site/service-worker.js\n          grep -q 'assets/commerce-ux-v18.js' _site/service-worker.js\n          grep -q 'assets/commerce-v18.css' _site/service-worker.js")
-          text = text.replace("for page in index tienda producto historia en-casa en-movimiento; do grep -q 'assets/content-v17.js' \"_site/${page}.html\"; done", "for page in index tienda producto historia en-casa en-movimiento; do grep -q 'assets/content-v17.js' \"_site/${page}.html\"; done\n          for page in tienda producto checkout; do grep -q 'assets/commerce-ux-v18.js' \"_site/${page}.html\"; grep -q 'assets/commerce-v18.css' \"_site/${page}.html\"; done")
-          text = text.replace("grep -q 'Nuestra pizza insignia' _site/assets/content-v17.js", "grep -q 'Nuestra pizza insignia' _site/assets/content-v17.js\n          grep -q 'Confirma tu pedido con claridad.' _site/assets/commerce-ux-v18.js\n          grep -q 'ee-v18-mobile-total' _site/assets/commerce-v18.css")
-          pages.write_text(text, encoding='utf-8')
-
-          audit = Path('.github/workflows/canonical-audit.yml')
-          text = audit.read_text(encoding='utf-8')
-          marker = '      - name: Validar contenido y conversión V1.7\n        run: python3 scripts/verificar_contenido_v17.py\n'
-          if marker not in text:
-              raise SystemExit('canonical-audit.yml no contiene V1.7')
-          text = text.replace(marker, marker + '      - name: Validar experiencia de compra V1.8\n        run: python3 scripts/verificar_experiencia_compra_v18.py\n')
-          audit.write_text(text, encoding='utf-8')
-
-          health = Path('.github/workflows/public-health.yml')
-          text = health.read_text(encoding='utf-8')
-          text = text.replace('EXPECTED_CACHE: el-errante-v1-7-0', 'EXPECTED_CACHE: el-errante-v1-8-0')
-          text = text.replace('content-v17.js; do', 'content-v17.js commerce-ux-v18.js; do')
-          text = text.replace('node --check public-content-v17.js', 'node --check public-content-v17.js\n          node --check public-commerce-ux-v18.js')
-          text = text.replace('PUBLIC_VERSION="1.7.0"', 'PUBLIC_VERSION="1.8.0"')
-          text = text.replace('ACTIVE_CACHE="el-errante-v1-7-0"', 'ACTIVE_CACHE="el-errante-v1-8-0"')
-          text = text.replace('el-errante-v1-7-0', 'el-errante-v1-8-0')
-          text = text.replace("grep -q 'Nuestra pizza insignia' public-content-v17.js", "grep -q 'Nuestra pizza insignia' public-content-v17.js\n          grep -q 'Confirma tu pedido con claridad.' public-commerce-ux-v18.js\n          grep -q 'Entrega coordinada' public-commerce-ux-v18.js")
-          text = text.replace("assert_contains public-tienda.html 'assets/content-v17.js' 'Tienda no carga el contenido premium V1.7.'", "assert_contains public-tienda.html 'assets/content-v17.js' 'Tienda no carga el contenido premium V1.7.'\n          assert_contains public-tienda.html 'assets/commerce-ux-v18.js' 'Tienda no carga la experiencia de compra V1.8.'")
-          text = text.replace("assert_contains public-producto.html 'assets/content-v17.js' 'Producto no carga el contenido premium V1.7.'", "assert_contains public-producto.html 'assets/content-v17.js' 'Producto no carga el contenido premium V1.7.'\n          assert_contains public-producto.html 'assets/commerce-ux-v18.js' 'Producto no carga la compra informada V1.8.'")
-          text = text.replace("assert_contains public-checkout.html 'assets/checkout-v15.js' 'Checkout no carga el bootstrap aislado.'", "assert_contains public-checkout.html 'assets/checkout-v15.js' 'Checkout no carga el bootstrap aislado.'\n          assert_contains public-checkout.html 'assets/commerce-ux-v18.js' 'Checkout no carga la experiencia guiada V1.8.'\n          assert_contains public-checkout.html 'assets/commerce-v18.css' 'Checkout no carga los estilos V1.8.'")
-          text = text.replace('PUBLIC HEALTH V1.7.0 CONTENIDO Y CONVERSIÓN', 'PUBLIC HEALTH V1.8.0 EXPERIENCIA DE COMPRA')
-          text = text.replace('public-content-v17.js\n', 'public-content-v17.js\n            public-commerce-ux-v18.js\n')
-          health.write_text(text, encoding='utf-8')
-
-          append_once(
-              'documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md',
-              '## Iteración 5 — experiencia de compra V1.8',
-              '\n\n## Iteración 5 — experiencia de compra V1.8\n\n- Checkout guiado en tres pasos: datos, entrega y pago.\n- Total persistente y acceso rápido al formulario en móvil.\n- Copia segura de cuenta y llave; comprobante con nombre y peso visibles.\n- Estados honestos para carrito vacío, solicitud recibida y coordinación posterior.\n- Señales de confianza en Tienda y compra informada en las once fichas.\n- Sin promesas de disponibilidad, entrega o devolución no sustentadas.\n',
-          )
+              text += '\n\n## Iteración 5 — experiencia de compra V1.8\n\n- Checkout guiado en tres pasos: datos, entrega y pago.\n- Total persistente y acceso rápido al formulario en móvil.\n- Copia segura de cuenta y llave; comprobante con nombre y peso visibles.\n- Estados honestos para carrito vacío, solicitud recibida y coordinación posterior.\n- Señales de confianza en Tienda y compra informada en las once fichas.\n- Sin promesas de disponibilidad, entrega o devolución no sustentadas.\n'
+              roadmap.write_text(text, encoding='utf-8')
           PY
 
-      - name: Validar integración completa
+      - name: Validar integración
         shell: bash
         run: |
           set -euo pipefail
@@ -133,12 +82,12 @@ jobs:
           python3 scripts/verificar_contenido_v17.py
           python3 scripts/verificar_experiencia_compra_v18.py
 
-      - name: Consolidar integración
+      - name: Consolidar base V1.8
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/host-mode.js assets/commerce-config-v14.js deploy-version.txt service-worker.js scripts tests/e2e/commerce-v14.spec.js .github/workflows/pages.yml .github/workflows/canonical-audit.yml .github/workflows/public-health.yml documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md
-          git commit -m 'feat(commerce): integra experiencia de compra V1.8'
+          git add assets/host-mode.js assets/commerce-config-v14.js deploy-version.txt service-worker.js scripts tests/e2e/commerce-v14.spec.js documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md
+          git commit -m 'feat(commerce): integra base de experiencia V1.8'
           git push origin HEAD:feat/experiencia-compra-v18

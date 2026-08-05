@@ -1,8 +1,8 @@
 (()=>{
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
-  const PUBLIC_VERSION="1.1.0";
+  const PUBLIC_VERSION="1.1.1";
   const CACHE_PREFIX="el-errante-";
-  const ACTIVE_CACHE="el-errante-v1-1-0";
+  const ACTIVE_CACHE="el-errante-v1-1-1";
   const INTERNAL_PAGES=new Set(["equipo","admin","control","operacion","studio","actas","presentacion"]);
   const BRAND_PACKS=[
     "assets/brand-final-editorial.js",
@@ -83,6 +83,7 @@
       }
       const script=document.createElement("script");
       script.src=source;
+      script.async=true;
       script.dataset.eeBrandPack=source;
       script.onload=()=>{script.dataset.loaded="true";resolve();};
       script.onerror=()=>reject(new Error(`No fue posible cargar ${source}`));
@@ -91,7 +92,9 @@
   }
 
   async function loadBrandAssets(){
-    for(const source of BRAND_PACKS) await loadScript(source);
+    const results=await Promise.allSettled(BRAND_PACKS.map(loadScript));
+    const failed=results.filter(result=>result.status==="rejected");
+    if(failed.length) throw new Error(`${failed.length} paquete(s) visual(es) no pudieron cargarse.`);
   }
 
   function resolveVisual(source){
@@ -106,6 +109,8 @@
       const replacement=resolveVisual(image.getAttribute("src"));
       if(replacement&&replacement!==image.getAttribute("src")){
         image.setAttribute("src",replacement);
+        image.decoding="async";
+        if(!image.closest(".hero")) image.loading="lazy";
         image.dataset.visualSystem="brand-final";
         image.dataset.visualVersion=PUBLIC_VERSION;
       }
@@ -117,30 +122,46 @@
   }
 
   function observeDynamicVisuals(){
+    const pending=new Set();
+    let scheduled=false;
+    const flush=()=>{
+      scheduled=false;
+      pending.forEach(node=>recoverVisualAssets(node));
+      pending.clear();
+    };
     const observer=new MutationObserver(records=>{
       records.forEach(record=>record.addedNodes.forEach(node=>{
-        if(node.nodeType!==Node.ELEMENT_NODE) return;
-        recoverVisualAssets(node.matches?.("img[src],source[srcset]")?node.parentElement||document:node);
+        if(node.nodeType===Node.ELEMENT_NODE) pending.add(node);
       }));
+      if(pending.size&&!scheduled){
+        scheduled=true;
+        requestAnimationFrame(flush);
+      }
     });
     observer.observe(document.body,{childList:true,subtree:true});
   }
 
   async function refreshPublicRuntime(){
-    if(!hosted) return;
+    if(!hosted||!("serviceWorker" in navigator)) return;
+    const versionChanged=localStorage.getItem("ee_public_version")!==PUBLIC_VERSION;
     try{
+      const registration=await navigator.serviceWorker.register("./service-worker.js",{updateViaCache:"none"});
+      if(!versionChanged) return;
       if("caches" in window){
         const keys=await caches.keys();
         await Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==ACTIVE_CACHE).map(key=>caches.delete(key)));
       }
-      if("serviceWorker" in navigator){
-        const registration=await navigator.serviceWorker.register("./service-worker.js",{updateViaCache:"none"});
-        await registration.update();
-      }
+      await registration.update();
       localStorage.setItem("ee_public_version",PUBLIC_VERSION);
     }catch(error){
       console.warn("No fue posible actualizar la caché pública de El Errante.",error);
     }
+  }
+
+  function scheduleRuntimeRefresh(){
+    const run=()=>setTimeout(refreshPublicRuntime,0);
+    if(document.readyState==="complete") run();
+    else window.addEventListener("load",run,{once:true});
   }
 
   function addNavigationLink(container,selector,label,href,beforeSelector,className=""){
@@ -184,7 +205,7 @@
     if(page==="equipo") document.querySelectorAll('a[href="equipo.html"]').forEach(link=>link.classList.add("active"));
   }
 
-  refreshPublicRuntime();
+  scheduleRuntimeRefresh();
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",enhancePublicUI,{once:true});
   else enhancePublicUI();
 })();

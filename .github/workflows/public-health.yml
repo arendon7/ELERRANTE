@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v1-8-0
+  EXPECTED_CACHE: el-errante-v1-9-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -56,12 +56,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js; do
+          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
-          curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/assets/commerce-v18.css?verify=$EXPECTED_SHA" > public-commerce-v18.css
+          for asset in commerce-v18.css trust-v19.css; do
+            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
+          done
           curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
           node --check public-host-mode.js
@@ -71,16 +73,20 @@ jobs:
           node --check public-operations-v16.js
           node --check public-content-v17.js
           node --check public-commerce-ux-v18.js
+          node --check public-trust-v19.js
           node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="1.8.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v1-8-0"' public-host-mode.js
+          grep -q 'PUBLIC_VERSION="1.9.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v1-9-0"' public-host-mode.js
           grep -q 'brand-final-hq' public-host-mode.js
           grep -q 'home-hero-mobile.webp' public-host-mode.js
           ! grep -q 'BRAND_PACKS' public-host-mode.js
-          grep -q 'el-errante-v1-8-0' public-service-worker.js
+          grep -q 'el-errante-v1-9-0' public-service-worker.js
           grep -q 'assets/content-v17.js' public-service-worker.js
           grep -q 'assets/commerce-ux-v18.js' public-service-worker.js
           grep -q 'assets/commerce-v18.css' public-service-worker.js
+          grep -q 'assets/trust-v19.js' public-service-worker.js
+          grep -q 'assets/trust-v19.css' public-service-worker.js
+          grep -q 'backend/supabase/schema-v19.sql' public-service-worker.js
           grep -q 'assets/images/brand-final/home-hero.webp' public-service-worker.js
           grep -q 'assets/images/brand-final/producto-margherita.webp' public-service-worker.js
           grep -q 'assets/checkout-v15.js' public-service-worker.js
@@ -100,16 +106,21 @@ jobs:
           grep -q 'Confirma tu pedido con claridad.' public-commerce-ux-v18.js
           grep -q 'Entrega coordinada' public-commerce-ux-v18.js
           grep -q 'ee-v18-mobile-total' public-commerce-v18.css
+          grep -q 'lookup_order_status_v19' public-trust-v19.js
+          grep -q 'Consulta segura · V1.9' public-trust-v19.js
+          grep -q 'Esta consulta no muestra dirección, teléfono, comprobante ni notas internas' public-trust-v19.js
+          grep -q 'ee-v19-progress' public-trust-v19.css
           ! grep -qi 'service_role' public-commerce-runtime-config.js
           ! grep -qi 'service_role' public-admin-v15.js
           ! grep -qi 'service_role' public-checkout-v15.js
           ! grep -qi 'service_role' public-operations-v16.js
+          ! grep -qi 'service_role' public-trust-v19.js
           ! grep -q "'./assets/brand-final-editorial.js'" public-service-worker.js
       - name: Verificar superficies públicas críticas
         shell: bash
         run: |
           set -euo pipefail
-          for page in index tienda producto historia en-casa en-movimiento checkout admin; do
+          for page in index tienda producto historia en-casa en-movimiento checkout cuenta admin; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
           done
@@ -139,10 +150,15 @@ jobs:
           assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva el flujo de transferencia.'
           assert_contains public-checkout.html 'assets/checkout-v15.js' 'Checkout no carga el bootstrap aislado.'
           assert_contains public-checkout.html 'assets/commerce-ux-v18.js' 'Checkout no carga la experiencia guiada V1.8.'
-          assert_contains public-checkout.html 'assets/commerce-v18.css' 'Checkout no carga los estilos V1.8.'
-          assert_contains public-admin.html 'Operación y finanzas · V1.6' 'Administración no conserva el contrato V1.6.'
+          assert_contains public-checkout.html 'assets/trust-v19.js' 'Checkout no carga el seguimiento V1.9.'
+          assert_contains public-checkout.html 'Consultar un pedido existente' 'Checkout no enlaza la consulta de pedido.'
+          assert_contains public-cuenta.html 'Seguimiento de pedidos' 'Cuenta no se convirtió en consulta operativa.'
+          assert_contains public-cuenta.html 'assets/trust-v19.js' 'Cuenta no carga la consulta V1.9.'
+          assert_contains public-cuenta.html 'assets/trust-v19.css' 'Cuenta no carga los estilos V1.9.'
+          assert_contains public-admin.html 'Operación, finanzas y confianza · V1.9' 'Administración no conserva el contrato V1.9.'
           assert_contains public-admin.html 'assets/admin-v15.js' 'Administración no carga el acceso privado.'
           assert_contains public-admin.html 'assets/operations-v16.js' 'Administración no carga el módulo financiero V1.6.'
+          assert_contains public-admin.html 'assets/trust-v19.js' 'Administración no carga la confianza comercial V1.9.'
           assert_contains public-admin.html 'id="operations-v16"' 'Administración no expone el contenedor financiero.'
           if grep -Fq 'assets/commerce-v14.js' public-admin.html; then
             echo '::error title=Public Health::Admin conserva el runtime administrativo legado.'
@@ -170,7 +186,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V1.8.0 EXPERIENCIA DE COMPRA"
+            echo "EL ERRANTE — PUBLIC HEALTH V1.9.0 CONFIANZA COMERCIAL"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -198,6 +214,8 @@ jobs:
             public-content-v17.js
             public-commerce-ux-v18.js
             public-commerce-v18.css
+            public-trust-v19.js
+            public-trust-v19.css
             public-index.html
             public-tienda.html
             public-producto.html
@@ -205,6 +223,7 @@ jobs:
             public-en-casa.html
             public-en-movimiento.html
             public-checkout.html
+            public-cuenta.html
             public-admin.html
             public-home-hero.webp
             public-home-hero-mobile.webp

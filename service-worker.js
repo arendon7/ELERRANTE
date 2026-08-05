@@ -1,4 +1,4 @@
-const CACHE = 'el-errante-v1-3-0';
+const CACHE = 'el-errante-v1-3-1';
 const CORE = [
   './index.html','./historia.html','./nosotros.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',

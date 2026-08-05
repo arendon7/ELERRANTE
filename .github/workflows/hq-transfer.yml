@@ -23,15 +23,59 @@ jobs:
         with:
           ref: feat/hq-visual-v13-atomic
           fetch-depth: 1
+
+      - name: Inventariar y validar fragmentos
+        shell: bash
+        env:
+          EXPECTED_CHUNKS: "36"
+          REGULAR_CHUNK_BYTES: "20000"
+          FINAL_CHUNK_BYTES: "8888"
+        run: |
+          set -euo pipefail
+          test -f .transfer-web/READY || {
+            echo "::error::No existe .transfer-web/READY; la materialización no debe ejecutarse todavía."
+            exit 1
+          }
+
+          actual_count="$(find .transfer-web -maxdepth 1 -type f -name 'chunk-*.b64' | wc -l | tr -d ' ')"
+          echo "Fragmentos encontrados: ${actual_count}/${EXPECTED_CHUNKS}"
+          find .transfer-web -maxdepth 1 -type f -name 'chunk-*.b64' -printf '%f %s bytes\n' | sort
+
+          missing=0
+          for number in $(seq -w 1 "${EXPECTED_CHUNKS}"); do
+            file=".transfer-web/chunk-${number}.b64"
+            if [[ ! -f "${file}" ]]; then
+              echo "::error file=${file}::Fragmento faltante"
+              missing=1
+            fi
+          done
+          [[ "${missing}" -eq 0 ]] || exit 1
+
+          invalid=0
+          for number in $(seq -w 1 35); do
+            file=".transfer-web/chunk-${number}.b64"
+            bytes="$(wc -c < "${file}" | tr -d ' ')"
+            if [[ "${bytes}" != "${REGULAR_CHUNK_BYTES}" ]]; then
+              echo "::error file=${file}::Tamaño inválido: ${bytes} bytes; se esperaban ${REGULAR_CHUNK_BYTES}"
+              invalid=1
+            fi
+          done
+
+          final_file=".transfer-web/chunk-036.b64"
+          final_bytes="$(wc -c < "${final_file}" | tr -d ' ')"
+          if [[ "${final_bytes}" != "${FINAL_CHUNK_BYTES}" ]]; then
+            echo "::error file=${final_file}::Tamaño inválido: ${final_bytes} bytes; se esperaban ${FINAL_CHUNK_BYTES}"
+            invalid=1
+          fi
+          [[ "${invalid}" -eq 0 ]] || exit 1
+
       - name: Reconstruir y validar paquete HQ
         shell: bash
         env:
           EXPECTED_SHA256: d90f68adbb1bd4e9490d7d52e3b53b9ea41ceed4453f6e97c680cd8d2b0c1632
         run: |
           set -euo pipefail
-          test -f .transfer-web/READY
-          test "$(find .transfer-web -maxdepth 1 -name 'chunk-*.b64' | wc -l)" -eq 36
-          cat .transfer-web/chunk-*.b64 | tr -d '\r\n' | base64 --decode > /tmp/elerrante-hq-v13.zip
+          cat .transfer-web/chunk-{001..036}.b64 | tr -d '\r\n' | base64 --decode > /tmp/elerrante-hq-v13.zip
           echo "${EXPECTED_SHA256}  /tmp/elerrante-hq-v13.zip" | sha256sum --check -
           rm -rf assets/images/hq-v13
           mkdir -p assets/images/hq-v13
@@ -42,6 +86,7 @@ jobs:
           import hashlib
           import json
           from pathlib import Path
+
           root = Path('assets/images/hq-v13')
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['count'] == 23
@@ -54,6 +99,7 @@ jobs:
               assert b'ftypavif' in raw[:32]
           print('23 AVIF HQ validados por tamaño, formato y SHA-256.')
           PY
+
       - name: Retirar puentes y consolidar binarios
         shell: bash
         run: |

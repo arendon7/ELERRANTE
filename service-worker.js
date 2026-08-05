@@ -7,6 +7,14 @@ const CORE=[
   './assets/logo-mark.svg','./assets/logo-lockup.svg','./manifest.webmanifest','./deploy-version.txt'
 ];
 
+// Visuales editoriales disponibles bajo demanda. No bloquean la instalación.
+const LAZY_VISUAL_ASSETS=[
+  './assets/images/brand-final/home-hero.svg',
+  './assets/images/brand-final/home-masa-fuego.svg',
+  './assets/images/brand-final/home-fermentacion.svg',
+  './assets/images/brand-final/home-ingredientes.svg'
+];
+
 // Fuentes canónicas disponibles bajo demanda. No se precargan durante install.
 const LAZY_SOURCE_ASSETS=[
   './assets/source/v040-app-001.b64','./assets/source/v040-app-002.b64','./assets/source/v040-app-003.b64',

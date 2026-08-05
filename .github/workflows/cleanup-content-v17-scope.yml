@@ -1,0 +1,48 @@
+name: Limpiar alcance contenido V1.7
+
+on:
+  push:
+    branches: ["feat/contenido-conversion-v17"]
+    paths:
+      - ".github/workflows/cleanup-content-v17-scope.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/contenido-conversion-v17
+          fetch-depth: 0
+      - name: Limitar módulo editorial
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          allowed = {'index.html','tienda.html','producto.html','historia.html','en-casa.html','en-movimiento.html'}
+          tag = '<script src="assets/content-v17.js"></script>'
+          changed = []
+          for path in Path('.').glob('*.html'):
+              text = path.read_text(encoding='utf-8')
+              if path.name not in allowed and tag in text:
+                  path.write_text(text.replace(tag,''), encoding='utf-8')
+                  changed.append(path.name)
+          if not changed:
+              raise SystemExit('No se encontraron inyecciones fuera de alcance')
+          print('Retirado de:', ', '.join(sorted(changed)))
+          for name in allowed:
+              if tag not in Path(name).read_text(encoding='utf-8'):
+                  raise SystemExit(f'Falta V1.7 en {name}')
+          PY
+          python3 scripts/verificar_contenido_v17.py
+      - name: Consolidar limpieza
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.html'
+          git commit -m 'chore(content): limita V1.7 a páginas públicas clave'
+          git push origin HEAD:feat/contenido-conversion-v17

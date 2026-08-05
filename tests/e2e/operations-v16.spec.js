@@ -46,7 +46,7 @@ test.describe('Operación y finanzas V1.6', () => {
     await form.getByRole('button', { name: 'Registrar movimiento' }).click();
     await expect(panel.getByText('Movimiento registrado y balance actualizado.')).toBeVisible();
     await expect(panel.getByRole('cell', { name: 'Producción', exact: true })).toBeVisible();
-    const productRow = panel.locator('tbody tr').filter({ hasText: 'la-errante' });
+    const productRow = panel.locator('[data-v16-product-row="la-errante"]');
     await expect(productRow).toHaveCount(1);
     await expect(productRow).toContainText('15');
   });
@@ -58,7 +58,7 @@ test.describe('Operación y finanzas V1.6', () => {
     await page.locator('[data-order-status="EE-TEST-V16"]').selectOption('preparing');
     const panel = page.locator('#operations-v16');
     await expect(panel.getByRole('cell', { name: 'Salida por pedido', exact: true })).toBeVisible();
-    const productRow = panel.locator('tbody tr').filter({ hasText: 'la-errante' });
+    const productRow = panel.locator('[data-v16-product-row="la-errante"]');
     await expect(productRow).toHaveCount(1);
     await expect(productRow).toContainText('9');
     const movements = await page.evaluate(() => JSON.parse(localStorage.getItem('ee_v16_inventory_movements') || '[]'));

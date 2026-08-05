@@ -131,7 +131,7 @@
     const products=productPerformance(state);
     const low=products.filter(item=>item.inventory<=item.threshold);
     const productRows=products.map(item=>`
-      <tr>
+      <tr data-v16-product-row="${escapeHtml(item.id)}">
         <td><strong>${escapeHtml(item.name)}</strong><br><small>${escapeHtml(item.id)}</small></td>
         <td>${money(item.price)}</td>
         <td>${money(item.unitCost)}</td>

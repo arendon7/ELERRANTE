@@ -134,14 +134,17 @@ test.describe('Experiencia de compra V1.8', () => {
     await expect(page.getByText('Espera la confirmación del pago y la disponibilidad.')).toBeVisible();
   });
 
-  test('inventario insuficiente bloquea el pedido con un mensaje claro', async ({ page }) => {
+  test('una cantidad superior al stock sigue siendo una solicitud pendiente de disponibilidad', async ({ page }) => {
     await seedCart(page, 1, 2);
     await configurePreviewBank(page);
     await page.goto('/checkout.html');
     await completeCheckoutForm(page);
     await page.getByRole('button', { name: 'Confirmar solicitud y enviar comprobante' }).click();
-    await expect(page.getByText(/no tiene stock suficiente para La Errante/i)).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Tu solicitud quedó registrada.' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Tu solicitud quedó registrada.' })).toBeVisible();
+    await expect(page.getByText('Espera la confirmación del pago y la disponibilidad.')).toBeVisible();
+    await expect(page.getByText('Confirmamos contigo antes de preparar y despachar.')).toBeVisible();
+    await expect(page.getByText(/entrega confirmada/i)).toHaveCount(0);
+    await expect(page.getByText(/disponibilidad confirmada/i)).toHaveCount(0);
   });
 
   test('checkout vacío evita pedir datos innecesarios', async ({ page }) => {

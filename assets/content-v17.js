@@ -209,5 +209,41 @@
     meta('description','Ficha gastronómica El Errante: ingredientes, perfil, preparación, conservación y compra de pizzas y productos de masa, fuego y despensa.');
   }
 
+  if(location.pathname.endsWith('/producto.html')||location.pathname.endsWith('producto.html')){
+    const productId=new URLSearchParams(location.search).get('id');
+    const product=list.find(item=>item.id===productId);
+    const root=document.querySelector('#dynamic-product');
+    const applyProductPremium=()=>{
+      if(!root||!product)return;
+      const title=root.querySelector('h1');
+      if(!title||title.dataset.v17Applied===product.id)return;
+      title.dataset.v17Applied=product.id;
+      const summaryNode=title.nextElementSibling?.matches('p')?title.nextElementSibling:null;
+      if(summaryNode)summaryNode.textContent=product.summary;
+      const reasonLabel=[...root.querySelectorAll('p')].find(node=>node.textContent.trim()==='Por qué existe');
+      const storyHeading=reasonLabel?.nextElementSibling?.matches('h2')?reasonLabel.nextElementSibling:null;
+      if(storyHeading){
+        storyHeading.textContent=product.headline;
+        let promise=storyHeading.nextElementSibling;
+        if(!promise||promise.dataset.v17ProductPromise!==product.id){
+          promise=document.createElement('p');
+          promise.className='lead';
+          promise.dataset.v17ProductPromise=product.id;
+          storyHeading.insertAdjacentElement('afterend',promise);
+        }
+        promise.textContent=product.promise;
+      }
+      document.title=`${product.name} · El Errante`;
+      meta('description',product.seo_description||product.summary);
+      root.dataset.v17Product=product.id;
+    };
+    applyProductPremium();
+    if(root){
+      const observer=new MutationObserver(applyProductPremium);
+      observer.observe(root,{childList:true,subtree:true});
+      window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
+    }
+  }
+
   document.documentElement.dataset.contentVersion='1.7.0';
 })();

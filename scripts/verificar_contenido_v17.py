@@ -25,6 +25,8 @@ content = require(
     "Nuestra pizza insignia",
     "Balsámico, panela y maracuyá",
     "dataset.contentVersion='1.7.0'",
+    "dataset.v17ProductPromise",
+    "root.dataset.v17Product",
 )
 
 for product_id in (

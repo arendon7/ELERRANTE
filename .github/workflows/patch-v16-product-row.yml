@@ -1,0 +1,52 @@
+name: Ajustar filas V1.6
+
+on:
+  push:
+    branches: ["feat/operacion-finanzas-v16"]
+    paths:
+      - ".github/workflows/patch-v16-product-row.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/operacion-finanzas-v16
+          fetch-depth: 0
+      - name: Añadir identificador y ajustar pruebas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          runtime = Path('assets/operations-v16.js')
+          text = runtime.read_text(encoding='utf-8')
+          old = 'const productRows=products.map(item=>`\n      <tr>\n        <td><strong>${escapeHtml(item.name)}</strong>'
+          new = 'const productRows=products.map(item=>`\n      <tr data-v16-product-row="${escapeHtml(item.id)}">\n        <td><strong>${escapeHtml(item.name)}</strong>'
+          if old not in text:
+              raise SystemExit('No se encontró la plantilla de fila V1.6')
+          runtime.write_text(text.replace(old,new),encoding='utf-8')
+
+          tests = Path('tests/e2e/operations-v16.spec.js')
+          text = tests.read_text(encoding='utf-8')
+          text = text.replace("const productRow = panel.locator('tbody tr').filter({ hasText: 'la-errante' });\n    await expect(productRow).toHaveCount(1);", "const productRow = panel.locator('[data-v16-product-row=\"la-errante\"]');\n    await expect(productRow).toHaveCount(1);")
+          tests.write_text(text,encoding='utf-8')
+          PY
+      - name: Validar
+        run: |
+          node --check assets/operations-v16.js
+          grep -q 'data-v16-product-row' assets/operations-v16.js
+          grep -q 'data-v16-product-row' tests/e2e/operations-v16.spec.js
+          python3 scripts/verificar_operacion_v16.py
+      - name: Consolidar
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/operations-v16.js tests/e2e/operations-v16.spec.js
+          git commit -m "fix(finance): identifica filas de producto V1.6"
+          git push origin HEAD:feat/operacion-finanzas-v16

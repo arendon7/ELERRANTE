@@ -35,7 +35,7 @@ jobs:
           host_path = Path('assets/host-mode.js')
           host = host_path.read_text(encoding='utf-8')
           anchor = 'recover();observe();document.documentElement.dataset.eeVisualSystem'
-          insertion = '''recover();observe();if(page==="nosotros"){const heroImage=document.querySelector(".hero .hero-media img");if(heroImage){heroImage.src="assets/images/brand-final/home-compartir.webp";heroImage.alt="Personas compartiendo pizza El Errante";heroImage.dataset.visualSystem="brand-final-hq";}const ingredientImage=document.querySelector("main .section .visual-card img");if(ingredientImage){ingredientImage.src="assets/images/brand-final/home-ingredientes.webp";ingredientImage.alt="Ingredientes seleccionados para las pizzas El Errante";ingredientImage.dataset.visualSystem="brand-final-hq";}}document.documentElement.dataset.eeVisualSystem'''
+          insertion = 'recover();observe();if(page==="nosotros"){const heroImage=document.querySelector(".hero .hero-media img");if(heroImage){heroImage.src="assets/images/brand-final/home-compartir.webp";heroImage.alt="Personas compartiendo pizza El Errante";heroImage.dataset.visualSystem="brand-final-hq";}const ingredientImage=document.querySelector("main .section .visual-card img");if(ingredientImage){ingredientImage.src="assets/images/brand-final/home-ingredientes.webp";ingredientImage.alt="Ingredientes seleccionados para las pizzas El Errante";ingredientImage.dataset.visualSystem="brand-final-hq";}}document.documentElement.dataset.eeVisualSystem'
           if 'page==="nosotros"' not in host:
               if anchor not in host:
                   raise SystemExit('No se encontró el ancla del runtime visual')
@@ -45,20 +45,21 @@ jobs:
           index_path = Path('index.html')
           index = index_path.read_text(encoding='utf-8')
           if 'property="og:image"' not in index:
-              social = '''
-<meta property="og:type" content="website">
-<meta property="og:locale" content="es_CO">
-<meta property="og:site_name" content="El Errante">
-<meta property="og:title" content="El Errante · Pizza napolitana, productos y eventos">
-<meta property="og:description" content="Masa, fuego y territorio: pizzas de inspiración napolitana, productos para preparar en casa y pizzería móvil para eventos.">
-<meta property="og:url" content="https://arendon7.github.io/ELERRANTE/">
-<meta property="og:image" content="https://arendon7.github.io/ELERRANTE/assets/images/brand-final/og-el-errante.webp">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El Errante · Pizza napolitana, productos y eventos">
-<meta name="twitter:description" content="Masa, fuego y territorio: pizzas, productos para casa y pizzería móvil.">
-<meta name="twitter:image" content="https://arendon7.github.io/ELERRANTE/assets/images/brand-final/og-el-errante.webp">'''
+              social = '\n' + '\n'.join([
+                  '<meta property="og:type" content="website">',
+                  '<meta property="og:locale" content="es_CO">',
+                  '<meta property="og:site_name" content="El Errante">',
+                  '<meta property="og:title" content="El Errante · Pizza napolitana, productos y eventos">',
+                  '<meta property="og:description" content="Masa, fuego y territorio: pizzas de inspiración napolitana, productos para preparar en casa y pizzería móvil para eventos.">',
+                  '<meta property="og:url" content="https://arendon7.github.io/ELERRANTE/">',
+                  '<meta property="og:image" content="https://arendon7.github.io/ELERRANTE/assets/images/brand-final/og-el-errante.webp">',
+                  '<meta property="og:image:width" content="1200">',
+                  '<meta property="og:image:height" content="630">',
+                  '<meta name="twitter:card" content="summary_large_image">',
+                  '<meta name="twitter:title" content="El Errante · Pizza napolitana, productos y eventos">',
+                  '<meta name="twitter:description" content="Masa, fuego y territorio: pizzas, productos para casa y pizzería móvil.">',
+                  '<meta name="twitter:image" content="https://arendon7.github.io/ELERRANTE/assets/images/brand-final/og-el-errante.webp">',
+              ])
               pattern = r'(<meta name="description"[^>]+>)'
               index, count = re.subn(pattern, lambda m: m.group(1) + social, index, count=1)
               if count != 1:
@@ -68,12 +69,13 @@ jobs:
           verify_path = Path('scripts/verificar_release_v13.py')
           verify = verify_path.read_text(encoding='utf-8')
           validation_anchor = 'if "el-errante-v1-3-0" not in worker:'
-          extra = '''index_html = (ROOT / "index.html").read_text(encoding="utf-8")
-if "home-compartir.webp" not in host or "home-ingredientes.webp" not in host:
-    ISSUES.append("Los editoriales Compartir e Ingredientes no están integrados en el runtime")
-if "og-el-errante.webp" not in index_html or 'property="og:image"' not in index_html:
-    ISSUES.append("La portada social oficial no está integrada en index.html")
-'''
+          extra = (
+              'index_html = (ROOT / "index.html").read_text(encoding="utf-8")\n'
+              'if "home-compartir.webp" not in host or "home-ingredientes.webp" not in host:\n'
+              '    ISSUES.append("Los editoriales Compartir e Ingredientes no están integrados en el runtime")\n'
+              'if "og-el-errante.webp" not in index_html or \'property="og:image"\' not in index_html:\n'
+              '    ISSUES.append("La portada social oficial no está integrada en index.html")\n'
+          )
           if 'Los editoriales Compartir e Ingredientes' not in verify:
               if validation_anchor not in verify:
                   raise SystemExit('No se encontró el ancla del verificador V1.3')

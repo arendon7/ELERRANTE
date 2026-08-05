@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v1-1-1
+  EXPECTED_CACHE: el-errante-v1-2-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -62,11 +62,13 @@ jobs:
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
           node --check public-host-mode.js
           node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="1.1.1"' public-host-mode.js
-          grep -q 'Promise.allSettled(BRAND_PACKS.map(loadScript))' public-host-mode.js
-          grep -q 'window.addEventListener("load",run' public-host-mode.js
-          grep -q 'el-errante-v1-1-1' public-service-worker.js
-          grep -q 'LAZY_SOURCE_ASSETS' public-service-worker.js
+          grep -q 'PUBLIC_VERSION="1.2.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v1-2-0"' public-host-mode.js
+          grep -q 'brand-final-direct' public-host-mode.js
+          ! grep -q 'BRAND_PACKS' public-host-mode.js
+          grep -q 'el-errante-v1-2-0' public-service-worker.js
+          grep -q 'assets/images/brand-final/home-hero.svg' public-service-worker.js
+          grep -q 'assets/images/brand-final/producto-margherita.svg' public-service-worker.js
           ! grep -q "'./assets/brand-final-editorial.js'" public-service-worker.js
       - name: Verificar superficies públicas críticas
         shell: bash
@@ -89,12 +91,22 @@ jobs:
           assert_contains public-tienda.html 'data-page="tienda"' 'Tienda no conserva su contrato de página.'
           assert_contains public-producto.html 'id="dynamic-product"' 'La ficha dinámica de producto no está disponible.'
           assert_contains public-en-movimiento.html 'data-page="movimiento"' 'En Movimiento no conserva su contrato de página.'
+      - name: Verificar imágenes directas críticas
+        shell: bash
+        run: |
+          set -euo pipefail
+          for image in home-hero producto-margherita evento-hero; do
+            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/assets/images/brand-final/${image}.svg?verify=$EXPECTED_SHA" \
+              > "public-${image}.svg"
+            grep -q '<svg' "public-${image}.svg"
+          done
       - name: Generar informe
         if: always()
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V1.1.1"
+            echo "EL ERRANTE — PUBLIC HEALTH V1.2.0"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -119,5 +131,8 @@ jobs:
             public-tienda.html
             public-producto.html
             public-en-movimiento.html
+            public-home-hero.svg
+            public-producto-margherita.svg
+            public-evento-hero.svg
           if-no-files-found: warn
           retention-days: 7

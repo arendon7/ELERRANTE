@@ -1,0 +1,36 @@
+name: Corregir parche V1.4
+
+on:
+  push:
+    branches: ["feat/operacion-comercial-v14-iteracion-1"]
+    paths:
+      - ".github/workflows/fix-patch-commerce-v14.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/operacion-comercial-v14-iteracion-1
+          fetch-depth: 0
+      - name: Añadir import requerido
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/patch-commerce-v14.yml')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace("          from pathlib import Path\n\n", "          from pathlib import Path\n          import re\n\n", 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          rm -f .github/workflows/fix-patch-commerce-v14.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'ci: corrige import del parche comercial V1.4'
+          git push origin HEAD:feat/operacion-comercial-v14-iteracion-1

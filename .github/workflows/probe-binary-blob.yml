@@ -1,0 +1,21 @@
+name: Verificar blob binario
+
+on:
+  push:
+    branches: ["probe/binary-blob-size"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Informar tamaño y hash
+        run: |
+          set -euo pipefail
+          file assets/images/brand-hq/_probe.avif
+          stat --printf='bytes=%s\n' assets/images/brand-hq/_probe.avif
+          sha256sum assets/images/brand-hq/_probe.avif

@@ -1,0 +1,95 @@
+name: Integrar contenido premium V1.7
+
+on:
+  push:
+    branches: ["feat/contenido-conversion-v17"]
+    paths:
+      - ".github/workflows/patch-content-v17.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/contenido-conversion-v17
+          fetch-depth: 0
+
+      - name: Integrar contenido y versionado
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+          data_tag = '<script src="assets/data.js"></script>'
+          premium_tag = '<script src="assets/content-v17.js"></script>'
+          touched = []
+          for path in root.glob('*.html'):
+              text = path.read_text(encoding='utf-8')
+              if data_tag in text and premium_tag not in text:
+                  text = text.replace(data_tag, data_tag + premium_tag)
+                  path.write_text(text, encoding='utf-8')
+                  touched.append(path.name)
+
+          required = {'index.html','tienda.html','producto.html','historia.html','en-casa.html','en-movimiento.html'}
+          missing = required.difference(touched)
+          if missing:
+              raise SystemExit(f'No se inyectó V1.7 en: {sorted(missing)}')
+
+          replacements = {
+              'assets/host-mode.js': [('PUBLIC_VERSION="1.6.0"','PUBLIC_VERSION="1.7.0"'),('ACTIVE_CACHE="el-errante-v1-6-0"','ACTIVE_CACHE="el-errante-v1-7-0"')],
+              'assets/commerce-config-v14.js': [('version: "1.6.0"','version: "1.7.0"')],
+              'service-worker.js': [("const CACHE = 'el-errante-v1-6-0';","const CACHE = 'el-errante-v1-7-0';"),("'./assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js'","'./assets/preprod.js','./assets/content-v5.js','./assets/content-v17.js','./assets/host-mode.js'")],
+              'deploy-version.txt': [('version=1.6.0','version=1.7.0'),('cache=el-errante-v1-6-0','cache=el-errante-v1-7-0')],
+              'scripts/verificar_release_v13.py': [('1.6.0','1.7.0'),('v1-6-0','v1-7-0')],
+              'scripts/verificar_operacion_v14.py': [('1.6.0','1.7.0'),('v1-6-0','v1-7-0')],
+              'scripts/verificar_backend_v15.py': [('1.6.0','1.7.0'),('v1-6-0','v1-7-0')],
+              'scripts/verificar_operacion_v16.py': [('1.6.0','1.7.0'),('v1-6-0','v1-7-0')],
+          }
+          for filename, pairs in replacements.items():
+              path = Path(filename)
+              text = path.read_text(encoding='utf-8')
+              original = text
+              for old, new in pairs:
+                  text = text.replace(old, new)
+              if text == original:
+                  raise SystemExit(f'No se modificó {filename}')
+              path.write_text(text, encoding='utf-8')
+
+          roadmap = Path('documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md')
+          if roadmap.exists():
+              text = roadmap.read_text(encoding='utf-8')
+              marker = '## Iteración 4 — contenido y conversión V1.7'
+              if marker not in text:
+                  text += '\n\n' + marker + '\n\n- Voz gastronómica premium aplicada a inicio, tienda, historia, En Casa y En Movimiento.\n- Once fichas de producto reescritas con deseo, criterio técnico y claridad de uso.\n- Mensajes de conversión sustentados en masa, fermentación, fuego, balance y servicio.\n- Prohibición de superlativos o certificaciones no demostradas.\n'
+                  roadmap.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validar integración
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/content-v17.js
+          node --check assets/host-mode.js
+          node --check assets/commerce-config-v14.js
+          node --check service-worker.js
+          python3 scripts/verificar_release_v13.py
+          python3 scripts/verificar_operacion_v14.py
+          python3 scripts/verificar_backend_v15.py
+          python3 scripts/verificar_operacion_v16.py
+          python3 scripts/verificar_contenido_v17.py
+
+      - name: Consolidar cambios
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.html' assets/host-mode.js assets/commerce-config-v14.js service-worker.js deploy-version.txt scripts documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md
+          git commit -m 'feat(content): integra experiencia gastronómica premium V1.7'
+          git push origin HEAD:feat/contenido-conversion-v17

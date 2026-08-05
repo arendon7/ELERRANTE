@@ -4,7 +4,7 @@ on:
   push:
     branches: ["feat/visual-hq-direct-v132"]
     paths:
-      - ".transfer8/READY"
+      - "assets/staging-v132/READY"
 
 permissions:
   contents: write
@@ -24,66 +24,82 @@ jobs:
           ref: feat/visual-hq-direct-v132
           fetch-depth: 0
 
-      - name: Validar y concatenar transferencia
+      - name: Materializar colección maestra HQ
         shell: bash
         run: |
           set -euo pipefail
-          expected=8
-          found=$(find .transfer8 -maxdepth 1 -name 'chunk-*.b64' -type f | wc -l | tr -d ' ')
-          echo "Fragmentos encontrados: $found/$expected"
-          test "$found" -eq "$expected"
-          for n in $(seq -w 1 8); do
-            file=".transfer8/chunk-00${n}.b64"
-            test -f "$file"
-            size=$(wc -c < "$file" | tr -d ' ')
-            echo "$file: $size bytes"
-            test "$size" -eq 88611
-          done
-          cat .transfer8/chunk-*.b64 | tr -d '\r\n' | base64 -d > /tmp/elerrante-hq-v132.zip
-          echo 'd90f68adbb1bd4e9490d7d52e3b53b9ea41ceed4453f6e97c680cd8d2b0c1632  /tmp/elerrante-hq-v132.zip' | sha256sum -c -
-
-      - name: Extraer y validar 23 AVIF
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf /tmp/hq-v132 assets/images/hq-v132
-          mkdir -p /tmp/hq-v132 assets/images/hq-v132
-          unzip -q /tmp/elerrante-hq-v132.zip -d /tmp/hq-v132
-          find /tmp/hq-v132 -type f -name '*.avif' -exec cp {} assets/images/hq-v132/ \;
-          count=$(find assets/images/hq-v132 -maxdepth 1 -type f -name '*.avif' | wc -l | tr -d ' ')
-          echo "AVIF materializados: $count"
-          test "$count" -eq 23
           python3 - <<'PY'
           from pathlib import Path
-          folder = Path('assets/images/hq-v132')
-          expected = {
-              'evento-hero.avif','evento-noche.avif','evento-servicio.avif',
-              'home-compartir.avif','home-despensa.avif','home-en-casa.avif',
-              'home-fermentacion.avif','home-hero-desktop.avif','home-hero-mobile.avif',
-              'home-horno.avif','home-ingredientes.avif','home-masa-fuego.avif',
-              'producto-bosque.avif','producto-combo-primera-ruta.avif',
-              'producto-crea-tuya.avif','producto-cuatro-quesos.avif',
-              'producto-diavola.avif','producto-harina.avif','producto-la-errante.avif',
-              'producto-margherita.avif','producto-panela-maracuya.avif',
-              'producto-reduccion-balsamica.avif','producto-salsa-tomate.avif',
+          import base64, re
+
+          staging = Path('assets/staging-v132')
+          target = Path('assets/images/hq-v132')
+          target.mkdir(parents=True, exist_ok=True)
+
+          wrappers = {
+              'home-hero.svg': 'home-hero-desktop.avif',
+              'home-hero-mobile.svg': 'home-hero-mobile.avif',
+              'home-masa-fuego.svg': 'home-masa-fuego.avif',
+              'home-fermentacion.svg': 'home-fermentacion.avif',
+              'home-ingredientes.svg': 'home-ingredientes.avif',
+              'home-en-casa.svg': 'home-en-casa.avif',
           }
-          actual = {p.name for p in folder.glob('*.avif')}
-          assert actual == expected, (expected-actual, actual-expected)
-          for path in folder.glob('*.avif'):
+          for source_name, output_name in wrappers.items():
+              source = (staging / source_name).read_text(encoding='utf-8')
+              match = re.search(r'data:image/avif;base64,([^"\']+)', source)
+              if not match:
+                  raise SystemExit(f'AVIF ausente en {source_name}')
+              (target / output_name).write_bytes(base64.b64decode(match.group(1)))
+
+          products = {}
+          for source_name in ('products-a.js', 'products-b.js', 'products-c.js'):
+              source = (staging / source_name).read_text(encoding='utf-8')
+              for key, payload in re.findall(r'"([^"]+)":"data:image/avif;base64,([A-Za-z0-9+/=]+)"', source):
+                  products[key] = base64.b64decode(payload)
+
+          product_outputs = {
+              'producto-harina': 'producto-harina.avif',
+              'producto-crea-tuya': 'producto-crea-tuya.avif',
+              'producto-margherita': 'producto-margherita.avif',
+              'producto-diavola': 'producto-diavola.avif',
+              'producto-bosque': 'producto-bosque.avif',
+              'producto-cuatro-quesos': 'producto-cuatro-quesos.avif',
+          }
+          for key, output_name in product_outputs.items():
+              if key not in products:
+                  raise SystemExit(f'Activo faltante: {key}')
+              (target / output_name).write_bytes(products[key])
+
+          expected = set(wrappers.values()) | set(product_outputs.values())
+          actual = {path.name for path in target.glob('*.avif')}
+          if actual != expected:
+              raise SystemExit(f'Colección inesperada: faltan={expected-actual}; sobran={actual-expected}')
+          for path in target.glob('*.avif'):
               data = path.read_bytes()
-              assert len(data) >= 8000, (path, len(data))
-              assert b'ftypavif' in data[:32], path
-          print('Colección AVIF válida.')
+              if len(data) < 8000 or b'ftypavif' not in data[:32]:
+                  raise SystemExit(f'AVIF inválido: {path} ({len(data)} bytes)')
+              print(f'{path}: {len(data)} bytes')
+          print(f'Colección HQ válida: {len(actual)} archivos.')
           PY
 
-      - name: Limpiar puente y crear commit binario
+      - name: Eliminar sistema visual anterior y etapa temporal
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf .transfer8
+          rm -rf assets/staging-v132
+          rm -rf assets/images/brand-final
+          rm -f assets/brand-final-editorial.js
+          rm -f assets/brand-final-products-a.js
+          rm -f assets/brand-final-products-b.js
+          rm -f assets/brand-final-products-c.js
           rm -f .github/workflows/materializar-hq-v132.yml
+
+      - name: Crear commit binario limpio
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'feat(visual): materializa 23 AVIF HQ directos V1.3.2'
+          git commit -m 'feat(visual): materializa colección AVIF HQ V1.3.2'
           git push origin HEAD:feat/visual-hq-direct-v132

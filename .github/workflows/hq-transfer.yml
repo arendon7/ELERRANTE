@@ -1,4 +1,4 @@
-name: Transferencia atómica HQ V1.3
+name: Diagnóstico de transferencia Canva HQ
 
 on:
   push:
@@ -6,50 +6,28 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-
-concurrency:
-  group: hq-transfer-v13
-  cancel-in-progress: false
+  contents: read
 
 jobs:
   transfer:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: feat/hq-visual-v13-atomic
-      - name: Descargar paquete y diagnosticar respuesta
+      - name: Probar recurso firmado en distintas resoluciones
         shell: bash
         env:
-          FILE_ID: 1djt5hr3PWj3fyMDpM2Efvl9anfxCaO-c
-          EXPECTED_SHA256: f08abfd9d12385b71af5d5f7df3bb01568f983766fed519ff6fb0b4e56cfc90a
+          QUERY: "csig=AAAAAAAAAAAAAAAAAAAAAOG5o_s3mnee4IoQAqiT-NuI8fXCiJokv5UCFEW2NNUT&exp=1785932774&osig=AAAAAAAAAAAAAAAAAAAAAB2rKhJA8oRdM5FSY-FWgbzmbcdt8n-4CP0CgIl5RPmk&signer=media-rpc&x-canva-quality=thumbnail"
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error --max-time 90 \
-            "https://drive.usercontent.google.com/download?id=${FILE_ID}&export=download&confirm=t" \
-            --output /tmp/elerrante-hq-v13.zip
-          echo "bytes=$(wc -c < /tmp/elerrante-hq-v13.zip)"
-          file /tmp/elerrante-hq-v13.zip
-          echo "observed_sha256=$(sha256sum /tmp/elerrante-hq-v13.zip | cut -d' ' -f1)"
-          if ! echo "${EXPECTED_SHA256}  /tmp/elerrante-hq-v13.zip" | sha256sum --check -; then
-            echo "Primeros bytes de la respuesta:"
-            head -c 200 /tmp/elerrante-hq-v13.zip | strings | head -n 5 || true
-            exit 1
-          fi
-          rm -rf assets/images/hq-v13
-          mkdir -p assets/images/hq-v13
-          unzip -q /tmp/elerrante-hq-v13.zip -d assets/images/hq-v13
-          test "$(find assets/images/hq-v13 -maxdepth 1 -name '*.avif' | wc -l)" -eq 23
-          test -s assets/images/hq-v13/manifest.json
-      - name: Crear un único commit binario y retirar el puente
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -f .github/workflows/hq-transfer.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/images/hq-v13 .github/workflows/hq-transfer.yml
-          git commit -m "feat(visual): incorpora 23 AVIF HQ directos"
-          git push origin HEAD:feat/hq-visual-v13-atomic
+          BASE='uri:ifs%3A%2F%2FM%2Fed74551a-52bf-4836-97be-3435fc853af5/watermark:F'
+          declare -A URLS
+          URLS[thumbnail]="https://media.canva.com/v2/image-resize/format:JPG/height:112/quality:75/${BASE}/width:200?${QUERY}"
+          URLS[webp1600]="https://media.canva.com/v2/image-resize/format:WEBP/height:900/quality:90/${BASE}/width:1600?${QUERY}"
+          URLS[jpg1600]="https://media.canva.com/v2/image-resize/format:JPG/height:900/quality:90/${BASE}/width:1600?${QUERY}"
+          for name in thumbnail webp1600 jpg1600; do
+            code=$(curl --location --silent --show-error --max-time 45 -w '%{http_code}' "${URLS[$name]}" -o "/tmp/$name.bin" || true)
+            echo "$name http=$code bytes=$(wc -c < /tmp/$name.bin)"
+            file "/tmp/$name.bin"
+            identify "/tmp/$name.bin" 2>/dev/null || true
+          done

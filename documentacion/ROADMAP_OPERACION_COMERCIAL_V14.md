@@ -1,0 +1,81 @@
+# EL ERRANTE — Roadmap de operación comercial V1.4
+
+## Objetivo
+Convertir la web actual en una experiencia comercial usable, administrable y medible, conservando el repositorio `main` como fuente única de código y utilizando GitHub Pages como entorno público de revisión de cada iteración.
+
+## Decisión de arquitectura
+GitHub Pages continuará como vitrina y preproducción porque publica únicamente archivos estáticos. La operación comercial real requiere un despliegue compatible con comercio y un backend autenticado para pedidos, comprobantes, inventarios, costos y administración.
+
+Arquitectura prevista:
+
+- Fuente única: repositorio `arendon7/ELERRANTE`, rama `main`.
+- Revisión continua: GitHub Pages.
+- Producción comercial: despliegue desde el mismo `main` en Cloudflare Pages u otro hosting comercial compatible.
+- Backend: Supabase Auth, Postgres, Row Level Security y Storage privado.
+- Pago inicial: transferencia Bancolombia por cuenta de ahorros o llave, con comprobante adjunto.
+- Pasarela: fuera de alcance por ahora.
+
+## Iteraciones
+
+### Iteración 1 — Flujo operativo base
+- Rediseñar checkout para transferencia y comprobante.
+- Eliminar bloqueos por rutas y días predeterminados.
+- Crear estados de pedido y vista de aprobación.
+- Crear panel financiero con ventas, costos variables, gastos fijos y balance mensual.
+- Permitir edición de precios, costos e inventario en modo de revisión.
+- Preparar esquema seguro de backend.
+
+### Iteración 2 — Backend y acceso privado
+- Crear proyecto de backend.
+- Activar autenticación anónima de compradores.
+- Crear usuarios administrativos permanentes para Juan y responsables autorizados.
+- Aplicar RLS y bucket privado de comprobantes.
+- Conectar pedidos, estados, catálogo, inventario y costos.
+- Confirmar que ningún secreto quede en el repositorio público.
+
+### Iteración 3 — Operación y finanzas
+- Kardex básico de inventario.
+- Descuento de inventario al aprobar o preparar pedidos.
+- Costo de ventas real por producto y lote.
+- Gastos fijos y variables por mes.
+- Margen bruto, punto de equilibrio y resultado operativo.
+- Alertas por inventario bajo y pedidos pendientes.
+
+### Iteración 4 — Mercadeo y redacción gastronómica
+- Reescribir páginas de producto, colección, historia, hogar y eventos.
+- Unificar tono de marca: artesanal, sobrio, preciso y sensorial.
+- Mejorar argumentos de compra, usos, preparación, conservación y diferenciadores.
+- Ajustar microcopias, llamados a la acción y mensajes de confianza.
+
+### Iteración 5 — Experiencia, accesibilidad y conversión
+- Simplificar navegación y jerarquía visual.
+- Mejorar móvil, formularios y estados de carga/error.
+- Optimizar SEO técnico, metadatos, datos estructurados y rendimiento.
+- Revisar accesibilidad WCAG y contraste.
+- Medir embudo de producto, carrito, pedido y comprobante.
+
+### Iteración 6 — Piloto comercial
+- Reemplazar precios, costos, inventarios y datos bancarios demo por valores reales.
+- Probar pedidos reales controlados.
+- Documentar proceso de aprobación, preparación, entrega y atención.
+- Cerrar pendientes jurídicos de privacidad, tratamiento de datos, términos y retracto cuando corresponda.
+- Publicar dominio de producción y conservar Pages como entorno de revisión.
+
+## Base financiera temporal
+Gastos fijos mensuales demo: **$6.000.000 COP**.
+
+- Trabajador: $2.000.000.
+- Sede y ocupación: $2.500.000.
+- Servicios, conectividad y operación: $750.000.
+- Otros gastos fijos: $750.000.
+
+Todos estos valores son editables y deberán sustituirse por información real.
+
+## Criterio de cierre de cada iteración
+Cada iteración se integra a `main` únicamente después de:
+
+1. Validación funcional en escritorio y móvil.
+2. Revisión de seguridad y ausencia de secretos.
+3. Pruebas de regresión.
+4. Publicación correcta en Pages.
+5. Registro de cambios y pendientes reales.

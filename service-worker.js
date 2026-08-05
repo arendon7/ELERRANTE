@@ -1,11 +1,11 @@
-const CACHE = 'el-errante-v1-3-1';
+const CACHE = 'el-errante-v1-4-0';
 const CORE = [
   './index.html','./historia.html','./nosotros.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
   './herramientas.html','./cobertura.html','./ayuda.html','./checkout.html','./cuenta.html','./legal.html',
   './equipo.html','./admin.html','./control.html','./operacion.html','./studio.html','./actas.html','./presentacion.html',
   './assets/styles.css','./assets/styles/brand-v1.css','./assets/data.js','./assets/products-v6.js','./assets/runtime.js','./assets/app.js',
-  './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/control.js','./assets/presentation.js',
+  './assets/preprod.js','./assets/content-v5.js','./assets/host-mode.js','./assets/commerce-config-v14.js','./assets/commerce-v14.js','./assets/commerce-v14.css','./assets/control.js','./assets/presentation.js',
   './assets/images/brand-final/home-hero.webp','./assets/images/brand-final/home-hero-mobile.webp','./assets/images/brand-final/home-masa-fuego.webp','./assets/images/brand-final/home-fermentacion.webp','./assets/images/brand-final/home-ingredientes.webp','./assets/images/brand-final/home-compartir.webp','./assets/images/brand-final/home-en-casa.webp','./assets/images/brand-final/home-despensa.webp',
   './assets/images/brand-final/evento-hero.webp','./assets/images/brand-final/evento-noche.webp','./assets/images/brand-final/evento-servicio.webp','./assets/images/brand-final/og-el-errante.webp',
   './assets/images/brand-final/producto-harina.webp','./assets/images/brand-final/producto-crea-tuya.webp','./assets/images/brand-final/producto-margherita.webp','./assets/images/brand-final/producto-diavola.webp','./assets/images/brand-final/producto-bosque.webp','./assets/images/brand-final/producto-cuatro-quesos.webp','./assets/images/brand-final/producto-la-errante.webp','./assets/images/brand-final/producto-salsa-tomate.webp','./assets/images/brand-final/producto-reduccion-balsamica.webp','./assets/images/brand-final/producto-panela-maracuya.webp','./assets/images/brand-final/producto-combo-primera-ruta.webp','./assets/images/brand-final/manifest-hq-v13.json',

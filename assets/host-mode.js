@@ -1,8 +1,8 @@
 (()=>{
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
-  const PUBLIC_VERSION="1.3.1";
+  const PUBLIC_VERSION="1.4.0";
   const CACHE_PREFIX="el-errante-";
-  const ACTIVE_CACHE="el-errante-v1-3-1";
+  const ACTIVE_CACHE="el-errante-v1-4-0";
   const INTERNAL_PAGES=new Set(["equipo","admin","control","operacion","studio","actas","presentacion"]);
 
   const VISUALS={

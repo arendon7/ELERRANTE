@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v1-7-0
+  EXPECTED_CACHE: el-errante-v1-8-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -56,10 +56,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js; do
+          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
+          curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
+            "$PUBLIC_BASE/assets/commerce-v18.css?verify=$EXPECTED_SHA" > public-commerce-v18.css
           curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
           node --check public-host-mode.js
@@ -68,14 +70,17 @@ jobs:
           node --check public-admin-v15.js
           node --check public-operations-v16.js
           node --check public-content-v17.js
+          node --check public-commerce-ux-v18.js
           node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="1.7.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v1-7-0"' public-host-mode.js
+          grep -q 'PUBLIC_VERSION="1.8.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v1-8-0"' public-host-mode.js
           grep -q 'brand-final-hq' public-host-mode.js
           grep -q 'home-hero-mobile.webp' public-host-mode.js
           ! grep -q 'BRAND_PACKS' public-host-mode.js
-          grep -q 'el-errante-v1-7-0' public-service-worker.js
+          grep -q 'el-errante-v1-8-0' public-service-worker.js
           grep -q 'assets/content-v17.js' public-service-worker.js
+          grep -q 'assets/commerce-ux-v18.js' public-service-worker.js
+          grep -q 'assets/commerce-v18.css' public-service-worker.js
           grep -q 'assets/images/brand-final/home-hero.webp' public-service-worker.js
           grep -q 'assets/images/brand-final/producto-margherita.webp' public-service-worker.js
           grep -q 'assets/checkout-v15.js' public-service-worker.js
@@ -92,6 +97,9 @@ jobs:
           grep -q 'Masa con tiempo. Fuego con carácter.' public-content-v17.js
           grep -q 'Nuestra pizza insignia' public-content-v17.js
           grep -q "contentVersion='1.7.0'" public-content-v17.js
+          grep -q 'Confirma tu pedido con claridad.' public-commerce-ux-v18.js
+          grep -q 'Entrega coordinada' public-commerce-ux-v18.js
+          grep -q 'ee-v18-mobile-total' public-commerce-v18.css
           ! grep -qi 'service_role' public-commerce-runtime-config.js
           ! grep -qi 'service_role' public-admin-v15.js
           ! grep -qi 'service_role' public-checkout-v15.js
@@ -118,14 +126,20 @@ jobs:
           assert_contains public-index.html 'assets/content-v17.js' 'Inicio no carga el contenido premium V1.7.'
           assert_contains public-tienda.html 'data-page="tienda"' 'Tienda no conserva su contrato de página.'
           assert_contains public-tienda.html 'assets/content-v17.js' 'Tienda no carga el contenido premium V1.7.'
+          assert_contains public-tienda.html 'assets/commerce-ux-v18.js' 'Tienda no carga la experiencia de compra V1.8.'
+          assert_contains public-tienda.html 'assets/commerce-v18.css' 'Tienda no carga los estilos V1.8.'
           assert_contains public-producto.html 'id="dynamic-product"' 'La ficha dinámica de producto no está disponible.'
           assert_contains public-producto.html 'assets/content-v17.js' 'Producto no carga el contenido premium V1.7.'
+          assert_contains public-producto.html 'assets/commerce-ux-v18.js' 'Producto no carga la compra informada V1.8.'
+          assert_contains public-producto.html 'assets/commerce-v18.css' 'Producto no carga los estilos V1.8.'
           assert_contains public-historia.html 'assets/content-v17.js' 'Historia no carga la narrativa V1.7.'
           assert_contains public-en-casa.html 'assets/content-v17.js' 'En Casa no carga la narrativa V1.7.'
           assert_contains public-en-movimiento.html 'data-page="movimiento"' 'En Movimiento no conserva su contrato de página.'
           assert_contains public-en-movimiento.html 'assets/content-v17.js' 'En Movimiento no carga la narrativa V1.7.'
           assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva el flujo de transferencia.'
           assert_contains public-checkout.html 'assets/checkout-v15.js' 'Checkout no carga el bootstrap aislado.'
+          assert_contains public-checkout.html 'assets/commerce-ux-v18.js' 'Checkout no carga la experiencia guiada V1.8.'
+          assert_contains public-checkout.html 'assets/commerce-v18.css' 'Checkout no carga los estilos V1.8.'
           assert_contains public-admin.html 'Operación y finanzas · V1.6' 'Administración no conserva el contrato V1.6.'
           assert_contains public-admin.html 'assets/admin-v15.js' 'Administración no carga el acceso privado.'
           assert_contains public-admin.html 'assets/operations-v16.js' 'Administración no carga el módulo financiero V1.6.'
@@ -156,7 +170,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V1.7.0 CONTENIDO Y CONVERSIÓN"
+            echo "EL ERRANTE — PUBLIC HEALTH V1.8.0 EXPERIENCIA DE COMPRA"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -182,6 +196,8 @@ jobs:
             public-admin-v15.js
             public-operations-v16.js
             public-content-v17.js
+            public-commerce-ux-v18.js
+            public-commerce-v18.css
             public-index.html
             public-tienda.html
             public-producto.html

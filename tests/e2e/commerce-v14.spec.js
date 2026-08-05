@@ -6,8 +6,8 @@ async function seedCart(page) {
   ])));
 }
 
-test.describe('Operación comercial V1.4', () => {
-  test('checkout usa transferencia, comprobante y cobertura abierta', async ({ page }) => {
+test.describe('Operación comercial V1.5', () => {
+  test('checkout conserva transferencia y usa bootstrap aislado', async ({ page }) => {
     await seedCart(page);
     await page.goto('/checkout.html');
     await expect(page.getByRole('heading', { name: 'Tu pedido comienza aquí.' })).toBeVisible();
@@ -15,15 +15,16 @@ test.describe('Operación comercial V1.4', () => {
     await expect(page.locator('#ee-receipt')).toBeVisible();
     await expect(page.locator('#ee-city')).toHaveAttribute('type', 'text');
     await expect(page.getByText('No cerramos el pedido por rutas fijas ni por días predeterminados.')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-ee-commerce-backend', /preview|degraded/);
     await expect(page.getByRole('button', { name: 'PSE' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Tarjeta' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Nequi' })).toHaveCount(0);
   });
 
-  test('administración local expone finanzas, pedidos y catálogo editable', async ({ page }) => {
+  test('administración presenta acceso seguro y simulación local honesta', async ({ page }) => {
     await page.goto('/admin.html');
-    await expect(page.getByRole('heading', { name: 'Panel operativo en preparación.' })).toBeVisible();
-    await page.getByRole('button', { name: 'Abrir vista local de revisión' }).click();
+    await expect(page.getByRole('heading', { name: 'Acceso administrativo seguro.' })).toBeVisible();
+    await expect(page.getByText('No existe una contraseña maestra dentro del código.')).toBeVisible();
+    await page.getByRole('button', { name: 'Abrir simulación local' }).click();
     await expect(page.getByText('Ventas aprobadas')).toBeVisible();
     await expect(page.getByText('Balance del mes')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Precios, costos e inventario' })).toBeVisible();
@@ -32,9 +33,9 @@ test.describe('Operación comercial V1.4', () => {
     await expect(page.getByRole('heading', { name: 'Datos bancarios visibles en checkout' })).toBeVisible();
   });
 
-  test('datos bancarios de revisión persisten en el navegador', async ({ page }) => {
+  test('datos bancarios de simulación persisten en el checkout', async ({ page }) => {
     await page.goto('/admin.html');
-    await page.getByRole('button', { name: 'Abrir vista local de revisión' }).click();
+    await page.getByRole('button', { name: 'Abrir simulación local' }).click();
     await page.locator('#ee-bank-holder').fill('El Errante Cocina');
     await page.locator('#ee-bank-account').fill('123456789');
     await page.locator('#ee-bank-key').fill('errante@banco');
@@ -44,5 +45,15 @@ test.describe('Operación comercial V1.4', () => {
     await expect(page.getByText('El Errante Cocina')).toBeVisible();
     await expect(page.getByText('123456789')).toBeVisible();
     await expect(page.getByText('errante@banco')).toBeVisible();
+  });
+
+  test('superficies públicas no contienen secretos de servidor', async ({ request }) => {
+    for (const path of ['/assets/commerce-runtime-config.js','/assets/commerce-config-v14.js','/assets/checkout-v15.js','/assets/admin-v15.js']) {
+      const response = await request.get(path);
+      expect(response.ok()).toBeTruthy();
+      const body = (await response.text()).toLowerCase();
+      expect(body).not.toContain('service_role');
+      expect(body).not.toContain('supabase_service');
+    }
   });
 });

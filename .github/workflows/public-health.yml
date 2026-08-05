@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v1-4-0
+  EXPECTED_CACHE: el-errante-v1-5-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -56,21 +56,35 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/assets/host-mode.js?verify=$EXPECTED_SHA" > public-host-mode.js
+          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js; do
+            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
+          done
           curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
           node --check public-host-mode.js
+          node --check public-commerce-runtime-config.js
+          node --check public-checkout-v15.js
+          node --check public-admin-v15.js
           node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="1.4.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v1-4-0"' public-host-mode.js
+          grep -q 'PUBLIC_VERSION="1.5.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v1-5-0"' public-host-mode.js
           grep -q 'brand-final-hq' public-host-mode.js
           grep -q 'home-hero-mobile.webp' public-host-mode.js
           ! grep -q 'BRAND_PACKS' public-host-mode.js
-          grep -q 'el-errante-v1-4-0' public-service-worker.js
+          grep -q 'el-errante-v1-5-0' public-service-worker.js
           grep -q 'assets/images/brand-final/home-hero.webp' public-service-worker.js
           grep -q 'assets/images/brand-final/producto-margherita.webp' public-service-worker.js
-          grep -q 'assets/commerce-v14.js' public-service-worker.js
+          grep -q 'assets/checkout-v15.js' public-service-worker.js
+          grep -q 'assets/admin-v15.js' public-service-worker.js
+          grep -q 'shopperStorageKey' public-commerce-runtime-config.js
+          grep -q 'adminStorageKey' public-commerce-runtime-config.js
+          grep -q 'createSignedUrl' public-admin-v15.js
+          grep -q 'rpc("is_admin")' public-admin-v15.js
+          grep -q 'public_settings' public-checkout-v15.js
+          ! grep -qi 'service_role' public-commerce-runtime-config.js
+          ! grep -qi 'service_role' public-admin-v15.js
+          ! grep -qi 'service_role' public-checkout-v15.js
           ! grep -q "'./assets/brand-final-editorial.js'" public-service-worker.js
       - name: Verificar superficies públicas críticas
         shell: bash
@@ -94,9 +108,13 @@ jobs:
           assert_contains public-producto.html 'id="dynamic-product"' 'La ficha dinámica de producto no está disponible.'
           assert_contains public-en-movimiento.html 'data-page="movimiento"' 'En Movimiento no conserva su contrato de página.'
           assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva el flujo de transferencia.'
-          assert_contains public-checkout.html 'assets/commerce-v14.js' 'Checkout no carga el runtime comercial V1.4.'
-          assert_contains public-admin.html 'Operación comercial · V1.4' 'Administración no conserva el contrato V1.4.'
-          assert_contains public-admin.html 'assets/commerce-v14.js' 'Administración no carga el runtime comercial V1.4.'
+          assert_contains public-checkout.html 'assets/checkout-v15.js' 'Checkout no carga el bootstrap V1.5.'
+          assert_contains public-admin.html 'Backend y acceso privado · V1.5' 'Administración no conserva el contrato V1.5.'
+          assert_contains public-admin.html 'assets/admin-v15.js' 'Administración no carga el runtime privado V1.5.'
+          if grep -Fq 'assets/commerce-v14.js' public-admin.html; then
+            echo '::error title=Public Health::Admin conserva el runtime administrativo legado.'
+            exit 1
+          fi
       - name: Verificar imágenes WebP HQ críticas
         shell: bash
         run: |
@@ -119,7 +137,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V1.4.0 OPERACIÓN COMERCIAL"
+            echo "EL ERRANTE — PUBLIC HEALTH V1.5.0 BACKEND Y ACCESO PRIVADO"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -140,6 +158,9 @@ jobs:
             deploy-version-observed.txt
             public-host-mode.js
             public-service-worker.js
+            public-commerce-runtime-config.js
+            public-checkout-v15.js
+            public-admin-v15.js
             public-index.html
             public-tienda.html
             public-producto.html

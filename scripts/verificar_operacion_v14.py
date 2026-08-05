@@ -10,6 +10,8 @@ required = [
     "assets/commerce-config-v14.js",
     "assets/commerce-v14.js",
     "assets/commerce-v14.css",
+    "assets/checkout-v15.js",
+    "assets/admin-v15.js",
     "backend/supabase/schema-v14.sql",
     "documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md",
     "tests/e2e/commerce-v14.spec.js",
@@ -18,12 +20,14 @@ required = [
 ]
 for relative in required:
     if not (ROOT / relative).is_file():
-        ISSUES.append(f"Archivo V1.4 faltante: {relative}")
+        ISSUES.append(f"Archivo comercial faltante: {relative}")
 
 config = (ROOT / "assets/commerce-config-v14.js").read_text(encoding="utf-8")
 checkout = (ROOT / "checkout.html").read_text(encoding="utf-8")
 admin = (ROOT / "admin.html").read_text(encoding="utf-8")
 commerce = (ROOT / "assets/commerce-v14.js").read_text(encoding="utf-8")
+checkout_boot = (ROOT / "assets/checkout-v15.js").read_text(encoding="utf-8")
+admin_runtime = (ROOT / "assets/admin-v15.js").read_text(encoding="utf-8")
 schema = (ROOT / "backend/supabase/schema-v14.sql").read_text(encoding="utf-8")
 worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 host = (ROOT / "assets/host-mode.js").read_text(encoding="utf-8")
@@ -33,44 +37,46 @@ if sum(amounts) != 6_000_000:
     ISSUES.append(f"Gastos fijos demo distintos de $6.000.000: {sum(amounts)}")
 
 for marker in [
-    'version: "1.4.0"',
-    'provider: "supabase"',
+    'version: "1.5.0"',
+    'provider: runtimeBackend.provider || "supabase"',
     'accountNumber: ""',
     'key: ""',
     'requireReceipt: true',
 ]:
     if marker not in config:
-        ISSUES.append(f"Configuración V1.4 incompleta: {marker}")
+        ISSUES.append(f"Configuración comercial incompleta: {marker}")
 
 for forbidden in ["service_role", "SUPABASE_SERVICE", "postgres://", "eyJhbGciOi"]:
-    if forbidden.lower() in config.lower():
-        ISSUES.append(f"Posible secreto o credencial expuesta: {forbidden}")
+    for label, content in [("config",config),("checkout",checkout_boot),("admin",admin_runtime)]:
+        if forbidden.lower() in content.lower():
+            ISSUES.append(f"Posible secreto expuesto en {label}: {forbidden}")
 
 for marker in [
     "transferencia bancaria",
     "adjunta el comprobante",
     "No dependes de una ruta o un día fijo",
-    "commerce-v14.js",
+    "checkout-v15.js",
     "commerce-v14.css",
     'id="checkout-city"',
 ]:
     if marker not in checkout:
-        ISSUES.append(f"Checkout V1.4 incompleto: {marker}")
+        ISSUES.append(f"Checkout comercial incompleto: {marker}")
 
-for marker in ["Operación comercial · V1.4", "commerce-v14.js", "commerce-v14.css", "noindex,nofollow"]:
+for marker in ["Backend y acceso privado · V1.5", "admin-v15.js", "commerce-v14.css", "noindex,nofollow"]:
     if marker not in admin:
-        ISSUES.append(f"Administración V1.4 incompleta: {marker}")
+        ISSUES.append(f"Administración comercial incompleta: {marker}")
+if "assets/commerce-v14.js" in admin:
+    ISSUES.append("Administración conserva el runtime legado V1.4.")
 
-for marker in [
-    "signInAnonymously",
-    "signInWithPassword",
-    "payment_review",
-    "monthlyFixedCosts",
-    "Vista local de revisión",
-    'type="text"',
-]:
+for marker in ["signInAnonymously", "payment_review", "monthlyFixedCosts", 'type="text"']:
     if marker not in commerce:
-        ISSUES.append(f"Runtime comercial incompleto: {marker}")
+        ISSUES.append(f"Runtime de pedidos incompleto: {marker}")
+for marker in ["public_settings", "shopperStorageKey", "window.__EE_SUPABASE__"]:
+    if marker not in checkout_boot:
+        ISSUES.append(f"Bootstrap de checkout V1.5 incompleto: {marker}")
+for marker in ["signInWithPassword", 'rpc("is_admin")', "createSignedUrl", "adminStorageKey"]:
+    if marker not in admin_runtime:
+        ISSUES.append(f"Runtime administrativo V1.5 incompleto: {marker}")
 
 for marker in [
     "enable row level security",
@@ -83,15 +89,15 @@ for marker in [
     if marker not in schema:
         ISSUES.append(f"Esquema seguro incompleto: {marker}")
 
-if "el-errante-v1-4-0" not in worker:
-    ISSUES.append("Service worker no usa la caché V1.4")
-for marker in ["commerce-config-v14.js", "commerce-v14.js", "commerce-v14.css"]:
+if "el-errante-v1-5-0" not in worker:
+    ISSUES.append("Service worker no usa la caché V1.5")
+for marker in ["commerce-config-v14.js", "commerce-v14.js", "commerce-v14.css", "checkout-v15.js", "admin-v15.js"]:
     if marker not in worker:
         ISSUES.append(f"Activo comercial no precargado: {marker}")
-if 'PUBLIC_VERSION="1.4.0"' not in host or 'ACTIVE_CACHE="el-errante-v1-4-0"' not in host:
-    ISSUES.append("Host público no declara la versión/caché V1.4")
+if 'PUBLIC_VERSION="1.5.0"' not in host or 'ACTIVE_CACHE="el-errante-v1-5-0"' not in host:
+    ISSUES.append("Host público no declara la versión/caché V1.5")
 
-print("EL ERRANTE V1.4 — BARRERA DE OPERACIÓN COMERCIAL")
+print("EL ERRANTE V1.5 — BARRERA DE OPERACIÓN COMERCIAL")
 print(f"Archivos requeridos: {len(required)}")
 print(f"Gastos fijos demo: ${sum(amounts):,} COP")
 print(f"Problemas: {len(ISSUES)}")

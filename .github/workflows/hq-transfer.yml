@@ -1,0 +1,48 @@
+name: Transferencia atómica HQ V1.3
+
+on:
+  push:
+    branches: ["feat/hq-visual-v13-atomic"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hq-transfer-v13
+  cancel-in-progress: false
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/hq-visual-v13-atomic
+      - name: Descargar paquete firmado y validar integridad
+        shell: bash
+        env:
+          FILE_ID: 1djt5hr3PWj3fyMDpM2Efvl9anfxCaO-c
+          EXPECTED_SHA256: f08abfd9d12385b71af5d5f7df3bb01568f983766fed519ff6fb0b4e56cfc90a
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --max-time 90 \
+            "https://drive.usercontent.google.com/download?id=${FILE_ID}&export=download&confirm=t" \
+            --output /tmp/elerrante-hq-v13.zip
+          echo "${EXPECTED_SHA256}  /tmp/elerrante-hq-v13.zip" | sha256sum --check -
+          rm -rf assets/images/hq-v13
+          mkdir -p assets/images/hq-v13
+          unzip -q /tmp/elerrante-hq-v13.zip -d assets/images/hq-v13
+          test "$(find assets/images/hq-v13 -maxdepth 1 -name '*.avif' | wc -l)" -eq 23
+          test -s assets/images/hq-v13/manifest.json
+      - name: Crear un único commit binario y retirar el puente
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/hq-transfer.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/images/hq-v13 .github/workflows/hq-transfer.yml
+          git commit -m "feat(visual): incorpora 23 AVIF HQ directos"
+          git push origin HEAD:feat/hq-visual-v13-atomic

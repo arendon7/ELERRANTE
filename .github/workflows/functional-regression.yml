@@ -18,22 +18,31 @@ jobs:
   e2e:
     name: Playwright desktop y móvil
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+
+      - name: Materializar sistema visual final
+        run: python3 scripts/materializar_activos_visuales.py
+
       - name: Configurar Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Instalar dependencias
-        run: npm install --no-audit --no-fund --prefer-offline
+        run: npm install --no-audit --no-fund
+
       - name: Instalar Chromium
         run: npx playwright install --with-deps chromium
+
       - name: Ejecutar regresión funcional
         run: npm run test:e2e
-      - name: Conservar reporte solo ante fallo o ejecución manual
-        if: failure() || github.event_name == 'workflow_dispatch'
+
+      - name: Conservar reporte y evidencias
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ github.sha }}
@@ -41,4 +50,4 @@ jobs:
             playwright-report
             test-results
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 14

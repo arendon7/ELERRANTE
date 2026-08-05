@@ -66,9 +66,9 @@ test.describe('Runtime recuperado', () => {
     await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.locator('#site-header')).not.toBeEmpty();
     await expect(page.locator('#site-footer')).not.toBeEmpty();
-    await page.waitForFunction(() => document.documentElement.dataset.eeVisualSystem === 'brand-final');
+    await page.waitForFunction(() => document.documentElement.dataset.eeVisualSystem === 'brand-final-direct');
 
-    const visuals = page.locator('img[data-visual-system="brand-final"]');
+    const visuals = page.locator('img[src*="assets/images/brand-final/"]');
     await expect.poll(() => visuals.count()).toBeGreaterThanOrEqual(2);
     await visuals.evaluateAll(images => images.forEach(image => { image.loading = 'eager'; }));
     await expect.poll(() => visuals.evaluateAll(images => images.filter(image => !image.complete || image.naturalWidth === 0).map(image => image.getAttribute('src')))).toEqual([]);
@@ -83,7 +83,14 @@ test.describe('Runtime recuperado', () => {
     await expect.poll(() => grid.locator(':scope > *').count()).toBe(11);
     const productTargets = await grid.locator('a[href*="producto.html?id="]').evaluateAll(links => [...new Set(links.map(link => new URL(link.href).searchParams.get('id')).filter(Boolean))]);
     expect(productTargets.length).toBe(11);
-    await expect.poll(() => grid.locator('img[data-visual-system="brand-final"]').count()).toBeGreaterThanOrEqual(8);
+
+    const images = grid.locator('img');
+    await expect(images).toHaveCount(11);
+    await images.evaluateAll(nodes => nodes.forEach(image => { image.loading = 'eager'; }));
+    await expect.poll(() => images.evaluateAll(nodes => nodes.filter(image => !image.complete || image.naturalWidth === 0).map(image => image.getAttribute('src')))).toEqual([]);
+    const directSources = await images.evaluateAll(nodes => nodes.map(image => image.getAttribute('src') || ''));
+    expect(directSources.every(source => source.includes('assets/images/brand-final/'))).toBe(true);
+    expect(new Set(directSources).size).toBeGreaterThanOrEqual(8);
     await clean();
   });
 

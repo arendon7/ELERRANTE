@@ -2,7 +2,7 @@
   const runtime = window.EL_ERRANTE_RUNTIME_CONFIG || {};
   const runtimeBackend = runtime.backend || {};
   window.EL_ERRANTE_COMMERCE_CONFIG = Object.freeze({
-    version: "2.3.0",
+    version: "2.4.0",
     environment: runtime.environment || "preview",
     backend: {
       provider: runtimeBackend.provider || "supabase",

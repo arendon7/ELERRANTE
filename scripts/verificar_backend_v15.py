@@ -38,7 +38,7 @@ for path in [
 ]:
     text(path)
 
-require(config, 'version: "2.3.0"', "La configuración comercial no declara V2.3.0.")
+require(config, 'version: "2.4.0"', "La configuración comercial no declara V2.3.0.")
 require(config, 'shopperStorageKey', "No se separó la sesión del comprador.")
 require(config, 'adminStorageKey', "No se separó la sesión administrativa.")
 require(config, 'stage: "Piloto"', "La configuración no identifica la etapa piloto.")
@@ -67,15 +67,15 @@ require(schema, 'enable row level security', "La migración V1.5 no conserva RLS
 require(schema, 'record_admin_event', "La migración V1.5 no incluye registro seguro de eventos.")
 require(schema, 'service_role debe permanecer exclusivamente en servidor', "Falta advertencia explícita sobre service_role.")
 
-require(worker, 'el-errante-v2-3-0', "Service worker no usa caché V2.3.0.")
+require(worker, 'el-errante-v2-4-0', "Service worker no usa caché V2.3.0.")
 for asset in ['commerce-runtime-config.js','checkout-v15.js','admin-v15.js','commerce-v15.css']:
     require(worker, asset, f"Service worker no incluye {asset}.")
-require(host, 'PUBLIC_VERSION="2.3.0"', "Host mode no declara V2.3.0.")
-require(host, 'ACTIVE_CACHE="el-errante-v2-3-0"', "Host mode no apunta a la caché V2.3.0.")
+require(host, 'PUBLIC_VERSION="2.4.0"', "Host mode no declara V2.3.0.")
+require(host, 'ACTIVE_CACHE="el-errante-v2-4-0"', "Host mode no apunta a la caché V2.3.0.")
 require(pages, 'SUPABASE_URL', "Pages no contempla la URL de Supabase.")
 require(pages, 'SUPABASE_PUBLISHABLE_KEY', "Pages no contempla la publishable key.")
 require(pages, 'commerce-runtime-config.js', "Pages no genera la configuración runtime.")
-require(health, 'el-errante-v2-3-0', "Public Health no verifica la caché V2.3.0.")
+require(health, 'el-errante-v2-4-0', "Public Health no verifica la caché V2.3.0.")
 
 for label, content in {
     "runtime": runtime,

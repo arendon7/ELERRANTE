@@ -61,8 +61,8 @@ require(
     "id=\"materials-v23\"",
     "assets/materials-data-v23.js",
     "assets/materials-v23.js",
-    "Activación V2.3",
-    "Iteración 10",
+    "Activación V2.4",
+    "Iteración 11",
 )
 
 admin = read("admin.html")
@@ -73,7 +73,7 @@ if admin.index("assets/materials-v23.js") > admin.index("assets/operations-v16.j
 
 config = require(
     "assets/commerce-config-v14.js",
-    'version: "2.3.0"',
+    'version: "2.4.0"',
     'stage: "Piloto"',
     'dataStatus: "ESTIMADO"',
     'amount: 90000',

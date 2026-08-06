@@ -40,7 +40,19 @@ jobs:
 
       - name: Aplicar integración determinista
         shell: bash
-        run: python scripts/aplicar_v25.py
+        run: |
+          set -euo pipefail
+          python scripts/aplicar_v25.py
+          python - <<'PY'
+          from pathlib import Path
+          path=Path('.github/workflows/pages.yml')
+          text=path.read_text(encoding='utf-8')
+          old="    if: github.event_name != 'pull_request'"
+          new="    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'"
+          if text.count(old) != 1:
+              raise SystemExit('No se encontró el guard de despliegue esperado en pages.yml')
+          path.write_text(text.replace(old,new,1),encoding='utf-8')
+          PY
 
       - name: Validar antes de publicar el commit
         shell: bash
@@ -53,6 +65,7 @@ jobs:
           python scripts/verificar_abastecimiento_v25.py
           python scripts/verificar_medicion_v24.py
           python scripts/verificar_activacion_v20.py
+          grep -Fq "if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'" .github/workflows/pages.yml
 
       - name: Retirar herramientas temporales
         shell: bash

@@ -88,8 +88,8 @@ admin_runtime = require(
     "legacyIds",
     "Etapa ${escapeHtml(BASE.finance?.stage",
     "ee:admin:ready",
-    "Administración V2.3",
-    "V2.2 y V2.3",
+    "Administración V2.4",
+    "V2.3 y V2.4",
 )
 if "La base temporal continúa en $6.000.000 mensuales" in admin_runtime:
     raise SystemExit("El runtime administrativo aún muestra la cifra demo antigua")

@@ -28,3 +28,5 @@ jobs:
           git add assets/admin-v15.js assets/materials-v23.js
           git commit -m "fix admin migrate demo costs and refresh materials V23"
           git push origin HEAD:feat/materias-primas-inventario-v23
+
+# retry after SKU master validation fix

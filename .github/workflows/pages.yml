@@ -24,6 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Materializar fuentes legibles V2.8
+        run: python3 scripts/materializar_fuentes_locales_v28.py
+
       - name: Ejecutar barreras vigentes
         shell: bash
         run: |
@@ -45,6 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           find assets -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+          find assets/generated -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
           node --check service-worker.js
           node --check scripts/exportar-fuente-canonica.mjs
           find tests/e2e -maxdepth 1 -type f -name '*.spec.js' -print0 | xargs -0 -n1 node --check
@@ -57,7 +61,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fuente-canonica-${{ github.sha }}
-          path: .artifacts/canonical
+          path: |
+            .artifacts/canonical
+            assets/generated/manifest-v28.json
           if-no-files-found: warn
           retention-days: 14
 
@@ -71,6 +77,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Materializar fuentes legibles V2.8
+        run: python3 scripts/materializar_fuentes_locales_v28.py
 
       - name: Preparar sitio V2.8 desde main
         shell: bash
@@ -101,7 +110,7 @@ jobs:
             'window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze(' + json.dumps(config,ensure_ascii=False,separators=(',',':')) + ');\n',
             encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-1\nbrand_source=assets/brand-canon-v28.js\nupdated=%s\n' \
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-1\nbrand_source=assets/brand-canon-v28.js\nsource_mode=materialized\nupdated=%s\n' \
             "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
 
@@ -111,6 +120,7 @@ jobs:
           set -euo pipefail
           grep -q 'version=2.8.0' _site/deploy-version.txt
           grep -q 'cache=el-errante-v2-8-brand-canon-1' _site/deploy-version.txt
+          grep -q 'source_mode=materialized' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q '· V2.8' _site/admin.html
           grep -q 'assets/finance-v27.js' _site/admin.html
@@ -118,11 +128,24 @@ jobs:
           grep -q "const VERSION='2.8.0'" _site/assets/brand-canon-v28.js
           grep -q "importScripts('./assets/brand-canon-v28.js')" _site/service-worker.js
           grep -q 'const CACHE=BRAND.cache' _site/service-worker.js
+          grep -q 'assets/generated/data-v28.js' _site/assets/data.js
+          grep -q 'assets/generated/app-v28.js' _site/assets/app.js
+          grep -q 'assets/generated/preprod-v28.js' _site/assets/preprod.js
           grep -q 'BRAND.applyToData(window.EE_DATA)' _site/assets/data.js
           grep -q 'BRAND.applyToDom' _site/assets/host-mode.js
           grep -q '"version": "2.8.0"' _site/package.json
+          test -s _site/assets/generated/data-v28.js
+          test -s _site/assets/generated/app-v28.js
+          test -s _site/assets/generated/preprod-v28.js
+          test -s _site/assets/generated/manifest-v28.json
+          grep -q '"version": "2.8.0"' _site/assets/generated/manifest-v28.json
           node --check _site/assets/brand-canon-v28.js
           node --check _site/assets/data.js
+          node --check _site/assets/app.js
+          node --check _site/assets/preprod.js
+          node --check _site/assets/generated/data-v28.js
+          node --check _site/assets/generated/app-v28.js
+          node --check _site/assets/generated/preprod-v28.js
           node --check _site/assets/host-mode.js
           node --check _site/assets/finance-v27.js
           node --check _site/assets/procurement-v25.js

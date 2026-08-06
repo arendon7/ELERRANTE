@@ -28,20 +28,48 @@ Esa superposición explicaba que dos paquetes derivados del proyecto mostraran c
 - Los validadores que mezclaban la versión funcional de un módulo con la versión global fueron movidos a `archive/legacy-verifiers/`.
 - Los workflows de validación, auditoría, Playwright, Pages y salud pública utilizan la misma expectativa V2.8.
 
+## Materialización de fuentes
+
+Los fragmentos Base64 se conservan como fuente histórica reproducible, no como formato de ejecución preferido. El proceso:
+
+```text
+scripts/materializar_fuentes_locales_v28.py
+```
+
+concatena, valida y decodifica los fragmentos originales; comprueba contratos mínimos; genera salidas atómicas; y registra tamaños y SHA-256 en:
+
+```text
+assets/generated/manifest-v28.json
+```
+
+Las salidas son:
+
+```text
+assets/generated/data-v28.js
+assets/generated/app-v28.js
+assets/generated/preprod-v28.js
+```
+
+La edición local materializa antes de verificar y abrir. Los workflows materializan antes de auditar, ejecutar Playwright y construir `_site`. `data.js`, `app.js` y `preprod.js` usan las fuentes legibles cuando están presentes y solo recurren a Base64 como fallback de compatibilidad.
+
+`assets/generated/` no se versiona porque es un producto reproducible; sí se incluye físicamente en la edición local después de la primera verificación y en el artefacto de Pages.
+
 ## Barreras vigentes
 
-- `verificar_demo.py`: estructura, referencias, seguridad y coherencia integral.
+- `verificar_demo.py`: estructura, referencias, seguridad, fuentes materializadas y coherencia integral.
 - `scripts/verificar_canon_marca_v28.py`: fuente única de identidad y aliases.
 - `scripts/verificar_activos_hq_v28.py`: integridad, tamaño, formato y hashes de los WebP.
-- `scripts/verificar_modulos_v28.py`: pedidos, backend, confianza, activación, producción, materiales, medición, abastecimiento y finanzas.
+- `scripts/verificar_modulos_v28.py`: pedidos, backend, confianza, activación, producción, materiales, medición, abastecimiento, finanzas y materialización.
 - Playwright: comportamiento en escritorio y móvil.
 
 ## Regla de precedencia
 
-`canon V2.8 -> activo brand-final HQ -> ficha ampliada de la segunda versión local -> fuente histórica solo como compatibilidad de datos`.
+`canon V2.8 -> activo brand-final HQ -> ficha ampliada de la segunda versión local -> fuente materializada legible -> Base64 únicamente como fallback`.
 
 Ninguna ruta histórica puede gobernar la interfaz, el catálogo exportado ni la caché.
 
-## Deuda residual controlada
+## Estado de deuda técnica
 
-La reconstrucción Base64 de `data`, `app` y `preprod` todavía funciona como puente de compatibilidad porque esta sesión no pudo extraer los blobs completos sin truncamiento. La V2.8 impide que ese puente decida imágenes, galerías, versión, caché o identidad de marca. Su materialización en JavaScript legible será un cierre estructural posterior que no deberá cambiar la experiencia aprobada.
+La deuda activa que causaba diferencias de marca, imágenes y contenidos queda eliminada de las rutas de ejecución preferidas. Se mantienen archivos históricos en `archive/` y fragmentos Base64 en `assets/source/` por trazabilidad y recuperación, pero están aislados del control visual y solo actúan como fuente reproducible o contingencia.
+
+La validación funcional completa de navegador continúa requiriendo Playwright de escritorio y móvil sobre el mismo SHA final antes de integrar a `main`.

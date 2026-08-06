@@ -43,6 +43,22 @@ config = require(
 )
 runtime_config = require('assets/commerce-runtime-config.js', 'url: ""', 'publishableKey: ""')
 
+materializer = require(
+    'scripts/materializar_fuentes_locales_v28.py',
+    "'data-v28.js'", "'app-v28.js'", "'preprod-v28.js'", "'manifest-v28.json'",
+    "VERSION = '2.8.0'", 'b64decode', 'validate=True'
+)
+data_loader = require('assets/data.js', 'assets/generated/data-v28.js', 'BRAND.applyToData(window.EE_DATA)', 'compatibility')
+app_loader = require('assets/app.js', 'assets/generated/app-v28.js', 'window.EE', 'addToCart', 'compatibility')
+preprod_loader = require('assets/preprod.js', 'assets/generated/preprod-v28.js', 'compatibility')
+for generated, marker in (
+    ('assets/generated/data-v28.js', 'window.EE_DATA'),
+    ('assets/generated/app-v28.js', 'addToCart'),
+    ('assets/generated/preprod-v28.js', 'Fuente materializada de forma determinista'),
+):
+    require(generated, 'Fuente materializada de forma determinista', marker)
+require('assets/generated/manifest-v28.json', '"version": "2.8.0"', 'assets/generated/data-v28.js', 'assets/generated/app-v28.js', 'assets/generated/preprod-v28.js')
+
 amounts = [int(value) for value in re.findall(r'amount:\s*(\d+)', config)]
 if sum(amounts) != 370_000:
     ERRORS.append(f'Gastos fijos provisionales distintos de $370.000 COP: {sum(amounts)}')
@@ -114,6 +130,7 @@ require('assets/activation-v25.js', "dataset.activationVersion='2.5.0'", 'schema
 
 worker = require(
     'service-worker.js', "importScripts('./assets/brand-canon-v28.js')", 'const CACHE=BRAND.cache',
+    'const GENERATED=', 'assets/generated/data-v28.js', 'Promise.allSettled',
     'assets/daily-ops-v21.js', 'assets/production-v22.js', 'assets/materials-v23.js',
     'assets/measurement-v24.js', 'assets/procurement-v25.js', 'assets/finance-v27.js',
     'backend/supabase/schema-v25.sql'
@@ -129,7 +146,9 @@ if any(position < 0 for position in positions) or positions != sorted(positions)
     ERRORS.append('El orden de carga de módulos administrativos no corresponde al flujo operativo')
 
 for label, text in {
-    'runtime config': runtime_config, 'producción': production, 'materiales': materials_data + materials,
+    'runtime config': runtime_config, 'materializador': materializer,
+    'loaders': data_loader + app_loader + preprod_loader,
+    'producción': production, 'materiales': materials_data + materials,
     'medición': measurement, 'abastecimiento': procurement, 'finanzas': finance, 'service worker': worker
 }.items():
     for forbidden in ('service_role', 'postgres://', 'SUPABASE_SERVICE'):
@@ -139,6 +158,7 @@ for label, text in {
 print('EL ERRANTE V2.8 — VERIFICACIÓN MODULAR')
 print('=' * 44)
 print(f'Archivos comprobados: {CHECKED}')
+print('Fuentes materializadas: 3')
 print(f'Gastos fijos provisionales: ${sum(amounts):,} COP')
 print(f'Problemas: {len(ERRORS)}')
 if ERRORS:

@@ -19,6 +19,7 @@ if [ -f .demo_port ]; then
   rm -f .demo_port
 fi
 
+python3 scripts/materializar_fuentes_locales_v28.py
 python3 verificar_demo.py
 python3 scripts/verificar_canon_marca_v28.py
 python3 scripts/verificar_activos_hq_v28.py

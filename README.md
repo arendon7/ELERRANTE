@@ -13,16 +13,19 @@ Webapp autocontenida de El Errante para experiencia pública, tienda, pedidos, o
 - Abastecimiento controlado: módulo V2.5.
 - Finanzas Operativas: módulo V2.7.
 - Caché: `el-errante-v2-8-brand-canon-1`.
+- Fuentes ejecutables: JavaScript legible generado en `assets/generated/`.
 - Persistencia local: `localStorage` del navegador.
 - Backend: Supabase preparado, pero inactivo mientras URL y clave pública estén vacías.
 
-La versión V2.8 no es un rollback. Consolida los mejores contenidos, fichas e imágenes de la edición local correcta y elimina la competencia entre overlays visuales, loaders, service workers y verificadores antiguos.
+La V2.8 consolida los mejores contenidos, fichas e imágenes de la edición local correcta y elimina la competencia entre overlays visuales, loaders, service workers, documentación y validadores antiguos.
 
 ## Abrir localmente en macOS
 
 1. Descarga y descomprime el ZIP completo.
 2. Ejecuta `VERIFICAR_PAQUETE_LOCAL_V28.command`.
-3. Cuando termine con `RESULTADO FINAL: OK`, abre uno de estos accesos:
+3. El comando materializa las fuentes JavaScript, verifica estructura, imágenes, marca y módulos.
+4. Continúa únicamente cuando aparezca `RESULTADO FINAL: OK`.
+5. Abre uno de estos accesos:
 
 ```text
 ABRIR_EL_ERRANTE_LOCAL_V28.command   Web pública
@@ -34,6 +37,25 @@ ABRIR_PRESENTACION.command           Presentación
 Para detener el servidor utiliza `DETENER_EL_ERRANTE_LOCAL_V28.command` o presiona `Control + C` en Terminal.
 
 El servidor se limita a `127.0.0.1`, utiliza primero el puerto 8787 y desactiva la caché HTTP durante las iteraciones locales.
+
+## Fuentes materializadas
+
+Los fragmentos Base64 históricos se conservan únicamente como fuente reproducible y fallback de compatibilidad. Antes de abrir localmente o publicar Pages se ejecuta:
+
+```text
+scripts/materializar_fuentes_locales_v28.py
+```
+
+El proceso genera de forma determinista:
+
+```text
+assets/generated/data-v28.js
+assets/generated/app-v28.js
+assets/generated/preprod-v28.js
+assets/generated/manifest-v28.json
+```
+
+El manifiesto registra tamaño y SHA-256 de cada salida y de cada fragmento de origen. `data.js`, `app.js` y `preprod.js` intentan primero las fuentes legibles; solo recurren a Base64 cuando la materialización no existe.
 
 ## Entradas principales
 
@@ -74,7 +96,7 @@ Los WebP aprobados están en:
 assets/images/brand-final/
 ```
 
-Los overlays y materializadores anteriores se conservan únicamente en:
+Los overlays y materializadores visuales anteriores se conservan únicamente en:
 
 ```text
 archive/legacy-brand-overlays/
@@ -92,7 +114,7 @@ scripts/verificar_modulos_v28.py
 tests/e2e/
 ```
 
-Los validadores antiguos que confundían la versión de cada módulo con la versión global están archivados en `archive/legacy-verifiers/`.
+Los validadores antiguos que confundían la versión funcional de cada módulo con la versión global están archivados en `archive/legacy-verifiers/`.
 
 ## Flujo de datos y seguridad
 
@@ -108,7 +130,7 @@ Nunca deben incorporarse al repositorio:
 
 ## Retorno a GitHub
 
-`PREPARAR_RETORNO_GITHUB_V28.command` ejecuta las barreras vigentes y crea en el Escritorio un ZIP con el estado local para revisión y migración posterior.
+`PREPARAR_RETORNO_GITHUB_V28.command` vuelve a materializar las fuentes, ejecuta las barreras vigentes y crea en el Escritorio un ZIP con el estado local para revisión y migración posterior.
 
 La integración a `main` solo debe realizarse cuando auditoría canónica, Playwright de escritorio y móvil y publicación Pages hayan terminado sobre el mismo commit final.
 

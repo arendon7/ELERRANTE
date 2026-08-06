@@ -9,6 +9,7 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
+python3 scripts/materializar_fuentes_locales_v28.py
 python3 verificar_demo.py
 python3 scripts/verificar_canon_marca_v28.py
 python3 scripts/verificar_activos_hq_v28.py
@@ -19,10 +20,12 @@ from pathlib import Path
 root=Path('.')
 files=[p for p in root.rglob('*') if p.is_file() and '.git' not in p.parts]
 webps=list((root/'assets/images/brand-final').glob('*.webp'))
+generated=list((root/'assets/generated').glob('*'))
 print('')
 print('PAQUETE LOCAL V2.8')
 print(f'Archivos físicos: {len(files)}')
 print(f'Activos WebP canónicos: {len(webps)}')
+print(f'Fuentes materializadas: {len(generated)}')
 print(f'Tamaño descomprimido: {sum(p.stat().st_size for p in files)/1024/1024:.2f} MB')
 print('RESULTADO FINAL: OK')
 PY

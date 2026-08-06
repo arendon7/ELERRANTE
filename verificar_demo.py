@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from urllib.parse import unquote
+import json
 import re
 import sys
 
@@ -26,8 +27,13 @@ CRITICAL_SCRIPTS = [
     'assets/materials-data-v23.js','assets/materials-v23.js','assets/measurement-v24.js',
     'assets/procurement-v25.js','assets/procurement-v25-guard.js','assets/finance-v27.js',
     'assets/operations-v16.js','service-worker.js','scripts/exportar-fuente-canonica.mjs',
-    'scripts/verificar_canon_marca_v28.py','scripts/verificar_activos_hq_v28.py',
-    'scripts/verificar_modulos_v28.py','scripts/abrir_local_v28.sh','servidor_demo.py'
+    'scripts/materializar_fuentes_locales_v28.py','scripts/verificar_canon_marca_v28.py',
+    'scripts/verificar_activos_hq_v28.py','scripts/verificar_modulos_v28.py',
+    'scripts/abrir_local_v28.sh','servidor_demo.py'
+]
+GENERATED_SOURCES = [
+    'assets/generated/data-v28.js','assets/generated/app-v28.js',
+    'assets/generated/preprod-v28.js','assets/generated/manifest-v28.json'
 ]
 LOCAL_ENTRYPOINTS = [
     'ABRIR_EL_ERRANTE.command','ABRIR_EL_ERRANTE_LOCAL_V28.command','ABRIR_ADMIN_LOCAL_V28.command',
@@ -112,6 +118,7 @@ def clean_reference(value: str) -> str | None:
 for page in PUBLIC_PAGES: require(page, 'Página pública')
 for page in INTERNAL_PAGES: require(page, 'Módulo interno')
 for script in CRITICAL_SCRIPTS: require(script, 'Runtime o barrera crítica')
+for generated in GENERATED_SOURCES: require(generated, 'Fuente materializada V2.8')
 for entry in LOCAL_ENTRYPOINTS: require(entry, 'Acceso local V2.8')
 for path in ['deploy-version.txt','assets/logo-mark.svg','assets/logo-lockup.svg','manifest.webmanifest','package.json','README.md','CHANGELOG.md']:
     require(path, 'Archivo canónico')
@@ -119,6 +126,8 @@ for path in ARCHIVE_REQUIREMENTS: require(path, 'Archivo histórico aislado')
 
 brand = read('assets/brand-canon-v28.js')
 data = read('assets/data.js')
+app = read('assets/app.js')
+preprod = read('assets/preprod.js')
 host = read('assets/host-mode.js')
 sw = read('service-worker.js')
 deploy = read('deploy-version.txt')
@@ -128,20 +137,26 @@ runtime_config = read('assets/commerce-runtime-config.js')
 package = read('package.json')
 server = read('servidor_demo.py')
 launcher = read('scripts/abrir_local_v28.sh')
+materializer = read('scripts/materializar_fuentes_locales_v28.py')
 readme = read('README.md')
 changelog = read('CHANGELOG.md')
 
 required_markers = {
     'manifiesto de marca V2.8': "const VERSION='2.8.0'" in brand,
     'caché compartida V2.8': "el-errante-v2-8-brand-canon-1" in brand and 'const CACHE=BRAND.cache' in sw,
+    'datos prefieren fuente materializada': "requestText('assets/generated/data-v28.js',false)" in data,
+    'aplicación prefiere fuente materializada': "requestText('assets/generated/app-v28.js',false)" in app,
+    'preproducción prefiere fuente materializada': "requestText('assets/generated/preprod-v28.js',false)" in preprod,
     'datos normalizados antes de renderizar': 'BRAND.applyToData(window.EE_DATA)' in data,
     'DOM usa manifiesto compartido': 'BRAND.applyToDom' in host and 'const VISUALS=' not in host,
     'service worker importa manifiesto': "importScripts('./assets/brand-canon-v28.js')" in sw,
+    'service worker reconoce fuentes generadas': 'const GENERATED=' in sw and 'assets/generated/data-v28.js' in sw,
+    'materializador declara tres salidas': all(name in materializer for name in ('data-v28.js','app-v28.js','preprod-v28.js')),
     'release declarada V2.8': 'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-1' in deploy,
     'paquete declarado V2.8': '"version": "2.8.0"' in package,
     'panel integral identificado V2.8': '· V2.8' in admin,
     'servidor local identificado V2.8': 'EL ERRANTE LOCAL V2.8' in server and "range(8787, 8801)" in server,
-    'lanzador ejecuta cuatro barreras': all(marker in launcher for marker in ('verificar_demo.py','verificar_canon_marca_v28.py','verificar_activos_hq_v28.py','verificar_modulos_v28.py')),
+    'lanzador materializa y ejecuta barreras': 'materializar_fuentes_locales_v28.py' in launcher and all(marker in launcher for marker in ('verificar_demo.py','verificar_canon_marca_v28.py','verificar_activos_hq_v28.py','verificar_modulos_v28.py')),
     'README vigente': '# El Errante V2.8' in readme,
     'changelog vigente': '## [2.8.0]' in changelog,
     'finanzas V2.7 conservadas': 'assets/finance-v27.js' in admin and 'id="finance-v27"' in admin,
@@ -149,6 +164,32 @@ required_markers = {
 }
 for label, ok in required_markers.items():
     if not ok: ISSUES.append(f'Falla canónica: {label}')
+
+manifest_path = ROOT / 'assets/generated/manifest-v28.json'
+if manifest_path.is_file():
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+        outputs = manifest.get('outputs', [])
+        expected_paths = {
+            'assets/generated/data-v28.js','assets/generated/app-v28.js','assets/generated/preprod-v28.js'
+        }
+        if manifest.get('version') != '2.8.0':
+            ISSUES.append('El manifiesto generado no declara version=2.8.0')
+        if {item.get('path') for item in outputs} != expected_paths:
+            ISSUES.append('El manifiesto generado no contiene exactamente las tres fuentes V2.8')
+        for item in outputs:
+            path = ROOT / str(item.get('path', ''))
+            if not path.is_file() or path.stat().st_size != item.get('bytes'):
+                ISSUES.append(f"Fuente generada ausente o con tamaño inconsistente: {item.get('path')}")
+    except (json.JSONDecodeError, TypeError) as error:
+        ISSUES.append(f'Manifiesto generado inválido: {error}')
+
+for generated in GENERATED_SOURCES[:3]:
+    text = read(generated)
+    if 'Fuente materializada de forma determinista' not in text:
+        ISSUES.append(f'Fuente generada sin encabezado determinista: {generated}')
+    if '[... ELLIPSIZATION ...]' in text:
+        ISSUES.append(f'Fuente generada truncada: {generated}')
 
 for product_id in PRODUCT_IDS:
     if f'"{product_id}"' not in products and f"'{product_id}'" not in products:
@@ -178,7 +219,7 @@ for html in sorted(ROOT.glob('*.html')):
 
 if 'url: ""' not in runtime_config or 'publishableKey: ""' not in runtime_config:
     ISSUES.append('La edición local no conserva Supabase inactivo.')
-if re.search(r'\bservice_role\b|postgres://|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', '\n'.join([brand,data,host,sw,runtime_config]), re.I):
+if re.search(r'\bservice_role\b|postgres://|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', '\n'.join([brand,data,app,preprod,host,sw,runtime_config]), re.I):
     ISSUES.append('Se detectó material sensible o una credencial privilegiada en el runtime.')
 
 print('EL ERRANTE V2.8 — BARRERA INTEGRAL')
@@ -187,6 +228,7 @@ print(f'Páginas públicas: {len(PUBLIC_PAGES)}')
 print(f'Módulos internos: {len(INTERNAL_PAGES)}')
 print(f'Productos: {len(PRODUCT_IDS)}')
 print(f'WebP canónicos: {len(CANONICAL_WEBPS)}')
+print(f'Fuentes materializadas: {len(GENERATED_SOURCES) - 1}')
 print(f'Archivos obligatorios comprobados: {len(CHECKED)}')
 print(f'Problemas: {len(ISSUES)}')
 if ISSUES:

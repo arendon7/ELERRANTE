@@ -10,6 +10,14 @@
 - Se unifica la caché en `el-errante-v2-8-brand-canon-1`.
 - Se conservan Abastecimiento V2.5 y Finanzas Operativas V2.7 dentro de la aplicación integral V2.8.
 
+### Fuentes ejecutables
+
+- Se añade `scripts/materializar_fuentes_locales_v28.py`.
+- `data`, `app` y `preprod` se materializan como JavaScript legible y determinista antes de abrir localmente, validar o publicar.
+- `assets/generated/manifest-v28.json` registra tamaño y SHA-256 de salidas y fragmentos de origen.
+- Los loaders priorizan las fuentes materializadas y mantienen Base64 únicamente como fallback de compatibilidad.
+- El service worker cachea opcionalmente las fuentes generadas sin bloquear el fallback.
+
 ### Corregido
 
 - Eliminada la competencia entre remapeos de `data.js`, `host-mode.js`, service worker y overlays históricos.
@@ -17,6 +25,7 @@
 - Corregido el test de activación para la superficie V2.5 y el canon global V2.8.
 - Unificados los lanzadores locales y el servidor de macOS.
 - Actualizado el exportador para producir datos con imágenes `brand-final` y `brand_asset_version=2.8.0`.
+- Alineada la configuración comercial efectiva V2.5 con la aplicación integral V2.8.
 
 ### Archivado
 
@@ -26,10 +35,11 @@
 
 ### Validación
 
-- Barrera integral de estructura y seguridad.
+- Barrera integral de estructura, referencias y seguridad.
 - Barrera de canon visual.
 - Integridad física de WebP HQ.
 - Barrera modular de operación, backend, activación, materiales, medición, abastecimiento y finanzas.
+- Control de existencia e integridad de las tres fuentes materializadas.
 - Suite Playwright de escritorio y móvil pendiente de ejecución remota cuando GitHub Actions esté operativo.
 
 ## [2.7.0] — Finanzas Operativas

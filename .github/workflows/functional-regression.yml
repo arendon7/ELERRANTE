@@ -21,6 +21,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Materializar fuentes legibles V2.8
+        run: python3 scripts/materializar_fuentes_locales_v28.py
       - name: Ejecutar barreras previas V2.8
         run: |
           python3 verificar_demo.py
@@ -44,5 +46,6 @@ jobs:
           path: |
             playwright-report
             test-results
+            assets/generated/manifest-v28.json
           if-no-files-found: warn
           retention-days: 14

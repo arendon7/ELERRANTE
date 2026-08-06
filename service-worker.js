@@ -2,6 +2,12 @@ importScripts('./assets/brand-canon-v28.js');
 
 const BRAND=self.EL_ERRANTE_BRAND_V28;
 const CACHE=BRAND.cache;
+const GENERATED=[
+  './assets/generated/data-v28.js',
+  './assets/generated/app-v28.js',
+  './assets/generated/preprod-v28.js',
+  './assets/generated/manifest-v28.json'
+];
 const CORE=[
   './index.html','./historia.html','./nosotros.html','./tienda.html','./producto.html','./en-casa.html',
   './en-movimiento.html','./bitacora.html','./articulo.html','./recetas.html','./receta.html',
@@ -20,7 +26,14 @@ const CORE=[
 ];
 
 self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([...new Set(CORE)])));
+  event.waitUntil((async()=>{
+    const cache=await caches.open(CACHE);
+    await cache.addAll([...new Set(CORE)]);
+    await Promise.allSettled(GENERATED.map(async path=>{
+      const response=await fetch(path,{cache:'no-store'});
+      if(response.ok)await cache.put(path,response);
+    }));
+  })());
   self.skipWaiting();
 });
 
@@ -69,7 +82,7 @@ self.addEventListener('fetch',event=>{
   if(request.method!=='GET')return;
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
-  const fresh=request.mode==='navigate'||request.destination==='document'||url.pathname.endsWith('/deploy-version.txt')||url.pathname.endsWith('/assets/commerce-runtime-config.js')||url.pathname.endsWith('/assets/brand-canon-v28.js');
+  const fresh=request.mode==='navigate'||request.destination==='document'||url.pathname.endsWith('/deploy-version.txt')||url.pathname.endsWith('/assets/commerce-runtime-config.js')||url.pathname.endsWith('/assets/brand-canon-v28.js')||url.pathname.endsWith('/assets/generated/manifest-v28.json');
   event.respondWith(fresh?networkFirst(request):cacheFirst(request));
 });
 

@@ -5,6 +5,7 @@ STAMP="$(date +%Y%m%d_%H%M%S)"
 OUT="$HOME/Desktop/EL_ERRANTE_RETORNO_GITHUB_V28_${STAMP}.zip"
 cd "$DIR"
 
+python3 scripts/materializar_fuentes_locales_v28.py
 python3 verificar_demo.py
 python3 scripts/verificar_canon_marca_v28.py
 python3 scripts/verificar_activos_hq_v28.py

@@ -21,6 +21,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Materializar fuentes legibles V2.8
+        run: python3 scripts/materializar_fuentes_locales_v28.py
       - name: Validar estructura, marca y módulos
         run: |
           python3 verificar_demo.py
@@ -29,6 +31,11 @@ jobs:
           python3 scripts/verificar_modulos_v28.py
           node --check assets/brand-canon-v28.js
           node --check assets/data.js
+          node --check assets/app.js
+          node --check assets/preprod.js
+          node --check assets/generated/data-v28.js
+          node --check assets/generated/app-v28.js
+          node --check assets/generated/preprod-v28.js
           node --check assets/host-mode.js
           node --check assets/finance-v27.js
           node --check service-worker.js
@@ -43,10 +50,13 @@ jobs:
           root=Path('.artifacts/canonical')
           data=json.loads((root/'canonical-data.json').read_text(encoding='utf-8'))
           report=json.loads((root/'canonical-report.json').read_text(encoding='utf-8'))
+          generated=json.loads(Path('assets/generated/manifest-v28.json').read_text(encoding='utf-8'))
           products=data.get('products',[])
           assert report['version']=='2.8.0'
           assert report['provenance']['brand_canon']=='assets/brand-canon-v28.js'
           assert data.get('brand',{}).get('version')=='2.8.0'
+          assert generated['version']=='2.8.0'
+          assert len(generated['outputs'])==3
           assert len(products)==11
           assert len({p.get('id') for p in products})==11
           assert all(str(p.get('image','')).startswith('assets/images/brand-final/') for p in products)
@@ -54,6 +64,7 @@ jobs:
           assert all(p.get('gallery') and all(str(i).startswith('assets/images/brand-final/') for i in p['gallery']) for p in products)
           print('products=11')
           print('brand=2.8.0')
+          print('generated_sources=3')
           print('canonical_json_sha256='+report['canonical_json_sha256'])
           PY
       - name: Conservar artefacto canónico
@@ -61,6 +72,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fuente-canonica-${{ github.sha }}
-          path: .artifacts/canonical
+          path: |
+            .artifacts/canonical
+            assets/generated/manifest-v28.json
           if-no-files-found: error
           retention-days: 14

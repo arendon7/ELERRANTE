@@ -42,19 +42,26 @@ jobs:
             version="$(sed -n 's/^version=//p' deploy-version-observed.txt | tr -d '\r')"
             cache="$(sed -n 's/^cache=//p' deploy-version-observed.txt | tr -d '\r')"
             source="$(sed -n 's/^deploy_source=//p' deploy-version-observed.txt | tr -d '\r')"
+            mode="$(sed -n 's/^source_mode=//p' deploy-version-observed.txt | tr -d '\r')"
             if [ "$sha" = "$EXPECTED_SHA" ] && [ "$version" = "$EXPECTED_VERSION" ] && \
-               [ "$cache" = "$EXPECTED_CACHE" ] && [ "$source" = "main" ]; then success=1; break; fi
+               [ "$cache" = "$EXPECTED_CACHE" ] && [ "$source" = "main" ] && [ "$mode" = "materialized" ]; then success=1; break; fi
             sleep 5
           done
           test "$success" -eq 1
-      - name: Verificar runtime y superficies críticas
+      - name: Verificar runtime y fuentes materializadas
         shell: bash
         run: |
           set -euo pipefail
-          for asset in brand-canon-v28.js data.js host-mode.js finance-v27.js procurement-v25.js commerce-runtime-config.js; do
+          for asset in brand-canon-v28.js data.js app.js preprod.js host-mode.js finance-v27.js procurement-v25.js commerce-runtime-config.js; do
             curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
+          for asset in data-v28.js app-v28.js preprod-v28.js; do
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/assets/generated/$asset?verify=$EXPECTED_SHA" > "public-generated-$asset"
+          done
+          curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' \
+            "$PUBLIC_BASE/assets/generated/manifest-v28.json?verify=$EXPECTED_SHA" > public-generated-manifest-v28.json
           curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' \
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
           for page in index tienda producto admin activacion; do
@@ -62,14 +69,31 @@ jobs:
               "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
           done
           grep -q "const VERSION='2.8.0'" public-brand-canon-v28.js
+          grep -q 'assets/generated/data-v28.js' public-data.js
+          grep -q 'assets/generated/app-v28.js' public-app.js
+          grep -q 'assets/generated/preprod-v28.js' public-preprod.js
+          grep -q 'Fuente materializada de forma determinista' public-generated-data-v28.js
+          grep -q 'Fuente materializada de forma determinista' public-generated-app-v28.js
+          grep -q 'Fuente materializada de forma determinista' public-generated-preprod-v28.js
+          grep -q '"version": "2.8.0"' public-generated-manifest-v28.json
           grep -q 'BRAND.applyToData(window.EE_DATA)' public-data.js
           grep -q 'BRAND.applyToDom' public-host-mode.js
           grep -q "importScripts('./assets/brand-canon-v28.js')" public-service-worker.js
+          grep -q 'const GENERATED=' public-service-worker.js
           grep -q '· V2.8' public-admin.html
           grep -q 'assets/finance-v27.js' public-admin.html
           grep -q 'assets/procurement-v25.js' public-admin.html
           ! grep -qi 'service_role' public-commerce-runtime-config.js
           for script in public-*.js; do node --check "$script"; done
+          python3 - <<'PY'
+          import json
+          manifest=json.load(open('public-generated-manifest-v28.json',encoding='utf-8'))
+          assert manifest['version']=='2.8.0'
+          assert len(manifest['outputs'])==3
+          assert {item['path'] for item in manifest['outputs']}=={
+            'assets/generated/data-v28.js','assets/generated/app-v28.js','assets/generated/preprod-v28.js'
+          }
+          PY
       - name: Verificar WebP HQ críticos
         shell: bash
         run: |
@@ -94,5 +118,6 @@ jobs:
           path: |
             deploy-version-observed.txt
             public-*.js
+            public-*.json
             public-*.html
           retention-days: 14

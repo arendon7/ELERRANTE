@@ -6,12 +6,14 @@ Esta edición conserva como referencia aprobada la segunda versión local V2.7 y
 - fichas y textos ampliados del catálogo;
 - Abastecimiento V2.5;
 - Finanzas Operativas V2.7;
-- una única fuente V2.8 para identidad, imágenes, galerías, versión y caché.
+- una única fuente V2.8 para identidad, imágenes, galerías, versión y caché;
+- fuentes JavaScript legibles materializadas desde los fragmentos históricos.
 
 ANTES DE ABRIR
 1. Descomprime el ZIP completo.
 2. Ejecuta VERIFICAR_PAQUETE_LOCAL_V28.command.
-3. Continúa únicamente si termina en RESULTADO FINAL: OK.
+3. El comando generará assets/generated/data-v28.js, app-v28.js y preprod-v28.js.
+4. Continúa únicamente si termina en RESULTADO FINAL: OK.
 
 ACCESOS
 - ABRIR_EL_ERRANTE_LOCAL_V28.command: web pública.
@@ -26,10 +28,14 @@ El servidor abre solo en 127.0.0.1 y usa el primer puerto disponible entre 8787 
 DATOS
 Pedidos, inventarios, mediciones, compras y movimientos financieros se guardan en localStorage del navegador. Supabase permanece inactivo porque la URL y la clave pública están vacías.
 
-RETORNO A GITHUB
-PREPARAR_RETORNO_GITHUB_V28.command verifica la aplicación y crea en el Escritorio un ZIP para revisión y migración posterior.
+FUENTES
+La aplicación ejecuta primero las fuentes legibles de assets/generated. Los archivos Base64 de assets/source se conservan como origen reproducible y fallback, no como fuente visual ni editorial.
 
-FUENTE
+RETORNO A GITHUB
+PREPARAR_RETORNO_GITHUB_V28.command vuelve a materializar, verifica la aplicación y crea en el Escritorio un ZIP para revisión y migración posterior.
+
+VERSIÓN
 Versión integral: 2.8.0
 Canon: assets/brand-canon-v28.js
+Caché: el-errante-v2-8-brand-canon-1
 Documentación: documentacion/CANON_MARCA_CONTENIDO_V28.md

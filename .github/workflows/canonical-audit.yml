@@ -21,32 +21,25 @@ jobs:
       - name: Materializar fallback visual legado
         run: python3 scripts/materializar_activos_visuales.py
 
-      - name: Validar release público HQ
-        run: python3 scripts/verificar_release_v13.py
-
-      - name: Validar operación comercial V1.4
-        run: python3 scripts/verificar_operacion_v14.py
-
-      - name: Validar backend y acceso privado V1.5
-        run: python3 scripts/verificar_backend_v15.py
-
-      - name: Validar operación y finanzas V1.6
-        run: python3 scripts/verificar_operacion_v16.py
-
-      - name: Validar contenido y conversión V1.7
-        run: python3 scripts/verificar_contenido_v17.py
-
-      - name: Validar experiencia de compra V1.8
-        run: python3 scripts/verificar_experiencia_compra_v18.py
-
-      - name: Validar confianza y seguimiento V1.9
-        run: python3 scripts/verificar_confianza_v19.py
-
-      - name: Validar activación operativa V2.0
-        run: python3 scripts/verificar_activacion_v20.py
-
-      - name: Validar operación diaria V2.1
-        run: python3 scripts/verificar_operacion_diaria_v21.py
+      - name: Validar release y operación completa
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in \
+            scripts/verificar_release_v13.py \
+            scripts/verificar_operacion_v14.py \
+            scripts/verificar_backend_v15.py \
+            scripts/verificar_operacion_v16.py \
+            scripts/verificar_contenido_v17.py \
+            scripts/verificar_experiencia_compra_v18.py \
+            scripts/verificar_confianza_v19.py \
+            scripts/verificar_activacion_v20.py \
+            scripts/verificar_operacion_diaria_v21.py \
+            scripts/verificar_produccion_v22.py; do
+            python3 "$test"
+          done
+          node --check assets/daily-ops-v21.js
+          node --check assets/production-v22.js
 
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
@@ -57,25 +50,25 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          root = Path('.artifacts/canonical')
-          data = json.loads((root / 'canonical-data.json').read_text(encoding='utf-8'))
-          report = json.loads((root / 'canonical-report.json').read_text(encoding='utf-8'))
-          products = data.get('products', [])
-          values = {
-              'products': len(products),
-              'variants': sum(len(p.get('variants', [])) for p in products),
-              'recipes': len(data.get('recipes', [])),
-              'articles': len(data.get('articles', [])),
-              'faqs': len(data.get('faqs', [])),
-              'coverage': len(data.get('coverage', [])),
+          root=Path('.artifacts/canonical')
+          data=json.loads((root/'canonical-data.json').read_text(encoding='utf-8'))
+          report=json.loads((root/'canonical-report.json').read_text(encoding='utf-8'))
+          products=data.get('products',[])
+          values={
+              'products':len(products),
+              'variants':sum(len(p.get('variants',[])) for p in products),
+              'recipes':len(data.get('recipes',[])),
+              'articles':len(data.get('articles',[])),
+              'faqs':len(data.get('faqs',[])),
+              'coverage':len(data.get('coverage',[])),
           }
           print('AUDITORÍA CANÓNICA ESTRUCTURADA')
-          for key, value in values.items(): print(f'{key}={value}')
-          print('product_ids=' + ','.join(p.get('id', '') for p in products))
-          print('canonical_json_sha256=' + report['canonical_json_sha256'])
-          print('legacy_status=' + report['legacy_chunks']['status'])
-          assert values == {'products':11,'variants':14,'recipes':5,'articles':5,'faqs':5,'coverage':6}
-          assert report['legacy_chunks']['status'] == 'truncated-ellipsized-do-not-use'
+          for key,value in values.items(): print(f'{key}={value}')
+          print('product_ids='+','.join(p.get('id','') for p in products))
+          print('canonical_json_sha256='+report['canonical_json_sha256'])
+          print('legacy_status='+report['legacy_chunks']['status'])
+          assert values=={'products':11,'variants':14,'recipes':5,'articles':5,'faqs':5,'coverage':6}
+          assert report['legacy_chunks']['status']=='truncated-ellipsized-do-not-use'
           PY
 
       - name: Conservar artefacto canónico

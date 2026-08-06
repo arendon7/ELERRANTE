@@ -12,7 +12,7 @@ PAGES = [
     "producto.html", "en-casa.html", "en-movimiento.html", "bitacora.html",
     "recetas.html", "herramientas.html", "cobertura.html", "ayuda.html",
     "checkout.html", "cuenta.html", "legal.html", "equipo.html",
-    "admin.html", "control.html", "operacion.html", "studio.html",
+    "admin.html", "activacion.html", "control.html", "operacion.html", "studio.html",
     "actas.html", "presentacion.html",
 ]
 VISUALS = [
@@ -75,7 +75,7 @@ host = (ROOT / "assets/host-mode.js").read_text(encoding="utf-8")
 worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 workflow = (ROOT / ".github/workflows/pages.yml").read_text(encoding="utf-8")
 for marker in [
-    'PUBLIC_VERSION="2.2.0"', 'ACTIVE_CACHE="el-errante-v2-2-0"',
+    'PUBLIC_VERSION="2.3.0"', 'ACTIVE_CACHE="el-errante-v2-3-0"',
     'brand-final-hq', 'home-hero-mobile.webp', 'producto-panela-maracuya.webp',
 ]:
     if marker not in host:
@@ -85,8 +85,8 @@ if "home-compartir.webp" not in host or "home-ingredientes.webp" not in host:
     ISSUES.append("Los editoriales Compartir e Ingredientes no están integrados en el runtime")
 if "og-el-errante.webp" not in index_html or 'property="og:image"' not in index_html:
     ISSUES.append("La portada social oficial no está integrada en index.html")
-if "el-errante-v2-2-0" not in worker:
-    ISSUES.append("Service worker no usa la caché V1.3")
+if "el-errante-v2-3-0" not in worker:
+    ISSUES.append("Service worker no usa la caché V2.3")
 if "home-hero.webp" not in worker or "producto-margherita.webp" not in worker:
     ISSUES.append("Service worker no precarga los WebP HQ")
 if "verificar_release_v13.py" not in workflow:

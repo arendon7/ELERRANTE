@@ -1,4 +1,4 @@
-name: Integrar V2.5 abastecimiento
+name: Integrar y publicar revisión V2.5
 
 on:
   pull_request:
@@ -7,6 +7,8 @@ on:
 permissions:
   contents: write
   actions: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: "integrar-v25-${{ github.event.pull_request.number }}"
@@ -15,7 +17,9 @@ concurrency:
 jobs:
   integrate:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    outputs:
+      final_sha: ${{ steps.publish.outputs.final_sha }}
     steps:
       - name: Descargar rama V2.5
         uses: actions/checkout@v4
@@ -38,7 +42,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Aplicar integración determinista
+      - name: Aplicar integración y depuración visual
         shell: bash
         run: |
           set -euo pipefail
@@ -66,23 +70,141 @@ jobs:
           python scripts/verificar_medicion_v24.py
           python scripts/verificar_activacion_v20.py
           grep -Fq "if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'" .github/workflows/pages.yml
+          ! grep -R -n 'assets/images/v040/' -- *.html assets/data.js assets/host-mode.js
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          files=[*Path('.').glob('*.html'),Path('assets/data.js'),Path('assets/host-mode.js')]
+          for file in files:
+              text=file.read_text(encoding='utf-8')
+              for ref in re.findall(r'assets/images/brand-final/[A-Za-z0-9_-]+\.webp',text):
+                  if not Path(ref).is_file():
+                      raise SystemExit(f'{file}: falta {ref}')
+          PY
 
       - name: Retirar herramientas temporales
         shell: bash
         run: git rm scripts/aplicar_v25.py .github/workflows/build-v25.yml
 
       - name: Publicar integración limpia
+        id: publish
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "feat: integra abastecimiento controlado V2.5"
+          git commit -m "feat: publica V2.5 con visuales canónicos"
+          FINAL_SHA="$(git rev-parse HEAD)"
           git push origin HEAD:${{ github.head_ref }}
-          echo "Commit integrado: $(git rev-parse HEAD)"
+          echo "final_sha=$FINAL_SHA" >> "$GITHUB_OUTPUT"
+          echo "Commit integrado: $FINAL_SHA"
 
-      - name: Despachar validaciones sobre el commit final
+  preview:
+    name: Publicar revisión navegable
+    needs: integrate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Descargar commit integrado
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Confirmar commit final
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ needs.integrate.outputs.final_sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Materializar sistema visual
+        run: python3 scripts/materializar_activos_visuales.py
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Preparar revisión pública
+        shell: bash
+        env:
+          FINAL_SHA: ${{ needs.integrate.outputs.final_sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          rsync -av ./ _site/ \
+            --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' \
+            --exclude '.artifacts/' --exclude 'node_modules/' --exclude 'test-results/' \
+            --exclude 'playwright-report/' --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip' \
+            --exclude 'assets/brand-final-editorial.js' --exclude 'assets/brand-final-products-a.js' \
+            --exclude 'assets/brand-final-products-b.js' --exclude 'assets/brand-final-products-c.js'
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          config={
+              'environment':'preview',
+              'backend':{
+                  'provider':'supabase',
+                  'url':'',
+                  'publishableKey':'',
+                  'receiptBucket':'payment-receipts',
+                  'shopperStorageKey':'ee-shopper-auth-v15',
+                  'adminStorageKey':'ee-admin-auth-v15'
+              }
+          }
+          Path('_site/assets/commerce-runtime-config.js').write_text(
+              'window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze(' +
+              json.dumps(config,ensure_ascii=False,separators=(',',':')) + ');\n',
+              encoding='utf-8'
+          )
+          PY
+          printf 'EL ERRANTE PUBLIC REVIEW\nversion=2.5.0\ndeploy_source=feat/abastecimiento-v25\nrelease_commit=%s\ncache=el-errante-v2-5-visual-1\nupdated=%s\n' \
+            "$FINAL_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          touch _site/.nojekyll
+
+      - name: Verificar revisión publicable
+        shell: bash
+        env:
+          FINAL_SHA: ${{ needs.integrate.outputs.final_sha }}
+        run: |
+          set -euo pipefail
+          grep -q 'version=2.5.0' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v2-5-visual-1' _site/deploy-version.txt
+          grep -q "release_commit=${FINAL_SHA}" _site/deploy-version.txt
+          grep -q 'id="procurement-v25"' _site/admin.html
+          grep -q 'assets/procurement-v25.js' _site/admin.html
+          grep -q 'assets/procurement-v25.css' _site/admin.html
+          grep -q 'assets/activation-v25.js' _site/activacion.html
+          grep -q 'Comprar con evidencia y autorización.' _site/assets/procurement-v25.js
+          grep -q 'Esta factura o remisión ya fue registrada para la orden.' _site/assets/procurement-v25.js
+          ! grep -R -n 'assets/images/v040/' -- _site/*.html _site/assets/data.js _site/assets/host-mode.js
+          node --check _site/assets/commerce-runtime-config.js
+          node --check _site/assets/host-mode.js
+          node --check _site/assets/procurement-v25.js
+          node --check _site/assets/activation-v25.js
+          node --check _site/service-worker.js
+          ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
+          ! grep -qi 'service_role' _site/assets/procurement-v25.js
+          ! grep -qi 'postgres://' _site/assets/procurement-v25.js
+
+      - name: Cargar revisión de Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: "_site"
+
+      - name: Publicar revisión
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  dispatch:
+    name: Despachar validaciones finales
+    needs: [integrate, preview]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lanzar auditoría y regresión sobre el commit final
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}

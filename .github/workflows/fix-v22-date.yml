@@ -21,18 +21,18 @@ jobs:
           from pathlib import Path
           path=Path('assets/production-v22.js')
           text=path.read_text(encoding='utf-8')
-          old="""      let selected=initialDate(orders);
-      host.innerHTML=shellHtml(orders,selected);
-      const dateInput=host.querySelector('#ee-v22-date');
-      const rerenderDate=()=>{selected=dateInput.value||today();sessionStorage.setItem(DATE_KEY,selected);host.innerHTML=shellHtml(orders,selected);bind(host,orders,selected);};
-      dateInput.addEventListener('change',rerenderDate);
-      bind(host,orders,selected);"""
-          new="""      const selected=initialDate(orders);
-      host.innerHTML=shellHtml(orders,selected);
-      bind(host,orders,selected);"""
-          if old not in text:
-              raise SystemExit('No se encontró el bloque duplicado esperado.')
-          path.write_text(text.replace(old,new),encoding='utf-8')
+          lines=text.splitlines()
+          start=next((i for i,line in enumerate(lines) if 'let selected=initialDate(orders);' in line),None)
+          if start is None:
+              raise SystemExit('No se encontró el inicio del bloque duplicado.')
+          expected=['let selected=initialDate(orders);','host.innerHTML=shellHtml(orders,selected);','const dateInput=host.querySelector','const rerenderDate=','dateInput.addEventListener','bind(host,orders,selected);']
+          block=lines[start:start+6]
+          if not all(marker in line for marker,line in zip(expected,block)):
+              raise SystemExit('El bloque de render cambió y no se modificará automáticamente.')
+          indent=lines[start][:len(lines[start])-len(lines[start].lstrip())]
+          replacement=[indent+'const selected=initialDate(orders);',indent+'host.innerHTML=shellHtml(orders,selected);',indent+'bind(host,orders,selected);']
+          lines[start:start+6]=replacement
+          path.write_text('\n'.join(lines)+'\n',encoding='utf-8')
           PY
           node --check assets/production-v22.js
           python3 scripts/verificar_produccion_v22.py

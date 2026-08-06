@@ -116,6 +116,7 @@
   const boot=()=>{shell();wrapFinance();};
   window.addEventListener('ee:v22:reload',shell);
   window.addEventListener('ee:admin:ready',shell);
+  window.addEventListener('ee:v24:stock-updated',shell);
   window.addEventListener('storage',event=>{if([ORDER_KEY,STOCK_KEY].includes(event.key))shell();});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,50),{once:true});else setTimeout(boot,50);
 })();

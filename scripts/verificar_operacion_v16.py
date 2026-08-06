@@ -22,7 +22,7 @@ worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 host = (ROOT / "assets/host-mode.js").read_text(encoding="utf-8")
 materials = (ROOT / "assets/materials-v23.js").read_text(encoding="utf-8")
 
-for marker in ["Operación diaria, producción, materiales y despacho · V2.3", 'id="operations-v16"', "operations-v16.js", "commerce-v16.css"]:
+for marker in ["Operación, producción, materiales, medición, compras y despacho · V2.4", 'id="operations-v16"', "operations-v16.js", "commerce-v16.css"]:
     if marker not in admin:
         ISSUES.append(f"Administración V1.6 incompleta: {marker}")
 
@@ -58,9 +58,9 @@ for forbidden in ["service_role", "SUPABASE_SERVICE", "postgres://"]:
 for marker in ["assets/operations-v16.js", "assets/commerce-v16.css"]:
     if marker not in worker:
         ISSUES.append(f"Activo V1.6 no precargado: {marker}")
-if "el-errante-v2-3-0" not in worker:
+if "el-errante-v2-4-0" not in worker:
     ISSUES.append("Service worker no usa caché pública V2.3")
-if 'PUBLIC_VERSION="2.3.0"' not in host or 'ACTIVE_CACHE="el-errante-v2-3-0"' not in host:
+if 'PUBLIC_VERSION="2.4.0"' not in host or 'ACTIVE_CACHE="el-errante-v2-4-0"' not in host:
     ISSUES.append("Host público no declara versión/caché V2.3")
 
 print("EL ERRANTE V1.6 — BARRERA DE OPERACIÓN Y FINANZAS")

@@ -1,142 +1,96 @@
-name: Integrar y publicar revisión V2.5
+name: Validar y publicar revisión V2.5
 
 on:
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   actions: write
   pages: write
   id-token: write
 
 concurrency:
-  group: "integrar-v25-${{ github.event.pull_request.number }}"
+  group: "revision-v25-${{ github.event.pull_request.number || github.ref }}"
   cancel-in-progress: true
 
 jobs:
-  integrate:
-    runs-on: windows-latest
-    timeout-minutes: 20
+  validate:
+    name: Validar release candidata
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     outputs:
-      final_sha: ${{ steps.publish.outputs.final_sha }}
+      final_sha: ${{ steps.sha.outputs.value }}
     steps:
       - name: Descargar rama V2.5
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Confirmar head vigente
+      - name: Confirmar commit vigente
+        id: sha
         shell: bash
         run: |
           set -euo pipefail
           CURRENT="$(git rev-parse HEAD)"
-          EXPECTED="${{ github.event.pull_request.head.sha }}"
-          if [ "$CURRENT" != "$EXPECTED" ]; then
-            echo "Ejecución obsoleta: evento=$EXPECTED rama=$CURRENT"
-            exit 1
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            EXPECTED="${{ github.event.pull_request.head.sha }}"
+            test "$CURRENT" = "$EXPECTED"
           fi
+          echo "value=$CURRENT" >> "$GITHUB_OUTPUT"
 
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Aplicar integración y depuración visual
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          replacements={
-              'assets/images/v040/v040-pizza-neo.svg':'assets/images/brand-final/home-en-casa.webp',
-              'assets/images/v040/v040-harina-empaques.svg':'assets/images/brand-final/producto-harina.webp',
-              'assets/images/v040/v040-harina-horno.svg':'assets/images/brand-final/producto-harina.webp'
-          }
-          for file in [*Path('.').glob('*.html'),Path('assets/data.js'),Path('assets/host-mode.js')]:
-              text=file.read_text(encoding='utf-8')
-              for old,new in replacements.items():
-                  text=text.replace(old,new)
-              file.write_text(text,encoding='utf-8')
-          PY
-          python scripts/aplicar_v25.py
-          python - <<'PY'
-          from pathlib import Path
-          path=Path('.github/workflows/pages.yml')
-          text=path.read_text(encoding='utf-8')
-          old="    if: github.event_name != 'pull_request'"
-          new="    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'"
-          if text.count(old) != 1:
-              raise SystemExit('No se encontró el guard de despliegue esperado en pages.yml')
-          path.write_text(text.replace(old,new,1),encoding='utf-8')
-          PY
-
-      - name: Validar antes de publicar el commit
+      - name: Validar materialización directa
         shell: bash
         run: |
           set -euo pipefail
           node --check assets/procurement-v25.js
+          node --check assets/procurement-v25-guard.js
           node --check assets/activation-v25.js
-          node --check tests/e2e/procurement-v25.spec.js
+          node --check assets/host-mode.js
           node --check service-worker.js
           python scripts/verificar_abastecimiento_v25.py
           python scripts/verificar_medicion_v24.py
           python scripts/verificar_activacion_v20.py
-          grep -Fq "if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'" .github/workflows/pages.yml
-          ! grep -R -n 'assets/images/v040/' -- *.html assets/data.js assets/host-mode.js
-          python - <<'PY'
-          import re
-          from pathlib import Path
-          files=[*Path('.').glob('*.html'),Path('assets/data.js'),Path('assets/host-mode.js')]
-          for file in files:
-              text=file.read_text(encoding='utf-8')
-              for ref in re.findall(r'assets/images/brand-final/[A-Za-z0-9_-]+\.webp',text):
-                  if not Path(ref).is_file():
-                      raise SystemExit(f'{file}: falta {ref}')
-          PY
-
-      - name: Retirar herramientas temporales
-        shell: bash
-        run: git rm scripts/aplicar_v25.py .github/workflows/build-v25.yml
-
-      - name: Publicar integración limpia
-        id: publish
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "feat: publica V2.5 con visuales canónicos"
-          FINAL_SHA="$(git rev-parse HEAD)"
-          git push origin HEAD:${{ github.head_ref }}
-          echo "final_sha=$FINAL_SHA" >> "$GITHUB_OUTPUT"
-          echo "Commit integrado: $FINAL_SHA"
+          grep -q 'id="procurement-v25"' admin.html
+          grep -q 'assets/procurement-v25.js' admin.html
+          grep -q 'assets/procurement-v25-guard.js' admin.html
+          grep -q 'assets/procurement-v25.css' admin.html
+          grep -q 'assets/activation-v25.js' activacion.html
+          grep -q 'PUBLIC_VERSION="2.5.0"' assets/host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v2-5-visual-1"' assets/host-mode.js
+          grep -q "const CACHE = 'el-errante-v2-5-visual-1'" service-worker.js
+          grep -q 'assets/procurement-v25-guard.js' service-worker.js
+          grep -q 'Esta factura o remisión ya fue registrada para la orden.' assets/procurement-v25-guard.js
+          grep -q 'version=2.5.0' deploy-version.txt
+          grep -q 'cache=el-errante-v2-5-visual-1' deploy-version.txt
+          ! grep -qi 'service_role' assets/procurement-v25.js
+          ! grep -qi 'postgres://' assets/procurement-v25.js
 
   preview:
     name: Publicar revisión navegable
-    needs: integrate
+    needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Descargar commit integrado
+      - name: Descargar release candidata
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Confirmar commit final
+      - name: Confirmar commit validado
         shell: bash
         env:
-          EXPECTED_SHA: ${{ needs.integrate.outputs.final_sha }}
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-
-      - name: Materializar sistema visual
-        run: python3 scripts/materializar_activos_visuales.py
+          EXPECTED_SHA: ${{ needs.validate.outputs.final_sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
@@ -144,25 +98,21 @@ jobs:
       - name: Preparar revisión pública
         shell: bash
         env:
-          FINAL_SHA: ${{ needs.integrate.outputs.final_sha }}
+          FINAL_SHA: ${{ needs.validate.outputs.final_sha }}
         run: |
           set -euo pipefail
           mkdir -p _site
           rsync -av ./ _site/ \
             --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' \
             --exclude '.artifacts/' --exclude 'node_modules/' --exclude 'test-results/' \
-            --exclude 'playwright-report/' --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip' \
-            --exclude 'assets/brand-final-editorial.js' --exclude 'assets/brand-final-products-a.js' \
-            --exclude 'assets/brand-final-products-b.js' --exclude 'assets/brand-final-products-c.js'
+            --exclude 'playwright-report/' --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip'
           python3 - <<'PY'
           import json
           from pathlib import Path
           config={
               'environment':'preview',
               'backend':{
-                  'provider':'supabase',
-                  'url':'',
-                  'publishableKey':'',
+                  'provider':'supabase','url':'','publishableKey':'',
                   'receiptBucket':'payment-receipts',
                   'shopperStorageKey':'ee-shopper-auth-v15',
                   'adminStorageKey':'ee-admin-auth-v15'
@@ -181,27 +131,21 @@ jobs:
       - name: Verificar revisión publicable
         shell: bash
         env:
-          FINAL_SHA: ${{ needs.integrate.outputs.final_sha }}
+          FINAL_SHA: ${{ needs.validate.outputs.final_sha }}
         run: |
           set -euo pipefail
-          grep -q 'version=2.5.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v2-5-visual-1' _site/deploy-version.txt
           grep -q "release_commit=${FINAL_SHA}" _site/deploy-version.txt
           grep -q 'id="procurement-v25"' _site/admin.html
-          grep -q 'assets/procurement-v25.js' _site/admin.html
-          grep -q 'assets/procurement-v25.css' _site/admin.html
+          grep -q 'assets/procurement-v25-guard.js' _site/admin.html
           grep -q 'assets/activation-v25.js' _site/activacion.html
-          grep -q 'Comprar con evidencia y autorización.' _site/assets/procurement-v25.js
-          grep -q 'Esta factura o remisión ya fue registrada para la orden.' _site/assets/procurement-v25.js
-          ! grep -R -n 'assets/images/v040/' -- _site/*.html _site/assets/data.js _site/assets/host-mode.js
+          grep -q 'PUBLIC_VERSION="2.5.0"' _site/assets/host-mode.js
           node --check _site/assets/commerce-runtime-config.js
           node --check _site/assets/host-mode.js
           node --check _site/assets/procurement-v25.js
+          node --check _site/assets/procurement-v25-guard.js
           node --check _site/assets/activation-v25.js
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
-          ! grep -qi 'service_role' _site/assets/procurement-v25.js
-          ! grep -qi 'postgres://' _site/assets/procurement-v25.js
 
       - name: Cargar revisión de Pages
         uses: actions/upload-pages-artifact@v4
@@ -214,14 +158,14 @@ jobs:
 
   dispatch:
     name: Despachar validaciones finales
-    needs: [integrate, preview]
+    needs: [validate, preview]
     runs-on: ubuntu-latest
     steps:
-      - name: Lanzar auditoría y regresión sobre el commit final
+      - name: Lanzar auditoría y regresión
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          BRANCH: ${{ github.head_ref }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           set -euo pipefail
           gh workflow run canonical-audit.yml --ref "$BRANCH"

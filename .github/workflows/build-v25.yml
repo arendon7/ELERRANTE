@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   integrate:
-    runs-on: macos-latest
+    runs-on: windows-latest
     timeout-minutes: 10
     steps:
       - name: Descargar rama V2.5
@@ -17,8 +17,14 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Aplicar integración determinista
-        run: python3 scripts/aplicar_v25.py
+        shell: bash
+        run: python scripts/aplicar_v25.py
 
       - name: Validar antes de publicar el commit
         shell: bash
@@ -28,11 +34,12 @@ jobs:
           node --check assets/activation-v25.js
           node --check tests/e2e/procurement-v25.spec.js
           node --check service-worker.js
-          python3 scripts/verificar_abastecimiento_v25.py
-          python3 scripts/verificar_medicion_v24.py
-          python3 scripts/verificar_activacion_v20.py
+          python scripts/verificar_abastecimiento_v25.py
+          python scripts/verificar_medicion_v24.py
+          python scripts/verificar_activacion_v20.py
 
       - name: Retirar herramientas temporales
+        shell: bash
         run: git rm scripts/aplicar_v25.py .github/workflows/build-v25.yml
 
       - name: Publicar integración limpia

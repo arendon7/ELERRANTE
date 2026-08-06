@@ -63,7 +63,14 @@ test.describe('Operación y finanzas V1.6', () => {
     await seedOperation(page);
     await page.goto('/admin.html');
     await page.getByRole('button', { name: 'Abrir simulación local' }).click();
-    await page.locator('[data-order-status="EE-TEST-V16"]').selectOption('preparing');
+    const desk = page.locator('#daily-ops-v21');
+    await expect(desk.getByRole('heading', { name: 'Mesa de pedidos y continuidad local' })).toBeVisible();
+    await desk.locator('[data-v21-order="EE-TEST-V16"]').getByRole('button', { name: 'Abrir pedido' }).click();
+    const dialogBox = page.locator('#ee-v21-dialog');
+    await expect(dialogBox).toBeVisible();
+    page.once('dialog', dialog => dialog.accept());
+    await dialogBox.getByRole('button', { name: 'Iniciar preparación' }).click();
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ee_v14_orders') || '[]')[0]?.status)).toBe('preparing');
     const panel = await openFinance(page);
     await expect(panel.getByRole('cell', { name: 'Salida por pedido', exact: true })).toBeVisible();
     const productRow = panel.locator('[data-v16-product-row="la-errante"]');

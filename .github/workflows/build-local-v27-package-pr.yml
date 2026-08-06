@@ -1,0 +1,51 @@
+name: Empaquetar fuente completa V2.7
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Recuperar commit V2.7 exacto
+        uses: actions/checkout@v4
+        with:
+          ref: 65bac9f2ee5d7171657f90a6799995291bb0a4b6
+          fetch-depth: 0
+
+      - name: Crear ZIP autocontenido
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=EL_ERRANTE_LOCAL_V27_MAC_COMPLETO
+          mkdir -p "$ROOT"
+          rsync -a ./ "$ROOT/" --exclude "$ROOT" --exclude '.git/' --exclude 'node_modules/' --exclude 'test-results/' --exclude 'playwright-report/' --exclude '.DS_Store'
+          cat > "$ROOT/LEER_PRIMERO.txt" <<'TXT'
+          EL ERRANTE LOCAL V2.7 COMPLETO
+          Fuente: 65bac9f2ee5d7171657f90a6799995291bb0a4b6
+          Para abrir en Mac: clic derecho sobre ABRIR_EL_ERRANTE.command > Abrir.
+          Web: http://127.0.0.1:8765/index.html
+          Administración: http://127.0.0.1:8765/admin.html
+          TXT
+          chmod +x "$ROOT"/*.command || true
+          zip -qry EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip "$ROOT"
+          sha256sum EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip > EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip.sha256
+          find "$ROOT" -type f | sort > INVENTARIO_PAQUETE_LOCAL.txt
+          test "$(find "$ROOT/assets/images" -name '*.webp' -type f | wc -l)" -ge 10
+          test "$(stat -c%s EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip)" -gt 1000000
+
+      - name: Publicar ZIP completo
+        uses: actions/upload-artifact@v4
+        with:
+          name: EL_ERRANTE_LOCAL_V27_MAC_COMPLETO
+          path: |
+            EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip
+            EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip.sha256
+            INVENTARIO_PAQUETE_LOCAL.txt
+          if-no-files-found: error
+          retention-days: 14

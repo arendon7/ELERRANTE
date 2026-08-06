@@ -1,0 +1,2 @@
+build local package attempt 01
+source=65bac9f2ee5d7171657f90a6799995291bb0a4b6

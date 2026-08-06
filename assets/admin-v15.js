@@ -19,6 +19,16 @@
     cancelled:"Cancelado"
   };
   const APPROVED = new Set(["approved","preparing","dispatched","delivered"]);
+  const STATUS_TRANSITIONS = {
+    pending_payment:["payment_review","cancelled"],
+    payment_review:["approved","rejected","cancelled"],
+    rejected:["payment_review","cancelled"],
+    approved:["preparing","cancelled"],
+    preparing:["dispatched","approved","cancelled"],
+    dispatched:["delivered","preparing"],
+    delivered:["dispatched"],
+    cancelled:["pending_payment"]
+  };
 
   const read = (key,fallback) => {
     try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -76,7 +86,8 @@
   }
 
   function statusOptions(current){
-    return Object.entries(STATUS_LABELS).map(([value,label])=>`<option value="${value}" ${value===current?"selected":""}>${label}</option>`).join("");
+    const allowed=new Set([current,...(STATUS_TRANSITIONS[current]||[])]);
+    return Object.entries(STATUS_LABELS).filter(([value])=>allowed.has(value)).map(([value,label])=>`<option value="${value}" ${value===current?"selected":""}>${label}</option>`).join("");
   }
 
   function dashboard(state,mode,user){
@@ -228,16 +239,19 @@
         if(mode==="local"){
           const orders = read(KEYS.orders,[]);
           const order = orders.find(item=>item.id===select.dataset.orderStatus);
-          if(order){ order.status=select.value; order.updatedAt=new Date().toISOString(); write(KEYS.orders,orders); renderLocal(container); }
+          if(order){
+            const next=select.value;
+            if(!(STATUS_TRANSITIONS[order.status]||[]).includes(next)){ select.value=order.status; setMessage(container,"Ese cambio de estado no está permitido desde la etapa actual.","error"); return; }
+            if(next==="approved" && !(order.receiptDataUrl||order.receiptPath)){ select.value=order.status; setMessage(container,"No se puede aprobar el pago sin comprobante.","error"); return; }
+            order.status=next; order.updatedAt=new Date().toISOString();
+            order.statusTimeline=Array.isArray(order.statusTimeline)?order.statusTimeline:[];
+            const timelineNote=select.dataset.v21Note||"Estado actualizado desde Administración"; order.statusTimeline.push({status:next,createdAt:order.updatedAt,note:timelineNote}); delete select.dataset.v21Note;
+            write(KEYS.orders,orders); renderLocal(container);
+          }
           return;
         }
-        const update = await client.from("orders").update({status:select.value,updated_at:new Date().toISOString()}).eq("id",select.dataset.orderStatus);
+        const update = await client.rpc("transition_order_v21",{p_order_id:select.dataset.orderStatus,p_new_status:select.value,p_note:"Estado actualizado desde Administración"});
         if(update.error) throw update.error;
-        const receiptStatus = APPROVED.has(select.value) ? "approved" : select.value==="rejected" ? "rejected" : null;
-        if(receiptStatus){
-          const receipt = await client.from("payment_receipts").update({status:receiptStatus,reviewed_at:new Date().toISOString()}).eq("order_id",select.dataset.orderStatus);
-          if(receipt.error) throw receipt.error;
-        }
         await renderRemote(container,client,user);
       }catch(error){ console.error(error); setMessage(container,"No fue posible actualizar el estado del pedido.","error"); }
     };
@@ -307,10 +321,10 @@
   function activationPanel(container){
     container.innerHTML = `
       <section class="ee-v14-auth ee-v15-activation">
-        <p class="eyebrow">Administración V1.5</p>
+        <p class="eyebrow">Administración V2.1</p>
         <h1>Acceso administrativo seguro.</h1>
         <p>El código de autenticación, roles, base de datos y comprobantes privados ya está preparado. Falta vincular el proyecto Supabase mediante la configuración protegida del despliegue.</p>
-        <div class="ee-v15-checklist"><span>1. Crear o seleccionar el proyecto Supabase.</span><span>2. Ejecutar las migraciones V1.4 y V1.5.</span><span>3. Registrar la URL y la publishable key en GitHub Actions.</span><span>4. Crear el usuario de Juan y autorizarlo en <code>admin_users</code>.</span></div>
+        <div class="ee-v15-checklist"><span>1. Crear o seleccionar el proyecto Supabase.</span><span>2. Ejecutar las migraciones V1.4, V1.5, V1.6, V1.9, V2.0 y V2.1.</span><span>3. Registrar la URL y la publishable key en GitHub Actions.</span><span>4. Crear el usuario de Juan y autorizarlo en <code>admin_users</code>.</span></div>
         <div class="ee-v14-note">No existe una contraseña maestra dentro del código. Pages no simula un acceso privado inexistente.</div>
         <button class="ee-v14-btn terracotta" id="ee-open-local-admin" style="width:100%;margin-top:18px">Abrir simulación local</button>
       </section>`;

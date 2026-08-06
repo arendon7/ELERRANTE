@@ -21,7 +21,7 @@ require('assets/daily-ops-v21.js','No se puede aprobar el pago sin comprobante',
 require('assets/daily-ops-v21.css','.ee-v21-dialog','Faltan estilos del detalle de pedido')
 require('backend/supabase/schema-v21.sql','create or replace function public.transition_order_v21','Falta RPC segura')
 require('backend/supabase/schema-v21.sql',"payment receipt required before approval",'La RPC no exige comprobante')
-require('backend/supabase/schema-v21.sql',"'2.1.0'",'La migración no queda registrada')
+require('backend/supabase/schema-v21.sql',"'2.1'",'La migración no queda registrada')
 require('admin.html','id="daily-ops-v21"','Admin no expone la mesa diaria')
 require('admin.html','assets/daily-ops-v21.js','Admin no carga el runtime V2.1')
 require('admin.html','assets/daily-ops-v21.css','Admin no carga los estilos V2.1')

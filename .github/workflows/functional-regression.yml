@@ -21,10 +21,12 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - name: Ejecutar barrera previa V2.8
+      - name: Ejecutar barreras previas V2.8
         run: |
           python3 verificar_demo.py
           python3 scripts/verificar_canon_marca_v28.py
+          python3 scripts/verificar_activos_hq_v28.py
+          python3 scripts/verificar_modulos_v28.py
       - uses: actions/setup-node@v4
         with:
           node-version: 22

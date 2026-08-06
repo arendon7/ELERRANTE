@@ -20,6 +20,8 @@ const LEGACY_PARTS = [
   "assets/chunks/data-002.txt",
   "assets/chunks/data-003.txt"
 ];
+const PRODUCT_OVERLAY = "assets/products-v6.js";
+const BRAND_CANON = "assets/brand-canon-v28.js";
 const EXPECTED_IDS = [
   "harina-aire-y-tiempo", "crea-la-tuya", "margherita-del-taller",
   "diavola-errante", "bosque", "cuatro-quesos-montana", "la-errante",
@@ -61,9 +63,11 @@ try {
 
   const sandbox = {
     window: {}, console, Intl, Date, JSON, Math, Number, String, Boolean,
-    Array, Object, RegExp, Map, Set, URL, URLSearchParams, setTimeout, clearTimeout
+    Array, Object, RegExp, Map, Set, URL, URLSearchParams, TextDecoder,
+    setTimeout, clearTimeout
   };
   sandbox.globalThis = sandbox;
+  sandbox.self = sandbox.window;
   vm.createContext(sandbox);
   vm.runInContext(source, sandbox, { filename: "assets/source/v040-data.js", timeout: 5000 });
 
@@ -71,9 +75,18 @@ try {
     throw new Error("El baseline v0.4 no produjo window.EE_DATA");
   }
 
-  const overlay = read("assets/products-v6.js");
-  new vm.Script(overlay, { filename: "assets/products-v6.js" });
-  vm.runInContext(overlay, sandbox, { filename: "assets/products-v6.js", timeout: 5000 });
+  const overlay = read(PRODUCT_OVERLAY);
+  new vm.Script(overlay, { filename: PRODUCT_OVERLAY });
+  vm.runInContext(overlay, sandbox, { filename: PRODUCT_OVERLAY, timeout: 5000 });
+
+  const brandSource = read(BRAND_CANON);
+  new vm.Script(brandSource, { filename: BRAND_CANON });
+  vm.runInContext(brandSource, sandbox, { filename: BRAND_CANON, timeout: 5000 });
+  const brand = sandbox.window.EL_ERRANTE_BRAND_V28;
+  if (!brand || brand.version !== "2.8.0" || typeof brand.applyToData !== "function") {
+    throw new Error("El manifiesto de marca V2.8 no quedó disponible en la reconstrucción canónica");
+  }
+  brand.applyToData(sandbox.window.EE_DATA);
 
   const canonical = JSON.parse(JSON.stringify(sandbox.window.EE_DATA));
   const products = Array.isArray(canonical.products) ? canonical.products : [];
@@ -97,6 +110,19 @@ try {
     if (new Set(variantIds).size !== variantIds.length) {
       throw new Error(`El producto ${product.id} tiene variantes duplicadas`);
     }
+    if (!String(product.image || "").startsWith("assets/images/brand-final/")) {
+      throw new Error(`El producto ${product.id} no usa imagen brand-final`);
+    }
+    if (!Array.isArray(product.gallery) || product.gallery.length === 0 ||
+        product.gallery.some(image => !String(image).startsWith("assets/images/brand-final/"))) {
+      throw new Error(`La galería canónica de ${product.id} está incompleta`);
+    }
+    if (product.brand_asset_version !== "2.8.0") {
+      throw new Error(`El producto ${product.id} no registra brand_asset_version=2.8.0`);
+    }
+  }
+  if (canonical.brand?.version !== "2.8.0") {
+    throw new Error("La fuente exportada no declara brand.version=2.8.0");
   }
 
   const legacy = LEGACY_PARTS.map(relativePath => {
@@ -124,6 +150,7 @@ try {
   ]));
   const report = {
     generated_at: new Date().toISOString(),
+    version: "2.8.0",
     provenance: {
       baseline: "El Errante v0.4.0 autocontenida validada",
       baseline_files: TRUSTED_PARTS.map((relativePath, index) => ({
@@ -133,8 +160,10 @@ try {
       })),
       baseline_source_bytes: bytes.length,
       baseline_source_sha256: sha256(source),
-      overlay: "assets/products-v6.js",
-      overlay_sha256: sha256(overlay)
+      product_overlay: PRODUCT_OVERLAY,
+      product_overlay_sha256: sha256(overlay),
+      brand_canon: BRAND_CANON,
+      brand_canon_sha256: sha256(brandSource)
     },
     legacy_chunks: {
       status: "truncated-ellipsized-do-not-use",
@@ -153,10 +182,11 @@ try {
   fs.writeFileSync(path.join(OUTPUT, "canonical-data.js"), js);
   fs.writeFileSync(path.join(OUTPUT, "canonical-report.json"), `${JSON.stringify(report, null, 2)}\n`);
   fs.writeFileSync(path.join(OUTPUT, "canonical-report.md"), [
-    "# Fuente canónica reconstruida",
+    "# Fuente canónica reconstruida V2.8",
     "",
     `- Generada: ${report.generated_at}`,
     `- Baseline: ${report.provenance.baseline}`,
+    `- Canon de marca: ${report.provenance.brand_canon}`,
     `- Productos: ${report.product_count}`,
     `- Variantes: ${report.variant_count}`,
     `- SHA-256 JSON: \`${report.canonical_json_sha256}\``,
@@ -177,10 +207,10 @@ try {
     ""
   ].join("\n"));
 
-  console.log("FUENTE CANÓNICA RECONSTRUIDA");
+  console.log("FUENTE CANÓNICA V2.8 RECONSTRUIDA");
   console.log(`Productos: ${products.length}`);
   console.log(`Variantes: ${variantCount}`);
-  console.log(`Colecciones: ${Object.keys(canonical).join(", ")}`);
+  console.log(`Marca: ${canonical.brand.version}`);
   console.log(`SHA-256: ${report.canonical_json_sha256}`);
 } catch (error) {
   fail(error.stack || error.message);

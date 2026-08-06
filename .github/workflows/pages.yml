@@ -24,26 +24,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Ejecutar barrera integral y validadores operativos
+      - name: Ejecutar barreras vigentes
         shell: bash
         run: |
           set -euo pipefail
           python3 verificar_demo.py
+          python3 scripts/verificar_canon_marca_v28.py
+          python3 scripts/verificar_activos_hq_v28.py
+          python3 scripts/verificar_modulos_v28.py
           for test in \
-            scripts/verificar_canon_marca_v28.py \
-            scripts/verificar_release_v13.py \
-            scripts/verificar_operacion_v14.py \
-            scripts/verificar_backend_v15.py \
-            scripts/verificar_operacion_v16.py \
-            scripts/verificar_contenido_v17.py \
-            scripts/verificar_experiencia_compra_v18.py \
-            scripts/verificar_confianza_v19.py \
-            scripts/verificar_activacion_v20.py \
-            scripts/verificar_operacion_diaria_v21.py \
-            scripts/verificar_produccion_v22.py \
-            scripts/verificar_materiales_v23.py \
-            scripts/verificar_medicion_v24.py \
-            scripts/verificar_abastecimiento_v25.py \
             scripts/verificar_oferta_v09.py \
             scripts/verificar_studio_oferta_v09.py \
             scripts/verificar_actas_oferta_v09.py \
@@ -57,8 +46,8 @@ jobs:
           set -euo pipefail
           find assets -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
           node --check service-worker.js
-          node --check tests/e2e/finance-v27.spec.js
-          node --check tests/e2e/procurement-v25.spec.js
+          node --check scripts/exportar-fuente-canonica.mjs
+          find tests/e2e -maxdepth 1 -type f -name '*.spec.js' -print0 | xargs -0 -n1 node --check
 
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
@@ -99,9 +88,7 @@ jobs:
           rsync -av ./ _site/ \
             --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' \
             --exclude '.artifacts/' --exclude 'node_modules/' --exclude 'test-results/' \
-            --exclude 'playwright-report/' --exclude 'archive/' \
-            --exclude 'assets/brand-final-editorial.js' --exclude 'assets/brand-final-products-a.js' \
-            --exclude 'assets/brand-final-products-b.js' --exclude 'assets/brand-final-products-c.js'
+            --exclude 'playwright-report/' --exclude 'archive/'
           python3 - <<'PY'
           import json, os
           from pathlib import Path
@@ -133,6 +120,7 @@ jobs:
           grep -q 'const CACHE=BRAND.cache' _site/service-worker.js
           grep -q 'BRAND.applyToData(window.EE_DATA)' _site/assets/data.js
           grep -q 'BRAND.applyToDom' _site/assets/host-mode.js
+          grep -q '"version": "2.8.0"' _site/package.json
           node --check _site/assets/brand-canon-v28.js
           node --check _site/assets/data.js
           node --check _site/assets/host-mode.js
@@ -141,8 +129,10 @@ jobs:
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
           test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -ge 23
+          test ! -d _site/archive
           test ! -f _site/assets/brand-final-editorial.js
           test ! -f _site/assets/brand-final-products-a.js
+          test ! -f _site/scripts/materializar_activos_visuales.py
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

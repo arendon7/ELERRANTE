@@ -1,8 +1,8 @@
 {
-  "name": "el-errante-demo-integral",
-  "version": "0.8.0",
+  "name": "el-errante-webapp",
+  "version": "2.8.0",
   "private": true,
-  "description": "Pruebas funcionales de la experiencia pública y la demo integral de El Errante.",
+  "description": "Webapp local y pública de El Errante con canon unificado de marca, operación, abastecimiento y finanzas.",
   "scripts": {
     "test:e2e": "playwright test"
   },

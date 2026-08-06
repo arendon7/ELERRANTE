@@ -25,7 +25,9 @@ CRITICAL_SCRIPTS = [
     'assets/admin-v15.js','assets/daily-ops-v21.js','assets/production-v22.js',
     'assets/materials-data-v23.js','assets/materials-v23.js','assets/measurement-v24.js',
     'assets/procurement-v25.js','assets/procurement-v25-guard.js','assets/finance-v27.js',
-    'assets/operations-v16.js','service-worker.js'
+    'assets/operations-v16.js','service-worker.js','scripts/exportar-fuente-canonica.mjs',
+    'scripts/verificar_canon_marca_v28.py','scripts/verificar_activos_hq_v28.py',
+    'scripts/verificar_modulos_v28.py'
 ]
 CANONICAL_WEBPS = [
     'home-hero.webp','home-hero-mobile.webp','home-masa-fuego.webp','home-fermentacion.webp',
@@ -47,15 +49,23 @@ OBSOLETE_ACTIVE_FILES = [
     'LEER_PRIMERO_PAQUETE_LOCAL_V27.txt',
     'assets/brand-final-editorial.js','assets/brand-final-products-a.js',
     'assets/brand-final-products-b.js','assets/brand-final-products-c.js',
-    'scripts/materializar_activos_visuales.py'
+    'scripts/materializar_activos_visuales.py',
+    'scripts/verificar_release_v12.py','scripts/verificar_release_v13.py',
+    'scripts/verificar_operacion_v14.py','scripts/verificar_backend_v15.py',
+    'scripts/verificar_operacion_v16.py','scripts/verificar_contenido_v17.py',
+    'scripts/verificar_experiencia_compra_v18.py','scripts/verificar_confianza_v19.py',
+    'scripts/verificar_activacion_v20.py','scripts/verificar_operacion_diaria_v21.py',
+    'scripts/verificar_produccion_v22.py','scripts/verificar_materiales_v23.py',
+    'scripts/verificar_medicion_v24.py','scripts/verificar_abastecimiento_v25.py'
 ]
-ARCHIVED_OVERLAYS = [
+ARCHIVE_REQUIREMENTS = [
     'archive/legacy-brand-overlays/README.md',
     'archive/legacy-brand-overlays/brand-final-editorial.js',
     'archive/legacy-brand-overlays/brand-final-products-a.js',
     'archive/legacy-brand-overlays/brand-final-products-b.js',
     'archive/legacy-brand-overlays/brand-final-products-c.js',
-    'archive/legacy-brand-overlays/materializar_activos_visuales.py'
+    'archive/legacy-brand-overlays/materializar_activos_visuales.py',
+    'archive/legacy-verifiers/README.md'
 ]
 EXTERNAL = ('http:','https:','//','mailto:','tel:','javascript:','data:','blob:','#')
 
@@ -84,10 +94,10 @@ def clean_reference(value: str) -> str | None:
 
 for page in PUBLIC_PAGES: require(page, 'Página pública')
 for page in INTERNAL_PAGES: require(page, 'Módulo interno')
-for script in CRITICAL_SCRIPTS: require(script, 'Runtime crítico')
+for script in CRITICAL_SCRIPTS: require(script, 'Runtime o barrera crítica')
 for path in ['deploy-version.txt','assets/logo-mark.svg','assets/logo-lockup.svg','manifest.webmanifest','package.json']:
     require(path, 'Archivo canónico')
-for path in ARCHIVED_OVERLAYS: require(path, 'Archivo histórico aislado')
+for path in ARCHIVE_REQUIREMENTS: require(path, 'Archivo histórico aislado')
 
 brand = read('assets/brand-canon-v28.js')
 data = read('assets/data.js')
@@ -97,6 +107,7 @@ deploy = read('deploy-version.txt')
 admin = read('admin.html')
 products = read('assets/products-v6.js')
 runtime_config = read('assets/commerce-runtime-config.js')
+package = read('package.json')
 
 required_markers = {
     'manifiesto de marca V2.8': "const VERSION='2.8.0'" in brand,
@@ -105,6 +116,7 @@ required_markers = {
     'DOM usa manifiesto compartido': 'BRAND.applyToDom' in host and 'const VISUALS=' not in host,
     'service worker importa manifiesto': "importScripts('./assets/brand-canon-v28.js')" in sw,
     'release declarada V2.8': 'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-1' in deploy,
+    'paquete declarado V2.8': '"version": "2.8.0"' in package,
     'panel integral identificado V2.8': '· V2.8' in admin,
     'finanzas V2.7 conservadas': 'assets/finance-v27.js' in admin and 'id="finance-v27"' in admin,
     'abastecimiento V2.5 conservado': 'assets/procurement-v25.js' in admin and 'id="procurement-v25"' in admin,

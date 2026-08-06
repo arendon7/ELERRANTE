@@ -1,0 +1,74 @@
+name: Corregir integración V2.1
+
+on:
+  push:
+    branches: ["feat/operacion-diaria-v21"]
+    paths:
+      - ".github/workflows/fix-patch-v21.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/operacion-diaria-v21
+          fetch-depth: 0
+      - name: Corregir secuencia y pruebas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace(path,old,new):
+              file=Path(path)
+              text=file.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'{path} no contiene {old!r}')
+              file.write_text(text.replace(old,new),encoding='utf-8')
+
+          replace(
+              '.github/workflows/patch-v21.yml',
+              "('Antes de recibir pedidos reales, verifica conexión, migraciones y roles en el centro de Activación V2.0.', 'La mesa diaria permite revisar cada solicitud, validar el comprobante y avanzar preparación y entrega. Antes de recibir pedidos reales, verifica conexión, migraciones y roles en Activación V2.1.'),",
+              "('Antes de recibir pedidos reales, verifica conexión, migraciones y roles en el centro de Activación V2.1.', 'La mesa diaria permite revisar cada solicitud, validar el comprobante y avanzar preparación y entrega. Antes de recibir pedidos reales, verifica conexión, migraciones y roles en Activación V2.1.'),"
+          )
+          replace(
+              '.github/workflows/patch-v21.yml',
+              'order.statusTimeline.push({status:next,createdAt:order.updatedAt,note:"Estado actualizado desde Administración"});',
+              'const timelineNote=select.dataset.v21Note||"Estado actualizado desde Administración"; order.statusTimeline.push({status:next,createdAt:order.updatedAt,note:timelineNote}); delete select.dataset.v21Note;'
+          )
+          replace(
+              'assets/daily-ops-v21.js',
+              "    const orders=read(KEYS.orders,[]);\n    const target=orders.find(item=>item.id===order.id);\n    if(target){\n      target.statusTimeline=Array.isArray(target.statusTimeline)?target.statusTimeline:[];\n      target.statusTimeline.push({status:newStatus,note:String(note||'').trim()||'Estado actualizado desde la mesa diaria',createdAt:new Date().toISOString()});\n      write(KEYS.orders,orders);\n    }\n    select.dispatchEvent(new Event('change',{bubbles:true}));",
+              "    select.dataset.v21Note=String(note||'').trim()||'Estado actualizado desde la mesa diaria';\n    select.dispatchEvent(new Event('change',{bubbles:true}));"
+          )
+          replace(
+              'assets/daily-ops-v21.js',
+              "data:Object.fromEntries(Object.entries(KEYS).map(([name,key])=>[name,read(key,name==='products'?{}:[])]))",
+              "data:Object.fromEntries(Object.entries(KEYS).map(([name,key])=>[name,read(key,['products','settings'].includes(name)?{}:[])]))"
+          )
+          tests=Path('tests/e2e/daily-ops-v21.spec.js')
+          text=tests.read_text(encoding='utf-8')
+          if "const fs=require('fs');" not in text:
+              text=text.replace("const {test,expect}=require('@playwright/test');", "const {test,expect}=require('@playwright/test');\nconst fs=require('fs');")
+          old="""    const download=await downloadPromise;\n    expect(download.suggestedFilename()).toContain('el-errante-pedidos-');"""
+          new="""    const download=await downloadPromise;\n    expect(download.suggestedFilename()).toContain('el-errante-pedidos-');\n    const csv=fs.readFileSync(await download.path(),'utf8');\n    expect(csv).toContain('EE-20260805-DIARIA');\n    expect(csv).not.toContain('Carrera 70 # 10-20');\n    expect(csv).not.toContain('3000000000');\n    expect(csv).not.toContain('cliente@example.com');\n    expect(csv).not.toContain('data:application/pdf');"""
+          if old not in text:
+              raise SystemExit('No se encontró la aserción CSV original')
+          tests.write_text(text.replace(old,new),encoding='utf-8')
+          PY
+      - name: Comprobar sintaxis
+        run: |
+          node --check assets/daily-ops-v21.js
+          node --check tests/e2e/daily-ops-v21.spec.js
+      - name: Consolidar corrección
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/patch-v21.yml assets/daily-ops-v21.js tests/e2e/daily-ops-v21.spec.js
+          git commit -m 'fix(ops): corrige integración y privacidad V2.1'
+          git push origin HEAD:feat/operacion-diaria-v21

@@ -3,7 +3,7 @@ PORT=8787
 PIDS="$(lsof -ti tcp:$PORT 2>/dev/null || true)"
 if [ -n "$PIDS" ]; then
   kill $PIDS
-  echo "Servidor local de El Errante detenido."
+  echo "Servidor local de El Errante V2.8 detenido."
 else
   echo "No había un servidor local activo en el puerto $PORT."
 fi

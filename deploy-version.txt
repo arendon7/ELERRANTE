@@ -1,6 +1,9 @@
-EL ERRANTE PUBLIC RELEASE CANDIDATE
-version=2.5.0
-deploy_source=feat/abastecimiento-v25
+EL ERRANTE LOCAL CANONICAL RELEASE CANDIDATE
+version=2.8.0
+deploy_source=feat/canon-marca-contenido-v28
+base_reference=release/local-v27-mac-complete
 release_commit=current-branch-head
-cache=el-errante-v2-5-visual-1
-updated=2026-08-06T19:39:00Z
+cache=el-errante-v2-8-brand-canon-1
+brand_source=assets/brand-canon-v28.js
+content_source=segunda-version-local-aprobada
+updated=2026-08-06T22:20:00Z

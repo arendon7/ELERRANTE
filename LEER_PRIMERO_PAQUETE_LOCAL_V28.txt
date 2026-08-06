@@ -1,0 +1,23 @@
+EL ERRANTE LOCAL V2.8 — CANON DE MARCA Y CONTENIDO
+
+Esta edición toma como referencia aprobada la segunda versión local V2.7 y consolida:
+- las fotografías WebP de alta calidad;
+- el logo E terracota y el lockup horizontal;
+- las fichas y textos ampliados del catálogo local;
+- Abastecimiento V2.5;
+- Finanzas Operativas V2.7;
+- una única fuente V2.8 para imágenes, galerías y versión de marca.
+
+ORDEN DE USO
+1. Ejecuta VERIFICAR_PAQUETE_LOCAL_V28.command.
+2. Cuando termine en OK, abre ABRIR_EL_ERRANTE_LOCAL_V28.command.
+3. Mantén Terminal abierta durante el uso.
+4. Para cerrar utiliza Control+C o DETENER_EL_ERRANTE_LOCAL_V28.command.
+
+DIRECCIONES
+Web pública: http://127.0.0.1:8787/index.html
+Tienda: http://127.0.0.1:8787/tienda.html
+Administración: http://127.0.0.1:8787/admin.html
+
+La información operativa permanece en localStorage. Supabase sigue inactivo.
+PREPARAR_RETORNO_GITHUB_V28.command genera un ZIP verificado para migración posterior.

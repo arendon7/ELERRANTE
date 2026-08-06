@@ -6,16 +6,32 @@ on:
 
 permissions:
   contents: write
+  actions: write
+
+concurrency:
+  group: "integrar-v25-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
 
 jobs:
   integrate:
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Descargar rama V2.5
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+
+      - name: Confirmar head vigente
+        shell: bash
+        run: |
+          set -euo pipefail
+          CURRENT="$(git rev-parse HEAD)"
+          EXPECTED="${{ github.event.pull_request.head.sha }}"
+          if [ "$CURRENT" != "$EXPECTED" ]; then
+            echo "Ejecución obsoleta: evento=$EXPECTED rama=$CURRENT"
+            exit 1
+          fi
 
       - name: Configurar Python
         uses: actions/setup-python@v5
@@ -51,3 +67,15 @@ jobs:
           git add .
           git commit -m "feat: integra abastecimiento controlado V2.5"
           git push origin HEAD:${{ github.head_ref }}
+          echo "Commit integrado: $(git rev-parse HEAD)"
+
+      - name: Despachar validaciones sobre el commit final
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          gh workflow run canonical-audit.yml --ref "$BRANCH"
+          gh workflow run functional-regression.yml --ref "$BRANCH"
+          gh workflow run pages.yml --ref "$BRANCH"

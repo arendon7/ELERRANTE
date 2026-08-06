@@ -1,6 +1,6 @@
-EL ERRANTE PUBLIC RELEASE
+EL ERRANTE PUBLIC RELEASE CANDIDATE
 version=2.5.0
 deploy_source=feat/abastecimiento-v25
-release_commit=resolved-by-github-actions
+release_commit=current-branch-head
 cache=el-errante-v2-5-visual-1
-updated=resolved-by-github-actions
+updated=2026-08-06T19:39:00Z

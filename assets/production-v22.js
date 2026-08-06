@@ -245,11 +245,8 @@
     try{
       const orders=await loadOrders();
       if(generation!==renderGeneration)return;
-      let selected=initialDate(orders);
+      const selected=initialDate(orders);
       host.innerHTML=shellHtml(orders,selected);
-      const dateInput=host.querySelector('#ee-v22-date');
-      const rerenderDate=()=>{selected=dateInput.value||today();sessionStorage.setItem(DATE_KEY,selected);host.innerHTML=shellHtml(orders,selected);bind(host,orders,selected);};
-      dateInput.addEventListener('change',rerenderDate);
       bind(host,orders,selected);
       document.documentElement.dataset.productionVersion='2.2.0';
       syncLegacyDispatchGuard();

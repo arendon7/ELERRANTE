@@ -1,0 +1,30 @@
+name: Corregir eventos V24
+
+on:
+  push:
+    branches:
+      - feat/medicion-compras-v24
+    paths:
+      - .github/workflows/patch-measurement-v24-event.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/medicion-compras-v24
+          fetch-depth: 0
+      - run: python3 scripts/patch_measurement_v24_event.py
+      - run: node --check assets/measurement-v24.js
+      - run: node --check assets/materials-v23.js
+      - run: python3 scripts/verificar_medicion_v24.py
+      - run: |
+          git config user.name github-actions-bot
+          git config user.email github-actions-bot@users.noreply.github.com
+          git add assets/measurement-v24.js assets/materials-v23.js
+          git commit -m "fix measurement preserve purchase feedback and refresh stock"
+          git push origin HEAD:feat/medicion-compras-v24

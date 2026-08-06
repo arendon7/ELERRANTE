@@ -1,12 +1,13 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Activación operativa V2.2', () => {
+test.describe('Activación operativa V2.3', () => {
   test('muestra el estado previo sin fingir conexión', async ({ page }) => {
     await page.goto('/activacion.html');
     await expect(page.getByRole('heading', { name: 'La web sigue en modo previo.' })).toBeVisible();
     await expect(page.getByText('Supabase aún no está conectado')).toBeVisible();
     await expect(page.getByText('No se enviarán pedidos ni comprobantes a una base central')).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('data-activation-version', '2.2.0');
+    await expect(page.locator('html')).toHaveAttribute('data-activation-version', '2.3.0');
+    await expect(page.getByText(/V2.2 y V2.3/)).toBeVisible();
   });
 
   test('no solicita credenciales cuando el backend no está configurado', async ({ page }) => {
@@ -19,9 +20,9 @@ test.describe('Activación operativa V2.2', () => {
     expect(body).not.toContain('eyJhbGciOi');
   });
 
-  test('Administración enlaza el centro de activación', async ({ page }) => {
+  test('Administración enlaza el centro de activación vigente', async ({ page }) => {
     await page.goto('/admin.html');
-    const link = page.getByRole('link', { name: 'Activación V2.2' });
+    const link = page.getByRole('link', { name: 'Activación V2.3' });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', 'activacion.html');
   });
@@ -35,11 +36,13 @@ test.describe('Activación operativa V2.2', () => {
   });
 
   test('los activos públicos no contienen credenciales privadas', async ({ request }) => {
-    const response = await request.get('/assets/activation-v20.js');
-    expect(response.ok()).toBeTruthy();
-    const body = (await response.text()).toLowerCase();
-    expect(body).not.toContain('supabase_service');
-    expect(body).not.toContain('postgres://');
-    expect(body).not.toContain('eyjhbGcioi');
+    for (const path of ['/assets/activation-v20.js','/assets/activation-v23.js']) {
+      const response = await request.get(path);
+      expect(response.ok()).toBeTruthy();
+      const body = (await response.text()).toLowerCase();
+      expect(body).not.toContain('supabase_service');
+      expect(body).not.toContain('postgres://');
+      expect(body).not.toContain('eyjhbGcioi');
+    }
   });
 });

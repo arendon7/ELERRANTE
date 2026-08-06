@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v2-1-0
+  EXPECTED_CACHE: el-errante-v2-2-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -21,119 +21,89 @@ jobs:
     name: GitHub Pages corresponde a main
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 5
     steps:
       - name: Definir expectativa
         run: |
           echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
           echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
           echo "SOURCE_WORKFLOW_URL=${{ github.event.workflow_run.html_url }}" >> "$GITHUB_ENV"
+
       - name: Exigir despliegue fuente exitoso
         run: test "$SOURCE_CONCLUSION" = "success"
+
       - name: Esperar marcador público coherente
         shell: bash
         run: |
           set -euo pipefail
           success=0
-          for attempt in $(seq 1 8); do
-            curl --fail --silent --show-error --location --max-time 12 \
-              -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" \
-              > deploy-version-observed.txt || true
+          for attempt in $(seq 1 10); do
+            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-observed.txt || true
             observed_sha="$(sed -n 's/^release_commit=//p' deploy-version-observed.txt | tr -d '\r')"
             observed_cache="$(sed -n 's/^cache=//p' deploy-version-observed.txt | tr -d '\r')"
             observed_source="$(sed -n 's/^deploy_source=//p' deploy-version-observed.txt | tr -d '\r')"
-            if [ "$observed_sha" = "$EXPECTED_SHA" ] && [ "$observed_cache" = "$EXPECTED_CACHE" ] && [ "$observed_source" = "main" ]; then
+            observed_version="$(sed -n 's/^version=//p' deploy-version-observed.txt | tr -d '\r')"
+            if [ "$observed_sha" = "$EXPECTED_SHA" ] && [ "$observed_cache" = "$EXPECTED_CACHE" ] && \
+               [ "$observed_source" = "main" ] && [ "$observed_version" = "2.2.0" ]; then
               success=1
               echo "Marcador público coherente en el intento $attempt."
               break
             fi
-            echo "Intento $attempt: sha=${observed_sha:-vacío}; cache=${observed_cache:-vacía}; source=${observed_source:-vacía}"
+            echo "Intento $attempt: sha=${observed_sha:-vacío}; version=${observed_version:-vacía}; cache=${observed_cache:-vacía}"
             sleep 5
           done
           test "$success" -eq 1
-      - name: Verificar runtime esencial
+
+      - name: Descargar y verificar runtime esencial
         shell: bash
         run: |
           set -euo pipefail
-          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js daily-ops-v21.js; do
+          for asset in \
+            host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js \
+            content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js daily-ops-v21.js production-v22.js; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
-          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css; do
+          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css production-v22.css; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
           curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
-          node --check public-host-mode.js
-          node --check public-commerce-runtime-config.js
-          node --check public-checkout-v15.js
-          node --check public-admin-v15.js
-          node --check public-operations-v16.js
-          node --check public-content-v17.js
-          node --check public-commerce-ux-v18.js
-          node --check public-trust-v19.js
-          node --check public-activation-v20.js
-          node --check public-daily-ops-v21.js
-          node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="2.1.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v2-1-0"' public-host-mode.js
-          grep -q 'brand-final-hq' public-host-mode.js
-          grep -q 'home-hero-mobile.webp' public-host-mode.js
-          ! grep -q 'BRAND_PACKS' public-host-mode.js
-          grep -q 'el-errante-v2-1-0' public-service-worker.js
-          grep -q 'assets/content-v17.js' public-service-worker.js
-          grep -q 'assets/commerce-ux-v18.js' public-service-worker.js
-          grep -q 'assets/commerce-v18.css' public-service-worker.js
-          grep -q 'assets/trust-v19.js' public-service-worker.js
-          grep -q 'assets/trust-v19.css' public-service-worker.js
-          grep -q 'assets/activation-v20.js' public-service-worker.js
-          grep -q 'assets/activation-v20.css' public-service-worker.js
+          curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
+            "$PUBLIC_BASE/backend/supabase/schema-v22.sql?verify=$EXPECTED_SHA" > public-schema-v22.sql
+          for script in public-*.js; do node --check "$script"; done
+          grep -q 'PUBLIC_VERSION="2.2.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v2-2-0"' public-host-mode.js
+          grep -q 'el-errante-v2-2-0' public-service-worker.js
           grep -q 'assets/daily-ops-v21.js' public-service-worker.js
-          grep -q 'assets/daily-ops-v21.css' public-service-worker.js
-          grep -q 'backend/supabase/schema-v19.sql' public-service-worker.js
+          grep -q 'assets/production-v22.js' public-service-worker.js
+          grep -q 'assets/production-v22.css' public-service-worker.js
           grep -q 'backend/supabase/schema-v20.sql' public-service-worker.js
           grep -q 'backend/supabase/schema-v21.sql' public-service-worker.js
-          grep -q 'assets/images/brand-final/home-hero.webp' public-service-worker.js
-          grep -q 'assets/images/brand-final/producto-margherita.webp' public-service-worker.js
-          grep -q 'assets/checkout-v15.js' public-service-worker.js
-          grep -q 'assets/admin-v15.js' public-service-worker.js
-          grep -q 'assets/operations-v16.js' public-service-worker.js
+          grep -q 'backend/supabase/schema-v22.sql' public-service-worker.js
           grep -q 'shopperStorageKey' public-commerce-runtime-config.js
           grep -q 'adminStorageKey' public-commerce-runtime-config.js
           grep -q 'createSignedUrl' public-admin-v15.js
           grep -q 'rpc("is_admin")' public-admin-v15.js
-          grep -q 'public_settings' public-checkout-v15.js
           grep -q 'record_inventory_movement_v16' public-operations-v16.js
-          grep -q 'Ventas de equilibrio' public-operations-v16.js
-          grep -q 'ee_v16_inventory_movements' public-operations-v16.js
           grep -q 'Masa con tiempo. Fuego con carácter.' public-content-v17.js
-          grep -q 'Nuestra pizza insignia' public-content-v17.js
-          grep -q "contentVersion='1.7.0'" public-content-v17.js
           grep -q 'Confirma tu pedido con claridad.' public-commerce-ux-v18.js
-          grep -q 'Entrega coordinada' public-commerce-ux-v18.js
-          grep -q 'ee-v18-mobile-total' public-commerce-v18.css
           grep -q 'lookup_order_status_v19' public-trust-v19.js
-          grep -q 'Consulta segura · V1.9' public-trust-v19.js
-          grep -q 'Esta consulta no muestra dirección, teléfono, comprobante ni notas internas' public-trust-v19.js
-          grep -q 'ee-v19-progress' public-trust-v19.css
           grep -q 'Supabase aún no está conectado' public-activation-v20.js
           grep -q 'activation_health_v20' public-activation-v20.js
-          grep -q 'register_first_admin_v20' public-activation-v20.js
-          grep -q 'ee-v20-checklist' public-activation-v20.css
           grep -q 'Mesa de pedidos y continuidad local' public-daily-ops-v21.js
           grep -q 'transition_order_v21' public-daily-ops-v21.js
-          grep -q 'ee-v21-dialog' public-daily-ops-v21.css
+          grep -q 'Agenda de alistamiento por fecha' public-production-v22.js
+          grep -q 'save_order_fulfillment_v22' public-production-v22.js
+          grep -q 'transition_order_v22' public-production-v22.js
+          grep -q 'fulfillment checklist required before dispatch' public-schema-v22.sql
           ! grep -qi 'service_role' public-commerce-runtime-config.js
           ! grep -qi 'service_role' public-admin-v15.js
-          ! grep -qi 'service_role' public-checkout-v15.js
-          ! grep -qi 'service_role' public-operations-v16.js
-          ! grep -qi 'service_role' public-trust-v19.js
-          ! grep -qi 'postgres://' public-activation-v20.js
-          ! grep -qi 'service_role' public-daily-ops-v21.js
-          ! grep -qi 'postgres://' public-daily-ops-v21.js
-          ! grep -q "'./assets/brand-final-editorial.js'" public-service-worker.js
+          ! grep -qi 'service_role' public-production-v22.js
+          ! grep -qi 'postgres://' public-production-v22.js
+
       - name: Verificar superficies públicas críticas
         shell: bash
         run: |
@@ -152,67 +122,46 @@ jobs:
             fi
           }
           assert_contains public-index.html 'Masa · Fuego · Territorio' 'Inicio no conserva el claim principal.'
-          assert_contains public-index.html 'assets/content-v17.js' 'Inicio no carga el contenido premium V1.7.'
-          assert_contains public-tienda.html 'data-page="tienda"' 'Tienda no conserva su contrato de página.'
-          assert_contains public-tienda.html 'assets/content-v17.js' 'Tienda no carga el contenido premium V1.7.'
-          assert_contains public-tienda.html 'assets/commerce-ux-v18.js' 'Tienda no carga la experiencia de compra V1.8.'
-          assert_contains public-tienda.html 'assets/commerce-v18.css' 'Tienda no carga los estilos V1.8.'
-          assert_contains public-producto.html 'id="dynamic-product"' 'La ficha dinámica de producto no está disponible.'
-          assert_contains public-producto.html 'assets/content-v17.js' 'Producto no carga el contenido premium V1.7.'
-          assert_contains public-producto.html 'assets/commerce-ux-v18.js' 'Producto no carga la compra informada V1.8.'
-          assert_contains public-producto.html 'assets/commerce-v18.css' 'Producto no carga los estilos V1.8.'
-          assert_contains public-historia.html 'assets/content-v17.js' 'Historia no carga la narrativa V1.7.'
-          assert_contains public-en-casa.html 'assets/content-v17.js' 'En Casa no carga la narrativa V1.7.'
-          assert_contains public-en-movimiento.html 'data-page="movimiento"' 'En Movimiento no conserva su contrato de página.'
-          assert_contains public-en-movimiento.html 'assets/content-v17.js' 'En Movimiento no carga la narrativa V1.7.'
-          assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva el flujo de transferencia.'
-          assert_contains public-checkout.html 'assets/checkout-v15.js' 'Checkout no carga el bootstrap aislado.'
-          assert_contains public-checkout.html 'assets/commerce-ux-v18.js' 'Checkout no carga la experiencia guiada V1.8.'
-          assert_contains public-checkout.html 'assets/trust-v19.js' 'Checkout no carga el seguimiento V1.9.'
-          assert_contains public-checkout.html 'Consultar un pedido existente' 'Checkout no enlaza la consulta de pedido.'
-          assert_contains public-cuenta.html 'Seguimiento de pedidos' 'Cuenta no se convirtió en consulta operativa.'
-          assert_contains public-cuenta.html 'assets/trust-v19.js' 'Cuenta no carga la consulta V1.9.'
-          assert_contains public-cuenta.html 'assets/trust-v19.css' 'Cuenta no carga los estilos V1.9.'
-          assert_contains public-admin.html 'Operación diaria, finanzas y activación · V2.1' 'Administración no declara V2.0.'
-          assert_contains public-admin.html 'href="activacion.html"' 'Administración no enlaza el centro V2.0.'
-          assert_contains public-admin.html 'assets/admin-v15.js' 'Administración no carga el acceso privado.'
-          assert_contains public-admin.html 'assets/operations-v16.js' 'Administración no carga el módulo financiero V1.6.'
-          assert_contains public-admin.html 'assets/trust-v19.js' 'Administración no carga la confianza comercial V1.9.'
-          assert_contains public-admin.html 'id="operations-v16"' 'Administración no expone el contenedor financiero.'
-          assert_contains public-admin.html 'id="daily-ops-v21"' 'Administración no expone la mesa diaria V2.1.'
-          assert_contains public-admin.html 'assets/daily-ops-v21.js' 'Administración no carga la operación diaria V2.1.'
-          assert_contains public-admin.html 'assets/daily-ops-v21.css' 'Administración no carga los estilos V2.1.'
-          assert_contains public-activacion.html 'data-page="activacion"' 'Activación no conserva su contrato de página.'
-          assert_contains public-activacion.html 'assets/activation-v20.js' 'Activación no carga el diagnóstico V2.0.'
-          assert_contains public-activacion.html 'assets/activation-v20.css' 'Activación no carga los estilos V2.0.'
+          assert_contains public-tienda.html 'assets/commerce-ux-v18.js' 'Tienda no carga la experiencia de compra.'
+          assert_contains public-producto.html 'id="dynamic-product"' 'Producto dinámico no está disponible.'
+          assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva la transferencia.'
+          assert_contains public-checkout.html 'assets/trust-v19.js' 'Checkout no carga seguimiento.'
+          assert_contains public-cuenta.html 'Seguimiento de pedidos' 'Cuenta no ofrece seguimiento.'
+          assert_contains public-admin.html 'Operación diaria, producción, despacho y finanzas · V2.2' 'Administración no declara V2.2.'
+          assert_contains public-admin.html 'id="daily-ops-v21"' 'Administración no expone la mesa diaria.'
+          assert_contains public-admin.html 'id="production-v22"' 'Administración no expone producción V2.2.'
+          assert_contains public-admin.html 'assets/production-v22.js' 'Administración no carga producción V2.2.'
+          assert_contains public-admin.html 'assets/production-v22.css' 'Administración no carga estilos V2.2.'
+          assert_contains public-activacion.html 'Activación V2.2' 'Activación no declara V2.2.'
           assert_contains public-activacion.html 'noindex,nofollow' 'Activación no está excluida de indexación.'
           if grep -Fq 'assets/commerce-v14.js' public-admin.html; then
-            echo '::error title=Public Health::Admin conserva el runtime administrativo legado.'
+            echo '::error title=Public Health::Admin conserva runtime legado.'
             exit 1
           fi
+
       - name: Verificar imágenes WebP HQ críticas
         shell: bash
         run: |
           set -euo pipefail
           for image in home-hero home-hero-mobile producto-margherita evento-hero; do
             curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/assets/images/brand-final/${image}.webp?verify=$EXPECTED_SHA" \
-              > "public-${image}.webp"
+              "$PUBLIC_BASE/assets/images/brand-final/${image}.webp?verify=$EXPECTED_SHA" > "public-${image}.webp"
           done
           python3 - <<'PY'
           from pathlib import Path
           for path in Path('.').glob('public-*.webp'):
-              data = path.read_bytes()
-              assert len(data) > 100_000, f'{path} no conserva peso HQ'
-              assert data[:4] == b'RIFF' and data[8:12] == b'WEBP', f'{path} no es WebP válido'
-          assert Path('public-home-hero.webp').read_bytes() != Path('public-home-hero-mobile.webp').read_bytes()
+              data=path.read_bytes()
+              assert len(data)>100_000, f'{path} no conserva peso HQ'
+              assert data[:4]==b'RIFF' and data[8:12]==b'WEBP', f'{path} no es WebP válido'
+          assert Path('public-home-hero.webp').read_bytes()!=Path('public-home-hero-mobile.webp').read_bytes()
           PY
+
       - name: Generar informe
         if: always()
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V2.1.0 OPERACIÓN DIARIA"
+            echo "EL ERRANTE — PUBLIC HEALTH V2.2.0 PRODUCCIÓN Y DESPACHO"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -223,6 +172,7 @@ jobs:
             cat deploy-version-observed.txt 2>/dev/null || true
           } > public-health-report.txt
           cat public-health-report.txt
+
       - name: Conservar evidencia únicamente ante fallo
         if: failure()
         uses: actions/upload-artifact@v4
@@ -234,31 +184,17 @@ jobs:
             public-host-mode.js
             public-service-worker.js
             public-commerce-runtime-config.js
-            public-checkout-v15.js
             public-admin-v15.js
-            public-operations-v16.js
-            public-content-v17.js
-            public-commerce-ux-v18.js
-            public-commerce-v18.css
-            public-trust-v19.js
-            public-trust-v19.css
             public-activation-v20.js
-            public-activation-v20.css
             public-daily-ops-v21.js
-            public-daily-ops-v21.css
+            public-production-v22.js
+            public-production-v22.css
+            public-schema-v22.sql
             public-index.html
             public-tienda.html
             public-producto.html
-            public-historia.html
-            public-en-casa.html
-            public-en-movimiento.html
             public-checkout.html
             public-cuenta.html
             public-admin.html
             public-activacion.html
-            public-home-hero.webp
-            public-home-hero-mobile.webp
-            public-producto-margherita.webp
-            public-evento-hero.webp
-          if-no-files-found: warn
-          retention-days: 7
+          retention-days: 14

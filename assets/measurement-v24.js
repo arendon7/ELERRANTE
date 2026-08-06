@@ -113,8 +113,10 @@
       event.preventDefault();const fd=new FormData(event.currentTarget);const materialId=String(fd.get('materialId'));const quantity=Number(fd.get('quantity'));const totalCost=Number(fd.get('totalCost'));
       const purchase={id:uid('COM'),materialId,supplier:String(fd.get('supplier')).trim(),invoiceReference:String(fd.get('invoiceReference')||'').trim(),receivedDate:String(fd.get('receivedDate')),quantity,totalCost,unitCost:quantity>0?totalCost/quantity:0,note:String(fd.get('note')||'').trim(),createdAt:new Date().toISOString(),dataStatus:'OBSERVADO'};
       const rows=read(KEYS.purchases,[]);rows.unshift(purchase);write(KEYS.purchases,rows);
-      if(fd.get('updateStock')){const stock=read(KEYS.stock,{});if(stock[materialId]===undefined||stock[materialId]===null||stock[materialId]===''){flash='Compra guardada. El inventario no cambió porque este material aún no tiene conteo físico.';}else{stock[materialId]=Number(stock[materialId])+quantity;write(KEYS.stock,stock);flash='Compra guardada e inventario actualizado desde el conteo existente.';window.dispatchEvent(new CustomEvent('ee:admin:ready',{detail:{mode:'local'}}));}}else flash='Compra guardada. El inventario no fue modificado.';
+      let stockUpdated=false;
+      if(fd.get('updateStock')){const stock=read(KEYS.stock,{});if(stock[materialId]===undefined||stock[materialId]===null||stock[materialId]===''){flash='Compra guardada. El inventario no cambió porque este material aún no tiene conteo físico.';}else{stock[materialId]=Number(stock[materialId])+quantity;write(KEYS.stock,stock);flash='Compra guardada e inventario actualizado desde el conteo existente.';stockUpdated=true;}}else flash='Compra guardada. El inventario no fue modificado.';
       render();
+      if(stockUpdated)window.dispatchEvent(new CustomEvent('ee:v24:stock-updated'));
     });
   }
   function render(){

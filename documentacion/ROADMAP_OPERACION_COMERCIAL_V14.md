@@ -142,3 +142,12 @@ Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta 
 - Cobertura, tarifa, soporte y tiempo de respuesta configurables.
 - Enlace de seguimiento posterior al checkout.
 - Plantillas de actualización para WhatsApp desde Administración.
+
+
+## Iteración 7 — activación operativa V2.0
+
+- Centro privado de diagnóstico de conexión y migraciones.
+- Alta inicial restringida al SQL Editor y gobierno posterior mediante RPC administrativo.
+- Verificación de bucket privado, cobertura, soporte, transferencia, catálogo y gastos fijos.
+- Modo previo explícito: la web no simula conexión ni producción real.
+- Variables de GitHub separadas de credenciales privadas.

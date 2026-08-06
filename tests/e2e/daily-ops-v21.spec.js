@@ -19,12 +19,16 @@ test.describe('Operación diaria V2.1',()=>{
     await seed(page);
     await page.goto('/admin.html');
     await page.getByRole('button',{name:'Abrir simulación local'}).click();
-    await expect(page.getByRole('heading',{name:'Mesa de pedidos y continuidad local'})).toBeVisible();
-    await expect(page.getByText('Cliente Diario')).toBeVisible();
-    await page.getByRole('button',{name:'Abrir pedido'}).click();
-    await expect(page.getByText('Carrera 70 # 10-20')).toBeVisible();
+    const desk=page.locator('#daily-ops-v21');
+    await expect(desk.getByRole('heading',{name:'Mesa de pedidos y continuidad local'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Seguimiento y aprobación'})).toHaveCount(0);
+    const card=desk.locator('[data-v21-order="EE-20260805-DIARIA"]');
+    await expect(card.getByText('Cliente Diario · Medellín')).toBeVisible();
+    await card.getByRole('button',{name:'Abrir pedido'}).click();
+    const dialogBox=page.locator('#ee-v21-dialog');
+    await expect(dialogBox.getByText('Carrera 70 # 10-20')).toBeVisible();
     page.once('dialog',dialog=>dialog.accept());
-    await page.getByRole('button',{name:'Aprobar pago'}).click();
+    await dialogBox.getByRole('button',{name:'Aprobar pago'}).click();
     await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v14_orders'))[0].status)).toBe('approved');
     await expect(page.locator('html')).toHaveAttribute('data-daily-ops-version','2.1.0');
   });
@@ -33,18 +37,20 @@ test.describe('Operación diaria V2.1',()=>{
     await seed(page,{receipt:false});
     await page.goto('/admin.html');
     await page.getByRole('button',{name:'Abrir simulación local'}).click();
-    await page.getByRole('button',{name:'Abrir pedido'}).click();
-    await expect(page.getByRole('button',{name:'Aprobar pago'})).toBeDisabled();
+    const desk=page.locator('#daily-ops-v21');
+    await desk.locator('[data-v21-order="EE-20260805-DIARIA"]').getByRole('button',{name:'Abrir pedido'}).click();
+    await expect(page.locator('#ee-v21-dialog').getByRole('button',{name:'Aprobar pago'})).toBeDisabled();
   });
 
   test('filtra pedidos y exporta CSV sin dirección ni comprobante',async({page})=>{
     await seed(page);
     await page.goto('/admin.html');
     await page.getByRole('button',{name:'Abrir simulación local'}).click();
-    await page.locator('#ee-v21-search').fill('Cliente Diario');
-    await expect(page.getByText('EE-20260805-DIARIA')).toBeVisible();
+    const desk=page.locator('#daily-ops-v21');
+    await desk.locator('#ee-v21-search').fill('Cliente Diario');
+    await expect(desk.locator('[data-v21-order="EE-20260805-DIARIA"]')).toBeVisible();
     const downloadPromise=page.waitForEvent('download');
-    await page.getByRole('button',{name:'Exportar CSV operativo'}).click();
+    await desk.getByRole('button',{name:'Exportar CSV operativo'}).click();
     const download=await downloadPromise;
     expect(download.suggestedFilename()).toContain('el-errante-pedidos-');
     const csv=fs.readFileSync(await download.path(),'utf8');
@@ -60,7 +66,7 @@ test.describe('Operación diaria V2.1',()=>{
     await page.goto('/admin.html');
     await page.getByRole('button',{name:'Abrir simulación local'}).click();
     const downloadPromise=page.waitForEvent('download');
-    await page.getByRole('button',{name:'Descargar respaldo'}).click();
+    await page.locator('#daily-ops-v21').getByRole('button',{name:'Descargar respaldo'}).click();
     const download=await downloadPromise;
     expect(download.suggestedFilename()).toContain('el-errante-respaldo-');
     if(testInfo.project.name.includes('mobile')){

@@ -45,6 +45,15 @@
     setTimeout(()=>URL.revokeObjectURL(url),1000);
   };
   const statusMeta=value=>STATUS[value]||{label:value||'Sin estado',tone:'pending',group:'review'};
+  let renderGeneration=0;
+
+  function compactLegacyOrders(){
+    const root=document.querySelector('#admin-dynamic');
+    if(!root)return;
+    const heading=[...root.querySelectorAll('.ee-v14-card h2')].find(node=>node.textContent.trim()==='Seguimiento y aprobación');
+    const card=heading?.closest('.ee-v14-card');
+    if(card)card.remove();
+  }
 
   function isRemote(){
     return backendReady()&&Boolean(document.querySelector('#admin-dynamic .ee-v15-sessionbar'))&&document.querySelector('#admin-dynamic .ee-v15-sessionbar')?.textContent.includes('Administración conectada');
@@ -167,11 +176,15 @@
       await document.querySelector('#ee-refresh-admin')?.click();
       return true;
     }
-    const select=document.querySelector(`[data-order-status="${CSS.escape(order.id)}"]`);
-    if(!select)throw new Error('No fue posible localizar el pedido en Administración.');
-    select.value=newStatus;
-    select.dataset.v21Note=String(note||'').trim()||'Estado actualizado desde la mesa diaria';
-    select.dispatchEvent(new Event('change',{bubbles:true}));
+    const orders=read(KEYS.orders,[]);
+    const target=orders.find(item=>item.id===order.id);
+    if(!target)throw new Error('No fue posible localizar el pedido en Administración.');
+    target.status=newStatus;
+    target.updatedAt=new Date().toISOString();
+    target.statusTimeline=Array.isArray(target.statusTimeline)?target.statusTimeline:[];
+    target.statusTimeline.push({status:newStatus,createdAt:target.updatedAt,note:String(note||'').trim()||'Estado actualizado desde la mesa diaria'});
+    write(KEYS.orders,orders);
+    document.querySelector('#ee-refresh-admin')?.click();
     return true;
   }
 
@@ -220,12 +233,15 @@
   }
 
   async function render(){
+    const generation=++renderGeneration;
     const host=document.querySelector('#daily-ops-v21');
     if(!host)return;
     const session=document.querySelector('#admin-dynamic .ee-v15-sessionbar');
     if(!session){host.innerHTML='<div class="ee-v16-pending">La mesa diaria se habilita al ingresar o abrir la simulación local.</div>';return;}
     try{
+      compactLegacyOrders();
       const orders=await loadOrders();
+      if(generation!==renderGeneration)return;
       host.innerHTML=shellHtml(orders);
       let filter='all';
       const search=host.querySelector('#ee-v21-search');

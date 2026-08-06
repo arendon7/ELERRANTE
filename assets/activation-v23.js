@@ -9,8 +9,13 @@
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
     let node;
     while((node=walker.nextNode())){
-      if(node.nodeValue?.includes('V2.2'))node.nodeValue=node.nodeValue.replaceAll('V2.2','V2.3');
-      if(node.nodeValue?.includes('V2.0, V2.1 y V2.2'))node.nodeValue=node.nodeValue.replace('V2.0, V2.1 y V2.2','V2.0, V2.1, V2.2 y V2.3');
+      const value=node.nodeValue||'';
+      if(value.includes('V2.0, V2.1 y V2.2')){
+        node.nodeValue=value.replace('V2.0, V2.1 y V2.2','V2.0, V2.1, V2.2 y V2.3');
+        continue;
+      }
+      if(value.includes('Activación V2.2'))node.nodeValue=value.replaceAll('Activación V2.2','Activación V2.3');
+      else if(value.includes('continuidad · V2.2'))node.nodeValue=value.replaceAll('continuidad · V2.2','continuidad · V2.3');
     }
     document.documentElement.dataset.activationVersion='2.3.0';
   }
@@ -18,7 +23,9 @@
   function addPreviewRequirement(){
     const steps=[...root.querySelectorAll('.ee-v20-step p')];
     const migrations=steps.find(node=>node.textContent.includes('esquemas V1.4'));
-    if(migrations&&!migrations.textContent.includes('V2.3'))migrations.textContent=migrations.textContent.replace(/V2\.2\.?$/,'V2.2 y V2.3.');
+    if(migrations&&!migrations.textContent.includes('V2.3')){
+      migrations.textContent=migrations.textContent.replace(/V2\.2\.?$/,'V2.2 y V2.3.');
+    }
   }
 
   async function checkConnectedMigration(){
@@ -42,6 +49,6 @@
   }
 
   const refresh=()=>{patchText();addPreviewRequirement();checkConnectedMigration();};
-  new MutationObserver(refresh).observe(root,{childList:true,subtree:true});
+  new MutationObserver(refresh).observe(root,{childList:true,subtree:true,characterData:true});
   refresh();
 })();

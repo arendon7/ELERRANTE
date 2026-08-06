@@ -47,7 +47,7 @@ ui = require(
     "Actualizar conteo de materiales",
     "Consultar receta y costo provisional",
     "Resumen financiero y análisis avanzado",
-    "data.materialsVersion='2.3.0'",
+    "dataset.materialsVersion='2.3.0'",
 )
 if "Sin conteo" not in ui or "Cero" not in ui:
     raise SystemExit("La interfaz no distingue inventario desconocido de cero confirmado")

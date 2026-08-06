@@ -6,61 +6,65 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
 
 jobs:
   diagnose:
-    if: ${{ !contains(github.event.pull_request.head.sha, 'diagnostics-v24') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Descargar rama de reparación
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Evitar repetición si ya existe el diagnóstico
+      - name: Evitar repetición si ya existe la evidencia
         id: guard
         run: |
-          if [ -f diagnostics-v24.txt ]; then
+          if [ -f diagnostics-main-failure.txt ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Materializar sistema visual final
+      - name: Descargar artefacto del fallo en main
         if: steps.guard.outputs.skip == 'false'
-        run: python3 scripts/materializar_activos_visuales.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api /repos/arendon7/ELERRANTE/actions/artifacts/8961755496/zip > /tmp/v24-failure.zip
+          mkdir -p /tmp/v24-failure
+          unzip -q /tmp/v24-failure.zip -d /tmp/v24-failure
 
-      - name: Configurar Node
-        if: steps.guard.outputs.skip == 'false'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Instalar dependencias
-        if: steps.guard.outputs.skip == 'false'
-        run: npm install --no-audit --no-fund
-
-      - name: Instalar Chromium
-        if: steps.guard.outputs.skip == 'false'
-        run: npx playwright install --with-deps chromium
-
-      - name: Capturar salida completa
+      - name: Extraer contexto legible
         if: steps.guard.outputs.skip == 'false'
         shell: bash
         run: |
-          set +e
-          npm run test:e2e -- --reporter=line > diagnostics-v24.txt 2>&1
-          status=$?
-          printf '\n__EXIT_STATUS__=%s\n' "$status" >> diagnostics-v24.txt
-          exit 0
+          {
+            echo "ARTEFACTO ORIGINAL: workflow 31086659788 · commit 2af9b53b5f593d7904cbb0b371bd5e16016a8f53"
+            echo
+            echo "ARCHIVOS DE CONTEXTO"
+            find /tmp/v24-failure -type f \( -name 'error-context.md' -o -name '*.txt' -o -name '*.md' \) -print | sort
+            echo
+            echo "CONTENIDO ERROR-CONTEXT"
+            while IFS= read -r file; do
+              echo "===== $file ====="
+              cat "$file"
+              echo
+            done < <(find /tmp/v24-failure -type f -name 'error-context.md' | sort)
+            echo
+            echo "COINCIDENCIAS DE ERROR"
+            find /tmp/v24-failure -type f \( -name '*.md' -o -name '*.txt' -o -name '*.json' -o -name '*.html' \) -print0 \
+              | xargs -0 grep -InaE 'Error:|Timeout|strict mode|Expected:|Received:|locator\(|expect\(|failed' 2>/dev/null \
+              | head -n 1200 || true
+          } > diagnostics-main-failure.txt
 
-      - name: Publicar diagnóstico en la rama
+      - name: Publicar evidencia en la rama
         if: steps.guard.outputs.skip == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add diagnostics-v24.txt
-          git commit -m "chore: conserva diagnóstico Playwright V2.4"
+          git add diagnostics-main-failure.txt
+          git commit -m "chore: conserva evidencia del fallo Playwright en main"
           git push origin HEAD:${{ github.head_ref }}

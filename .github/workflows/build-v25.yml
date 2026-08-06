@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   integrate:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 10
     steps:
       - name: Descargar rama V2.5

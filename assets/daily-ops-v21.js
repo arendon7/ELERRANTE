@@ -170,13 +170,7 @@
     const select=document.querySelector(`[data-order-status="${CSS.escape(order.id)}"]`);
     if(!select)throw new Error('No fue posible localizar el pedido en Administración.');
     select.value=newStatus;
-    const orders=read(KEYS.orders,[]);
-    const target=orders.find(item=>item.id===order.id);
-    if(target){
-      target.statusTimeline=Array.isArray(target.statusTimeline)?target.statusTimeline:[];
-      target.statusTimeline.push({status:newStatus,note:String(note||'').trim()||'Estado actualizado desde la mesa diaria',createdAt:new Date().toISOString()});
-      write(KEYS.orders,orders);
-    }
+    select.dataset.v21Note=String(note||'').trim()||'Estado actualizado desde la mesa diaria';
     select.dispatchEvent(new Event('change',{bubbles:true}));
     return true;
   }
@@ -193,7 +187,7 @@
       format:'el-errante-local-backup',
       version:'2.1.0',
       exportedAt:new Date().toISOString(),
-      data:Object.fromEntries(Object.entries(KEYS).map(([name,key])=>[name,read(key,name==='products'?{}:[])]))
+      data:Object.fromEntries(Object.entries(KEYS).map(([name,key])=>[name,read(key,['products','settings'].includes(name)?{}:[])]))
     };
   }
 

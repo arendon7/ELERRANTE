@@ -1,4 +1,5 @@
 const {test,expect}=require('@playwright/test');
+const fs=require('fs');
 
 async function seed(page,{receipt=true,status='payment_review'}={}){
   await page.addInitScript(({withReceipt,currentStatus})=>{
@@ -46,6 +47,12 @@ test.describe('Operación diaria V2.1',()=>{
     await page.getByRole('button',{name:'Exportar CSV operativo'}).click();
     const download=await downloadPromise;
     expect(download.suggestedFilename()).toContain('el-errante-pedidos-');
+    const csv=fs.readFileSync(await download.path(),'utf8');
+    expect(csv).toContain('EE-20260805-DIARIA');
+    expect(csv).not.toContain('Carrera 70 # 10-20');
+    expect(csv).not.toContain('3000000000');
+    expect(csv).not.toContain('cliente@example.com');
+    expect(csv).not.toContain('data:application/pdf');
   });
 
   test('descarga respaldo local y no desborda en móvil',async({page},testInfo)=>{

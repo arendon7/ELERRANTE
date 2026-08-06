@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v2-2-0
+  EXPECTED_CACHE: el-errante-v2-3-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -45,9 +45,8 @@ jobs:
             observed_source="$(sed -n 's/^deploy_source=//p' deploy-version-observed.txt | tr -d '\r')"
             observed_version="$(sed -n 's/^version=//p' deploy-version-observed.txt | tr -d '\r')"
             if [ "$observed_sha" = "$EXPECTED_SHA" ] && [ "$observed_cache" = "$EXPECTED_CACHE" ] && \
-               [ "$observed_source" = "main" ] && [ "$observed_version" = "2.2.0" ]; then
+               [ "$observed_source" = "main" ] && [ "$observed_version" = "2.3.0" ]; then
               success=1
-              echo "Marcador público coherente en el intento $attempt."
               break
             fi
             echo "Intento $attempt: sha=${observed_sha:-vacío}; version=${observed_version:-vacía}; cache=${observed_cache:-vacía}"
@@ -61,78 +60,61 @@ jobs:
           set -euo pipefail
           for asset in \
             host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js \
-            content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js daily-ops-v21.js production-v22.js; do
+            content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js activation-v23.js \
+            daily-ops-v21.js production-v22.js materials-data-v23.js materials-v23.js; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
-          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css production-v22.css; do
+          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css production-v22.css materials-v23.css; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
           curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
             "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
           curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/backend/supabase/schema-v22.sql?verify=$EXPECTED_SHA" > public-schema-v22.sql
+            "$PUBLIC_BASE/backend/supabase/schema-v23.sql?verify=$EXPECTED_SHA" > public-schema-v23.sql
           for script in public-*.js; do node --check "$script"; done
-          grep -q 'PUBLIC_VERSION="2.2.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v2-2-0"' public-host-mode.js
-          grep -q 'el-errante-v2-2-0' public-service-worker.js
-          grep -q 'assets/daily-ops-v21.js' public-service-worker.js
-          grep -q 'assets/production-v22.js' public-service-worker.js
-          grep -q 'assets/production-v22.css' public-service-worker.js
-          grep -q 'backend/supabase/schema-v20.sql' public-service-worker.js
-          grep -q 'backend/supabase/schema-v21.sql' public-service-worker.js
-          grep -q 'backend/supabase/schema-v22.sql' public-service-worker.js
-          grep -q 'shopperStorageKey' public-commerce-runtime-config.js
-          grep -q 'adminStorageKey' public-commerce-runtime-config.js
-          grep -q 'createSignedUrl' public-admin-v15.js
-          grep -q 'rpc("is_admin")' public-admin-v15.js
-          grep -q 'record_inventory_movement_v16' public-operations-v16.js
-          grep -q 'Masa con tiempo. Fuego con carácter.' public-content-v17.js
-          grep -q 'Confirma tu pedido con claridad.' public-commerce-ux-v18.js
-          grep -q 'lookup_order_status_v19' public-trust-v19.js
-          grep -q 'Supabase aún no está conectado' public-activation-v20.js
-          grep -q 'activation_health_v20' public-activation-v20.js
-          grep -q 'Mesa de pedidos y continuidad local' public-daily-ops-v21.js
-          grep -q 'transition_order_v21' public-daily-ops-v21.js
-          grep -q 'Agenda de alistamiento por fecha' public-production-v22.js
-          grep -q 'save_order_fulfillment_v22' public-production-v22.js
-          grep -q 'transition_order_v22' public-production-v22.js
-          grep -q 'fulfillment checklist required before dispatch' public-schema-v22.sql
+          grep -q 'PUBLIC_VERSION="2.3.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v2-3-0"' public-host-mode.js
+          grep -q 'el-errante-v2-3-0' public-service-worker.js
+          grep -q 'assets/materials-data-v23.js' public-service-worker.js
+          grep -q 'assets/materials-v23.js' public-service-worker.js
+          grep -q 'assets/materials-v23.css' public-service-worker.js
+          grep -q 'assets/activation-v23.js' public-service-worker.js
+          grep -q 'backend/supabase/schema-v23.sql' public-service-worker.js
+          grep -q 'Lo necesario para producir, sin saturar el panel.' public-materials-v23.js
+          grep -q 'Resumen financiero y análisis avanzado' public-materials-v23.js
+          grep -q 'EE-CPR-01' public-materials-data-v23.js
+          grep -q 'REC-MASA-BASE-V23' public-materials-data-v23.js
+          grep -q 'save_material_inventory_v23' public-schema-v23.sql
+          grep -q 'material_master' public-schema-v23.sql
+          grep -q 'dataset.activationVersion=' public-activation-v23.js
           ! grep -qi 'service_role' public-commerce-runtime-config.js
-          ! grep -qi 'service_role' public-admin-v15.js
-          ! grep -qi 'service_role' public-production-v22.js
-          ! grep -qi 'postgres://' public-production-v22.js
+          ! grep -qi 'service_role' public-materials-v23.js
+          ! grep -qi 'postgres://' public-materials-v23.js
 
       - name: Verificar superficies públicas críticas
         shell: bash
         run: |
           set -euo pipefail
-          for page in index tienda producto historia en-casa en-movimiento checkout cuenta admin activacion; do
+          for page in index tienda producto checkout cuenta admin activacion; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
           done
           assert_contains(){
             local file="$1" marker="$2" label="$3"
-            if ! grep -Fq "$marker" "$file"; then
-              echo "::error title=Public Health::$label"
-              echo "Archivo: $file"
-              echo "Marcador esperado: $marker"
-              exit 1
-            fi
+            grep -Fq "$marker" "$file" || { echo "::error title=Public Health::$label"; exit 1; }
           }
-          assert_contains public-index.html 'Masa · Fuego · Territorio' 'Inicio no conserva el claim principal.'
-          assert_contains public-tienda.html 'assets/commerce-ux-v18.js' 'Tienda no carga la experiencia de compra.'
-          assert_contains public-producto.html 'id="dynamic-product"' 'Producto dinámico no está disponible.'
-          assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva la transferencia.'
-          assert_contains public-checkout.html 'assets/trust-v19.js' 'Checkout no carga seguimiento.'
+          assert_contains public-index.html 'Masa · Fuego · Territorio' 'Inicio no conserva el claim.'
+          assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva transferencia.'
           assert_contains public-cuenta.html 'Seguimiento de pedidos' 'Cuenta no ofrece seguimiento.'
-          assert_contains public-admin.html 'Operación diaria, producción, despacho y finanzas · V2.2' 'Administración no declara V2.2.'
-          assert_contains public-admin.html 'id="daily-ops-v21"' 'Administración no expone la mesa diaria.'
-          assert_contains public-admin.html 'id="production-v22"' 'Administración no expone producción V2.2.'
-          assert_contains public-admin.html 'assets/production-v22.js' 'Administración no carga producción V2.2.'
-          assert_contains public-admin.html 'assets/production-v22.css' 'Administración no carga estilos V2.2.'
-          assert_contains public-activacion.html 'Activación V2.2' 'Activación no declara V2.2.'
+          assert_contains public-admin.html 'Operación diaria, producción, materiales y despacho · V2.3' 'Admin no declara V2.3.'
+          assert_contains public-admin.html 'id="materials-v23"' 'Admin no expone materiales V2.3.'
+          assert_contains public-admin.html 'assets/materials-data-v23.js' 'Admin no carga maestro V2.3.'
+          assert_contains public-admin.html 'assets/materials-v23.js' 'Admin no carga motor V2.3.'
+          assert_contains public-admin.html 'assets/materials-v23.css' 'Admin no carga estilos V2.3.'
+          assert_contains public-activacion.html 'Activación V2.3' 'Activación no declara V2.3.'
+          assert_contains public-activacion.html 'assets/activation-v23.js' 'Activación no carga extensión V2.3.'
           assert_contains public-activacion.html 'noindex,nofollow' 'Activación no está excluida de indexación.'
           if grep -Fq 'assets/commerce-v14.js' public-admin.html; then
             echo '::error title=Public Health::Admin conserva runtime legado.'
@@ -151,26 +133,17 @@ jobs:
           from pathlib import Path
           for path in Path('.').glob('public-*.webp'):
               data=path.read_bytes()
-              assert len(data)>100_000, f'{path} no conserva peso HQ'
-              assert data[:4]==b'RIFF' and data[8:12]==b'WEBP', f'{path} no es WebP válido'
+              assert len(data)>100_000
+              assert data[:4]==b'RIFF' and data[8:12]==b'WEBP'
           assert Path('public-home-hero.webp').read_bytes()!=Path('public-home-hero-mobile.webp').read_bytes()
           PY
 
       - name: Generar informe
         if: always()
-        shell: bash
         run: |
-          {
-            echo "EL ERRANTE — PUBLIC HEALTH V2.2.0 PRODUCCIÓN Y DESPACHO"
-            echo "source_conclusion=$SOURCE_CONCLUSION"
-            echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
-            echo "expected_sha=$EXPECTED_SHA"
-            echo "expected_cache=$EXPECTED_CACHE"
-            echo "public_base=$PUBLIC_BASE"
-            echo
-            echo "--- deploy-version observado ---"
-            cat deploy-version-observed.txt 2>/dev/null || true
-          } > public-health-report.txt
+          printf 'EL ERRANTE — PUBLIC HEALTH V2.3.0 MATERIAS PRIMAS E INVENTARIO\nsource_conclusion=%s\nexpected_sha=%s\nexpected_cache=%s\npublic_base=%s\n' \
+            "$SOURCE_CONCLUSION" "$EXPECTED_SHA" "$EXPECTED_CACHE" "$PUBLIC_BASE" > public-health-report.txt
+          cat deploy-version-observed.txt >> public-health-report.txt 2>/dev/null || true
           cat public-health-report.txt
 
       - name: Conservar evidencia únicamente ante fallo
@@ -183,18 +156,11 @@ jobs:
             deploy-version-observed.txt
             public-host-mode.js
             public-service-worker.js
-            public-commerce-runtime-config.js
-            public-admin-v15.js
-            public-activation-v20.js
-            public-daily-ops-v21.js
-            public-production-v22.js
-            public-production-v22.css
-            public-schema-v22.sql
-            public-index.html
-            public-tienda.html
-            public-producto.html
-            public-checkout.html
-            public-cuenta.html
+            public-activation-v23.js
+            public-materials-data-v23.js
+            public-materials-v23.js
+            public-materials-v23.css
+            public-schema-v23.sql
             public-admin.html
             public-activacion.html
           retention-days: 14

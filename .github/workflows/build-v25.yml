@@ -46,6 +46,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          replacements={
+              'assets/images/v040/v040-pizza-neo.svg':'assets/images/brand-final/home-en-casa.webp',
+              'assets/images/v040/v040-harina-empaques.svg':'assets/images/brand-final/producto-harina.webp',
+              'assets/images/v040/v040-harina-horno.svg':'assets/images/brand-final/producto-harina.webp'
+          }
+          for file in [*Path('.').glob('*.html'),Path('assets/data.js'),Path('assets/host-mode.js')]:
+              text=file.read_text(encoding='utf-8')
+              for old,new in replacements.items():
+                  text=text.replace(old,new)
+              file.write_text(text,encoding='utf-8')
+          PY
           python scripts/aplicar_v25.py
           python - <<'PY'
           from pathlib import Path

@@ -29,8 +29,8 @@ require('admin.html','assets/daily-ops-v21.js','Admin no carga el runtime V2.1')
 require('admin.html','assets/daily-ops-v21.css','Admin no carga los estilos V2.1')
 require('service-worker.js','assets/daily-ops-v21.js','Service Worker no cachea el runtime V2.1')
 require('service-worker.js','backend/supabase/schema-v21.sql','Service Worker no incluye la migración V2.1')
-require('deploy-version.txt','version=2.2.0','El marcador público no declara V2.1')
-require('deploy-version.txt','cache=el-errante-v2-2-0','El marcador público no declara caché V2.1')
+require('deploy-version.txt','version=2.3.0','El marcador público no declara V2.3')
+require('deploy-version.txt','cache=el-errante-v2-3-0','El marcador público no declara caché V2.3')
 
 for path in ('assets/daily-ops-v21.js','assets/commerce-runtime-config.js'):
     text=(ROOT/path).read_text(encoding='utf-8').lower()

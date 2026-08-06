@@ -36,8 +36,8 @@ for sku in (
     "EE-CTP-02", "EE-CTG-02", "EE-HAT-1000", "EE-HAT-2500", "EE-HAT-5000",
     "EE-RBA-250", "EE-PYM-250", "EE-STP-500", "EE-CPR-01",
 ):
-    if data.count(f"sku:'{sku}'") != 1:
-        raise SystemExit(f"SKU ausente o duplicado: {sku}")
+    if data.count(f"{{sku:'{sku}',ids:") != 1:
+        raise SystemExit(f"Definición maestra ausente o duplicada: {sku}")
 
 ui = require(
     "assets/materials-v23.js",

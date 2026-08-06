@@ -38,7 +38,7 @@ admin = require(
 )
 require('activacion.html', 'Activación V2.5', 'assets/activation-v25.js', 'noindex,nofollow')
 config = require(
-    'assets/commerce-config-v14.js', 'version: "2.4.0"', 'stage: "Piloto"',
+    'assets/commerce-config-v14.js', 'version: "2.5.0"', 'stage: "Piloto"',
     'dataStatus: "ESTIMADO"', 'monthlyFixedCosts', 'notice:'
 )
 runtime_config = require('assets/commerce-runtime-config.js', 'url: ""', 'publishableKey: ""')

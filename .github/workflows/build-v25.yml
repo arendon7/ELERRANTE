@@ -1,0 +1,46 @@
+name: Integrar V2.5 abastecimiento
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Descargar rama V2.5
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Aplicar integración determinista
+        run: python3 scripts/aplicar_v25.py
+
+      - name: Validar antes de publicar el commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/procurement-v25.js
+          node --check assets/activation-v25.js
+          node --check tests/e2e/procurement-v25.spec.js
+          node --check service-worker.js
+          python3 scripts/verificar_abastecimiento_v25.py
+          python3 scripts/verificar_medicion_v24.py
+          python3 scripts/verificar_activacion_v20.py
+
+      - name: Retirar herramientas temporales
+        run: git rm scripts/aplicar_v25.py .github/workflows/build-v25.yml
+
+      - name: Publicar integración limpia
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "feat: integra abastecimiento controlado V2.5"
+          git push origin HEAD:${{ github.head_ref }}

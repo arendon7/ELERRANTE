@@ -59,12 +59,13 @@ test.describe('Operación y finanzas V1.6', () => {
     await expect(productRow).toContainText('15');
   });
 
-  test('al entrar en preparación descuenta inventario una sola vez', async ({ page }) => {
+  test('al iniciar preparación desde la mesa diaria descuenta inventario una sola vez', async ({ page }) => {
     await seedOperation(page);
     await page.goto('/admin.html');
     await page.getByRole('button', { name: 'Abrir simulación local' }).click();
     const desk = page.locator('#daily-ops-v21');
     await expect(desk.getByRole('heading', { name: 'Mesa de pedidos y continuidad local' })).toBeVisible();
+    await expect(page.locator('[data-order-status="EE-TEST-V16"]')).toHaveCount(0);
     await desk.locator('[data-v21-order="EE-TEST-V16"]').getByRole('button', { name: 'Abrir pedido' }).click();
     const dialogBox = page.locator('#ee-v21-dialog');
     await expect(dialogBox).toBeVisible();

@@ -50,9 +50,9 @@ for page in ("index.html", "tienda.html", "producto.html", "historia.html", "en-
     if text.index("assets/content-v17.js") > text.index("assets/app.js"):
         raise SystemExit(f"{page} carga content-v17 después de app.js")
 
-require("assets/host-mode.js", 'PUBLIC_VERSION="2.1.0"', 'ACTIVE_CACHE="el-errante-v2-1-0"')
-require("service-worker.js", "el-errante-v2-1-0", "assets/content-v17.js")
-require("deploy-version.txt", "version=2.1.0", "cache=el-errante-v2-1-0")
+require("assets/host-mode.js", 'PUBLIC_VERSION="2.2.0"', 'ACTIVE_CACHE="el-errante-v2-2-0"')
+require("service-worker.js", "el-errante-v2-2-0", "assets/content-v17.js")
+require("deploy-version.txt", "version=2.2.0", "cache=el-errante-v2-2-0")
 
 for forbidden in (
     "la mejor pizza de colombia",

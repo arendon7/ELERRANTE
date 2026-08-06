@@ -161,3 +161,11 @@ Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta 
 - Exportación CSV operativa sin dirección, teléfono, correo ni comprobante.
 - Respaldo y restauración validados para el modo local previo a Supabase.
 - RPC administrativa que sincroniza estado, comprobante, auditoría e inventario.
+
+
+## V2.2 — Producción y despacho
+- Agenda por fecha comprometida.
+- Consolidado de unidades por producto.
+- Checklist de producto, empaque, cantidad y coordinación.
+- Bloqueo de despacho incompleto en navegador y Supabase.
+- Lista imprimible y CSV operativo sin datos personales.

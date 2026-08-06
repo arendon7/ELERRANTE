@@ -36,6 +36,12 @@ jobs:
                   raise SystemExit(f'{path} no cambió')
               file.write_text(text,encoding='utf-8')
 
+          activation=Path('assets/activation-v20.js')
+          activation_text=activation.read_text(encoding='utf-8')
+          activation_text=activation_text.replace('publicación de `main`','publicación de main')
+          activation_text=activation_text.replace('pero `is_admin()`','pero is_admin()')
+          activation.write_text(activation_text,encoding='utf-8')
+
           replace('assets/commerce-config-v14.js', [('version: "1.9.0"','version: "2.0.0"')])
           replace('assets/host-mode.js', [
               ('PUBLIC_VERSION="1.9.0"','PUBLIC_VERSION="2.0.0"'),
@@ -100,6 +106,6 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/commerce-config-v14.js assets/host-mode.js service-worker.js deploy-version.txt scripts documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md
+          git add assets/activation-v20.js assets/commerce-config-v14.js assets/host-mode.js service-worker.js deploy-version.txt scripts documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md
           git commit -m 'feat(activation): integra versión pública y caché V2.0'
           git push origin HEAD:feat/activacion-operativa-v20

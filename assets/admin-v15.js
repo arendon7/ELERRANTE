@@ -321,10 +321,10 @@
   function activationPanel(container){
     container.innerHTML = `
       <section class="ee-v14-auth ee-v15-activation">
-        <p class="eyebrow">Administración V2.1</p>
+        <p class="eyebrow">Administración V2.2</p>
         <h1>Acceso administrativo seguro.</h1>
         <p>El código de autenticación, roles, base de datos y comprobantes privados ya está preparado. Falta vincular el proyecto Supabase mediante la configuración protegida del despliegue.</p>
-        <div class="ee-v15-checklist"><span>1. Crear o seleccionar el proyecto Supabase.</span><span>2. Ejecutar las migraciones V1.4, V1.5, V1.6, V1.9, V2.0 y V2.1.</span><span>3. Registrar la URL y la publishable key en GitHub Actions.</span><span>4. Crear el usuario de Juan y autorizarlo en <code>admin_users</code>.</span></div>
+        <div class="ee-v15-checklist"><span>1. Crear o seleccionar el proyecto Supabase.</span><span>2. Ejecutar las migraciones V1.4, V1.5, V1.6, V1.9, V2.0, V2.1 y V2.2.</span><span>3. Registrar la URL y la publishable key en GitHub Actions.</span><span>4. Crear el usuario de Juan y autorizarlo en <code>admin_users</code>.</span></div>
         <div class="ee-v14-note">No existe una contraseña maestra dentro del código. Pages no simula un acceso privado inexistente.</div>
         <button class="ee-v14-btn terracotta" id="ee-open-local-admin" style="width:100%;margin-top:18px">Abrir simulación local</button>
       </section>`;

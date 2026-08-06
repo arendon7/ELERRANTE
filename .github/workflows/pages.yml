@@ -1,17 +1,21 @@
 name: Validar y publicar El Errante
+
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: "pages-${{ github.ref }}"
   cancel-in-progress: true
+
 jobs:
   validate:
     name: Regresión integral
@@ -19,66 +23,55 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+
       - name: Materializar fallback visual legado
         run: python3 scripts/materializar_activos_visuales.py
-      - name: Ejecutar barrera de publicación V1.3 HQ
-        run: python3 scripts/verificar_release_v13.py
-      - name: Validar operación comercial V1.4
-        run: python3 scripts/verificar_operacion_v14.py
-      - name: Validar backend y acceso privado V1.5
-        run: python3 scripts/verificar_backend_v15.py
-      - name: Validar operación y finanzas V1.6
-        run: python3 scripts/verificar_operacion_v16.py
-      - name: Validar contenido y conversión V1.7
-        run: python3 scripts/verificar_contenido_v17.py
-      - name: Validar experiencia de compra V1.8
-        run: python3 scripts/verificar_experiencia_compra_v18.py
-      - name: Validar confianza y seguimiento V1.9
-        run: python3 scripts/verificar_confianza_v19.py
-      - name: Validar activación operativa V2.0
-        run: python3 scripts/verificar_activacion_v20.py
-      - name: Validar operación diaria V2.1
-        run: python3 scripts/verificar_operacion_diaria_v21.py
-      - name: Validar matriz maestra de oferta
-        run: python3 scripts/verificar_oferta_v09.py
-      - name: Validar Studio de Oferta
-        run: |
-          python3 scripts/verificar_studio_oferta_v09.py
-          node --check assets/offer-studio-v09.js
-          node --check assets/offer-governance-v09.js
-      - name: Validar sesiones, actas y comité
-        run: |
-          python3 scripts/verificar_actas_oferta_v09.py
-          python3 scripts/verificar_paquete_aire_tiempo_v09.py
-          node --check assets/offer-acts-preflight-v09.js
-          node --check assets/offer-acts-v09.js
-          node --check assets/aire-tiempo-committee-v09.js
-      - name: Validar sistema visual y comercial
+
+      - name: Ejecutar barreras históricas y operativas
         shell: bash
         run: |
           set -euo pipefail
-          node --check assets/host-mode.js
-          node --check assets/commerce-v14.js
-          node --check assets/commerce-config-v14.js
-          node --check assets/checkout-v15.js
-          node --check assets/admin-v15.js
-          node --check assets/operations-v16.js
-          node --check assets/content-v17.js
-          node --check assets/commerce-ux-v18.js
-          node --check assets/trust-v19.js
-          node --check assets/activation-v20.js
-          node --check assets/daily-ops-v21.js
+          for test in \
+            scripts/verificar_release_v13.py \
+            scripts/verificar_operacion_v14.py \
+            scripts/verificar_backend_v15.py \
+            scripts/verificar_operacion_v16.py \
+            scripts/verificar_contenido_v17.py \
+            scripts/verificar_experiencia_compra_v18.py \
+            scripts/verificar_confianza_v19.py \
+            scripts/verificar_activacion_v20.py \
+            scripts/verificar_operacion_diaria_v21.py \
+            scripts/verificar_produccion_v22.py \
+            scripts/verificar_oferta_v09.py \
+            scripts/verificar_studio_oferta_v09.py \
+            scripts/verificar_actas_oferta_v09.py \
+            scripts/verificar_paquete_aire_tiempo_v09.py; do
+            python3 "$test"
+          done
+
+      - name: Validar JavaScript, estilos y sistema visual
+        shell: bash
+        run: |
+          set -euo pipefail
+          for asset in \
+            host-mode.js commerce-v14.js commerce-config-v14.js checkout-v15.js admin-v15.js \
+            operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js \
+            daily-ops-v21.js production-v22.js offer-studio-v09.js offer-governance-v09.js \
+            offer-acts-preflight-v09.js offer-acts-v09.js aire-tiempo-committee-v09.js; do
+            node --check "assets/$asset"
+          done
           node --check service-worker.js
-          test -s assets/commerce-v18.css
-          test -s assets/trust-v19.css
-          test -s assets/activation-v20.css
-          test -s assets/daily-ops-v21.css
+          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css production-v22.css; do
+            test -s "assets/$asset"
+          done
           test "$(find assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
           grep -q '"version": "1.3.0"' assets/images/brand-final/manifest-hq-v13.json
           grep -q '"unique_assets": 23' assets/images/brand-final/manifest-hq-v13.json
           ! cmp -s assets/images/brand-final/home-hero.webp assets/images/brand-final/home-hero-mobile.webp
+
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
+
       - name: Publicar fuente o diagnóstico para auditoría
         if: always()
         uses: actions/upload-artifact@v4
@@ -87,6 +80,7 @@ jobs:
           path: .artifacts/canonical
           if-no-files-found: warn
           retention-days: 14
+
   deploy:
     name: Publicar GitHub Pages
     if: github.event_name != 'pull_request'
@@ -98,10 +92,13 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+
       - name: Materializar fallback visual legado
         run: python3 scripts/materializar_activos_visuales.py
+
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
+
       - name: Preparar sitio desde main
         shell: bash
         env:
@@ -109,143 +106,89 @@ jobs:
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           set -euo pipefail
-          mkdir -p _site
-          rsync -av ./ _site/ \
-            --exclude '.git/' \
-            --exclude '.github/' \
-            --exclude '_site/' \
-            --exclude '__pycache__/' \
-            --exclude '.artifacts/' \
-            --exclude 'node_modules/' \
-            --exclude 'test-results/' \
-            --exclude 'playwright-report/' \
-            --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip' \
-            --exclude 'assets/brand-final-editorial.js' \
-            --exclude 'assets/brand-final-products-a.js' \
-            --exclude 'assets/brand-final-products-b.js' \
-            --exclude 'assets/brand-final-products-c.js'
-          if { [ -n "${SUPABASE_URL:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; } || { [ -z "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_PUBLISHABLE_KEY:-}" ]; }; then
+          if { [ -n "${SUPABASE_URL:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; } || \
+             { [ -z "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_PUBLISHABLE_KEY:-}" ]; }; then
             echo "SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY deben configurarse juntas."
             exit 1
           fi
+          mkdir -p _site
+          rsync -av ./ _site/ \
+            --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' \
+            --exclude '.artifacts/' --exclude 'node_modules/' --exclude 'test-results/' \
+            --exclude 'playwright-report/' --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip' \
+            --exclude 'assets/brand-final-editorial.js' --exclude 'assets/brand-final-products-a.js' \
+            --exclude 'assets/brand-final-products-b.js' --exclude 'assets/brand-final-products-c.js'
           python3 - <<'PY'
-          import json
-          import os
+          import json, os
           from pathlib import Path
-          url = os.environ.get('SUPABASE_URL','').strip()
-          key = os.environ.get('SUPABASE_PUBLISHABLE_KEY','').strip()
-          config = {
-              'environment': 'connected' if url and key else 'preview',
-              'backend': {
-                  'provider': 'supabase',
-                  'url': url,
-                  'publishableKey': key,
-                  'receiptBucket': 'payment-receipts',
-                  'shopperStorageKey': 'ee-shopper-auth-v15',
-                  'adminStorageKey': 'ee-admin-auth-v15',
-              },
+          url=os.environ.get('SUPABASE_URL','').strip()
+          key=os.environ.get('SUPABASE_PUBLISHABLE_KEY','').strip()
+          config={
+              'environment':'connected' if url and key else 'preview',
+              'backend':{
+                  'provider':'supabase','url':url,'publishableKey':key,
+                  'receiptBucket':'payment-receipts',
+                  'shopperStorageKey':'ee-shopper-auth-v15',
+                  'adminStorageKey':'ee-admin-auth-v15'
+              }
           }
-          output = 'window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze(' + json.dumps(config, ensure_ascii=False, separators=(',',':')) + ');\n'
-          Path('_site/assets/commerce-runtime-config.js').write_text(output, encoding='utf-8')
+          Path('_site/assets/commerce-runtime-config.js').write_text(
+              'window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze(' +
+              json.dumps(config,ensure_ascii=False,separators=(',',':')) + ');\n',encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.1.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-1-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.2.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-2-0\nupdated=%s\n' \
+            "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
+
       - name: Verificar artefacto publicable
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'version=2.1.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v2-1-0' _site/deploy-version.txt
+          grep -q 'version=2.2.0' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v2-2-0' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
-          for page in equipo admin activacion control operacion studio actas presentacion checkout cuenta; do test -f "_site/${page}.html"; done
-          test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
-          grep -q '"version": "1.3.0"' _site/assets/images/brand-final/manifest-hq-v13.json
-          grep -q '"unique_assets": 23' _site/assets/images/brand-final/manifest-hq-v13.json
-          for asset in home-hero home-hero-mobile home-masa-fuego home-fermentacion home-ingredientes home-compartir home-en-casa home-despensa evento-hero evento-noche evento-operacion evento-servicio og-el-errante producto-harina producto-crea-tuya producto-margherita producto-diavola producto-bosque producto-cuatro-quesos producto-la-errante producto-salsa-tomate producto-reduccion-balsamica producto-panela-maracuya producto-combo-primera-ruta; do test -s "_site/assets/images/brand-final/${asset}.webp"; done
-          test ! -f _site/assets/brand-final-editorial.js
-          test ! -f _site/assets/brand-final-products-a.js
-          test ! -f _site/assets/brand-final-products-b.js
-          test ! -f _site/assets/brand-final-products-c.js
-          grep -q 'el-errante-v2-1-0' _site/service-worker.js
-          grep -q 'PUBLIC_VERSION="2.1.0"' _site/assets/host-mode.js
-          grep -q 'brand-final-hq' _site/assets/host-mode.js
-          grep -q 'home-hero-mobile.webp' _site/assets/host-mode.js
-          grep -q 'checkout-v15.js' _site/checkout.html
-          grep -q 'trust-v19.js' _site/checkout.html
-          grep -q 'trust-v19.js' _site/cuenta.html
-          grep -q 'trust-v19.js' _site/admin.html
-          grep -q 'admin-v15.js' _site/admin.html
-          grep -q 'operations-v16.js' _site/admin.html
-          grep -q 'href="activacion.html"' _site/admin.html
-          grep -q 'Operación diaria, finanzas y activación · V2.1' _site/admin.html
-          grep -q 'data-page="activacion"' _site/activacion.html
-          grep -q 'assets/activation-v20.js' _site/activacion.html
-          grep -q 'assets/activation-v20.css' _site/activacion.html
+          grep -q 'Operación diaria, producción, despacho y finanzas · V2.2' _site/admin.html
           grep -q 'id="daily-ops-v21"' _site/admin.html
-          grep -q 'assets/daily-ops-v21.js' _site/admin.html
-          grep -q 'assets/daily-ops-v21.css' _site/admin.html
-          ! grep -q 'assets/commerce-v14.js' _site/admin.html
-          grep -q 'assets/checkout-v15.js' _site/service-worker.js
-          grep -q 'assets/admin-v15.js' _site/service-worker.js
-          grep -q 'assets/operations-v16.js' _site/service-worker.js
-          grep -q 'assets/content-v17.js' _site/service-worker.js
-          grep -q 'assets/commerce-ux-v18.js' _site/service-worker.js
-          grep -q 'assets/commerce-v18.css' _site/service-worker.js
-          grep -q 'assets/trust-v19.js' _site/service-worker.js
-          grep -q 'assets/trust-v19.css' _site/service-worker.js
-          grep -q 'assets/activation-v20.js' _site/service-worker.js
-          grep -q 'assets/activation-v20.css' _site/service-worker.js
-          grep -q 'assets/daily-ops-v21.js' _site/service-worker.js
-          grep -q 'assets/daily-ops-v21.css' _site/service-worker.js
-          grep -q 'backend/supabase/schema-v19.sql' _site/service-worker.js
+          grep -q 'id="production-v22"' _site/admin.html
+          grep -q 'assets/production-v22.js' _site/admin.html
+          grep -q 'assets/production-v22.css' _site/admin.html
+          grep -q 'data-page="activacion"' _site/activacion.html
+          grep -q 'Activación V2.2' _site/activacion.html
+          grep -q 'el-errante-v2-2-0' _site/service-worker.js
+          grep -q 'PUBLIC_VERSION="2.2.0"' _site/assets/host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v2-2-0"' _site/assets/host-mode.js
+          grep -q 'assets/production-v22.js' _site/service-worker.js
+          grep -q 'assets/production-v22.css' _site/service-worker.js
           grep -q 'backend/supabase/schema-v20.sql' _site/service-worker.js
           grep -q 'backend/supabase/schema-v21.sql' _site/service-worker.js
-          for page in index tienda producto historia en-casa en-movimiento; do grep -q 'assets/content-v17.js' "_site/${page}.html"; done
-          for page in tienda producto checkout; do grep -q 'assets/commerce-ux-v18.js' "_site/${page}.html"; grep -q 'assets/commerce-v18.css' "_site/${page}.html"; done
-          grep -q 'Masa con tiempo. Fuego con carácter.' _site/assets/content-v17.js
-          grep -q 'Nuestra pizza insignia' _site/assets/content-v17.js
-          grep -q 'Confirma tu pedido con claridad.' _site/assets/commerce-ux-v18.js
-          grep -q 'ee-v18-mobile-total' _site/assets/commerce-v18.css
-          grep -q 'lookup_order_status_v19' _site/assets/trust-v19.js
-          grep -q 'Consulta segura · V1.9' _site/assets/trust-v19.js
-          grep -q 'ee-v19-progress' _site/assets/trust-v19.css
-          grep -q 'Supabase aún no está conectado' _site/assets/activation-v20.js
-          grep -q 'activation_health_v20' _site/assets/activation-v20.js
-          grep -q 'ee-v20-checklist' _site/assets/activation-v20.css
-          grep -q 'Mesa de pedidos y continuidad local' _site/assets/daily-ops-v21.js
-          grep -q 'transition_order_v21' _site/assets/daily-ops-v21.js
-          grep -q 'ee-v21-dialog' _site/assets/daily-ops-v21.css
+          grep -q 'backend/supabase/schema-v22.sql' _site/service-worker.js
+          grep -q 'Agenda de alistamiento por fecha' _site/assets/production-v22.js
+          grep -q 'transition_order_v22' _site/assets/production-v22.js
+          grep -q 'fulfillment checklist required before dispatch' _site/backend/supabase/schema-v22.sql
           node --check _site/assets/commerce-runtime-config.js
-          node --check _site/assets/operations-v16.js
-          node --check _site/assets/content-v17.js
-          node --check _site/assets/commerce-ux-v18.js
-          node --check _site/assets/trust-v19.js
-          node --check _site/assets/activation-v20.js
+          node --check _site/assets/host-mode.js
           node --check _site/assets/daily-ops-v21.js
+          node --check _site/assets/production-v22.js
+          node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
-          ! grep -qi 'service_role' _site/assets/trust-v19.js
-          ! grep -qi 'postgres://' _site/assets/activation-v20.js
-          for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-preflight-v09.js offer-acts-v09.js offer-acts-v09.css aire-tiempo-committee-v09.js aire-tiempo-committee-v09.css commerce-runtime-config.js commerce-config-v14.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js daily-ops-v21.js commerce-v14.js commerce-v14.css commerce-v15.css commerce-v16.css commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css; do test -f "_site/assets/$asset"; done
-          test -f _site/documentacion/modelo-oferta-v09.json
-          test -f _site/documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json
-          test -f _site/documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md
+          ! grep -qi 'service_role' _site/assets/production-v22.js
+          ! grep -qi 'postgres://' _site/assets/production-v22.js
+          test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
           test -f _site/backend/supabase/schema-v14.sql
           test -f _site/backend/supabase/schema-v15.sql
           test -f _site/backend/supabase/schema-v16.sql
           test -f _site/backend/supabase/schema-v19.sql
           test -f _site/backend/supabase/schema-v20.sql
           test -f _site/backend/supabase/schema-v21.sql
-          grep -q 'v040-app-001.b64' _site/assets/app.js
-          grep -q 'v040-app-006.b64' _site/assets/app.js
-          ! grep -q 'assets/chunks/app-' _site/assets/app.js
-          ! grep -q 'assets/chunks/data-' _site/assets/data.js
-          ! grep -q 'assets/chunks/preprod-' _site/assets/preprod.js
+          test -f _site/backend/supabase/schema-v22.sql
           test ! -f _site/ELERRANTE_PAQUETE_VISUAL_V1_10.zip
+
       - name: Cargar artefacto de Pages
         uses: actions/upload-pages-artifact@v4
         with:
           path: "_site"
+
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4

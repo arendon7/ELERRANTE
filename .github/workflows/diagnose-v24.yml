@@ -1,0 +1,66 @@
+name: Diagnóstico temporal V2.4
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: ${{ !contains(github.event.pull_request.head.sha, 'diagnostics-v24') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar rama de reparación
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Evitar repetición si ya existe el diagnóstico
+        id: guard
+        run: |
+          if [ -f diagnostics-v24.txt ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Materializar sistema visual final
+        if: steps.guard.outputs.skip == 'false'
+        run: python3 scripts/materializar_activos_visuales.py
+
+      - name: Configurar Node
+        if: steps.guard.outputs.skip == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependencias
+        if: steps.guard.outputs.skip == 'false'
+        run: npm install --no-audit --no-fund
+
+      - name: Instalar Chromium
+        if: steps.guard.outputs.skip == 'false'
+        run: npx playwright install --with-deps chromium
+
+      - name: Capturar salida completa
+        if: steps.guard.outputs.skip == 'false'
+        shell: bash
+        run: |
+          set +e
+          npm run test:e2e -- --reporter=line > diagnostics-v24.txt 2>&1
+          status=$?
+          printf '\n__EXIT_STATUS__=%s\n' "$status" >> diagnostics-v24.txt
+          exit 0
+
+      - name: Publicar diagnóstico en la rama
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add diagnostics-v24.txt
+          git commit -m "chore: conserva diagnóstico Playwright V2.4"
+          git push origin HEAD:${{ github.head_ref }}

@@ -1,7 +1,0 @@
-EL ERRANTE FINANCE RELEASE CANDIDATE
-version=2.7.0-dev
-base=feat/abastecimiento-v25
-branch=feat/finanzas-operativas-v27
-cache=el-errante-v2-7-finance-1
-supabase=inactive
-updated=2026-08-06T21:15:00Z

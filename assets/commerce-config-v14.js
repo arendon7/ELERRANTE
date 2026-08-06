@@ -2,7 +2,7 @@
   const runtime = window.EL_ERRANTE_RUNTIME_CONFIG || {};
   const runtimeBackend = runtime.backend || {};
   window.EL_ERRANTE_COMMERCE_CONFIG = Object.freeze({
-    version: "2.1.0",
+    version: "2.3.0",
     environment: runtime.environment || "preview",
     backend: {
       provider: runtimeBackend.provider || "supabase",
@@ -22,11 +22,16 @@
     },
     finance: {
       currency: "COP",
+      stage: "Piloto",
+      dataStatus: "ESTIMADO",
+      notice: "Gastos provisionales de la etapa piloto. No incluyen salario formal de Juan, arriendo futuro, impuestos definitivos ni costo económico del trabajo de socios.",
       monthlyFixedCosts: [
-        { id: "trabajador", label: "Trabajador", amount: 2000000 },
-        { id: "sede", label: "Sede y ocupación", amount: 2500000 },
-        { id: "servicios", label: "Servicios, conectividad y operación", amount: 750000 },
-        { id: "otros", label: "Otros gastos fijos", amount: 750000 }
+        { id: "servicios", label: "Servicios e internet", amount: 90000 },
+        { id: "aseo", label: "Aseo y consumibles", amount: 50000 },
+        { id: "contabilidad", label: "Contabilidad y software", amount: 70000 },
+        { id: "mercadeo", label: "Mercadeo", amount: 80000 },
+        { id: "mantenimiento", label: "Mantenimiento", amount: 40000 },
+        { id: "sanitario", label: "Sanitario, etiquetas y registros", amount: 40000 }
       ]
     },
     ordering: {

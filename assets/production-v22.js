@@ -277,8 +277,8 @@
   function observe(){
     const admin=document.querySelector('#admin-dynamic');
     if(admin){let timer;new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(render,120);}).observe(admin,{childList:true,subtree:true});}
-    const dialog=document.querySelector('#ee-v21-dialog-content');
-    if(dialog)new MutationObserver(syncLegacyDispatchGuard).observe(dialog,{childList:true,subtree:true});
+    const daily=document.querySelector('#daily-ops-v21');
+    if(daily)new MutationObserver(()=>queueMicrotask(syncLegacyDispatchGuard)).observe(daily,{childList:true,subtree:true});
     document.addEventListener('click',event=>{
       const button=event.target.closest?.('#ee-v21-dialog [data-v21-transition="dispatched"]');
       if(!button||isRemote())return;

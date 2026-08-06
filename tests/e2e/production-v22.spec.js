@@ -44,8 +44,8 @@ test.describe('Producción y despacho V2.2',()=>{
     const board=page.locator('#production-v22');
     await expect(board.getByRole('heading',{name:'Agenda de alistamiento por fecha'})).toBeVisible();
     await expect(board.locator('#ee-v22-date')).toHaveValue('2026-08-08');
-    await expect(board.locator('[data-v22-product="la-errante"]')).toContainText('3');
-    await expect(board.locator('[data-v22-product="salsa"]')).toContainText('2');
+    await expect(board.locator('[data-v22-product="la-errante"] td').nth(3)).toHaveText('3');
+    await expect(board.locator('[data-v22-product="salsa"] td').nth(3)).toHaveText('2');
     await expect(board.locator('[data-v22-order]')).toHaveCount(3);
     await expect(page.locator('html')).toHaveAttribute('data-production-version','2.2.0');
   });

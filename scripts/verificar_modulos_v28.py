@@ -36,7 +36,7 @@ admin = require(
     'assets/brand-canon-v28.js', 'assets/finance-v27.js', 'assets/procurement-v25.js',
     'Activación V2.5', 'noindex,nofollow'
 )
-activation = require('activacion.html', 'Activación V2.5', 'assets/activation-v25.js', 'noindex,nofollow')
+require('activacion.html', 'Activación V2.5', 'assets/activation-v25.js', 'noindex,nofollow')
 config = require(
     'assets/commerce-config-v14.js', 'version: "2.4.0"', 'stage: "Piloto"',
     'dataStatus: "ESTIMADO"', 'monthlyFixedCosts', 'notice:'
@@ -89,7 +89,7 @@ procurement = require(
     'ee_v25_purchase_orders', 'save_material_purchase_order_v25', 'transition_material_purchase_order_v25',
     'receive_material_purchase_order_v25', 'referencia externa antes de emitirla', 'updateStock&&hasCount'
 )
-require('assets/procurement-v25-guard.js', 'invoice', 'duplicate')
+require('assets/procurement-v25-guard.js', 'invoiceReference', 'duplicate')
 require(
     'backend/supabase/schema-v25.sql', 'material_purchase_orders_v25', 'material_purchase_receipts_v25',
     'save_material_purchase_order_v25', 'transition_material_purchase_order_v25',
@@ -105,7 +105,7 @@ finance = require(
     'ee_v27_finance_movements', 'ee_v27_finance_settings'
 )
 require('assets/finance-v27.css', '.ee-v27', '@media')
-require('tests/e2e/finance-v27.spec.js', 'Compra de inventario', 'caja')
+require('tests/e2e/finance-v27.spec.js', 'inventory_purchase', 'Caja estimada')
 require('tests/e2e/procurement-v25.spec.js', 'Borrador creado. Aún no está aprobado ni emitido.', 'Comparar proveedores observados')
 
 require('assets/trust-v19.js', 'lookup_order_status_v19', 'Esta consulta no muestra dirección, teléfono, comprobante ni notas internas', "dataset.trustVersion='1.9.0'")

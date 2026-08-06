@@ -110,3 +110,68 @@ text=text.replace('/V2.3 y V2.4/','/V2.4 y V2.5/')
 text=text.replace("name: 'Activación V2.4'","name: 'Activación V2.5'")
 text=text.replace("'/assets/activation-v24.js']","'/assets/activation-v24.js','/assets/activation-v25.js']")
 p.write_text(text,encoding='utf-8')
+
+p='assets/procurement-v25.js'
+after(
+    p,
+    "    if(!payload.invoiceReference)throw new Error('La factura o remisión es obligatoria para reconciliar la recepción.');\n",
+    "    if(!snapshot.remote){\n"
+    "      const duplicate=read(KEYS.purchases,[]).some(item=>String(item.sourceOrderId||item.source_order_id||'')===order.id&&norm(item.invoiceReference||item.invoice_reference)===norm(payload.invoiceReference));\n"
+    "      if(duplicate)throw new Error('Esta factura o remisión ya fue registrada para la orden.');\n"
+    "    }\n"
+)
+
+after(
+    'scripts/verificar_abastecimiento_v25.py',
+    "    'referencia externa antes de emitirla',\n",
+    "    'Esta factura o remisión ya fue registrada para la orden.',\n"
+)
+
+duplicate_test="""  test('impide duplicar una factura y el movimiento de inventario local',async({page})=>{
+    await seed(page);
+    const panel=await openAdmin(page);
+    await panel.locator('[data-v25-suggestion="MP-HFS"]').getByRole('button',{name:'Crear borrador'}).click();
+    let form=panel.locator('#ee-v25-order-form');
+    await form.locator('input[name="supplier"]').fill('Proveedor de harina');
+    await form.locator('input[name="unitCost"]').fill('3');
+    await form.locator('input[name="externalReference"]').fill('COT-DUP');
+    await form.getByRole('button',{name:'Guardar borrador'}).click();
+    let row=panel.locator('[data-v25-order-row]');
+    await acceptAndClick(page,row.getByRole('button',{name:'Aprobar'}));
+    row=panel.locator('[data-v25-order-row]');
+    await acceptAndClick(page,row.getByRole('button',{name:'Marcar emitida'}));
+    row=panel.locator('[data-v25-order-row]');
+    await row.getByRole('button',{name:'Registrar recepción'}).click();
+    let receipt=panel.locator('#ee-v25-receipt-form');
+    await receipt.locator('input[name="quantity"]').fill('100');
+    await receipt.locator('input[name="totalCost"]').fill('300');
+    await receipt.locator('input[name="invoiceReference"]').fill('FAC-DUP');
+    await receipt.locator('input[name="updateStock"]').check();
+    await receipt.getByRole('button',{name:'Confirmar recepción'}).click();
+    row=panel.locator('[data-v25-order-row]');
+    await row.getByRole('button',{name:'Registrar recepción'}).click();
+    receipt=panel.locator('#ee-v25-receipt-form');
+    await receipt.locator('input[name="quantity"]').fill('50');
+    await receipt.locator('input[name="totalCost"]').fill('150');
+    await receipt.locator('input[name="invoiceReference"]').fill('FAC-DUP');
+    await receipt.locator('input[name="updateStock"]').check();
+    await receipt.getByRole('button',{name:'Confirmar recepción'}).click();
+    await expect(panel.getByText('Esta factura o remisión ya fue registrada para la orden.')).toBeVisible();
+    const state=await page.evaluate(()=>({
+      stock:JSON.parse(localStorage.getItem('ee_v23_material_stock')||'{}'),
+      purchases:JSON.parse(localStorage.getItem('ee_v24_material_purchases')||'[]'),
+      orders:JSON.parse(localStorage.getItem('ee_v25_purchase_orders')||'[]')
+    }));
+    expect(state.stock['MP-HFS']).toBe(200);
+    expect(state.purchases).toHaveLength(1);
+    expect(state.orders[0].receivedQty).toBe(100);
+    expect(state.orders[0].status).toBe('partial');
+  });
+
+"""
+replace(
+    'tests/e2e/procurement-v25.spec.js',
+    "  test('compara proveedores únicamente con compras observadas',async({page})=>{\n",
+    duplicate_test+"  test('compara proveedores únicamente con compras observadas',async({page})=>{\n",
+    1
+)

@@ -21,14 +21,14 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - name: Materializar fuentes legibles V2.8
-        run: python3 scripts/materializar_fuentes_locales_v28.py
-      - name: Ejecutar barreras previas V2.8
+      - name: Preparar superficie materializada
         run: |
+          python3 scripts/materializar_fuentes_locales_v28.py
           python3 verificar_demo.py
           python3 scripts/verificar_canon_marca_v28.py
           python3 scripts/verificar_activos_hq_v28.py
           python3 scripts/verificar_modulos_v28.py
+          python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -47,5 +47,6 @@ jobs:
             playwright-report
             test-results
             assets/generated/manifest-v28.json
+            .local_site/materialized-site-v28.json
           if-no-files-found: warn
           retention-days: 14

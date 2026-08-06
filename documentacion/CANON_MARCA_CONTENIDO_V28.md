@@ -2,74 +2,98 @@
 
 ## Decisión canónica
 
-La segunda edición local V2.7 es la referencia aprobada para imágenes, contenidos y tratamiento de marca. La V2.8 consolida esa experiencia y evita que fuentes históricas modifiquen la interfaz según el entorno, el orden de carga o la caché.
+La segunda edición local V2.7 es la referencia aprobada para imágenes, contenidos y tratamiento de marca. V2.8 conserva sus mejores activos y elimina la posibilidad de que capas históricas alteren el resultado según entorno, orden de carga o caché.
 
-## Problema corregido
+## Causa raíz corregida
 
-La aplicación acumulaba varias capas con capacidad de sobrescribir imágenes o contenidos:
+La aplicación acumulaba fuente Base64, ampliaciones de catálogo, remapeos en `data.js`, otro mapa en `host-mode.js`, overlays visuales, service workers y verificadores con expectativas globales diferentes. Esa superposición explicaba que dos paquetes mostraran marcas, imágenes o contenidos distintos.
 
-1. fuente histórica reconstruida desde fragmentos Base64;
-2. ampliación editorial y comercial de `products-v6.js`;
-3. remapeo visual dentro de `data.js`;
-4. un segundo mapa de reemplazo dentro de `host-mode.js`;
-5. service workers, verificadores y workflows que todavía esperaban versiones V1.1.1, V1.3, V2.4 o V2.5 como versión global.
+## Fuente única de marca
 
-Esa superposición explicaba que dos paquetes derivados del proyecto mostraran composiciones, textos o tratamiento de marca diferentes.
+`assets/brand-canon-v28.js` gobierna exclusivamente:
 
-## Arquitectura V2.8
+- logo y lockup;
+- activos WebP HQ;
+- aliases de rutas históricas;
+- imagen principal y galería de los 11 productos;
+- versión integral `2.8.0`;
+- caché `el-errante-v2-8-brand-canon-1`.
 
-- `assets/brand-canon-v28.js` es la única fuente activa de logos, activos HQ, aliases históricos, imagen primaria y galería de cada producto.
-- `assets/data.js` conserva las fichas y la redacción ampliada de la segunda versión local, pero normaliza todos los campos visuales antes de exponer `EE_DATA`.
-- `assets/host-mode.js` ya no mantiene un mapa visual propio; aplica el canon compartido al DOM y administra únicamente entorno, navegación y actualización de caché.
-- `service-worker.js` importa el mismo canon, intercepta solicitudes de rutas históricas y sirve el activo HQ equivalente.
-- La caché cambia a `el-errante-v2-8-brand-canon-1`, eliminando combinaciones anteriores.
-- `scripts/exportar-fuente-canonica.mjs` aplica el manifiesto V2.8 antes de generar el JSON y JavaScript canónicos.
-- Los cuatro paquetes visuales embebidos y su materializador fueron movidos a `archive/legacy-brand-overlays/`.
-- Los validadores que mezclaban la versión funcional de un módulo con la versión global fueron movidos a `archive/legacy-verifiers/`.
-- Los workflows de validación, auditoría, Playwright, Pages y salud pública utilizan la misma expectativa V2.8.
+`host-mode.js`, el catálogo exportado y el service worker consumen este mismo canon.
 
-## Materialización de fuentes
+## Separación fuente / ejecución
 
-Los fragmentos Base64 se conservan como fuente histórica reproducible, no como formato de ejecución preferido. El proceso:
+### Árbol fuente
+
+Conserva fragmentos Base64 en `assets/source/` para trazabilidad y recuperación, loaders de compatibilidad, documentación, pruebas y archivos históricos bajo `archive/`.
+
+### Superficie materializada
+
+Se construye con:
 
 ```text
 scripts/materializar_fuentes_locales_v28.py
+scripts/preparar_sitio_materializado_v28.py
 ```
 
-concatena, valida y decodifica los fragmentos originales; comprueba contratos mínimos; genera salidas atómicas; y registra tamaños y SHA-256 en:
-
-```text
-assets/generated/manifest-v28.json
-```
-
-Las salidas son:
+El primer script genera:
 
 ```text
 assets/generated/data-v28.js
 assets/generated/app-v28.js
 assets/generated/preprod-v28.js
+assets/generated/manifest-v28.json
 ```
 
-La edición local materializa antes de verificar y abrir. Los workflows materializan antes de auditar, ejecutar Playwright y construir `_site`. `data.js`, `app.js` y `preprod.js` usan las fuentes legibles cuando están presentes y solo recurren a Base64 como fallback de compatibilidad.
+El segundo crea `.local_site` o `_site`, sustituye las referencias HTML y excluye Base64, chunks, loaders y archivos históricos. La superficie ejecutable carga directamente las fuentes generadas y los contratos:
 
-`assets/generated/` no se versiona porque es un producto reproducible; sí se incluye físicamente en la edición local después de la primera verificación y en el artefacto de Pages.
+```text
+assets/data-finalize-v28.js
+assets/app-contract-v28.js
+assets/preprod-contract-v28.js
+```
 
-## Barreras vigentes
-
-- `verificar_demo.py`: estructura, referencias, seguridad, fuentes materializadas y coherencia integral.
-- `scripts/verificar_canon_marca_v28.py`: fuente única de identidad y aliases.
-- `scripts/verificar_activos_hq_v28.py`: integridad, tamaño, formato y hashes de los WebP.
-- `scripts/verificar_modulos_v28.py`: pedidos, backend, confianza, activación, producción, materiales, medición, abastecimiento, finanzas y materialización.
-- Playwright: comportamiento en escritorio y móvil.
+Mac sirve `.local_site`; Playwright prueba `.local_site`; Pages publica `_site`. Las tres rutas usan la misma construcción.
 
 ## Regla de precedencia
 
-`canon V2.8 -> activo brand-final HQ -> ficha ampliada de la segunda versión local -> fuente materializada legible -> Base64 únicamente como fallback`.
+`canon V2.8 -> WebP brand-final -> ficha ampliada local aprobada -> fuente JavaScript materializada`.
 
-Ninguna ruta histórica puede gobernar la interfaz, el catálogo exportado ni la caché.
+Base64 no participa en la ejecución normal. Solo puede actuar como contingencia al servir el árbol fuente sin materializar, una ruta no utilizada por Mac, Playwright ni Pages.
+
+## Aislamiento histórico
+
+- Overlays y materializador visual: `archive/legacy-brand-overlays/`.
+- Validadores acoplados a versiones antiguas: `archive/legacy-verifiers/`.
+- Reportes V0.x: `archive/early-iterations/`.
+
+Nada bajo `archive/` se copia a la superficie ejecutable.
+
+## Barreras vigentes
+
+- `verificar_demo.py`: estructura, referencias, seguridad y coherencia integral.
+- `scripts/verificar_canon_marca_v28.py`: identidad y aliases.
+- `scripts/verificar_activos_hq_v28.py`: integridad física de WebP.
+- `scripts/verificar_modulos_v28.py`: operación, backend, activación, materiales, medición, abastecimiento, finanzas y fuentes generadas.
+- `scripts/preparar_sitio_materializado_v28.py`: ausencia de Base64 y loaders en la superficie.
+- Playwright: escritorio y móvil sobre `.local_site`.
+
+## Versiones funcionales preservadas
+
+La versión integral es V2.8. Los módulos conservan su propia trazabilidad:
+
+- confianza V1.9;
+- operación diaria V2.1;
+- producción V2.2;
+- materiales V2.3;
+- medición V2.4;
+- abastecimiento V2.5;
+- finanzas V2.7.
+
+Estas versiones describen contratos funcionales; ninguna vuelve a gobernar marca, caché o versión global.
 
 ## Estado de deuda técnica
 
-La deuda activa que causaba diferencias de marca, imágenes y contenidos queda eliminada de las rutas de ejecución preferidas. Se mantienen archivos históricos en `archive/` y fragmentos Base64 en `assets/source/` por trazabilidad y recuperación, pero están aislados del control visual y solo actúan como fuente reproducible o contingencia.
+La deuda activa que generaba diferencias de marca, contenido e imágenes queda retirada de la superficie ejecutable. Los elementos históricos se mantienen deliberadamente como evidencia y recuperación, pero están aislados y excluidos del sitio local y público.
 
-La validación funcional completa de navegador continúa requiriendo Playwright de escritorio y móvil sobre el mismo SHA final antes de integrar a `main`.
+La integración a `main` permanece condicionada a auditoría canónica, Playwright desktop/móvil y publicación Pages exitosos sobre el mismo SHA final.

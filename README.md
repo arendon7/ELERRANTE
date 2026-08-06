@@ -13,19 +13,41 @@ Webapp autocontenida de El Errante para experiencia pública, tienda, pedidos, o
 - Abastecimiento controlado: módulo V2.5.
 - Finanzas Operativas: módulo V2.7.
 - Caché: `el-errante-v2-8-brand-canon-1`.
-- Fuentes ejecutables: JavaScript legible generado en `assets/generated/`.
-- Persistencia local: `localStorage` del navegador.
-- Backend: Supabase preparado, pero inactivo mientras URL y clave pública estén vacías.
+- Persistencia local: `localStorage`.
+- Supabase: preparado, pero inactivo mientras URL y clave pública estén vacías.
 
-La V2.8 consolida los mejores contenidos, fichas e imágenes de la edición local correcta y elimina la competencia entre overlays visuales, loaders, service workers, documentación y validadores antiguos.
+La V2.8 consolida los mejores contenidos, fichas e imágenes de la edición local correcta y elimina la competencia entre overlays visuales, loaders, service workers, documentación y verificadores antiguos.
+
+## Dos capas claramente separadas
+
+### Árbol fuente
+
+Conserva código, documentación, pruebas, archivos históricos aislados y fragmentos Base64 utilizados únicamente como origen reproducible o contingencia.
+
+### Superficie ejecutable
+
+Mac y Playwright usan `.local_site`; GitHub Pages usa `_site`. Ambas superficies son construidas por:
+
+```text
+scripts/materializar_fuentes_locales_v28.py
+scripts/preparar_sitio_materializado_v28.py
+```
+
+El constructor genera JavaScript legible, modifica las referencias HTML para cargarlo directamente y excluye físicamente:
+
+- `assets/source/` y `assets/chunks/`;
+- `assets/data.js`, `assets/app.js` y `assets/preprod.js`;
+- overlays visuales heredados;
+- `archive/`, pruebas, scripts y reportes históricos.
+
+Por tanto, la ejecución normal no utiliza `eval` ni loaders Base64.
 
 ## Abrir localmente en macOS
 
 1. Descarga y descomprime el ZIP completo.
 2. Ejecuta `VERIFICAR_PAQUETE_LOCAL_V28.command`.
-3. El comando materializa las fuentes JavaScript, verifica estructura, imágenes, marca y módulos.
-4. Continúa únicamente cuando aparezca `RESULTADO FINAL: OK`.
-5. Abre uno de estos accesos:
+3. Continúa únicamente cuando aparezca `RESULTADO FINAL: OK`.
+4. Abre uno de estos accesos:
 
 ```text
 ABRIR_EL_ERRANTE_LOCAL_V28.command   Web pública
@@ -34,19 +56,11 @@ ABRIR_CONTROL.command                Centro de control
 ABRIR_PRESENTACION.command           Presentación
 ```
 
-Para detener el servidor utiliza `DETENER_EL_ERRANTE_LOCAL_V28.command` o presiona `Control + C` en Terminal.
-
-El servidor se limita a `127.0.0.1`, utiliza primero el puerto 8787 y desactiva la caché HTTP durante las iteraciones locales.
+Para detener el servidor utiliza `DETENER_EL_ERRANTE_LOCAL_V28.command` o `Control + C`.
 
 ## Fuentes materializadas
 
-Los fragmentos Base64 históricos se conservan únicamente como fuente reproducible y fallback de compatibilidad. Antes de abrir localmente o publicar Pages se ejecuta:
-
-```text
-scripts/materializar_fuentes_locales_v28.py
-```
-
-El proceso genera de forma determinista:
+El materializador genera de forma determinista:
 
 ```text
 assets/generated/data-v28.js
@@ -55,54 +69,17 @@ assets/generated/preprod-v28.js
 assets/generated/manifest-v28.json
 ```
 
-El manifiesto registra tamaño y SHA-256 de cada salida y de cada fragmento de origen. `data.js`, `app.js` y `preprod.js` intentan primero las fuentes legibles; solo recurren a Base64 cuando la materialización no existe.
-
-## Entradas principales
-
-### Experiencia pública
-
-- `index.html` — inicio y propuesta de marca.
-- `historia.html` — historia y concepto.
-- `tienda.html` — catálogo.
-- `producto.html` — ficha dinámica.
-- `en-casa.html` — productos para terminar en casa.
-- `en-movimiento.html` — eventos y pizzería móvil.
-- `bitacora.html` — pruebas y aprendizaje.
-- `recetas.html` — métodos y preparación.
-- `checkout.html` — pedido por transferencia sujeto a confirmación.
-- `cuenta.html` — seguimiento limitado de pedidos.
-
-### Operación interna
-
-- `admin.html` — panel integral V2.8.
-- `activacion.html` — continuidad y activación V2.5.
-- `operacion.html` — producción y lotes.
-- `control.html` — centro de control.
-- `studio.html` — datos y catálogo.
-- `actas.html` — validaciones.
-- `presentacion.html` — presentación navegable.
+El manifiesto registra tamaño y SHA-256 de cada salida y de cada fragmento de origen. Estos archivos no se editan manualmente.
 
 ## Arquitectura de marca
 
-La única fuente activa de identidad, aliases históricos, imágenes principales y galerías es:
+La única fuente activa de identidad, aliases, imágenes principales y galerías es:
 
 ```text
 assets/brand-canon-v28.js
 ```
 
-Los WebP aprobados están en:
-
-```text
-assets/images/brand-final/
-```
-
-Los overlays y materializadores visuales anteriores se conservan únicamente en:
-
-```text
-archive/legacy-brand-overlays/
-```
-
-No participan en el runtime ni se publican en Pages.
+Los WebP aprobados están en `assets/images/brand-final/`. Los overlays anteriores se conservan exclusivamente en `archive/legacy-brand-overlays/` y no participan en runtime ni Pages.
 
 ## Validación vigente
 
@@ -111,28 +88,23 @@ verificar_demo.py
 scripts/verificar_canon_marca_v28.py
 scripts/verificar_activos_hq_v28.py
 scripts/verificar_modulos_v28.py
+scripts/preparar_sitio_materializado_v28.py
 tests/e2e/
 ```
 
-Los validadores antiguos que confundían la versión funcional de cada módulo con la versión global están archivados en `archive/legacy-verifiers/`.
+Playwright sirve `.local_site`, por lo que escritorio, móvil y ejecución local prueban la misma superficie.
 
-## Flujo de datos y seguridad
+## Seguridad y datos
 
-La edición local guarda datos demostrativos en el navegador. Para una operación real todavía deben validarse conexión, migraciones, roles, políticas RLS, tratamiento tributario, costos observados, inventarios físicos y datos sanitarios.
+La edición local guarda datos demostrativos en el navegador. Para operación real deben validarse conexión, migraciones, roles, RLS, impuestos, costos observados, inventarios físicos y datos sanitarios.
 
-Nunca deben incorporarse al repositorio:
-
-- claves privadas o `service_role`;
-- cadenas de conexión de base de datos;
-- tokens reales;
-- contraseñas reales;
-- datos personales reales de clientes, empleados o proveedores.
+Nunca deben incorporarse claves privadas, `service_role`, cadenas de conexión, tokens, contraseñas ni datos personales reales.
 
 ## Retorno a GitHub
 
-`PREPARAR_RETORNO_GITHUB_V28.command` vuelve a materializar las fuentes, ejecuta las barreras vigentes y crea en el Escritorio un ZIP con el estado local para revisión y migración posterior.
+`PREPARAR_RETORNO_GITHUB_V28.command` materializa, verifica y crea en el Escritorio un ZIP del árbol fuente. `.local_site` se excluye porque es reproducible.
 
-La integración a `main` solo debe realizarse cuando auditoría canónica, Playwright de escritorio y móvil y publicación Pages hayan terminado sobre el mismo commit final.
+La integración a `main` requiere auditoría canónica, Playwright de escritorio y móvil y publicación Pages exitosos sobre el mismo SHA final.
 
 ## Documentación técnica
 

@@ -10,6 +10,7 @@ __pycache__/
 
 # Materialización reproducible local y de Pages
 assets/generated/
+.local_site/
 
 # Local exports and temporary files
 *.log

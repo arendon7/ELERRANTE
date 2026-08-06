@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Servidor local autocontenido de El Errante V2.8."""
+"""Servidor local de la superficie materializada de El Errante V2.8."""
 from __future__ import annotations
 
 import http.server
@@ -11,6 +11,7 @@ import webbrowser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+SITE = ROOT / '.local_site'
 PORT_FILE = ROOT / '.demo_port'
 ALLOWED_PAGES = {
     'index.html','tienda.html','admin.html','activacion.html','control.html',
@@ -53,17 +54,22 @@ class Server(socketserver.ThreadingTCPServer):
 
 
 def main() -> int:
-    os.chdir(ROOT)
+    if not (SITE / 'materialized-site-v28.json').is_file():
+        print('ERROR: no existe la superficie materializada .local_site.')
+        print('Ejecuta primero VERIFICAR_PAQUETE_LOCAL_V28.command.')
+        return 1
+
+    os.chdir(SITE)
     requested = Path(sys.argv[1]).name if len(sys.argv) > 1 else 'index.html'
-    page = requested if requested in ALLOWED_PAGES and (ROOT / requested).is_file() else 'index.html'
+    page = requested if requested in ALLOWED_PAGES and (SITE / requested).is_file() else 'index.html'
     port = choose_port()
     base = f'http://127.0.0.1:{port}'
     url = f'{base}/{page}?brand=2.8.0'
     PORT_FILE.write_text(str(port), encoding='utf-8')
 
-    print('=' * 68)
-    print('EL ERRANTE LOCAL V2.8 — CANON DE MARCA Y CONTENIDO')
-    print('=' * 68)
+    print('=' * 72)
+    print('EL ERRANTE LOCAL V2.8 — SITIO MATERIALIZADO SIN LOADERS BASE64')
+    print('=' * 72)
     print(f'Web pública:    {base}/index.html')
     print(f'Tienda:         {base}/tienda.html')
     print(f'Administración: {base}/admin.html')
@@ -72,7 +78,7 @@ def main() -> int:
     print(f'Presentación:   {base}/presentacion.html')
     print('')
     print('Mantén esta ventana abierta. Para detener, presiona Control + C.')
-    print('=' * 68)
+    print('=' * 72)
 
     webbrowser.open(url)
     with Server(('127.0.0.1', port), Handler) as server:

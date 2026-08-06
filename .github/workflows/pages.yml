@@ -23,40 +23,30 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-
-      - name: Materializar fuentes legibles V2.8
-        run: python3 scripts/materializar_fuentes_locales_v28.py
-
-      - name: Ejecutar barreras vigentes
-        shell: bash
+      - name: Materializar fuentes y superficie ejecutable
         run: |
-          set -euo pipefail
+          python3 scripts/materializar_fuentes_locales_v28.py
+          python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
+      - name: Ejecutar barreras vigentes
+        run: |
           python3 verificar_demo.py
           python3 scripts/verificar_canon_marca_v28.py
           python3 scripts/verificar_activos_hq_v28.py
           python3 scripts/verificar_modulos_v28.py
-          for test in \
-            scripts/verificar_oferta_v09.py \
-            scripts/verificar_studio_oferta_v09.py \
-            scripts/verificar_actas_oferta_v09.py \
-            scripts/verificar_paquete_aire_tiempo_v09.py; do
-            python3 "$test"
-          done
-
-      - name: Validar runtime JavaScript
-        shell: bash
+          for test in scripts/verificar_oferta_v09.py scripts/verificar_studio_oferta_v09.py scripts/verificar_actas_oferta_v09.py scripts/verificar_paquete_aire_tiempo_v09.py; do python3 "$test"; done
+      - name: Validar JavaScript fuente y materializado
         run: |
-          set -euo pipefail
           find assets -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
           find assets/generated -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+          find .local_site/assets -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+          find .local_site/assets/generated -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
           node --check service-worker.js
+          node --check .local_site/service-worker.js
           node --check scripts/exportar-fuente-canonica.mjs
           find tests/e2e -maxdepth 1 -type f -name '*.spec.js' -print0 | xargs -0 -n1 node --check
-
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
-
-      - name: Conservar auditoría canónica
+      - name: Conservar auditoría
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -64,6 +54,7 @@ jobs:
           path: |
             .artifacts/canonical
             assets/generated/manifest-v28.json
+            .local_site/materialized-site-v28.json
           if-no-files-found: warn
           retention-days: 14
 
@@ -77,90 +68,65 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Materializar fuentes legibles V2.8
-        run: python3 scripts/materializar_fuentes_locales_v28.py
-
-      - name: Preparar sitio V2.8 desde main
-        shell: bash
+      - name: Construir superficie materializada V2.8
+        run: |
+          python3 scripts/materializar_fuentes_locales_v28.py
+          python3 scripts/preparar_sitio_materializado_v28.py --output _site
+      - name: Configurar entorno público
         env:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           set -euo pipefail
-          if { [ -n "${SUPABASE_URL:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; } || \
-             { [ -z "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_PUBLISHABLE_KEY:-}" ]; }; then
-            echo "SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY deben configurarse juntas."
-            exit 1
-          fi
-          mkdir -p _site
-          rsync -av ./ _site/ \
-            --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' \
-            --exclude '.artifacts/' --exclude 'node_modules/' --exclude 'test-results/' \
-            --exclude 'playwright-report/' --exclude 'archive/'
+          if { [ -n "${SUPABASE_URL:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; } || { [ -z "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_PUBLISHABLE_KEY:-}" ]; }; then echo "SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY deben configurarse juntas."; exit 1; fi
           python3 - <<'PY'
           import json, os
           from pathlib import Path
-          url=os.environ.get('SUPABASE_URL','').strip()
-          key=os.environ.get('SUPABASE_PUBLISHABLE_KEY','').strip()
-          config={'environment':'connected' if url and key else 'preview','backend':{
-            'provider':'supabase','url':url,'publishableKey':key,'receiptBucket':'payment-receipts',
-            'shopperStorageKey':'ee-shopper-auth-v15','adminStorageKey':'ee-admin-auth-v15'}}
-          Path('_site/assets/commerce-runtime-config.js').write_text(
-            'window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze(' + json.dumps(config,ensure_ascii=False,separators=(',',':')) + ');\n',
-            encoding='utf-8')
+          url=os.environ.get('SUPABASE_URL','').strip(); key=os.environ.get('SUPABASE_PUBLISHABLE_KEY','').strip()
+          config={'environment':'connected' if url and key else 'preview','backend':{'provider':'supabase','url':url,'publishableKey':key,'receiptBucket':'payment-receipts','shopperStorageKey':'ee-shopper-auth-v15','adminStorageKey':'ee-admin-auth-v15'}}
+          Path('_site/assets/commerce-runtime-config.js').write_text('window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze('+json.dumps(config,ensure_ascii=False,separators=(',',':'))+');\n',encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-1\nbrand_source=assets/brand-canon-v28.js\nsource_mode=materialized\nupdated=%s\n' \
-            "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-1\nbrand_source=assets/brand-canon-v28.js\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
-
-      - name: Verificar artefacto publicable V2.8
-        shell: bash
+      - name: Verificar artefacto publicable
         run: |
           set -euo pipefail
           grep -q 'version=2.8.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v2-8-brand-canon-1' _site/deploy-version.txt
-          grep -q 'source_mode=materialized' _site/deploy-version.txt
+          grep -q 'source_mode=materialized-no-base64-runtime' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
-          grep -q '· V2.8' _site/admin.html
-          grep -q 'assets/finance-v27.js' _site/admin.html
-          grep -q 'assets/procurement-v25.js' _site/admin.html
-          grep -q "const VERSION='2.8.0'" _site/assets/brand-canon-v28.js
-          grep -q "importScripts('./assets/brand-canon-v28.js')" _site/service-worker.js
-          grep -q 'const CACHE=BRAND.cache' _site/service-worker.js
-          grep -q 'assets/generated/data-v28.js' _site/assets/data.js
-          grep -q 'assets/generated/app-v28.js' _site/assets/app.js
-          grep -q 'assets/generated/preprod-v28.js' _site/assets/preprod.js
-          grep -q 'BRAND.applyToData(window.EE_DATA)' _site/assets/data.js
-          grep -q 'BRAND.applyToDom' _site/assets/host-mode.js
-          grep -q '"version": "2.8.0"' _site/package.json
+          grep -q '"mode": "materialized-no-base64-runtime"' _site/materialized-site-v28.json
+          grep -q 'assets/generated/data-v28.js' _site/index.html
+          grep -q 'assets/generated/app-v28.js' _site/index.html
+          grep -q 'assets/generated/preprod-v28.js' _site/index.html
+          ! grep -q 'src="assets/data.js"' _site/index.html
+          ! grep -q 'src="assets/app.js"' _site/index.html
+          ! grep -q 'src="assets/preprod.js"' _site/index.html
+          test ! -e _site/assets/source
+          test ! -e _site/assets/chunks
+          test ! -e _site/assets/data.js
+          test ! -e _site/assets/app.js
+          test ! -e _site/assets/preprod.js
+          test ! -e _site/archive
           test -s _site/assets/generated/data-v28.js
           test -s _site/assets/generated/app-v28.js
           test -s _site/assets/generated/preprod-v28.js
-          test -s _site/assets/generated/manifest-v28.json
           grep -q '"version": "2.8.0"' _site/assets/generated/manifest-v28.json
-          node --check _site/assets/brand-canon-v28.js
-          node --check _site/assets/data.js
-          node --check _site/assets/app.js
-          node --check _site/assets/preprod.js
+          grep -q '· V2.8' _site/admin.html
+          grep -q 'assets/finance-v27.js' _site/admin.html
+          grep -q 'assets/procurement-v25.js' _site/admin.html
           node --check _site/assets/generated/data-v28.js
           node --check _site/assets/generated/app-v28.js
           node --check _site/assets/generated/preprod-v28.js
-          node --check _site/assets/host-mode.js
-          node --check _site/assets/finance-v27.js
-          node --check _site/assets/procurement-v25.js
+          node --check _site/assets/data-finalize-v28.js
+          node --check _site/assets/app-contract-v28.js
+          node --check _site/assets/preprod-contract-v28.js
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
           test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -ge 23
-          test ! -d _site/archive
-          test ! -f _site/assets/brand-final-editorial.js
-          test ! -f _site/assets/brand-final-products-a.js
-          test ! -f _site/scripts/materializar_activos_visuales.py
-
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: "_site"
+          path: _site
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4

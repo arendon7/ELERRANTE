@@ -24,5 +24,6 @@ python3 verificar_demo.py
 python3 scripts/verificar_canon_marca_v28.py
 python3 scripts/verificar_activos_hq_v28.py
 python3 scripts/verificar_modulos_v28.py
+python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
 
 exec python3 servidor_demo.py "$PAGE"

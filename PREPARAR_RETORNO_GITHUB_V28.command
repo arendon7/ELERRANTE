@@ -10,13 +10,15 @@ python3 verificar_demo.py
 python3 scripts/verificar_canon_marca_v28.py
 python3 scripts/verificar_activos_hq_v28.py
 python3 scripts/verificar_modulos_v28.py
+python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
 
 /usr/bin/zip -qry "$OUT" . \
   -x '*.DS_Store' \
   -x 'test-results/*' \
   -x 'playwright-report/*' \
   -x '.git/*' \
-  -x '.demo_port'
+  -x '.demo_port' \
+  -x '.local_site/*'
 
 echo "Paquete de retorno V2.8 creado:"
 echo "$OUT"

@@ -1,15 +1,15 @@
 const {test,expect}=require('@playwright/test');
 
-async function seed(page){
-  await page.addInitScript(()=>{
+async function seed(page,stockOverrides={}){
+  await page.addInitScript(overrides=>{
     localStorage.setItem('ee_v14_orders',JSON.stringify([{
       id:'EE-V24-ORDER',status:'approved',createdAt:'2026-08-06T10:00:00.000Z',
       customer:{name:'Cliente V24'},delivery:{city:'Medellín',requestedDate:'2026-08-10'},
       items:[{productId:'la-errante',name:'La Errante',quantity:2}]
     }]));
-    localStorage.setItem('ee_v23_material_stock',JSON.stringify({'MP-HFS':100,'MP-HHO':100}));
+    localStorage.setItem('ee_v23_material_stock',JSON.stringify(Object.assign({'MP-HFS':100,'MP-HHO':100},overrides||{})));
     sessionStorage.setItem('ee_v22_selected_date','2026-08-10');
-  });
+  },stockOverrides);
 }
 
 test.describe('Medición real y compras V2.4',()=>{
@@ -47,8 +47,7 @@ test.describe('Medición real y compras V2.4',()=>{
   });
 
   test('suma una compra cuando existe conteo físico previo',async({page})=>{
-    await seed(page);
-    await page.addInitScript(()=>{const stock=JSON.parse(localStorage.getItem('ee_v23_material_stock'));stock['MP-MOZ']=200;localStorage.setItem('ee_v23_material_stock',JSON.stringify(stock));});
+    await seed(page,{'MP-MOZ':200});
     await page.goto('/admin.html');
     await page.getByRole('button',{name:'Abrir simulación local'}).click();
     const panel=page.locator('#measurement-v24');

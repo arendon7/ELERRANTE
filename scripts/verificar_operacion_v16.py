@@ -20,8 +20,9 @@ runtime = (ROOT / "assets/operations-v16.js").read_text(encoding="utf-8")
 schema = (ROOT / "backend/supabase/schema-v16.sql").read_text(encoding="utf-8")
 worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 host = (ROOT / "assets/host-mode.js").read_text(encoding="utf-8")
+materials = (ROOT / "assets/materials-v23.js").read_text(encoding="utf-8")
 
-for marker in ["Operación diaria, producción, despacho y finanzas · V2.2", 'id="operations-v16"', "operations-v16.js", "commerce-v16.css"]:
+for marker in ["Operación diaria, producción, materiales y despacho · V2.3", 'id="operations-v16"', "operations-v16.js", "commerce-v16.css"]:
     if marker not in admin:
         ISSUES.append(f"Administración V1.6 incompleta: {marker}")
 
@@ -47,6 +48,9 @@ for marker in [
     if marker not in schema:
         ISSUES.append(f"Esquema V1.6 incompleto: {marker}")
 
+if "Resumen financiero y análisis avanzado" not in materials or "ee-v23-finance" not in materials:
+    ISSUES.append("El análisis financiero no quedó plegado detrás de la operación diaria.")
+
 for forbidden in ["service_role", "SUPABASE_SERVICE", "postgres://"]:
     if forbidden.lower() in runtime.lower():
         ISSUES.append(f"Posible secreto expuesto en V1.6: {forbidden}")
@@ -54,10 +58,10 @@ for forbidden in ["service_role", "SUPABASE_SERVICE", "postgres://"]:
 for marker in ["assets/operations-v16.js", "assets/commerce-v16.css"]:
     if marker not in worker:
         ISSUES.append(f"Activo V1.6 no precargado: {marker}")
-if "el-errante-v2-2-0" not in worker:
-    ISSUES.append("Service worker no usa caché pública V2.2")
-if 'PUBLIC_VERSION="2.2.0"' not in host or 'ACTIVE_CACHE="el-errante-v2-2-0"' not in host:
-    ISSUES.append("Host público no declara versión/caché V2.2")
+if "el-errante-v2-3-0" not in worker:
+    ISSUES.append("Service worker no usa caché pública V2.3")
+if 'PUBLIC_VERSION="2.3.0"' not in host or 'ACTIVE_CACHE="el-errante-v2-3-0"' not in host:
+    ISSUES.append("Host público no declara versión/caché V2.3")
 
 print("EL ERRANTE V1.6 — BARRERA DE OPERACIÓN Y FINANZAS")
 print(f"Archivos requeridos: {len(required)}")

@@ -20,7 +20,7 @@ test.describe('Operación comercial V1.5', () => {
     await expect(page.getByRole('button', { name: 'Tarjeta' })).toHaveCount(0);
   });
 
-  test('administración presenta acceso seguro y simulación local honesta', async ({ page }) => {
+  test('administración presenta acceso seguro y etapa piloto honesta', async ({ page }) => {
     await page.goto('/admin.html');
     await expect(page.getByRole('heading', { name: 'Acceso administrativo seguro.' })).toBeVisible();
     await expect(page.getByText('No existe una contraseña maestra dentro del código.')).toBeVisible();
@@ -30,7 +30,7 @@ test.describe('Operación comercial V1.5', () => {
     await expect(adminPanel.getByText('Balance del mes')).toBeVisible();
     await expect(adminPanel.getByRole('heading', { name: 'Precios, costos e inventario' })).toBeVisible();
     await expect(adminPanel.getByRole('heading', { name: 'Gastos fijos' })).toBeVisible();
-    await expect(adminPanel.getByText('$ 6.000.000', { exact: true })).toBeVisible();
+    await expect(adminPanel.getByText('$ 370.000', { exact: true })).toBeVisible();
     await expect(adminPanel.getByRole('heading', { name: 'Datos bancarios visibles en checkout' })).toBeVisible();
   });
 

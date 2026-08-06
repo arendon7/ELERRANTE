@@ -19,12 +19,20 @@ async function seedOperation(page) {
   });
 }
 
+async function openFinance(page){
+  const details=page.locator('.ee-v23-finance');
+  await expect(details).toBeVisible();
+  await details.locator('summary').click();
+  await expect(details).toHaveAttribute('open','');
+  return page.locator('#operations-v16');
+}
+
 test.describe('Operación y finanzas V1.6', () => {
-  test('panel muestra margen, equilibrio, alertas y kardex', async ({ page }) => {
+  test('panel muestra margen, equilibrio, alertas y kardex bajo demanda', async ({ page }) => {
     await seedOperation(page);
     await page.goto('/admin.html');
     await page.getByRole('button', { name: 'Abrir simulación local' }).click();
-    const panel = page.locator('#operations-v16');
+    const panel = await openFinance(page);
     await expect(panel.getByRole('heading', { name: 'Inventario, margen y punto de equilibrio' })).toBeVisible();
     await expect(panel.getByText('Margen de contribución')).toBeVisible();
     await expect(panel.getByText('Ventas de equilibrio')).toBeVisible();
@@ -36,7 +44,7 @@ test.describe('Operación y finanzas V1.6', () => {
     await seedOperation(page);
     await page.goto('/admin.html');
     await page.getByRole('button', { name: 'Abrir simulación local' }).click();
-    const panel = page.locator('#operations-v16');
+    const panel = await openFinance(page);
     const form = panel.locator('#ee-v16-movement-form');
     await form.locator('select[name="productId"]').selectOption('la-errante');
     await form.locator('select[name="type"]').selectOption('production');
@@ -56,7 +64,7 @@ test.describe('Operación y finanzas V1.6', () => {
     await page.goto('/admin.html');
     await page.getByRole('button', { name: 'Abrir simulación local' }).click();
     await page.locator('[data-order-status="EE-TEST-V16"]').selectOption('preparing');
-    const panel = page.locator('#operations-v16');
+    const panel = await openFinance(page);
     await expect(panel.getByRole('cell', { name: 'Salida por pedido', exact: true })).toBeVisible();
     const productRow = panel.locator('[data-v16-product-row="la-errante"]');
     await expect(productRow).toHaveCount(1);

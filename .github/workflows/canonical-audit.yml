@@ -35,11 +35,15 @@ jobs:
             scripts/verificar_confianza_v19.py \
             scripts/verificar_activacion_v20.py \
             scripts/verificar_operacion_diaria_v21.py \
-            scripts/verificar_produccion_v22.py; do
+            scripts/verificar_produccion_v22.py \
+            scripts/verificar_materiales_v23.py; do
             python3 "$test"
           done
           node --check assets/daily-ops-v21.js
           node --check assets/production-v22.js
+          node --check assets/materials-data-v23.js
+          node --check assets/materials-v23.js
+          node --check assets/activation-v23.js
 
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical

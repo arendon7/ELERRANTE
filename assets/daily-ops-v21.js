@@ -46,6 +46,7 @@
   };
   const statusMeta=value=>STATUS[value]||{label:value||'Sin estado',tone:'pending',group:'review'};
   let renderGeneration=0;
+  let dialogOpen=false;
 
   function compactLegacyOrders(){
     const root=document.querySelector('#admin-dynamic');
@@ -233,6 +234,7 @@
   }
 
   async function render(){
+    if(dialogOpen)return;
     const generation=++renderGeneration;
     const host=document.querySelector('#daily-ops-v21');
     if(!host)return;
@@ -241,7 +243,7 @@
     try{
       compactLegacyOrders();
       const orders=await loadOrders();
-      if(generation!==renderGeneration)return;
+      if(dialogOpen||generation!==renderGeneration)return;
       host.innerHTML=shellHtml(orders);
       let filter='all';
       const search=host.querySelector('#ee-v21-search');
@@ -269,19 +271,22 @@
         const open=event.target.closest('[data-v21-open]');
         if(open){
           const order=orders.find(item=>item.id===open.dataset.v21Open);if(!order)return;
-          content.innerHTML=detailsHtml(order);dialog.showModal();
+          dialogOpen=true;
+          content.innerHTML=detailsHtml(order);
+          try{dialog.showModal();}catch(error){dialogOpen=false;throw error;}
           content.querySelector('.ee-v21-close').addEventListener('click',()=>dialog.close());
           content.querySelector('[data-v21-receipt]')?.addEventListener('click',async()=>{try{await viewReceipt(order);}catch(error){setMessage(error.message,'error');}});
           content.querySelectorAll('[data-v21-transition]').forEach(button=>button.addEventListener('click',async()=>{
             button.disabled=true;
             try{
               const changed=await transition(order,button.dataset.v21Transition,content.querySelector('#ee-v21-note')?.value);
-              if(changed){dialog.close();setMessage('Estado actualizado y operación recalculada.');setTimeout(render,220);}
+              if(changed){dialogOpen=false;dialog.close();setMessage('Estado actualizado y operación recalculada.');setTimeout(render,220);}
             }catch(error){console.error(error);setMessage(error.message||'No fue posible actualizar el pedido.','error');button.disabled=false;}
           }));
         }
       });
       dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
+      dialog.addEventListener('close',()=>{const wasOpen=dialogOpen;dialogOpen=false;if(wasOpen)setTimeout(render,0);});
       document.documentElement.dataset.dailyOpsVersion='2.1.0';
     }catch(error){
       console.error(error);

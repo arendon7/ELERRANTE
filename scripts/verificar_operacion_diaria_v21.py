@@ -16,6 +16,7 @@ def require(path,marker,label):
 require('assets/daily-ops-v21.js','Mesa de pedidos y continuidad local','La mesa diaria no está declarada')
 require('assets/daily-ops-v21.js','transition_order_v21','La transición segura no está conectada')
 require('assets/daily-ops-v21.js','compactLegacyOrders','La tabla heredada de pedidos no se sustituye')
+require('assets/daily-ops-v21.js','dialogOpen','El diálogo no está protegido frente a reconstrucciones concurrentes')
 require('assets/daily-ops-v21.js','el-errante-local-backup','El respaldo local no tiene contrato')
 require('assets/daily-ops-v21.js','Exportar CSV operativo','La exportación operativa no existe')
 require('assets/daily-ops-v21.js','No se puede aprobar el pago sin comprobante','No se exige comprobante')

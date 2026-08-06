@@ -26,6 +26,7 @@ test.describe('Operación diaria V2.1',()=>{
     await expect(card.getByText('Cliente Diario · Medellín')).toBeVisible();
     await card.getByRole('button',{name:'Abrir pedido'}).click();
     const dialogBox=page.locator('#ee-v21-dialog');
+    await expect(dialogBox).toBeVisible();
     await expect(dialogBox.getByText('Carrera 70 # 10-20')).toBeVisible();
     page.once('dialog',dialog=>dialog.accept());
     await dialogBox.getByRole('button',{name:'Aprobar pago'}).click();
@@ -39,7 +40,9 @@ test.describe('Operación diaria V2.1',()=>{
     await page.getByRole('button',{name:'Abrir simulación local'}).click();
     const desk=page.locator('#daily-ops-v21');
     await desk.locator('[data-v21-order="EE-20260805-DIARIA"]').getByRole('button',{name:'Abrir pedido'}).click();
-    await expect(page.locator('#ee-v21-dialog').getByRole('button',{name:'Aprobar pago'})).toBeDisabled();
+    const dialogBox=page.locator('#ee-v21-dialog');
+    await expect(dialogBox).toBeVisible();
+    await expect(dialogBox.getByRole('button',{name:'Aprobar pago'})).toBeDisabled();
   });
 
   test('filtra pedidos y exporta CSV sin dirección ni comprobante',async({page})=>{

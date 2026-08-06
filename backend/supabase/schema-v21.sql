@@ -88,6 +88,41 @@ $$;
 revoke all on function public.transition_order_v21(text,text,text) from public;
 grant execute on function public.transition_order_v21(text,text,text) to authenticated;
 
-insert into public.schema_migrations(version,description)
-values ('2.1.0','Mesa diaria, respaldo local y transición segura de pedidos')
-on conflict (version) do update set description=excluded.description,applied_at=now();
+insert into public.app_migrations(version,label)
+values ('2.1','Mesa diaria, respaldo local y transición segura de pedidos')
+on conflict (version) do update set label=excluded.label,applied_at=now();
+
+create or replace function public.activation_health_v20()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public, storage
+as $$
+declare
+  payment jsonb := coalesce((select value from public.public_settings where key='payment'),'{}'::jsonb);
+  ordering jsonb := coalesce((select value from public.public_settings where key='ordering'),'{}'::jsonb);
+  fixed_total numeric := coalesce((select sum(amount) from public.fixed_costs where month=to_char(current_date,'YYYY-MM')),0);
+begin
+  if not public.is_admin() then
+    raise exception 'Acceso administrativo requerido';
+  end if;
+  return jsonb_build_object(
+    'schema_version','2.1',
+    'migrations',(select coalesce(jsonb_agg(version order by version),'[]'::jsonb) from public.app_migrations),
+    'admin_count',(select count(*) from public.admin_users where active=true),
+    'payment_configured',coalesce(nullif(payment->>'accountNumber',''),nullif(payment->>'key','')) is not null,
+    'support_configured',coalesce(nullif(ordering->>'supportWhatsapp',''),nullif(ordering->>'supportEmail','')) is not null,
+    'coverage_configured',coalesce(nullif(ordering->>'coverageDetails',''),nullif(ordering->>'deliveryPolicy','')) is not null,
+    'catalog_rows',(select count(*) from public.product_operations),
+    'catalog_ready',(select count(*)>0 and bool_and(sale_price>0 and unit_cost>=0) from public.product_operations where active=true),
+    'fixed_costs_total',fixed_total,
+    'fixed_costs_ready',fixed_total>0,
+    'receipt_bucket_private',coalesce((select public=false from storage.buckets where id='payment-receipts'),false),
+    'orders_count',(select count(*) from public.orders)
+  );
+end;
+$$;
+
+revoke all on function public.activation_health_v20() from public;
+grant execute on function public.activation_health_v20() to authenticated;

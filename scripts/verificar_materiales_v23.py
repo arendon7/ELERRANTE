@@ -48,6 +48,7 @@ ui = require(
     "Consultar receta y costo provisional",
     "Resumen financiero y análisis avanzado",
     "dataset.materialsVersion='2.3.0'",
+    "ee:admin:ready",
 )
 if "Sin conteo" not in ui or "Cero" not in ui:
     raise SystemExit("La interfaz no distingue inventario desconocido de cero confirmado")
@@ -80,6 +81,18 @@ config = require(
 )
 if "amount: 2000000" in config or "amount: 2500000" in config:
     raise SystemExit("La configuración aún conserva la cifra fija demostrativa como etapa activa")
+
+admin_runtime = require(
+    "assets/admin-v15.js",
+    "legacyDemo",
+    "legacyIds",
+    "Etapa ${escapeHtml(BASE.finance?.stage",
+    "ee:admin:ready",
+    "Administración V2.3",
+    "V2.2 y V2.3",
+)
+if "La base temporal continúa en $6.000.000 mensuales" in admin_runtime:
+    raise SystemExit("El runtime administrativo aún muestra la cifra demo antigua")
 
 schema = require(
     "backend/supabase/schema-v23.sql",

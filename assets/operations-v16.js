@@ -320,18 +320,23 @@
     load();
   }
 
-  document.addEventListener("change",event=>{
-    const select=event.target.closest?.("[data-order-status]");
-    if(!select) return;
-    const orderId=select.dataset.orderStatus;
+  function handleOrderStatusChange(orderId){
+    if(!orderId) return;
     setTimeout(async()=>{
       if(!backendReady()){
         if(reconcileLocalOrder(orderId)) document.querySelector("#ee-refresh-admin")?.click();
       }
       await load();
     },120);
+  }
+
+  document.addEventListener("change",event=>{
+    const select=event.target.closest?.("[data-order-status]");
+    if(!select) return;
+    handleOrderStatusChange(select.dataset.orderStatus);
   });
 
+  window.addEventListener("ee:order:status-changed",event=>handleOrderStatusChange(event.detail?.orderId));
   window.addEventListener("ee:v16:reload",load);
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",observeAdmin,{once:true}); else observeAdmin();
 })();

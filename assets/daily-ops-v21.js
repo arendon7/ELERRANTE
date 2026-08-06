@@ -185,6 +185,7 @@
     target.statusTimeline=Array.isArray(target.statusTimeline)?target.statusTimeline:[];
     target.statusTimeline.push({status:newStatus,createdAt:target.updatedAt,note:String(note||'').trim()||'Estado actualizado desde la mesa diaria'});
     write(KEYS.orders,orders);
+    window.dispatchEvent(new CustomEvent('ee:order:status-changed',{detail:{orderId:order.id,status:newStatus,source:'daily-ops-v21'}}));
     document.querySelector('#ee-refresh-admin')?.click();
     return true;
   }
@@ -298,7 +299,7 @@
     const admin=document.querySelector('#admin-dynamic');
     if(!admin)return;
     let timer;
-    new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(render,90);}).observe(admin,{childList:true,subtree:true});
+    new MutationObserver(()=>{compactLegacyOrders();clearTimeout(timer);timer=setTimeout(render,90);}).observe(admin,{childList:true,subtree:true});
     render();
   }
 

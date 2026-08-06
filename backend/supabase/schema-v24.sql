@@ -23,9 +23,9 @@ create table if not exists public.material_suppliers (
   active boolean not null default true,
   note text,
   created_at timestamptz not null default now(),
-  created_by uuid references auth.users(id),
-  unique(lower(name))
+  created_by uuid references auth.users(id)
 );
+create unique index if not exists material_suppliers_name_lower_uidx on public.material_suppliers(lower(name));
 
 create table if not exists public.material_purchases (
   id uuid primary key default gen_random_uuid(),

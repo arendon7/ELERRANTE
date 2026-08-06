@@ -69,10 +69,15 @@
 
   function localState(){
     const defaults = BASE.finance?.monthlyFixedCosts || [];
+    const savedCosts = read(KEYS.fixedCosts,null);
+    const legacyIds = new Set(["trabajador","sede","servicios","otros"]);
+    const legacyDemo = Array.isArray(savedCosts) && savedCosts.length===4 && savedCosts.every(item=>legacyIds.has(item.id)) && savedCosts.reduce((sum,item)=>sum+number(item.amount),0)===6000000;
+    const fixedCosts = legacyDemo || !Array.isArray(savedCosts) ? defaults : savedCosts;
+    if(legacyDemo) write(KEYS.fixedCosts,defaults);
     return {
       orders:read(KEYS.orders,[]),
       products:defaultProducts(),
-      fixedCosts:read(KEYS.fixedCosts,defaults),
+      fixedCosts,
       settings:localSettings()
     };
   }
@@ -122,7 +127,7 @@
         <section class="ee-v14-card ee-v14-metric"><small>Balance del mes</small><strong class="${m.balance>=0?"ee-v14-positive":"ee-v14-negative"}">${money(m.balance)}</strong></section>
         <section class="ee-v14-card"><p class="eyebrow">Pedidos</p><h2>Seguimiento y aprobación</h2><p class="ee-v14-help">Los enlaces de comprobantes conectados son privados y caducan automáticamente.</p><div class="ee-v14-table-wrap"><table class="ee-v14-table"><thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Pago</th></tr></thead><tbody>${orders}</tbody></table></div></section>
         <section class="ee-v14-card"><p class="eyebrow">Catálogo operativo</p><h2>Precios, costos e inventario</h2><p class="ee-v14-help">Los datos actuales continúan siendo demostrativos hasta recibir la tabla real.</p><div class="ee-v14-table-wrap"><table class="ee-v14-table"><thead><tr><th>Producto</th><th>Precio de venta</th><th>Costo unitario</th><th>Inventario</th></tr></thead><tbody>${products}</tbody></table></div><button class="ee-v14-btn terracotta" id="ee-save-products" style="margin-top:16px">Guardar catálogo operativo</button></section>
-        <section class="ee-v14-card"><p class="eyebrow">Estructura mensual</p><h2>Gastos fijos</h2><div class="ee-v14-form-grid">${costs}</div><p class="ee-v14-note" style="margin-top:16px">Total configurado: <strong>${money(m.fixed)}</strong>. La base temporal continúa en $6.000.000 mensuales.</p><button class="ee-v14-btn terracotta" id="ee-save-costs" style="margin-top:16px">Guardar gastos fijos</button></section>
+        <section class="ee-v14-card"><p class="eyebrow">Estructura mensual</p><h2>Gastos fijos</h2><div class="ee-v14-form-grid">${costs}</div><p class="ee-v14-note" style="margin-top:16px">Total configurado: <strong>${money(m.fixed)}</strong>. Etapa ${escapeHtml(BASE.finance?.stage||"operativa")} · ${escapeHtml(BASE.finance?.dataStatus||"PENDIENTE")}. ${escapeHtml(BASE.finance?.notice||"")}</p><button class="ee-v14-btn terracotta" id="ee-save-costs" style="margin-top:16px">Guardar gastos fijos</button></section>
         <section class="ee-v14-card"><p class="eyebrow">Transferencias</p><h2>Datos bancarios visibles en checkout</h2><p class="ee-v14-help">Estos datos son públicos por naturaleza porque el comprador debe verlos para realizar la transferencia. Nunca se almacena aquí una contraseña bancaria.</p><div class="ee-v14-form-grid"><div class="ee-v14-field"><label for="ee-bank-holder">Titular</label><input id="ee-bank-holder" value="${escapeHtml(payment.accountHolder||"")}"></div><div class="ee-v14-field"><label for="ee-bank-account">Cuenta de ahorros Bancolombia</label><input id="ee-bank-account" value="${escapeHtml(payment.accountNumber||"")}"></div><div class="ee-v14-field full"><label for="ee-bank-key">Llave</label><input id="ee-bank-key" value="${escapeHtml(payment.key||"")}"></div></div><button class="ee-v14-btn terracotta" id="ee-save-payment" style="margin-top:16px">Guardar datos de transferencia</button></section>
       </div>`;
   }
@@ -229,6 +234,7 @@
     const state = localState();
     container.innerHTML = dashboard(state,"local",null);
     bindDashboard(container,"local",state,null,null);
+    window.dispatchEvent(new CustomEvent("ee:admin:ready",{detail:{mode:"local"}}));
   }
 
   function bindDashboard(container,mode,state,client,user){
@@ -321,10 +327,10 @@
   function activationPanel(container){
     container.innerHTML = `
       <section class="ee-v14-auth ee-v15-activation">
-        <p class="eyebrow">Administración V2.2</p>
+        <p class="eyebrow">Administración V2.3</p>
         <h1>Acceso administrativo seguro.</h1>
         <p>El código de autenticación, roles, base de datos y comprobantes privados ya está preparado. Falta vincular el proyecto Supabase mediante la configuración protegida del despliegue.</p>
-        <div class="ee-v15-checklist"><span>1. Crear o seleccionar el proyecto Supabase.</span><span>2. Ejecutar las migraciones V1.4, V1.5, V1.6, V1.9, V2.0, V2.1 y V2.2.</span><span>3. Registrar la URL y la publishable key en GitHub Actions.</span><span>4. Crear el usuario de Juan y autorizarlo en <code>admin_users</code>.</span></div>
+        <div class="ee-v15-checklist"><span>1. Crear o seleccionar el proyecto Supabase.</span><span>2. Ejecutar las migraciones V1.4, V1.5, V1.6, V1.9, V2.0, V2.1, V2.2 y V2.3.</span><span>3. Registrar la URL y la publishable key en GitHub Actions.</span><span>4. Crear el usuario de Juan y autorizarlo en <code>admin_users</code>.</span></div>
         <div class="ee-v14-note">No existe una contraseña maestra dentro del código. Pages no simula un acceso privado inexistente.</div>
         <button class="ee-v14-btn terracotta" id="ee-open-local-admin" style="width:100%;margin-top:18px">Abrir simulación local</button>
       </section>`;

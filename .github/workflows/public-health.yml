@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v2-0-0
+  EXPECTED_CACHE: el-errante-v2-1-0
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -56,11 +56,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js; do
+          for asset in host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js daily-ops-v21.js; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
-          for asset in commerce-v18.css trust-v19.css activation-v20.css; do
+          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css; do
             curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
               "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
@@ -75,13 +75,14 @@ jobs:
           node --check public-commerce-ux-v18.js
           node --check public-trust-v19.js
           node --check public-activation-v20.js
+          node --check public-daily-ops-v21.js
           node --check public-service-worker.js
-          grep -q 'PUBLIC_VERSION="2.0.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v2-0-0"' public-host-mode.js
+          grep -q 'PUBLIC_VERSION="2.1.0"' public-host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v2-1-0"' public-host-mode.js
           grep -q 'brand-final-hq' public-host-mode.js
           grep -q 'home-hero-mobile.webp' public-host-mode.js
           ! grep -q 'BRAND_PACKS' public-host-mode.js
-          grep -q 'el-errante-v2-0-0' public-service-worker.js
+          grep -q 'el-errante-v2-1-0' public-service-worker.js
           grep -q 'assets/content-v17.js' public-service-worker.js
           grep -q 'assets/commerce-ux-v18.js' public-service-worker.js
           grep -q 'assets/commerce-v18.css' public-service-worker.js
@@ -89,8 +90,11 @@ jobs:
           grep -q 'assets/trust-v19.css' public-service-worker.js
           grep -q 'assets/activation-v20.js' public-service-worker.js
           grep -q 'assets/activation-v20.css' public-service-worker.js
+          grep -q 'assets/daily-ops-v21.js' public-service-worker.js
+          grep -q 'assets/daily-ops-v21.css' public-service-worker.js
           grep -q 'backend/supabase/schema-v19.sql' public-service-worker.js
           grep -q 'backend/supabase/schema-v20.sql' public-service-worker.js
+          grep -q 'backend/supabase/schema-v21.sql' public-service-worker.js
           grep -q 'assets/images/brand-final/home-hero.webp' public-service-worker.js
           grep -q 'assets/images/brand-final/producto-margherita.webp' public-service-worker.js
           grep -q 'assets/checkout-v15.js' public-service-worker.js
@@ -118,12 +122,17 @@ jobs:
           grep -q 'activation_health_v20' public-activation-v20.js
           grep -q 'register_first_admin_v20' public-activation-v20.js
           grep -q 'ee-v20-checklist' public-activation-v20.css
+          grep -q 'Mesa de pedidos y continuidad local' public-daily-ops-v21.js
+          grep -q 'transition_order_v21' public-daily-ops-v21.js
+          grep -q 'ee-v21-dialog' public-daily-ops-v21.css
           ! grep -qi 'service_role' public-commerce-runtime-config.js
           ! grep -qi 'service_role' public-admin-v15.js
           ! grep -qi 'service_role' public-checkout-v15.js
           ! grep -qi 'service_role' public-operations-v16.js
           ! grep -qi 'service_role' public-trust-v19.js
           ! grep -qi 'postgres://' public-activation-v20.js
+          ! grep -qi 'service_role' public-daily-ops-v21.js
+          ! grep -qi 'postgres://' public-daily-ops-v21.js
           ! grep -q "'./assets/brand-final-editorial.js'" public-service-worker.js
       - name: Verificar superficies públicas críticas
         shell: bash
@@ -164,12 +173,15 @@ jobs:
           assert_contains public-cuenta.html 'Seguimiento de pedidos' 'Cuenta no se convirtió en consulta operativa.'
           assert_contains public-cuenta.html 'assets/trust-v19.js' 'Cuenta no carga la consulta V1.9.'
           assert_contains public-cuenta.html 'assets/trust-v19.css' 'Cuenta no carga los estilos V1.9.'
-          assert_contains public-admin.html 'Operación, finanzas y activación · V2.0' 'Administración no declara V2.0.'
+          assert_contains public-admin.html 'Operación diaria, finanzas y activación · V2.1' 'Administración no declara V2.0.'
           assert_contains public-admin.html 'href="activacion.html"' 'Administración no enlaza el centro V2.0.'
           assert_contains public-admin.html 'assets/admin-v15.js' 'Administración no carga el acceso privado.'
           assert_contains public-admin.html 'assets/operations-v16.js' 'Administración no carga el módulo financiero V1.6.'
           assert_contains public-admin.html 'assets/trust-v19.js' 'Administración no carga la confianza comercial V1.9.'
           assert_contains public-admin.html 'id="operations-v16"' 'Administración no expone el contenedor financiero.'
+          assert_contains public-admin.html 'id="daily-ops-v21"' 'Administración no expone la mesa diaria V2.1.'
+          assert_contains public-admin.html 'assets/daily-ops-v21.js' 'Administración no carga la operación diaria V2.1.'
+          assert_contains public-admin.html 'assets/daily-ops-v21.css' 'Administración no carga los estilos V2.1.'
           assert_contains public-activacion.html 'data-page="activacion"' 'Activación no conserva su contrato de página.'
           assert_contains public-activacion.html 'assets/activation-v20.js' 'Activación no carga el diagnóstico V2.0.'
           assert_contains public-activacion.html 'assets/activation-v20.css' 'Activación no carga los estilos V2.0.'
@@ -200,7 +212,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "EL ERRANTE — PUBLIC HEALTH V2.0.0 ACTIVACIÓN OPERATIVA"
+            echo "EL ERRANTE — PUBLIC HEALTH V2.1.0 OPERACIÓN DIARIA"
             echo "source_conclusion=$SOURCE_CONCLUSION"
             echo "source_workflow_url=$SOURCE_WORKFLOW_URL"
             echo "expected_sha=$EXPECTED_SHA"
@@ -232,6 +244,8 @@ jobs:
             public-trust-v19.css
             public-activation-v20.js
             public-activation-v20.css
+            public-daily-ops-v21.js
+            public-daily-ops-v21.css
             public-index.html
             public-tienda.html
             public-producto.html

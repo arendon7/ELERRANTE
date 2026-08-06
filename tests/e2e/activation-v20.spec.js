@@ -1,12 +1,12 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Activación operativa V2.0', () => {
+test.describe('Activación operativa V2.1', () => {
   test('muestra el estado previo sin fingir conexión', async ({ page }) => {
     await page.goto('/activacion.html');
     await expect(page.getByRole('heading', { name: 'La web sigue en modo previo.' })).toBeVisible();
     await expect(page.getByText('Supabase aún no está conectado')).toBeVisible();
     await expect(page.getByText('No se enviarán pedidos ni comprobantes a una base central')).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('data-activation-version', '2.0.0');
+    await expect(page.locator('html')).toHaveAttribute('data-activation-version', '2.1.0');
   });
 
   test('no solicita credenciales cuando el backend no está configurado', async ({ page }) => {
@@ -21,7 +21,7 @@ test.describe('Activación operativa V2.0', () => {
 
   test('Administración enlaza el centro de activación', async ({ page }) => {
     await page.goto('/admin.html');
-    const link = page.getByRole('link', { name: 'Activación V2.0' });
+    const link = page.getByRole('link', { name: 'Activación V2.1' });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', 'activacion.html');
   });

@@ -45,6 +45,9 @@ jobs:
       - name: Validar activación operativa V2.0
         run: python3 scripts/verificar_activacion_v20.py
 
+      - name: Validar operación diaria V2.1
+        run: python3 scripts/verificar_operacion_diaria_v21.py
+
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
 

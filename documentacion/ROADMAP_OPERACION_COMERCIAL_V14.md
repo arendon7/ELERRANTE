@@ -151,3 +151,13 @@ Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta 
 - Verificación de bucket privado, cobertura, soporte, transferencia, catálogo y gastos fijos.
 - Modo previo explícito: la web no simula conexión ni producción real.
 - Variables de GitHub separadas de credenciales privadas.
+
+
+## Iteración 8 — operación diaria V2.1
+
+- Mesa de pedidos por revisión, preparación, despacho y cierre.
+- Ficha completa de cliente, entrega, productos, pago e historial.
+- Transiciones guiadas y aprobación bloqueada sin comprobante.
+- Exportación CSV operativa sin dirección, teléfono, correo ni comprobante.
+- Respaldo y restauración validados para el modo local previo a Supabase.
+- RPC administrativa que sincroniza estado, comprobante, auditoría e inventario.

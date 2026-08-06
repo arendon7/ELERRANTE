@@ -27,7 +27,13 @@ CRITICAL_SCRIPTS = [
     'assets/procurement-v25.js','assets/procurement-v25-guard.js','assets/finance-v27.js',
     'assets/operations-v16.js','service-worker.js','scripts/exportar-fuente-canonica.mjs',
     'scripts/verificar_canon_marca_v28.py','scripts/verificar_activos_hq_v28.py',
-    'scripts/verificar_modulos_v28.py'
+    'scripts/verificar_modulos_v28.py','scripts/abrir_local_v28.sh','servidor_demo.py'
+]
+LOCAL_ENTRYPOINTS = [
+    'ABRIR_EL_ERRANTE.command','ABRIR_EL_ERRANTE_LOCAL_V28.command','ABRIR_ADMIN_LOCAL_V28.command',
+    'ABRIR_CONTROL.command','ABRIR_PRESENTACION.command','DETENER_EL_ERRANTE_LOCAL_V28.command',
+    'VERIFICAR_DEMO.command','VERIFICAR_PAQUETE_LOCAL_V28.command','PREPARAR_RETORNO_GITHUB_V28.command',
+    'LEER_PRIMERO_PAQUETE_LOCAL_V28.txt'
 ]
 CANONICAL_WEBPS = [
     'home-hero.webp','home-hero-mobile.webp','home-masa-fuego.webp','home-fermentacion.webp',
@@ -46,7 +52,10 @@ PRODUCT_IDS = [
 OBSOLETE_ACTIVE_FILES = [
     'ABRIR_EL_ERRANTE_LOCAL_V27.command','VERIFICAR_PAQUETE_LOCAL_V27.command',
     'DETENER_EL_ERRANTE_LOCAL_V27.command','PREPARAR_RETORNO_GITHUB_V27.command',
-    'LEER_PRIMERO_PAQUETE_LOCAL_V27.txt',
+    'LEER_PRIMERO_PAQUETE_LOCAL_V27.txt','README.txt',
+    'AUDITORIA_V0_1_Y_CAMBIOS_V0_2.md','RECUPERACION_VISUAL_V0_6.md',
+    'REPORTE_GOLD_MASTER_V0_5.txt','REPORTE_LOCAL_V0_4.txt',
+    'REPORTE_PREPRODUCCION_V0_3.txt','REPORTE_PRUEBAS_V0_2.txt',
     'assets/brand-final-editorial.js','assets/brand-final-products-a.js',
     'assets/brand-final-products-b.js','assets/brand-final-products-c.js',
     'scripts/materializar_activos_visuales.py',
@@ -65,7 +74,15 @@ ARCHIVE_REQUIREMENTS = [
     'archive/legacy-brand-overlays/brand-final-products-b.js',
     'archive/legacy-brand-overlays/brand-final-products-c.js',
     'archive/legacy-brand-overlays/materializar_activos_visuales.py',
-    'archive/legacy-verifiers/README.md'
+    'archive/legacy-verifiers/README.md',
+    'archive/early-iterations/README.md',
+    'archive/early-iterations/README.txt',
+    'archive/early-iterations/AUDITORIA_V0_1_Y_CAMBIOS_V0_2.md',
+    'archive/early-iterations/RECUPERACION_VISUAL_V0_6.md',
+    'archive/early-iterations/REPORTE_GOLD_MASTER_V0_5.txt',
+    'archive/early-iterations/REPORTE_LOCAL_V0_4.txt',
+    'archive/early-iterations/REPORTE_PREPRODUCCION_V0_3.txt',
+    'archive/early-iterations/REPORTE_PRUEBAS_V0_2.txt'
 ]
 EXTERNAL = ('http:','https:','//','mailto:','tel:','javascript:','data:','blob:','#')
 
@@ -95,7 +112,8 @@ def clean_reference(value: str) -> str | None:
 for page in PUBLIC_PAGES: require(page, 'Página pública')
 for page in INTERNAL_PAGES: require(page, 'Módulo interno')
 for script in CRITICAL_SCRIPTS: require(script, 'Runtime o barrera crítica')
-for path in ['deploy-version.txt','assets/logo-mark.svg','assets/logo-lockup.svg','manifest.webmanifest','package.json']:
+for entry in LOCAL_ENTRYPOINTS: require(entry, 'Acceso local V2.8')
+for path in ['deploy-version.txt','assets/logo-mark.svg','assets/logo-lockup.svg','manifest.webmanifest','package.json','README.md','CHANGELOG.md']:
     require(path, 'Archivo canónico')
 for path in ARCHIVE_REQUIREMENTS: require(path, 'Archivo histórico aislado')
 
@@ -108,6 +126,10 @@ admin = read('admin.html')
 products = read('assets/products-v6.js')
 runtime_config = read('assets/commerce-runtime-config.js')
 package = read('package.json')
+server = read('servidor_demo.py')
+launcher = read('scripts/abrir_local_v28.sh')
+readme = read('README.md')
+changelog = read('CHANGELOG.md')
 
 required_markers = {
     'manifiesto de marca V2.8': "const VERSION='2.8.0'" in brand,
@@ -118,6 +140,10 @@ required_markers = {
     'release declarada V2.8': 'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-1' in deploy,
     'paquete declarado V2.8': '"version": "2.8.0"' in package,
     'panel integral identificado V2.8': '· V2.8' in admin,
+    'servidor local identificado V2.8': 'EL ERRANTE LOCAL V2.8' in server and "range(8787, 8801)" in server,
+    'lanzador ejecuta cuatro barreras': all(marker in launcher for marker in ('verificar_demo.py','verificar_canon_marca_v28.py','verificar_activos_hq_v28.py','verificar_modulos_v28.py')),
+    'README vigente': '# El Errante V2.8' in readme,
+    'changelog vigente': '## [2.8.0]' in changelog,
     'finanzas V2.7 conservadas': 'assets/finance-v27.js' in admin and 'id="finance-v27"' in admin,
     'abastecimiento V2.5 conservado': 'assets/procurement-v25.js' in admin and 'id="procurement-v25"' in admin,
 }

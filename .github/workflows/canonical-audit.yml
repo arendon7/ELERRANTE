@@ -42,6 +42,9 @@ jobs:
       - name: Validar confianza y seguimiento V1.9
         run: python3 scripts/verificar_confianza_v19.py
 
+      - name: Validar activación operativa V2.0
+        run: python3 scripts/verificar_activacion_v20.py
+
       - name: Reconstruir fuente efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
 

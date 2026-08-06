@@ -1,9 +1,9 @@
 (()=>{
   const hosted=location.protocol==="https:"||location.hostname.endsWith("github.io");
-  const PUBLIC_VERSION="1.9.0";
+  const PUBLIC_VERSION="2.0.0";
   const CACHE_PREFIX="el-errante-";
-  const ACTIVE_CACHE="el-errante-v1-9-0";
-  const INTERNAL_PAGES=new Set(["equipo","admin","control","operacion","studio","actas","presentacion"]);
+  const ACTIVE_CACHE="el-errante-v2-0-0";
+  const INTERNAL_PAGES=new Set(["equipo","admin","activacion","control","operacion","studio","actas","presentacion"]);
 
   const VISUALS={
     "assets/images/hero-desktop.svg":"assets/images/brand-final/home-hero.webp",

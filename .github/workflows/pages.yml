@@ -35,6 +35,8 @@ jobs:
         run: python3 scripts/verificar_experiencia_compra_v18.py
       - name: Validar confianza y seguimiento V1.9
         run: python3 scripts/verificar_confianza_v19.py
+      - name: Validar activación operativa V2.0
+        run: python3 scripts/verificar_activacion_v20.py
       - name: Validar matriz maestra de oferta
         run: python3 scripts/verificar_oferta_v09.py
       - name: Validar Studio de Oferta
@@ -62,9 +64,11 @@ jobs:
           node --check assets/content-v17.js
           node --check assets/commerce-ux-v18.js
           node --check assets/trust-v19.js
+          node --check assets/activation-v20.js
           node --check service-worker.js
           test -s assets/commerce-v18.css
           test -s assets/trust-v19.css
+          test -s assets/activation-v20.css
           test "$(find assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
           grep -q '"version": "1.3.0"' assets/images/brand-final/manifest-hq-v13.json
           grep -q '"unique_assets": 23' assets/images/brand-final/manifest-hq-v13.json
@@ -140,17 +144,17 @@ jobs:
           output = 'window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze(' + json.dumps(config, ensure_ascii=False, separators=(',',':')) + ');\n'
           Path('_site/assets/commerce-runtime-config.js').write_text(output, encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=1.9.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v1-9-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.0.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-0-0\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'version=1.9.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v1-9-0' _site/deploy-version.txt
+          grep -q 'version=2.0.0' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v2-0-0' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
-          for page in equipo admin control operacion studio actas presentacion checkout cuenta; do test -f "_site/${page}.html"; done
+          for page in equipo admin activacion control operacion studio actas presentacion checkout cuenta; do test -f "_site/${page}.html"; done
           test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
           grep -q '"version": "1.3.0"' _site/assets/images/brand-final/manifest-hq-v13.json
           grep -q '"unique_assets": 23' _site/assets/images/brand-final/manifest-hq-v13.json
@@ -159,8 +163,8 @@ jobs:
           test ! -f _site/assets/brand-final-products-a.js
           test ! -f _site/assets/brand-final-products-b.js
           test ! -f _site/assets/brand-final-products-c.js
-          grep -q 'el-errante-v1-9-0' _site/service-worker.js
-          grep -q 'PUBLIC_VERSION="1.9.0"' _site/assets/host-mode.js
+          grep -q 'el-errante-v2-0-0' _site/service-worker.js
+          grep -q 'PUBLIC_VERSION="2.0.0"' _site/assets/host-mode.js
           grep -q 'brand-final-hq' _site/assets/host-mode.js
           grep -q 'home-hero-mobile.webp' _site/assets/host-mode.js
           grep -q 'checkout-v15.js' _site/checkout.html
@@ -169,7 +173,11 @@ jobs:
           grep -q 'trust-v19.js' _site/admin.html
           grep -q 'admin-v15.js' _site/admin.html
           grep -q 'operations-v16.js' _site/admin.html
-          grep -q 'Operación, finanzas y confianza · V1.9' _site/admin.html
+          grep -q 'href="activacion.html"' _site/admin.html
+          grep -q 'Operación, finanzas y activación · V2.0' _site/admin.html
+          grep -q 'data-page="activacion"' _site/activacion.html
+          grep -q 'assets/activation-v20.js' _site/activacion.html
+          grep -q 'assets/activation-v20.css' _site/activacion.html
           ! grep -q 'assets/commerce-v14.js' _site/admin.html
           grep -q 'assets/checkout-v15.js' _site/service-worker.js
           grep -q 'assets/admin-v15.js' _site/service-worker.js
@@ -179,7 +187,10 @@ jobs:
           grep -q 'assets/commerce-v18.css' _site/service-worker.js
           grep -q 'assets/trust-v19.js' _site/service-worker.js
           grep -q 'assets/trust-v19.css' _site/service-worker.js
+          grep -q 'assets/activation-v20.js' _site/service-worker.js
+          grep -q 'assets/activation-v20.css' _site/service-worker.js
           grep -q 'backend/supabase/schema-v19.sql' _site/service-worker.js
+          grep -q 'backend/supabase/schema-v20.sql' _site/service-worker.js
           for page in index tienda producto historia en-casa en-movimiento; do grep -q 'assets/content-v17.js' "_site/${page}.html"; done
           for page in tienda producto checkout; do grep -q 'assets/commerce-ux-v18.js' "_site/${page}.html"; grep -q 'assets/commerce-v18.css' "_site/${page}.html"; done
           grep -q 'Masa con tiempo. Fuego con carácter.' _site/assets/content-v17.js
@@ -189,14 +200,19 @@ jobs:
           grep -q 'lookup_order_status_v19' _site/assets/trust-v19.js
           grep -q 'Consulta segura · V1.9' _site/assets/trust-v19.js
           grep -q 'ee-v19-progress' _site/assets/trust-v19.css
+          grep -q 'Supabase aún no está conectado' _site/assets/activation-v20.js
+          grep -q 'activation_health_v20' _site/assets/activation-v20.js
+          grep -q 'ee-v20-checklist' _site/assets/activation-v20.css
           node --check _site/assets/commerce-runtime-config.js
           node --check _site/assets/operations-v16.js
           node --check _site/assets/content-v17.js
           node --check _site/assets/commerce-ux-v18.js
           node --check _site/assets/trust-v19.js
+          node --check _site/assets/activation-v20.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
           ! grep -qi 'service_role' _site/assets/trust-v19.js
-          for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-preflight-v09.js offer-acts-v09.js offer-acts-v09.css aire-tiempo-committee-v09.js aire-tiempo-committee-v09.css commerce-runtime-config.js commerce-config-v14.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js commerce-v14.js commerce-v14.css commerce-v15.css commerce-v16.css commerce-v18.css trust-v19.css; do test -f "_site/assets/$asset"; done
+          ! grep -qi 'postgres://' _site/assets/activation-v20.js
+          for asset in offer-studio-v09.js offer-studio-v09.css offer-governance-v09.js offer-acts-preflight-v09.js offer-acts-v09.js offer-acts-v09.css aire-tiempo-committee-v09.js aire-tiempo-committee-v09.css commerce-runtime-config.js commerce-config-v14.js checkout-v15.js admin-v15.js operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js commerce-v14.js commerce-v14.css commerce-v15.css commerce-v16.css commerce-v18.css trust-v19.css activation-v20.css; do test -f "_site/assets/$asset"; done
           test -f _site/documentacion/modelo-oferta-v09.json
           test -f _site/documentacion/sesiones/aire-y-tiempo-paquete-comite-v09.json
           test -f _site/documentacion/sesiones/AIRE_Y_TIEMPO_PAQUETE_COMITE_V09.md
@@ -204,6 +220,7 @@ jobs:
           test -f _site/backend/supabase/schema-v15.sql
           test -f _site/backend/supabase/schema-v16.sql
           test -f _site/backend/supabase/schema-v19.sql
+          test -f _site/backend/supabase/schema-v20.sql
           grep -q 'v040-app-001.b64' _site/assets/app.js
           grep -q 'v040-app-006.b64' _site/assets/app.js
           ! grep -q 'assets/chunks/app-' _site/assets/app.js

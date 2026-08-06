@@ -48,9 +48,9 @@ for page in ("checkout.html", "tienda.html", "producto.html"):
     if html.index("assets/commerce-v18.css") > html.index("</head>"):
         raise SystemExit(f"{page} carga el CSS V1.8 fuera del head")
 
-require("assets/host-mode.js", 'PUBLIC_VERSION="1.9.0"', 'ACTIVE_CACHE="el-errante-v1-9-0"')
-require("service-worker.js", "el-errante-v1-9-0", "assets/commerce-ux-v18.js", "assets/commerce-v18.css")
-require("deploy-version.txt", "version=1.9.0", "cache=el-errante-v1-9-0")
+require("assets/host-mode.js", 'PUBLIC_VERSION="2.0.0"', 'ACTIVE_CACHE="el-errante-v2-0-0"')
+require("service-worker.js", "el-errante-v2-0-0", "assets/commerce-ux-v18.js", "assets/commerce-v18.css")
+require("deploy-version.txt", "version=2.0.0", "cache=el-errante-v2-0-0")
 
 for forbidden in (
     "pago garantizado",

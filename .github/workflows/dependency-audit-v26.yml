@@ -1,0 +1,47 @@
+name: Auditar depuración canónica V2.6
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["chore/depuracion-v26"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "dependency-audit-v26-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    name: Inventario de capas y activos
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validar auditor
+        run: python3 -m py_compile scripts/auditar_dependencias_v26.py
+
+      - name: Generar inventario no destructivo
+        run: python3 scripts/auditar_dependencias_v26.py --output .artifacts/depuracion-v26
+
+      - name: Mostrar resumen
+        run: cat .artifacts/depuracion-v26/dependency-audit-v26.md
+
+      - name: Conservar evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: depuracion-v26-${{ github.sha }}
+          path: .artifacts/depuracion-v26
+          if-no-files-found: error
+          retention-days: 14

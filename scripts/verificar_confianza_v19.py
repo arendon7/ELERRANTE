@@ -42,11 +42,11 @@ require(
 
 require("cuenta.html", "Seguimiento de pedidos", "assets/trust-v19.js", "assets/trust-v19.css")
 require("checkout.html", "Consultar un pedido existente", "assets/trust-v19.js", "assets/trust-v19.css")
-require("admin.html", "Operación diaria, producción, despacho y finanzas · V2.2", "assets/trust-v19.js", "assets/trust-v19.css")
-require("assets/commerce-config-v14.js", 'version: "2.1.0"', "deliveryFeePolicy", "expectedResponseHours")
-require("assets/host-mode.js", 'PUBLIC_VERSION="2.2.0"', 'ACTIVE_CACHE="el-errante-v2-2-0"')
-require("service-worker.js", "el-errante-v2-2-0", "assets/trust-v19.js", "assets/trust-v19.css", "schema-v19.sql")
-require("deploy-version.txt", "version=2.2.0", "cache=el-errante-v2-2-0")
+require("admin.html", "Operación diaria, producción, materiales y despacho · V2.3", "assets/trust-v19.js", "assets/trust-v19.css")
+require("assets/commerce-config-v14.js", 'version: "2.3.0"', "deliveryFeePolicy", "expectedResponseHours")
+require("assets/host-mode.js", 'PUBLIC_VERSION="2.3.0"', 'ACTIVE_CACHE="el-errante-v2-3-0"')
+require("service-worker.js", "el-errante-v2-3-0", "assets/trust-v19.js", "assets/trust-v19.css", "schema-v19.sql")
+require("deploy-version.txt", "version=2.3.0", "cache=el-errante-v2-3-0")
 
 for forbidden in (
     "select('*')",

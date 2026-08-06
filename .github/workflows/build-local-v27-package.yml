@@ -1,0 +1,204 @@
+name: Construir paquete local V2.7 completo
+
+on:
+  push:
+    branches:
+      - build/local-v27-full-package
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Empaquetar aplicación autocontenida
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Recuperar repositorio completo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Preparar edición local para macOS
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="EL_ERRANTE_LOCAL_V27_MAC_COMPLETO"
+          rm -rf "$ROOT"
+          mkdir -p "$ROOT"
+
+          rsync -a ./ "$ROOT/" \
+            --exclude "$ROOT" \
+            --exclude '.git/' \
+            --exclude 'node_modules/' \
+            --exclude 'test-results/' \
+            --exclude 'playwright-report/' \
+            --exclude '.DS_Store'
+
+          cat > "$ROOT/LEER_PRIMERO_MAC.txt" <<'TXT'
+          EL ERRANTE LOCAL V2.7 — PAQUETE COMPLETO PARA macOS
+
+          Este paquete contiene físicamente la webapp completa, sus imágenes WebP,
+          panel administrativo, Abastecimiento V2.5, Finanzas Operativas V2.7,
+          documentación, pruebas, scripts y archivos de retorno a GitHub.
+
+          PARA ABRIR
+          1. Descomprima el ZIP completo.
+          2. Haga clic derecho en ABRIR_EL_ERRANTE_LOCAL.command.
+          3. Seleccione Abrir y confirme.
+          4. Mantenga Terminal abierta durante el uso.
+
+          DIRECCIONES
+          Web pública: http://127.0.0.1:8787/index.html
+          Tienda:      http://127.0.0.1:8787/tienda.html
+          Administración: http://127.0.0.1:8787/admin.html
+
+          DATOS
+          La edición local usa almacenamiento del navegador. Supabase permanece
+          inactivo porque la URL y la clave pública están vacías.
+
+          FUENTE INMUTABLE
+          Base funcional: commit 65bac9f2ee5d7171657f90a6799995291bb0a4b6
+          TXT
+
+          cat > "$ROOT/ABRIR_EL_ERRANTE_LOCAL.command" <<'SH'
+          #!/bin/bash
+          set -e
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          cd "$DIR"
+          PORT=8787
+          if ! command -v python3 >/dev/null 2>&1; then
+            osascript -e 'display alert "El Errante" message "No se encontró Python 3. Instala las herramientas de desarrollo de macOS o Python 3." as critical'
+            exit 1
+          fi
+          if lsof -ti tcp:$PORT >/dev/null 2>&1; then
+            open "http://127.0.0.1:$PORT/index.html"
+            exit 0
+          fi
+          echo "El Errante Local V2.7"
+          echo "Servidor: http://127.0.0.1:$PORT"
+          echo "Para detener: Control + C"
+          (sleep 1; open "http://127.0.0.1:$PORT/index.html") &
+          exec python3 -m http.server "$PORT" --bind 127.0.0.1
+          SH
+
+          cat > "$ROOT/ABRIR_ADMIN_LOCAL.command" <<'SH'
+          #!/bin/bash
+          set -e
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          cd "$DIR"
+          PORT=8787
+          if ! command -v python3 >/dev/null 2>&1; then
+            osascript -e 'display alert "El Errante" message "No se encontró Python 3." as critical'
+            exit 1
+          fi
+          if lsof -ti tcp:$PORT >/dev/null 2>&1; then
+            open "http://127.0.0.1:$PORT/admin.html"
+            exit 0
+          fi
+          (sleep 1; open "http://127.0.0.1:$PORT/admin.html") &
+          exec python3 -m http.server "$PORT" --bind 127.0.0.1
+          SH
+
+          cat > "$ROOT/DETENER_EL_ERRANTE_LOCAL.command" <<'SH'
+          #!/bin/bash
+          PORT=8787
+          PIDS="$(lsof -ti tcp:$PORT 2>/dev/null || true)"
+          if [ -n "$PIDS" ]; then
+            kill $PIDS
+            echo "Servidor local detenido."
+          else
+            echo "No había un servidor de El Errante activo."
+          fi
+          read -r -p "Presiona Enter para cerrar..."
+          SH
+
+          cat > "$ROOT/VERIFICAR_PAQUETE_LOCAL.command" <<'SH'
+          #!/bin/bash
+          set -e
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          cd "$DIR"
+          python3 - <<'PY'
+          from pathlib import Path
+          import sys
+          root = Path('.')
+          required = [
+              'index.html','tienda.html','admin.html','activacion.html',
+              'assets/finance-v27.js','assets/finance-v27.css',
+              'assets/procurement-v25.js','assets/procurement-v25.css',
+              'assets/procurement-v25-guard.js','assets/commerce-runtime-config.js',
+              'assets/images/brand-final/home-hero.webp',
+              'assets/images/brand-final/producto-margherita.webp',
+              'service-worker.js','servidor_demo.py','tests/e2e/finance-v27.spec.js',
+              'tests/e2e/procurement-v25.spec.js'
+          ]
+          missing = [p for p in required if not (root / p).is_file()]
+          tiny = [p for p in required if (root / p).is_file() and (root / p).stat().st_size == 0]
+          cfg = (root / 'assets/commerce-runtime-config.js').read_text(encoding='utf-8')
+          if 'url: ""' not in cfg or 'publishableKey: ""' not in cfg:
+              print('ERROR: Supabase no está inactivo como se esperaba.')
+              sys.exit(1)
+          if missing or tiny:
+              print('FALTANTES:', missing)
+              print('VACÍOS:', tiny)
+              sys.exit(1)
+          webps = list((root / 'assets/images').rglob('*.webp'))
+          print(f'OK: {len(required)} archivos críticos presentes.')
+          print(f'OK: {len(webps)} imágenes WebP incluidas físicamente.')
+          print(f'OK: tamaño total {sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) / 1024 / 1024:.2f} MB.')
+          print('OK: Supabase permanece inactivo.')
+          PY
+          read -r -p "Presiona Enter para cerrar..."
+          SH
+
+          cat > "$ROOT/PREPARAR_RETORNO_GITHUB.command" <<'SH'
+          #!/bin/bash
+          set -euo pipefail
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          OUT="$HOME/Desktop/EL_ERRANTE_RETORNO_GITHUB_$(date +%Y%m%d_%H%M%S).zip"
+          cd "$DIR"
+          /usr/bin/zip -qry "$OUT" . -x '*.DS_Store' 'test-results/*' 'playwright-report/*'
+          echo "Paquete creado: $OUT"
+          open -R "$OUT"
+          read -r -p "Presiona Enter para cerrar..."
+          SH
+
+          chmod +x "$ROOT"/*.command
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          root = Path('EL_ERRANTE_LOCAL_V27_MAC_COMPLETO')
+          files = [p for p in root.rglob('*') if p.is_file()]
+          manifest = {
+              'package': root.name,
+              'source_commit': '65bac9f2ee5d7171657f90a6799995291bb0a4b6',
+              'file_count': len(files),
+              'total_bytes': sum(p.stat().st_size for p in files),
+              'webp_count': len(list(root.rglob('*.webp'))),
+              'files': []
+          }
+          for p in sorted(files):
+              h = hashlib.sha256(p.read_bytes()).hexdigest()
+              manifest['files'].append({'path': str(p.relative_to(root)), 'bytes': p.stat().st_size, 'sha256': h})
+          (root / 'MANIFIESTO_INTEGRIDAD.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
+          PY
+
+          /usr/bin/zip -qry EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip "$ROOT"
+          sha256sum EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip > EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip.sha256
+          find "$ROOT" -type f | sort > INVENTARIO_PAQUETE_LOCAL.txt
+          du -sh "$ROOT" EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip
+          test "$(find "$ROOT/assets/images" -type f -name '*.webp' | wc -l)" -ge 10
+          test "$(stat -c%s EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip)" -gt 1000000
+
+      - name: Publicar artefacto completo
+        uses: actions/upload-artifact@v4
+        with:
+          name: EL_ERRANTE_LOCAL_V27_MAC_COMPLETO
+          path: |
+            EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip
+            EL_ERRANTE_LOCAL_V27_MAC_COMPLETO.zip.sha256
+            INVENTARIO_PAQUETE_LOCAL.txt
+          if-no-files-found: error
+          retention-days: 14

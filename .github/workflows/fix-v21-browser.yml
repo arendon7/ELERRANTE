@@ -1,0 +1,96 @@
+name: Corregir navegación V2.1
+
+on:
+  push:
+    branches: ["feat/operacion-diaria-v21-final"]
+    paths:
+      - ".github/workflows/fix-v21-browser.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/operacion-diaria-v21-final
+          fetch-depth: 0
+      - name: Eliminar duplicidad operativa y alinear pruebas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace(path,old,new):
+              file=Path(path)
+              text=file.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'{path} no contiene el bloque esperado: {old[:100]!r}')
+              file.write_text(text.replace(old,new,1),encoding='utf-8')
+
+          path='assets/daily-ops-v21.js'
+          replace(path,
+            "  const statusMeta=value=>STATUS[value]||{label:value||'Sin estado',tone:'pending',group:'review'};\n",
+            "  const statusMeta=value=>STATUS[value]||{label:value||'Sin estado',tone:'pending',group:'review'};\n  let renderGeneration=0;\n\n  function compactLegacyOrders(){\n    const root=document.querySelector('#admin-dynamic');\n    if(!root)return;\n    const heading=[...root.querySelectorAll('.ee-v14-card h2')].find(node=>node.textContent.trim()==='Seguimiento y aprobación');\n    const card=heading?.closest('.ee-v14-card');\n    if(card)card.remove();\n  }\n")
+          replace(path,
+            "    const select=document.querySelector(`[data-order-status=\"${CSS.escape(order.id)}\"]`);\n    if(!select)throw new Error('No fue posible localizar el pedido en Administración.');\n    select.value=newStatus;\n    select.dataset.v21Note=String(note||'').trim()||'Estado actualizado desde la mesa diaria';\n    select.dispatchEvent(new Event('change',{bubbles:true}));\n    return true;",
+            "    const orders=read(KEYS.orders,[]);\n    const target=orders.find(item=>item.id===order.id);\n    if(!target)throw new Error('No fue posible localizar el pedido en Administración.');\n    target.status=newStatus;\n    target.updatedAt=new Date().toISOString();\n    target.statusTimeline=Array.isArray(target.statusTimeline)?target.statusTimeline:[];\n    target.statusTimeline.push({status:newStatus,createdAt:target.updatedAt,note:String(note||'').trim()||'Estado actualizado desde la mesa diaria'});\n    write(KEYS.orders,orders);\n    document.querySelector('#ee-refresh-admin')?.click();\n    return true;")
+          replace(path,
+            "  async function render(){\n    const host=document.querySelector('#daily-ops-v21');",
+            "  async function render(){\n    const generation=++renderGeneration;\n    const host=document.querySelector('#daily-ops-v21');")
+          replace(path,
+            "    try{\n      const orders=await loadOrders();\n      host.innerHTML=shellHtml(orders);",
+            "    try{\n      compactLegacyOrders();\n      const orders=await loadOrders();\n      if(generation!==renderGeneration)return;\n      host.innerHTML=shellHtml(orders);")
+
+          activation=Path('tests/e2e/activation-v20.spec.js')
+          text=activation.read_text(encoding='utf-8')
+          text=text.replace("Activación operativa V2.0","Activación operativa V2.1")
+          text=text.replace("'data-activation-version', '2.0.0'","'data-activation-version', '2.1.0'")
+          text=text.replace("name: 'Activación V2.0'","name: 'Activación V2.1'")
+          activation.write_text(text,encoding='utf-8')
+
+          daily=Path('tests/e2e/daily-ops-v21.spec.js')
+          text=daily.read_text(encoding='utf-8')
+          text=text.replace(
+            "    await expect(page.getByRole('heading',{name:'Mesa de pedidos y continuidad local'})).toBeVisible();\n    await expect(page.getByText('Cliente Diario')).toBeVisible();\n    await page.getByRole('button',{name:'Abrir pedido'}).click();\n    await expect(page.getByText('Carrera 70 # 10-20')).toBeVisible();\n    page.once('dialog',dialog=>dialog.accept());\n    await page.getByRole('button',{name:'Aprobar pago'}).click();",
+            "    const desk=page.locator('#daily-ops-v21');\n    await expect(desk.getByRole('heading',{name:'Mesa de pedidos y continuidad local'})).toBeVisible();\n    await expect(page.getByRole('heading',{name:'Seguimiento y aprobación'})).toHaveCount(0);\n    const card=desk.locator('[data-v21-order=\"EE-20260805-DIARIA\"]');\n    await expect(card.getByText('Cliente Diario · Medellín')).toBeVisible();\n    await card.getByRole('button',{name:'Abrir pedido'}).click();\n    const dialogBox=page.locator('#ee-v21-dialog');\n    await expect(dialogBox.getByText('Carrera 70 # 10-20')).toBeVisible();\n    page.once('dialog',dialog=>dialog.accept());\n    await dialogBox.getByRole('button',{name:'Aprobar pago'}).click();")
+          text=text.replace(
+            "    await page.getByRole('button',{name:'Abrir pedido'}).click();\n    await expect(page.getByRole('button',{name:'Aprobar pago'})).toBeDisabled();",
+            "    const desk=page.locator('#daily-ops-v21');\n    await desk.locator('[data-v21-order=\"EE-20260805-DIARIA\"]').getByRole('button',{name:'Abrir pedido'}).click();\n    await expect(page.locator('#ee-v21-dialog').getByRole('button',{name:'Aprobar pago'})).toBeDisabled();")
+          text=text.replace(
+            "    await page.locator('#ee-v21-search').fill('Cliente Diario');\n    await expect(page.getByText('EE-20260805-DIARIA')).toBeVisible();",
+            "    const desk=page.locator('#daily-ops-v21');\n    await desk.locator('#ee-v21-search').fill('Cliente Diario');\n    await expect(desk.locator('[data-v21-order=\"EE-20260805-DIARIA\"]')).toBeVisible();")
+          text=text.replace(
+            "    await page.getByRole('button',{name:'Exportar CSV operativo'}).click();",
+            "    await desk.getByRole('button',{name:'Exportar CSV operativo'}).click();",1)
+          text=text.replace(
+            "    await page.getByRole('button',{name:'Descargar respaldo'}).click();",
+            "    await page.locator('#daily-ops-v21').getByRole('button',{name:'Descargar respaldo'}).click();")
+          daily.write_text(text,encoding='utf-8')
+
+          verifier=Path('scripts/verificar_operacion_diaria_v21.py')
+          text=verifier.read_text(encoding='utf-8')
+          marker="require('assets/daily-ops-v21.js','transition_order_v21','La transición segura no está conectada')\n"
+          if marker not in text: raise SystemExit('No se encontró el marcador del verificador V2.1')
+          text=text.replace(marker,marker+"require('assets/daily-ops-v21.js','compactLegacyOrders','La tabla heredada de pedidos no se sustituye')\n",1)
+          verifier.write_text(text,encoding='utf-8')
+          PY
+      - name: Validar corrección completa
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/daily-ops-v21.js
+          node --check tests/e2e/daily-ops-v21.spec.js
+          node --check tests/e2e/activation-v20.spec.js
+          python3 scripts/verificar_operacion_diaria_v21.py
+      - name: Consolidar corrección
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/daily-ops-v21.js tests/e2e/daily-ops-v21.spec.js tests/e2e/activation-v20.spec.js scripts/verificar_operacion_diaria_v21.py
+          git commit -m 'fix(ops): sustituye tabla redundante y alinea pruebas V2.1'
+          git push origin HEAD:feat/operacion-diaria-v21-final

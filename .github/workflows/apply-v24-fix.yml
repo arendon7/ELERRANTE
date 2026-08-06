@@ -1,0 +1,70 @@
+name: Aplicar reparación V2.4
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Corregir integración de estados e inventario
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if text.count(old) != 1:
+                  raise SystemExit(f'{path}: se esperó una coincidencia y se encontraron {text.count(old)}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          replace_once(
+              'assets/daily-ops-v21.js',
+              "    write(KEYS.orders,orders);\n    document.querySelector('#ee-refresh-admin')?.click();\n    return true;",
+              "    write(KEYS.orders,orders);\n    window.dispatchEvent(new CustomEvent('ee:order:status-changed',{detail:{orderId:order.id,status:newStatus,source:'daily-ops-v21'}}));\n    document.querySelector('#ee-refresh-admin')?.click();\n    return true;"
+          )
+
+          replace_once(
+              'assets/daily-ops-v21.js',
+              "    new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(render,90);}).observe(admin,{childList:true,subtree:true});",
+              "    new MutationObserver(()=>{compactLegacyOrders();clearTimeout(timer);timer=setTimeout(render,90);}).observe(admin,{childList:true,subtree:true});"
+          )
+
+          replace_once(
+              'assets/operations-v16.js',
+              '''  document.addEventListener("change",event=>{\n    const select=event.target.closest?.("[data-order-status]");\n    if(!select) return;\n    const orderId=select.dataset.orderStatus;\n    setTimeout(async()=>{\n      if(!backendReady()){\n        if(reconcileLocalOrder(orderId)) document.querySelector("#ee-refresh-admin")?.click();\n      }\n      await load();\n    },120);\n  });\n\n  window.addEventListener("ee:v16:reload",load);''',
+              '''  function handleOrderStatusChange(orderId){\n    if(!orderId) return;\n    setTimeout(async()=>{\n      if(!backendReady()){\n        if(reconcileLocalOrder(orderId)) document.querySelector("#ee-refresh-admin")?.click();\n      }\n      await load();\n    },120);\n  }\n\n  document.addEventListener("change",event=>{\n    const select=event.target.closest?.("[data-order-status]");\n    if(!select) return;\n    handleOrderStatusChange(select.dataset.orderStatus);\n  });\n\n  window.addEventListener("ee:order:status-changed",event=>handleOrderStatusChange(event.detail?.orderId));\n  window.addEventListener("ee:v16:reload",load);'''
+          )
+
+          replace_once(
+              'tests/e2e/operations-v16.spec.js',
+              '''    await page.locator('[data-order-status="EE-TEST-V16"]').selectOption('preparing');\n    const panel = await openFinance(page);''',
+              '''    const desk = page.locator('#daily-ops-v21');\n    await expect(desk.getByRole('heading', { name: 'Mesa de pedidos y continuidad local' })).toBeVisible();\n    await desk.locator('[data-v21-order="EE-TEST-V16"]').getByRole('button', { name: 'Abrir pedido' }).click();\n    const dialogBox = page.locator('#ee-v21-dialog');\n    await expect(dialogBox).toBeVisible();\n    page.once('dialog', dialog => dialog.accept());\n    await dialogBox.getByRole('button', { name: 'Iniciar preparación' }).click();\n    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ee_v14_orders') || '[]')[0]?.status)).toBe('preparing');\n    const panel = await openFinance(page);'''
+          )
+          PY
+
+      - name: Retirar diagnóstico temporal
+        run: |
+          git rm .github/workflows/apply-v24-fix.yml
+          git rm .github/workflows/diagnose-v24.yml
+          git rm diagnostics-v24.txt
+          git rm diagnostics-main-failure.txt
+
+      - name: Publicar reparación limpia
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/daily-ops-v21.js assets/operations-v16.js tests/e2e/operations-v16.spec.js
+          git commit -m "fix: estabiliza transición operativa e inventario V2.4"
+          git push origin HEAD:${{ github.head_ref }}

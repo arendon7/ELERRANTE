@@ -42,6 +42,7 @@ jobs:
             scripts/verificar_activacion_v20.py \
             scripts/verificar_operacion_diaria_v21.py \
             scripts/verificar_produccion_v22.py \
+            scripts/verificar_materiales_v23.py \
             scripts/verificar_oferta_v09.py \
             scripts/verificar_studio_oferta_v09.py \
             scripts/verificar_actas_oferta_v09.py \
@@ -55,13 +56,14 @@ jobs:
           set -euo pipefail
           for asset in \
             host-mode.js commerce-v14.js commerce-config-v14.js checkout-v15.js admin-v15.js \
-            operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js \
-            daily-ops-v21.js production-v22.js offer-studio-v09.js offer-governance-v09.js \
-            offer-acts-preflight-v09.js offer-acts-v09.js aire-tiempo-committee-v09.js; do
+            operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js activation-v23.js \
+            daily-ops-v21.js production-v22.js materials-data-v23.js materials-v23.js \
+            offer-studio-v09.js offer-governance-v09.js offer-acts-preflight-v09.js \
+            offer-acts-v09.js aire-tiempo-committee-v09.js; do
             node --check "assets/$asset"
           done
           node --check service-worker.js
-          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css production-v22.css; do
+          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css production-v22.css materials-v23.css; do
             test -s "assets/$asset"
           done
           test "$(find assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
@@ -136,7 +138,7 @@ jobs:
               'window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze(' +
               json.dumps(config,ensure_ascii=False,separators=(',',':')) + ');\n',encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.2.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-2-0\nupdated=%s\n' \
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.3.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-3-0\nupdated=%s\n' \
             "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
 
@@ -144,44 +146,49 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'version=2.2.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v2-2-0' _site/deploy-version.txt
+          grep -q 'version=2.3.0' _site/deploy-version.txt
+          grep -q 'cache=el-errante-v2-3-0' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
           grep -q 'Masa · Fuego · Territorio' _site/index.html
-          grep -q 'Operación diaria, producción, despacho y finanzas · V2.2' _site/admin.html
+          grep -q 'Operación diaria, producción, materiales y despacho · V2.3' _site/admin.html
           grep -q 'id="daily-ops-v21"' _site/admin.html
           grep -q 'id="production-v22"' _site/admin.html
-          grep -q 'assets/production-v22.js' _site/admin.html
-          grep -q 'assets/production-v22.css' _site/admin.html
+          grep -q 'id="materials-v23"' _site/admin.html
+          grep -q 'assets/materials-data-v23.js' _site/admin.html
+          grep -q 'assets/materials-v23.js' _site/admin.html
+          grep -q 'assets/materials-v23.css' _site/admin.html
           grep -q 'data-page="activacion"' _site/activacion.html
-          grep -q 'Activación V2.2' _site/activacion.html
-          grep -q 'el-errante-v2-2-0' _site/service-worker.js
-          grep -q 'PUBLIC_VERSION="2.2.0"' _site/assets/host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v2-2-0"' _site/assets/host-mode.js
-          grep -q 'assets/production-v22.js' _site/service-worker.js
-          grep -q 'assets/production-v22.css' _site/service-worker.js
-          grep -q 'backend/supabase/schema-v20.sql' _site/service-worker.js
-          grep -q 'backend/supabase/schema-v21.sql' _site/service-worker.js
-          grep -q 'backend/supabase/schema-v22.sql' _site/service-worker.js
-          grep -q 'Agenda de alistamiento por fecha' _site/assets/production-v22.js
-          grep -q 'transition_order_v22' _site/assets/production-v22.js
-          grep -q 'fulfillment checklist required before dispatch' _site/backend/supabase/schema-v22.sql
+          grep -q 'Activación V2.3' _site/activacion.html
+          grep -q 'assets/activation-v23.js' _site/activacion.html
+          grep -q 'el-errante-v2-3-0' _site/service-worker.js
+          grep -q 'PUBLIC_VERSION="2.3.0"' _site/assets/host-mode.js
+          grep -q 'ACTIVE_CACHE="el-errante-v2-3-0"' _site/assets/host-mode.js
+          for asset in production-v22.js materials-data-v23.js materials-v23.js materials-v23.css activation-v23.js; do
+            grep -q "assets/$asset" _site/service-worker.js
+          done
+          for schema in 20 21 22 23; do
+            grep -q "backend/supabase/schema-v${schema}.sql" _site/service-worker.js
+            test -f "_site/backend/supabase/schema-v${schema}.sql"
+          done
+          grep -q 'Lo necesario para producir, sin saturar el panel.' _site/assets/materials-v23.js
+          grep -q 'EE-CPR-01' _site/assets/materials-data-v23.js
+          grep -q 'save_material_inventory_v23' _site/backend/supabase/schema-v23.sql
           node --check _site/assets/commerce-runtime-config.js
           node --check _site/assets/host-mode.js
           node --check _site/assets/daily-ops-v21.js
           node --check _site/assets/production-v22.js
+          node --check _site/assets/materials-data-v23.js
+          node --check _site/assets/materials-v23.js
+          node --check _site/assets/activation-v23.js
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
-          ! grep -qi 'service_role' _site/assets/production-v22.js
-          ! grep -qi 'postgres://' _site/assets/production-v22.js
+          ! grep -qi 'service_role' _site/assets/materials-v23.js
+          ! grep -qi 'postgres://' _site/assets/materials-v23.js
           test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
           test -f _site/backend/supabase/schema-v14.sql
           test -f _site/backend/supabase/schema-v15.sql
           test -f _site/backend/supabase/schema-v16.sql
           test -f _site/backend/supabase/schema-v19.sql
-          test -f _site/backend/supabase/schema-v20.sql
-          test -f _site/backend/supabase/schema-v21.sql
-          test -f _site/backend/supabase/schema-v22.sql
           test ! -f _site/ELERRANTE_PAQUETE_VISUAL_V1_10.zip
 
       - name: Cargar artefacto de Pages

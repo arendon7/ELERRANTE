@@ -109,6 +109,7 @@
     }).join("");
   }
   function render(container,month){
+    const openDetails=[...container.querySelectorAll(".ee-v27-detail")].map((detail,index)=>detail.open?index:-1).filter(index=>index>=0);
     const state=compute(month);
     const alertItems=alerts(state);
     container.innerHTML=`<section class="ee-v27-shell" aria-labelledby="ee-v27-title">
@@ -124,6 +125,7 @@
       <details class="ee-v27-detail"><summary>Punto de equilibrio <span>${state.breakEvenGap>0?"Meta pendiente":"Meta cubierta"}</span></summary><div class="ee-v27-detail-body"><div class="ee-v27-break-even"><div><small>Ventas de equilibrio</small><strong>${state.breakEvenSales?money(state.breakEvenSales):"No calculable"}</strong></div><div><small>Unidades de referencia</small><strong>${state.breakEvenUnits?integer(Math.ceil(state.breakEvenUnits)):"No calculable"}</strong></div><div><small>Ventas faltantes</small><strong>${money(state.breakEvenGap)}</strong></div><div><small>Contribución promedio</small><strong>${state.averageContribution?money(state.averageContribution):"No calculable"}</strong></div></div><p class="ee-v27-help">Las unidades usan el margen promedio simple del catálogo; no sustituyen una mezcla real de ventas.</p></div></details>
       <details class="ee-v27-detail"><summary>Alertas y calidad del dato <span>${alertItems.length} señal(es)</span></summary><div class="ee-v27-detail-body"><ul class="ee-v27-alerts">${alertItems.map(item=>`<li data-level="${item.level}">${esc(item.text)}</li>`).join("")}</ul><div class="ee-v27-actions"><button type="button" class="ee-v27-btn secondary" id="ee-v27-export">Exportar movimientos CSV</button></div></div></details>
     </section>`;
+    container.querySelectorAll(".ee-v27-detail").forEach((detail,index)=>{if(openDetails.includes(index))detail.open=true;});
     document.documentElement.dataset.financeVersion=VERSION;
     bind(container,state);
   }

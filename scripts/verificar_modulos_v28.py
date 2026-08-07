@@ -9,6 +9,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 ERRORS: list[str] = []
 CHECKED = 0
+EXPECTED_CACHE = 'el-errante-v2-8-brand-canon-2'
 
 
 def read(path: str) -> str:
@@ -135,7 +136,7 @@ worker = require(
     'assets/measurement-v24.js', 'assets/procurement-v25.js', 'assets/finance-v27.js',
     'backend/supabase/schema-v25.sql'
 )
-require('deploy-version.txt', 'version=2.8.0', 'cache=el-errante-v2-8-brand-canon-1')
+require('deploy-version.txt', 'version=2.8.0', f'cache={EXPECTED_CACHE}')
 
 ordered = [
     'assets/daily-ops-v21.js','assets/production-v22.js','assets/materials-v23.js',

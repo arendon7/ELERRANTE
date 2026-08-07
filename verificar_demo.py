@@ -91,6 +91,7 @@ ARCHIVE_REQUIREMENTS = [
     'archive/early-iterations/REPORTE_PRUEBAS_V0_2.txt'
 ]
 EXTERNAL = ('http:','https:','//','mailto:','tel:','javascript:','data:','blob:','#')
+EXPECTED_CACHE = 'el-errante-v2-8-brand-canon-2'
 
 
 def require(relative: str, label: str) -> Path:
@@ -143,7 +144,7 @@ changelog = read('CHANGELOG.md')
 
 required_markers = {
     'manifiesto de marca V2.8': "const VERSION='2.8.0'" in brand,
-    'caché compartida V2.8': "el-errante-v2-8-brand-canon-1" in brand and 'const CACHE=BRAND.cache' in sw,
+    'caché compartida V2.8': EXPECTED_CACHE in brand and 'const CACHE=BRAND.cache' in sw,
     'datos prefieren fuente materializada': "requestText('assets/generated/data-v28.js',false)" in data,
     'aplicación prefiere fuente materializada': "requestText('assets/generated/app-v28.js',false)" in app,
     'preproducción prefiere fuente materializada': "requestText('assets/generated/preprod-v28.js',false)" in preprod,
@@ -152,7 +153,7 @@ required_markers = {
     'service worker importa manifiesto': "importScripts('./assets/brand-canon-v28.js')" in sw,
     'service worker reconoce fuentes generadas': 'const GENERATED=' in sw and 'assets/generated/data-v28.js' in sw,
     'materializador declara tres salidas': all(name in materializer for name in ('data-v28.js','app-v28.js','preprod-v28.js')),
-    'release declarada V2.8': 'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-1' in deploy,
+    'release declarada V2.8': 'version=2.8.0' in deploy and f'cache={EXPECTED_CACHE}' in deploy,
     'paquete declarado V2.8': '"version": "2.8.0"' in package,
     'panel integral identificado V2.8': '· V2.8' in admin,
     'servidor local identificado V2.8': 'EL ERRANTE LOCAL V2.8' in server and "range(8787, 8801)" in server,

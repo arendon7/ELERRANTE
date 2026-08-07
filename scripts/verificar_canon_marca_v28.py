@@ -6,6 +6,7 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[1]
 ERRORS=[]
+EXPECTED_CACHE='el-errante-v2-8-brand-canon-2'
 
 def read(path:str)->str:
     target=ROOT/path
@@ -36,11 +37,11 @@ for name in required_assets:
 
 checks=[
     ('versión de marca', "const VERSION='2.8.0'" in brand),
-    ('caché canónica', "el-errante-v2-8-brand-canon-1" in brand and 'const CACHE=BRAND.cache' in sw),
+    ('caché canónica', EXPECTED_CACHE in brand and 'const CACHE=BRAND.cache' in sw),
     ('datos usan canon', 'BRAND.applyToData(window.EE_DATA)' in data),
     ('host sin mapa duplicado', 'const VISUALS=' not in host and 'BRAND.applyToDom' in host),
     ('service worker importa canon', "importScripts('./assets/brand-canon-v28.js')" in sw),
-    ('release V2.8', 'version=2.8.0' in deploy),
+    ('release V2.8', 'version=2.8.0' in deploy and f'cache={EXPECTED_CACHE}' in deploy),
 ]
 for label,ok in checks:
     if not ok:ERRORS.append(f'Falla: {label}')

@@ -105,8 +105,9 @@ test.describe('Abastecimiento controlado V2.5',()=>{
       {id:'P2',materialId:'MP-HFS',supplier:'Molino observado',receivedDate:'2026-08-05',quantity:100,totalCost:400,unitCost:4}
     ]});
     const panel=await openAdmin(page);
+    const comparison=panel.getByText('Comparar proveedores observados').locator('..');
     await panel.getByText('Comparar proveedores observados').click();
-    const row=panel.locator('tr').filter({hasText:'Molino observado'});
+    const row=comparison.locator('tr').filter({hasText:'Molino observado'});
     await expect(row).toHaveCount(1);
     await expect(row).toContainText('2');
     await expect(row).toContainText('2026-08-05');

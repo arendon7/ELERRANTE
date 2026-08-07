@@ -66,7 +66,8 @@ test.describe('Runtime recuperado', () => {
     await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.locator('#site-header')).not.toBeEmpty();
     await expect(page.locator('#site-footer')).not.toBeEmpty();
-    await page.waitForFunction(() => document.documentElement.dataset.eeVisualSystem === 'brand-final-direct');
+    await page.waitForFunction(() => document.documentElement.dataset.eeVisualSystem === 'brand-canon-v28');
+    await expect(page.locator('html')).toHaveAttribute('data-ee-brand-canon','2.8.0');
 
     const visuals = page.locator('img[src*="assets/images/brand-final/"]');
     await expect.poll(() => visuals.count()).toBeGreaterThanOrEqual(2);

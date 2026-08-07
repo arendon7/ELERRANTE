@@ -8,12 +8,19 @@ __pycache__/
 *.py[cod]
 .demo_port
 
+# Materialización reproducible local y de Pages
+assets/generated/
+.local_site/
+
 # Local exports and temporary files
 *.log
 *.tmp
 *.bak
 exports/
 _site/
+.artifacts/
+test-results/
+playwright-report/
 
 # Compressed deliveries
 *.zip

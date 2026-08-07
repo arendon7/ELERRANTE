@@ -16,31 +16,29 @@ concurrency:
 
 jobs:
   e2e:
-    name: Playwright desktop y móvil
+    name: Playwright desktop y móvil V2.8
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
+    timeout-minutes: 25
     steps:
-      - name: Descargar repositorio
-        uses: actions/checkout@v4
-
-      - name: Materializar sistema visual final
-        run: python3 scripts/materializar_activos_visuales.py
-
-      - name: Configurar Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - name: Preparar superficie materializada
+        run: |
+          python3 scripts/materializar_fuentes_locales_v28.py
+          python3 verificar_demo.py
+          python3 scripts/verificar_canon_marca_v28.py
+          python3 scripts/verificar_activos_hq_v28.py
+          python3 scripts/verificar_modulos_v28.py
+          python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Instalar dependencias
         run: npm install --no-audit --no-fund
-
       - name: Instalar Chromium
+        timeout-minutes: 5
         run: npx playwright install --with-deps chromium
-
       - name: Ejecutar regresión funcional
         run: npm run test:e2e
-
       - name: Conservar reporte y evidencias
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,5 +47,7 @@ jobs:
           path: |
             playwright-report
             test-results
+            assets/generated/manifest-v28.json
+            .local_site/materialized-site-v28.json
           if-no-files-found: warn
           retention-days: 14

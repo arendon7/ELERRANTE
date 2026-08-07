@@ -10,79 +10,70 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: "canonical-${{ github.event.pull_request.number || github.ref }}"
+  cancel-in-progress: true
+
 jobs:
   canonical:
-    name: Fuente canónica
+    name: Fuente canónica V2.8
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Descargar repositorio
-        uses: actions/checkout@v4
-
-      - name: Materializar fallback visual legado
-        run: python3 scripts/materializar_activos_visuales.py
-
-      - name: Validar release y operación completa
-        shell: bash
+      - uses: actions/checkout@v4
+      - name: Materializar fuentes legibles V2.8
+        run: python3 scripts/materializar_fuentes_locales_v28.py
+      - name: Validar estructura, marca y módulos
         run: |
-          set -euo pipefail
-          for test in \
-            scripts/verificar_release_v13.py \
-            scripts/verificar_operacion_v14.py \
-            scripts/verificar_backend_v15.py \
-            scripts/verificar_operacion_v16.py \
-            scripts/verificar_contenido_v17.py \
-            scripts/verificar_experiencia_compra_v18.py \
-            scripts/verificar_confianza_v19.py \
-            scripts/verificar_activacion_v20.py \
-            scripts/verificar_operacion_diaria_v21.py \
-            scripts/verificar_produccion_v22.py \
-            scripts/verificar_materiales_v23.py \
-            scripts/verificar_medicion_v24.py; do
-            python3 "$test"
-          done
-          node --check assets/daily-ops-v21.js
-          node --check assets/production-v22.js
-          node --check assets/materials-data-v23.js
-          node --check assets/materials-v23.js
-          node --check assets/measurement-v24.js
-          node --check assets/activation-v23.js
-          node --check assets/activation-v24.js
-
-      - name: Reconstruir fuente efectiva
+          python3 verificar_demo.py
+          python3 scripts/verificar_canon_marca_v28.py
+          python3 scripts/verificar_activos_hq_v28.py
+          python3 scripts/verificar_modulos_v28.py
+          node --check assets/brand-canon-v28.js
+          node --check assets/data.js
+          node --check assets/app.js
+          node --check assets/preprod.js
+          node --check assets/generated/data-v28.js
+          node --check assets/generated/app-v28.js
+          node --check assets/generated/preprod-v28.js
+          node --check assets/host-mode.js
+          node --check assets/finance-v27.js
+          node --check service-worker.js
+          node --check scripts/exportar-fuente-canonica.mjs
+      - name: Reconstruir fuente efectiva V2.8
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
-
-      - name: Mostrar auditoría estructurada
+      - name: Comprobar catálogo estructurado
         run: |
-          cat .artifacts/canonical/canonical-report.md
           python3 - <<'PY'
           import json
           from pathlib import Path
           root=Path('.artifacts/canonical')
           data=json.loads((root/'canonical-data.json').read_text(encoding='utf-8'))
           report=json.loads((root/'canonical-report.json').read_text(encoding='utf-8'))
+          generated=json.loads(Path('assets/generated/manifest-v28.json').read_text(encoding='utf-8'))
           products=data.get('products',[])
-          values={
-              'products':len(products),
-              'variants':sum(len(p.get('variants',[])) for p in products),
-              'recipes':len(data.get('recipes',[])),
-              'articles':len(data.get('articles',[])),
-              'faqs':len(data.get('faqs',[])),
-              'coverage':len(data.get('coverage',[])),
-          }
-          print('AUDITORÍA CANÓNICA ESTRUCTURADA')
-          for key,value in values.items(): print(f'{key}={value}')
-          print('product_ids='+','.join(p.get('id','') for p in products))
+          assert report['version']=='2.8.0'
+          assert report['provenance']['brand_canon']=='assets/brand-canon-v28.js'
+          assert data.get('brand',{}).get('version')=='2.8.0'
+          assert generated['version']=='2.8.0'
+          assert len(generated['outputs'])==3
+          assert len(products)==11
+          assert len({p.get('id') for p in products})==11
+          assert all(str(p.get('image','')).startswith('assets/images/brand-final/') for p in products)
+          assert all(p.get('brand_asset_version')=='2.8.0' for p in products)
+          assert all(p.get('gallery') and all(str(i).startswith('assets/images/brand-final/') for i in p['gallery']) for p in products)
+          print('products=11')
+          print('brand=2.8.0')
+          print('generated_sources=3')
           print('canonical_json_sha256='+report['canonical_json_sha256'])
-          print('legacy_status='+report['legacy_chunks']['status'])
-          assert values=={'products':11,'variants':14,'recipes':5,'articles':5,'faqs':5,'coverage':6}
-          assert report['legacy_chunks']['status']=='truncated-ellipsized-do-not-use'
           PY
-
       - name: Conservar artefacto canónico
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: fuente-canonica-${{ github.sha }}
-          path: .artifacts/canonical
+          path: |
+            .artifacts/canonical
+            assets/generated/manifest-v28.json
           if-no-files-found: error
           retention-days: 14

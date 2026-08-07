@@ -1,151 +1,114 @@
-# El Errante
+# El Errante V2.8
 
 **Masa · Fuego · Territorio**
 
-Repositorio maestro de la experiencia pública, los modelos de negocio, la operación simulada y el entorno integral de demostración de El Errante.
+Webapp autocontenida de El Errante para experiencia pública, tienda, pedidos, operación, producción, materiales, medición, abastecimiento y finanzas operativas.
 
-## Estado actual
+## Estado canónico
 
-- Baseline técnico: `v0.6.1 — Catálogo Gold`
-- Baseline integral de referencia: `v0.4.0 — Local autocontenida`
-- Marca: identidad visual canónica consolidada
-- Catálogo: 11 referencias con fichas, galerías e instrucciones
-- Modelos: comercio, contenido, eventos, administración, operación y gobierno de datos
-- Tecnología: HTML, CSS y JavaScript sin dependencias externas
-- Publicación: GitHub Pages mediante GitHub Actions
-- Persistencia: datos simulados almacenados en el navegador
-- Pedidos: registro sujeto a confirmación de inventario, cobertura y pago
+- Versión integral: `2.8.0`.
+- Referencia visual y editorial: segunda versión local V2.7 aprobada.
+- Canon único de identidad e imágenes: `assets/brand-canon-v28.js`.
+- Catálogo: 11 productos y 14 variantes.
+- Abastecimiento controlado: módulo V2.5.
+- Finanzas Operativas: módulo V2.7.
+- Caché: `el-errante-v2-8-brand-canon-1`.
+- Persistencia local: `localStorage`.
+- Supabase: preparado, pero inactivo mientras URL y clave pública estén vacías.
 
-## Principio de recuperación
+La V2.8 consolida los mejores contenidos, fichas e imágenes de la edición local correcta y elimina la competencia entre overlays visuales, loaders, service workers, documentación y verificadores antiguos.
 
-La versión objetivo no es un rollback.
+## Dos capas claramente separadas
 
-Se conserva la arquitectura, los textos y la publicación de v0.6.1, mientras se recuperan la biblioteca visual, la presentación y la integridad de modelos de v0.4.0.
+### Árbol fuente
 
-La auditoría detallada está en:
+Conserva código, documentación, pruebas, archivos históricos aislados y fragmentos Base64 utilizados únicamente como origen reproducible o contingencia.
 
-```text
-documentacion/AUDITORIA_REGRESION_V040_V061.md
-```
+### Superficie ejecutable
 
-## Entradas principales
-
-### Experiencia comercial
-
-- `index.html` — inicio
-- `historia.html` — historia y concepto
-- `tienda.html` — catálogo
-- `producto.html` — fichas de producto
-- `en-casa.html` — pizzas para terminar en casa
-- `en-movimiento.html` — pizzería móvil y eventos
-- `bitacora.html` — pruebas y aprendizaje
-- `recetas.html` — métodos y preparación
-- `herramientas.html` — calculadoras
-- `checkout.html` — pedido sujeto a confirmación
-
-### Demo integral del equipo
-
-- `equipo.html` — puerta de entrada general
-- `admin.html` — administración
-- `control.html` — centro de control
-- `operacion.html` — producción, lotes y rutas
-- `studio.html` — fuente de datos y validaciones
-- `presentacion.html` — presentación navegable
-
-Los accesos y perfiles ficticios se documentan en:
+Mac y Playwright usan `.local_site`; GitHub Pages usa `_site`. Ambas superficies son construidas por:
 
 ```text
-documentacion/ACCESOS_DEMO.md
+scripts/materializar_fuentes_locales_v28.py
+scripts/preparar_sitio_materializado_v28.py
 ```
 
-## Publicación completa
+El constructor genera JavaScript legible, modifica las referencias HTML para cargarlo directamente y excluye físicamente:
 
-El workflow:
+- `assets/source/` y `assets/chunks/`;
+- `assets/data.js`, `assets/app.js` y `assets/preprod.js`;
+- overlays visuales heredados;
+- `archive/`, pruebas, scripts y reportes históricos.
+
+Por tanto, la ejecución normal no utiliza `eval` ni loaders Base64.
+
+## Abrir localmente en macOS
+
+1. Descarga y descomprime el ZIP completo.
+2. Ejecuta `VERIFICAR_PAQUETE_LOCAL_V28.command`.
+3. Continúa únicamente cuando aparezca `RESULTADO FINAL: OK`.
+4. Abre uno de estos accesos:
 
 ```text
-.github/workflows/pages.yml
+ABRIR_EL_ERRANTE_LOCAL_V28.command   Web pública
+ABRIR_ADMIN_LOCAL_V28.command        Administración
+ABRIR_CONTROL.command                Centro de control
+ABRIR_PRESENTACION.command           Presentación
 ```
 
-publica la superficie completa del repositorio, salvo archivos técnicos propios de Git y la carpeta temporal de compilación.
+Para detener el servidor utiliza `DETENER_EL_ERRANTE_LOCAL_V28.command` o `Control + C`.
 
-Esto permite presentar y validar desde GitHub Pages tanto la experiencia comercial como los modelos internos de demostración.
+## Fuentes materializadas
 
-Configuración requerida:
+El materializador genera de forma determinista:
 
 ```text
-Settings → Pages → Build and deployment → Source → GitHub Actions
+assets/generated/data-v28.js
+assets/generated/app-v28.js
+assets/generated/preprod-v28.js
+assets/generated/manifest-v28.json
 ```
 
-## Seguridad del repositorio público
+El manifiesto registra tamaño y SHA-256 de cada salida y de cada fragmento de origen. Estos archivos no se editan manualmente.
 
-El repositorio puede contener:
+## Arquitectura de marca
 
-- modelos completos;
-- páginas públicas e internas de demostración;
-- datos simulados;
-- usuarios y contraseñas ficticios;
-- archivos de configuración de ejemplo;
-- documentación operativa y comercial;
-- snapshots autocontenidos sin secretos.
-
-No puede contener:
-
-- tokens reales;
-- claves API;
-- contraseñas reales;
-- llaves privadas;
-- secretos OAuth;
-- credenciales de bases de datos;
-- datos personales reales de clientes, trabajadores o proveedores.
-
-Los secretos de integraciones futuras deben manejarse mediante GitHub Secrets y variables de entorno.
-
-## Snapshot v0.4.0
-
-El paquete autocontenido fue extraído, auditado y optimizado. Su inventario, hash y estado de integración están documentados en:
+La única fuente activa de identidad, aliases, imágenes principales y galerías es:
 
 ```text
-documentacion/SNAPSHOT_AUTOCONTENIDO_V040.md
+assets/brand-canon-v28.js
 ```
 
-## Abrir localmente en Mac
+Los WebP aprobados están en `assets/images/brand-final/`. Los overlays anteriores se conservan exclusivamente en `archive/legacy-brand-overlays/` y no participan en runtime ni Pages.
 
-1. Clona o descarga el repositorio.
-2. Haz clic derecho en `ABRIR_EL_ERRANTE.command`.
-3. Selecciona **Abrir**.
-4. Mantén Terminal abierta mientras utilizas la aplicación.
-5. Presiona `Control + C` para detenerla.
+## Validación vigente
 
-También puedes usar:
-
-```bash
-python3 servidor_demo.py
+```text
+verificar_demo.py
+scripts/verificar_canon_marca_v28.py
+scripts/verificar_activos_hq_v28.py
+scripts/verificar_modulos_v28.py
+scripts/preparar_sitio_materializado_v28.py
+tests/e2e/
 ```
 
-## Flujo de trabajo
+Playwright sirve `.local_site`, por lo que escritorio, móvil y ejecución local prueban la misma superficie.
 
-- `main`: versión estable, canónica y publicada.
-- `recovery/v0.4-completa`: recuperación acumulativa del baseline integral.
-- `work/<versión>-<tema>`: construcción funcional o visual.
-- `fix/<versión>-<tema>`: correcciones puntuales.
-- Pull request: revisión y matriz de regresión.
-- Merge a `main`: despliegue automático.
+## Seguridad y datos
 
-## Reglas
+La edición local guarda datos demostrativos en el navegador. Para operación real deben validarse conexión, migraciones, roles, RLS, impuestos, costos observados, inventarios físicos y datos sanitarios.
 
-1. No reemplazar `main` por una versión antigua completa.
-2. Toda recuperación debe ser acumulativa: preservar lo mejor de v0.4 y v0.6.1.
-3. No reemplazar ni deformar el logo canónico.
-4. No publicar secretos reales ni datos personales reales.
-5. Los perfiles ficticios deben identificarse como demostración.
-6. Mantener disponibles los modelos de administración, operación, control y Studio.
-7. Ejecutar verificaciones visuales, funcionales y de contenido antes de fusionar.
-8. Confirmar etiquetado, vida útil, cadena de frío, costos y precios antes de venta real.
+Nunca deben incorporarse claves privadas, `service_role`, cadenas de conexión, tokens, contraseñas ni datos personales reales.
 
-## Identidad visual
+## Retorno a GitHub
 
-La firma de marca es:
+`PREPARAR_RETORNO_GITHUB_V28.command` materializa, verifica y crea en el Escritorio un ZIP del árbol fuente. `.local_site` se excluye porque es reproducible.
 
-**Masa · Fuego · Territorio**
+La integración a `main` requiere auditoría canónica, Playwright de escritorio y móvil y publicación Pages exitosos sobre el mismo SHA final.
 
-La identidad utiliza carbón, crema, terracota, trigo y acero, con fotografía cálida y documental. Las ilustraciones SVG conceptuales se mantienen como apoyo o fallback; los activos visuales aprobados de v0.4 se recuperan como referencias principales.
+## Documentación técnica
+
+- `documentacion/CANON_MARCA_CONTENIDO_V28.md`
+- `documentacion/FINANZAS_OPERATIVAS_V27.md`
+- `documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md`
+- `documentacion/MAPA_DATOS_Y_FUENTES.md`

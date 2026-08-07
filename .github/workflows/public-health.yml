@@ -10,7 +10,8 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_CACHE: el-errante-v2-4-0
+  EXPECTED_VERSION: 2.8.0
+  EXPECTED_CACHE: el-errante-v2-8-brand-canon-1
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -18,150 +19,90 @@ concurrency:
 
 jobs:
   health:
-    name: GitHub Pages corresponde a main
+    name: GitHub Pages corresponde a main V2.8
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Definir expectativa
         run: |
           echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
           echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
-          echo "SOURCE_WORKFLOW_URL=${{ github.event.workflow_run.html_url }}" >> "$GITHUB_ENV"
-
       - name: Exigir despliegue fuente exitoso
         run: test "$SOURCE_CONCLUSION" = "success"
-
       - name: Esperar marcador público coherente
-        shell: bash
         run: |
           set -euo pipefail
           success=0
-          for attempt in $(seq 1 10); do
-            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-observed.txt || true
-            observed_sha="$(sed -n 's/^release_commit=//p' deploy-version-observed.txt | tr -d '\r')"
-            observed_cache="$(sed -n 's/^cache=//p' deploy-version-observed.txt | tr -d '\r')"
-            observed_source="$(sed -n 's/^deploy_source=//p' deploy-version-observed.txt | tr -d '\r')"
-            observed_version="$(sed -n 's/^version=//p' deploy-version-observed.txt | tr -d '\r')"
-            if [ "$observed_sha" = "$EXPECTED_SHA" ] && [ "$observed_cache" = "$EXPECTED_CACHE" ] && \
-               [ "$observed_source" = "main" ] && [ "$observed_version" = "2.4.0" ]; then
-              success=1
-              break
-            fi
-            echo "Intento $attempt: sha=${observed_sha:-vacío}; version=${observed_version:-vacía}; cache=${observed_cache:-vacía}"
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-observed.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-version-observed.txt | tr -d '\r')"
+            version="$(sed -n 's/^version=//p' deploy-version-observed.txt | tr -d '\r')"
+            cache="$(sed -n 's/^cache=//p' deploy-version-observed.txt | tr -d '\r')"
+            source="$(sed -n 's/^deploy_source=//p' deploy-version-observed.txt | tr -d '\r')"
+            mode="$(sed -n 's/^source_mode=//p' deploy-version-observed.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ] && [ "$version" = "$EXPECTED_VERSION" ] && [ "$cache" = "$EXPECTED_CACHE" ] && [ "$source" = "main" ] && [ "$mode" = "materialized-no-base64-runtime" ]; then success=1; break; fi
             sleep 5
           done
           test "$success" -eq 1
-
-      - name: Descargar y verificar runtime esencial
-        shell: bash
+      - name: Verificar superficie materializada
         run: |
           set -euo pipefail
-          for asset in \
-            host-mode.js commerce-runtime-config.js checkout-v15.js admin-v15.js operations-v16.js \
-            content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js activation-v23.js activation-v24.js \
-            daily-ops-v21.js production-v22.js materials-data-v23.js materials-v23.js measurement-v24.js; do
-            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
+          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js commerce-runtime-config.js; do
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
-          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css production-v22.css materials-v23.css measurement-v24.css; do
-            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
+          for asset in data-v28.js app-v28.js preprod-v28.js; do
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/generated/$asset?verify=$EXPECTED_SHA" > "public-generated-$asset"
           done
-          curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
-          curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/backend/supabase/schema-v23.sql?verify=$EXPECTED_SHA" > public-schema-v23.sql
-          curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-            "$PUBLIC_BASE/backend/supabase/schema-v24.sql?verify=$EXPECTED_SHA" > public-schema-v24.sql
-          for script in public-*.js; do node --check "$script"; done
-          grep -q 'PUBLIC_VERSION="2.4.0"' public-host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v2-4-0"' public-host-mode.js
-          grep -q 'el-errante-v2-4-0' public-service-worker.js
-          grep -q 'assets/materials-data-v23.js' public-service-worker.js
-          grep -q 'assets/materials-v23.js' public-service-worker.js
-          grep -q 'assets/measurement-v24.js' public-service-worker.js
-          grep -q 'assets/measurement-v24.css' public-service-worker.js
-          grep -q 'assets/activation-v24.js' public-service-worker.js
-          grep -q 'backend/supabase/schema-v24.sql' public-service-worker.js
-          grep -q 'Medir primero. Ajustar después.' public-measurement-v24.js
-          grep -q 'Registrar compra y proveedor' public-measurement-v24.js
-          grep -q 'save_production_measurement_v24' public-schema-v24.sql
-          grep -q 'save_material_purchase_v24' public-schema-v24.sql
-          grep -q 'material_suppliers' public-schema-v24.sql
-          grep -q "dataset.activationVersion='2.4.0'" public-activation-v24.js
+          curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/generated/manifest-v28.json?verify=$EXPECTED_SHA" > public-generated-manifest-v28.json
+          curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/materialized-site-v28.json?verify=$EXPECTED_SHA" > public-materialized-site-v28.json
+          curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
+          for page in index tienda producto admin activacion; do curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"; done
+          grep -q 'assets/generated/data-v28.js' public-index.html
+          grep -q 'assets/generated/app-v28.js' public-index.html
+          grep -q 'assets/generated/preprod-v28.js' public-index.html
+          ! grep -q 'src="assets/data.js"' public-index.html
+          ! grep -q 'src="assets/app.js"' public-index.html
+          ! grep -q 'src="assets/preprod.js"' public-index.html
+          grep -q 'Fuente materializada de forma determinista' public-generated-data-v28.js
+          grep -q 'Fuente materializada de forma determinista' public-generated-app-v28.js
+          grep -q 'Fuente materializada de forma determinista' public-generated-preprod-v28.js
+          grep -q '"version": "2.8.0"' public-generated-manifest-v28.json
+          grep -q '"mode": "materialized-no-base64-runtime"' public-materialized-site-v28.json
+          grep -q '· V2.8' public-admin.html
+          grep -q 'assets/finance-v27.js' public-admin.html
+          grep -q 'assets/procurement-v25.js' public-admin.html
+          grep -q "importScripts('./assets/brand-canon-v28.js')" public-service-worker.js
           ! grep -qi 'service_role' public-commerce-runtime-config.js
-          ! grep -qi 'service_role' public-measurement-v24.js
-          ! grep -qi 'postgres://' public-measurement-v24.js
-
-      - name: Verificar superficies públicas críticas
-        shell: bash
+          for script in public-*.js; do node --check "$script"; done
+          python3 - <<'PY'
+          import json
+          generated=json.load(open('public-generated-manifest-v28.json',encoding='utf-8'))
+          site=json.load(open('public-materialized-site-v28.json',encoding='utf-8'))
+          assert generated['version']=='2.8.0' and len(generated['outputs'])==3
+          assert site['mode']=='materialized-no-base64-runtime'
+          assert site['contains_source_base64'] is False
+          PY
+          if curl --fail --silent --location "$PUBLIC_BASE/assets/source/v040-data-001.b64?verify=$EXPECTED_SHA" >/dev/null; then echo 'ERROR: Base64 publicado'; exit 1; fi
+          if curl --fail --silent --location "$PUBLIC_BASE/assets/data.js?verify=$EXPECTED_SHA" >/dev/null; then echo 'ERROR: loader heredado publicado'; exit 1; fi
+      - name: Verificar WebP HQ críticos
         run: |
           set -euo pipefail
-          for page in index tienda producto checkout cuenta admin activacion; do
-            curl --fail --silent --show-error --location --max-time 15 -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"
-          done
-          assert_contains(){
-            local file="$1" marker="$2" label="$3"
-            grep -Fq "$marker" "$file" || { echo "::error title=Public Health::$label"; exit 1; }
-          }
-          assert_contains public-index.html 'Masa · Fuego · Territorio' 'Inicio no conserva el claim.'
-          assert_contains public-checkout.html 'Compra directa · transferencia bancaria' 'Checkout no conserva transferencia.'
-          assert_contains public-cuenta.html 'Seguimiento de pedidos' 'Cuenta no ofrece seguimiento.'
-          assert_contains public-admin.html 'Operación, producción, materiales, medición, compras y despacho · V2.4' 'Admin no declara V2.4.'
-          assert_contains public-admin.html 'id="materials-v23"' 'Admin no expone materiales V2.3.'
-          assert_contains public-admin.html 'id="measurement-v24"' 'Admin no expone medición V2.4.'
-          assert_contains public-admin.html 'assets/measurement-v24.js' 'Admin no carga medición V2.4.'
-          assert_contains public-admin.html 'assets/measurement-v24.css' 'Admin no carga estilos V2.4.'
-          assert_contains public-activacion.html 'Activación V2.4' 'Activación no declara V2.4.'
-          assert_contains public-activacion.html 'assets/activation-v24.js' 'Activación no carga extensión V2.4.'
-          assert_contains public-activacion.html 'noindex,nofollow' 'Activación no está excluida de indexación.'
-          if grep -Fq 'assets/commerce-v14.js' public-admin.html; then
-            echo '::error title=Public Health::Admin conserva runtime legado.'
-            exit 1
-          fi
-
-      - name: Verificar imágenes WebP HQ críticas
-        shell: bash
-        run: |
-          set -euo pipefail
-          for image in home-hero home-hero-mobile producto-margherita evento-hero; do
-            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' \
-              "$PUBLIC_BASE/assets/images/brand-final/${image}.webp?verify=$EXPECTED_SHA" > "public-${image}.webp"
-          done
+          for image in home-hero home-hero-mobile producto-margherita producto-la-errante evento-hero; do curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/images/brand-final/${image}.webp?verify=$EXPECTED_SHA" > "public-${image}.webp"; done
           python3 - <<'PY'
           from pathlib import Path
           for path in Path('.').glob('public-*.webp'):
-              data=path.read_bytes()
-              assert len(data)>100_000
-              assert data[:4]==b'RIFF' and data[8:12]==b'WEBP'
+              data=path.read_bytes(); assert len(data)>100_000; assert data[:4]==b'RIFF' and data[8:12]==b'WEBP'
           assert Path('public-home-hero.webp').read_bytes()!=Path('public-home-hero-mobile.webp').read_bytes()
           PY
-
-      - name: Generar informe
-        if: always()
-        run: |
-          printf 'EL ERRANTE — PUBLIC HEALTH V2.4.0 MEDICIÓN Y COMPRAS\nsource_conclusion=%s\nexpected_sha=%s\nexpected_cache=%s\npublic_base=%s\n' \
-            "$SOURCE_CONCLUSION" "$EXPECTED_SHA" "$EXPECTED_CACHE" "$PUBLIC_BASE" > public-health-report.txt
-          cat deploy-version-observed.txt >> public-health-report.txt 2>/dev/null || true
-          cat public-health-report.txt
-
-      - name: Conservar evidencia únicamente ante fallo
+      - name: Conservar evidencia ante fallo
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: public-health-${{ github.event.workflow_run.head_sha }}
           path: |
-            public-health-report.txt
             deploy-version-observed.txt
-            public-host-mode.js
-            public-service-worker.js
-            public-activation-v24.js
-            public-measurement-v24.js
-            public-measurement-v24.css
-            public-schema-v24.sql
-            public-admin.html
-            public-activacion.html
+            public-*.js
+            public-*.json
+            public-*.html
           retention-days: 14

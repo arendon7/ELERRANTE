@@ -1,0 +1,35 @@
+EL ERRANTE LOCAL V2.8 — CANON DE MARCA Y CONTENIDO
+
+Esta edición toma como referencia aprobada la segunda versión local V2.7 y consolida sus mejores imágenes, contenidos y manejo de marca.
+
+ANTES DE ABRIR
+1. Descomprime el ZIP completo.
+2. Ejecuta VERIFICAR_PAQUETE_LOCAL_V28.command.
+3. El proceso materializa las fuentes JavaScript y construye .local_site.
+4. Continúa únicamente si termina en RESULTADO FINAL: OK.
+
+ACCESOS
+- ABRIR_EL_ERRANTE_LOCAL_V28.command: web pública.
+- ABRIR_ADMIN_LOCAL_V28.command: administración y finanzas.
+- ABRIR_CONTROL.command: centro de control.
+- ABRIR_PRESENTACION.command: presentación navegable.
+- DETENER_EL_ERRANTE_LOCAL_V28.command: cerrar el servidor.
+
+SUPERFICIE EJECUTABLE
+El navegador abre .local_site, no la raíz fuente. Esa superficie contiene los WebP HQ y las fuentes JavaScript legibles, pero excluye fragments Base64, chunks, loaders heredados, overlays y archivos de archive/.
+
+FUNCIONAMIENTO
+El servidor abre solo en 127.0.0.1 y usa el primer puerto disponible entre 8787 y 8800. Mantén Terminal abierta mientras utilizas la webapp.
+
+DATOS
+Pedidos, inventarios, mediciones, compras y movimientos financieros se guardan en localStorage. Supabase permanece inactivo porque la URL y la clave pública están vacías.
+
+RETORNO A GITHUB
+PREPARAR_RETORNO_GITHUB_V28.command vuelve a materializar, verifica la aplicación y crea en el Escritorio un ZIP del árbol fuente. .local_site no se incluye porque puede reconstruirse.
+
+VERSIÓN
+Versión integral: 2.8.0
+Canon: assets/brand-canon-v28.js
+Caché: el-errante-v2-8-brand-canon-1
+Modo: materialized-no-base64-runtime
+Documentación: documentacion/CANON_MARCA_CONTENIDO_V28.md

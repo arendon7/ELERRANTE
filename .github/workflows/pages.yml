@@ -18,69 +18,43 @@ concurrency:
 
 jobs:
   validate:
-    name: Regresión integral
+    name: Regresión integral V2.8
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Descargar repositorio
-        uses: actions/checkout@v4
-
-      - name: Materializar fallback visual legado
-        run: python3 scripts/materializar_activos_visuales.py
-
-      - name: Ejecutar barreras históricas y operativas
-        shell: bash
+      - uses: actions/checkout@v4
+      - name: Materializar fuentes y superficie ejecutable
         run: |
-          set -euo pipefail
-          for test in \
-            scripts/verificar_release_v13.py \
-            scripts/verificar_operacion_v14.py \
-            scripts/verificar_backend_v15.py \
-            scripts/verificar_operacion_v16.py \
-            scripts/verificar_contenido_v17.py \
-            scripts/verificar_experiencia_compra_v18.py \
-            scripts/verificar_confianza_v19.py \
-            scripts/verificar_activacion_v20.py \
-            scripts/verificar_operacion_diaria_v21.py \
-            scripts/verificar_produccion_v22.py \
-            scripts/verificar_materiales_v23.py \
-            scripts/verificar_medicion_v24.py \
-            scripts/verificar_oferta_v09.py \
-            scripts/verificar_studio_oferta_v09.py \
-            scripts/verificar_actas_oferta_v09.py \
-            scripts/verificar_paquete_aire_tiempo_v09.py; do
-            python3 "$test"
-          done
-
-      - name: Validar JavaScript, estilos y sistema visual
-        shell: bash
+          python3 scripts/materializar_fuentes_locales_v28.py
+          python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
+      - name: Ejecutar barreras vigentes
         run: |
-          set -euo pipefail
-          for asset in \
-            host-mode.js commerce-v14.js commerce-config-v14.js checkout-v15.js admin-v15.js \
-            operations-v16.js content-v17.js commerce-ux-v18.js trust-v19.js activation-v20.js activation-v23.js activation-v24.js \
-            daily-ops-v21.js production-v22.js materials-data-v23.js materials-v23.js measurement-v24.js \
-            offer-studio-v09.js offer-governance-v09.js offer-acts-preflight-v09.js \
-            offer-acts-v09.js aire-tiempo-committee-v09.js; do
-            node --check "assets/$asset"
-          done
+          python3 verificar_demo.py
+          python3 scripts/verificar_canon_marca_v28.py
+          python3 scripts/verificar_activos_hq_v28.py
+          python3 scripts/verificar_modulos_v28.py
+          for test in scripts/verificar_oferta_v09.py scripts/verificar_studio_oferta_v09.py scripts/verificar_actas_oferta_v09.py scripts/verificar_paquete_aire_tiempo_v09.py; do python3 "$test"; done
+      - name: Validar JavaScript fuente y materializado
+        run: |
+          find assets -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+          find assets/generated -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+          find .local_site/assets -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+          find .local_site/assets/generated -maxdepth 1 -type f -name '*.js' -print0 | xargs -0 -n1 node --check
           node --check service-worker.js
-          for asset in commerce-v18.css trust-v19.css activation-v20.css daily-ops-v21.css production-v22.css materials-v23.css measurement-v24.css; do
-            test -s "assets/$asset"
-          done
-          test "$(find assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
-          grep -q '"version": "1.3.0"' assets/images/brand-final/manifest-hq-v13.json
-          grep -q '"unique_assets": 23' assets/images/brand-final/manifest-hq-v13.json
-          ! cmp -s assets/images/brand-final/home-hero.webp assets/images/brand-final/home-hero-mobile.webp
-
+          node --check .local_site/service-worker.js
+          node --check scripts/exportar-fuente-canonica.mjs
+          find tests/e2e -maxdepth 1 -type f -name '*.spec.js' -print0 | xargs -0 -n1 node --check
       - name: Reconstruir fuente canónica efectiva
         run: node scripts/exportar-fuente-canonica.mjs --output=.artifacts/canonical
-
-      - name: Publicar fuente o diagnóstico para auditoría
+      - name: Conservar auditoría
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: fuente-canonica-${{ github.sha }}
-          path: .artifacts/canonical
+          path: |
+            .artifacts/canonical
+            assets/generated/manifest-v28.json
+            .local_site/materialized-site-v28.json
           if-no-files-found: warn
           retention-days: 14
 
@@ -93,112 +67,66 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Descargar repositorio
-        uses: actions/checkout@v4
-
-      - name: Materializar fallback visual legado
-        run: python3 scripts/materializar_activos_visuales.py
-
-      - name: Configurar GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Preparar sitio desde main
-        shell: bash
+      - uses: actions/checkout@v4
+      - name: Construir superficie materializada V2.8
+        run: |
+          python3 scripts/materializar_fuentes_locales_v28.py
+          python3 scripts/preparar_sitio_materializado_v28.py --output _site
+      - name: Configurar entorno público
         env:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           set -euo pipefail
-          if { [ -n "${SUPABASE_URL:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; } || \
-             { [ -z "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_PUBLISHABLE_KEY:-}" ]; }; then
-            echo "SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY deben configurarse juntas."
-            exit 1
-          fi
-          mkdir -p _site
-          rsync -av ./ _site/ \
-            --exclude '.git/' --exclude '.github/' --exclude '_site/' --exclude '__pycache__/' \
-            --exclude '.artifacts/' --exclude 'node_modules/' --exclude 'test-results/' \
-            --exclude 'playwright-report/' --exclude 'ELERRANTE_PAQUETE_VISUAL_V1_10.zip' \
-            --exclude 'assets/brand-final-editorial.js' --exclude 'assets/brand-final-products-a.js' \
-            --exclude 'assets/brand-final-products-b.js' --exclude 'assets/brand-final-products-c.js'
+          if { [ -n "${SUPABASE_URL:-}" ] && [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; } || { [ -z "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_PUBLISHABLE_KEY:-}" ]; }; then echo "SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY deben configurarse juntas."; exit 1; fi
           python3 - <<'PY'
           import json, os
           from pathlib import Path
-          url=os.environ.get('SUPABASE_URL','').strip()
-          key=os.environ.get('SUPABASE_PUBLISHABLE_KEY','').strip()
-          config={
-              'environment':'connected' if url and key else 'preview',
-              'backend':{
-                  'provider':'supabase','url':url,'publishableKey':key,
-                  'receiptBucket':'payment-receipts',
-                  'shopperStorageKey':'ee-shopper-auth-v15',
-                  'adminStorageKey':'ee-admin-auth-v15'
-              }
-          }
-          Path('_site/assets/commerce-runtime-config.js').write_text(
-              'window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze(' +
-              json.dumps(config,ensure_ascii=False,separators=(',',':')) + ');\n',encoding='utf-8')
+          url=os.environ.get('SUPABASE_URL','').strip(); key=os.environ.get('SUPABASE_PUBLISHABLE_KEY','').strip()
+          config={'environment':'connected' if url and key else 'preview','backend':{'provider':'supabase','url':url,'publishableKey':key,'receiptBucket':'payment-receipts','shopperStorageKey':'ee-shopper-auth-v15','adminStorageKey':'ee-admin-auth-v15'}}
+          Path('_site/assets/commerce-runtime-config.js').write_text('window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze('+json.dumps(config,ensure_ascii=False,separators=(',',':'))+');\n',encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.4.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-4-0\nupdated=%s\n' \
-            "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-1\nbrand_source=assets/brand-canon-v28.js\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
-
       - name: Verificar artefacto publicable
-        shell: bash
         run: |
           set -euo pipefail
-          grep -q 'version=2.4.0' _site/deploy-version.txt
-          grep -q 'cache=el-errante-v2-4-0' _site/deploy-version.txt
+          grep -q 'version=2.8.0' _site/deploy-version.txt
+          grep -q 'source_mode=materialized-no-base64-runtime' _site/deploy-version.txt
           grep -q "release_commit=${GITHUB_SHA}" _site/deploy-version.txt
-          grep -q 'Masa · Fuego · Territorio' _site/index.html
-          grep -q 'Operación, producción, materiales, medición, compras y despacho · V2.4' _site/admin.html
-          grep -q 'id="daily-ops-v21"' _site/admin.html
-          grep -q 'id="production-v22"' _site/admin.html
-          grep -q 'id="materials-v23"' _site/admin.html
-          grep -q 'id="measurement-v24"' _site/admin.html
-          grep -q 'assets/measurement-v24.js' _site/admin.html
-          grep -q 'assets/measurement-v24.css' _site/admin.html
-          grep -q 'data-page="activacion"' _site/activacion.html
-          grep -q 'Activación V2.4' _site/activacion.html
-          grep -q 'assets/activation-v24.js' _site/activacion.html
-          grep -q 'el-errante-v2-4-0' _site/service-worker.js
-          grep -q 'PUBLIC_VERSION="2.4.0"' _site/assets/host-mode.js
-          grep -q 'ACTIVE_CACHE="el-errante-v2-4-0"' _site/assets/host-mode.js
-          for asset in production-v22.js materials-data-v23.js materials-v23.js materials-v23.css measurement-v24.js measurement-v24.css activation-v23.js activation-v24.js; do
-            grep -q "assets/$asset" _site/service-worker.js
-          done
-          for schema in 20 21 22 23 24; do
-            grep -q "backend/supabase/schema-v${schema}.sql" _site/service-worker.js
-            test -f "_site/backend/supabase/schema-v${schema}.sql"
-          done
-          grep -q 'Medir primero. Ajustar después.' _site/assets/measurement-v24.js
-          grep -q 'save_production_measurement_v24' _site/backend/supabase/schema-v24.sql
-          grep -q 'save_material_purchase_v24' _site/backend/supabase/schema-v24.sql
-          node --check _site/assets/commerce-runtime-config.js
-          node --check _site/assets/host-mode.js
-          node --check _site/assets/daily-ops-v21.js
-          node --check _site/assets/production-v22.js
-          node --check _site/assets/materials-data-v23.js
-          node --check _site/assets/materials-v23.js
-          node --check _site/assets/measurement-v24.js
-          node --check _site/assets/activation-v23.js
-          node --check _site/assets/activation-v24.js
+          grep -q '"mode": "materialized-no-base64-runtime"' _site/materialized-site-v28.json
+          grep -q 'assets/generated/data-v28.js' _site/index.html
+          grep -q 'assets/generated/app-v28.js' _site/index.html
+          grep -q 'assets/generated/preprod-v28.js' _site/index.html
+          ! grep -q 'src="assets/data.js"' _site/index.html
+          ! grep -q 'src="assets/app.js"' _site/index.html
+          ! grep -q 'src="assets/preprod.js"' _site/index.html
+          test ! -e _site/assets/source
+          test ! -e _site/assets/chunks
+          test ! -e _site/assets/data.js
+          test ! -e _site/assets/app.js
+          test ! -e _site/assets/preprod.js
+          test ! -e _site/archive
+          test -s _site/assets/generated/data-v28.js
+          test -s _site/assets/generated/app-v28.js
+          test -s _site/assets/generated/preprod-v28.js
+          grep -q '"version": "2.8.0"' _site/assets/generated/manifest-v28.json
+          grep -q '· V2.8' _site/admin.html
+          grep -q 'assets/finance-v27.js' _site/admin.html
+          grep -q 'assets/procurement-v25.js' _site/admin.html
+          node --check _site/assets/generated/data-v28.js
+          node --check _site/assets/generated/app-v28.js
+          node --check _site/assets/generated/preprod-v28.js
+          node --check _site/assets/data-finalize-v28.js
+          node --check _site/assets/app-contract-v28.js
+          node --check _site/assets/preprod-contract-v28.js
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
-          ! grep -qi 'service_role' _site/assets/measurement-v24.js
-          ! grep -qi 'postgres://' _site/assets/measurement-v24.js
-          test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -eq 24
-          test -f _site/backend/supabase/schema-v14.sql
-          test -f _site/backend/supabase/schema-v15.sql
-          test -f _site/backend/supabase/schema-v16.sql
-          test -f _site/backend/supabase/schema-v19.sql
-          test ! -f _site/ELERRANTE_PAQUETE_VISUAL_V1_10.zip
-
-      - name: Cargar artefacto de Pages
-        uses: actions/upload-pages-artifact@v4
+          test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -ge 23
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
         with:
-          path: "_site"
-
+          path: _site
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4

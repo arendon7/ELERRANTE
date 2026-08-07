@@ -7,6 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 ISSUES: list[str] = []
+EXPECTED_CACHE = 'el-errante-v2-8-brand-canon-2'
 VISUALS = [
     'home-hero','home-hero-mobile','home-masa-fuego','home-fermentacion',
     'home-ingredientes','home-compartir','home-en-casa','home-despensa',
@@ -56,13 +57,13 @@ else:
 brand = (ROOT / 'assets/brand-canon-v28.js').read_text(encoding='utf-8')
 worker = (ROOT / 'service-worker.js').read_text(encoding='utf-8')
 deploy = (ROOT / 'deploy-version.txt').read_text(encoding='utf-8')
-for marker in ["const VERSION='2.8.0'", "el-errante-v2-8-brand-canon-1", 'home-hero-mobile.webp', 'producto-panela-maracuya.webp']:
+for marker in ["const VERSION='2.8.0'", EXPECTED_CACHE, 'home-hero-mobile.webp', 'producto-panela-maracuya.webp']:
     if marker not in brand: ISSUES.append(f'Canon V2.8 incompleto: {marker}')
 for product_id in PRODUCT_IDS:
     if product_id not in brand: ISSUES.append(f'Producto sin activo canónico: {product_id}')
 if "importScripts('./assets/brand-canon-v28.js')" not in worker:
     ISSUES.append('Service worker no importa el canon V2.8')
-if 'version=2.8.0' not in deploy or 'cache=el-errante-v2-8-brand-canon-1' not in deploy:
+if 'version=2.8.0' not in deploy or f'cache={EXPECTED_CACHE}' not in deploy:
     ISSUES.append('deploy-version no corresponde a V2.8')
 for obsolete in ['assets/brand-final-editorial.js','assets/brand-final-products-a.js','assets/brand-final-products-b.js','assets/brand-final-products-c.js']:
     if (ROOT / obsolete).exists(): ISSUES.append(f'Overlay heredado permanece activo: {obsolete}')

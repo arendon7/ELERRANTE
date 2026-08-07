@@ -1,13 +1,13 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Activación operativa V2.4', () => {
+test.describe('Activación operativa V2.5', () => {
   test('muestra el estado previo sin fingir conexión', async ({ page }) => {
     await page.goto('/activacion.html');
     await expect(page.getByRole('heading', { name: 'La web sigue en modo previo.' })).toBeVisible();
     await expect(page.getByText('Supabase aún no está conectado')).toBeVisible();
     await expect(page.getByText('No se enviarán pedidos ni comprobantes a una base central')).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('data-activation-version', '2.4.0');
-    await expect(page.getByText(/V2.3 y V2.4/)).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-activation-version', '2.5.0');
+    await expect(page.getByText(/V2.4 y V2.5/)).toBeVisible();
   });
 
   test('no solicita credenciales cuando el backend no está configurado', async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe('Activación operativa V2.4', () => {
 
   test('Administración enlaza el centro de activación vigente', async ({ page }) => {
     await page.goto('/admin.html');
-    const link = page.getByRole('link', { name: 'Activación V2.4' });
+    const link = page.getByRole('link', { name: 'Activación V2.5' });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', 'activacion.html');
   });
@@ -36,7 +36,7 @@ test.describe('Activación operativa V2.4', () => {
   });
 
   test('los activos públicos no contienen credenciales privadas', async ({ request }) => {
-    for (const path of ['/assets/activation-v20.js','/assets/activation-v23.js','/assets/activation-v24.js']) {
+    for (const path of ['/assets/activation-v20.js','/assets/activation-v23.js','/assets/activation-v24.js','/assets/activation-v25.js']) {
       const response = await request.get(path);
       expect(response.ok()).toBeTruthy();
       const body = (await response.text()).toLowerCase();

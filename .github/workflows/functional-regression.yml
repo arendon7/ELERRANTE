@@ -35,6 +35,7 @@ jobs:
       - name: Instalar dependencias
         run: npm install --no-audit --no-fund
       - name: Instalar Chromium
+        timeout-minutes: 5
         run: npx playwright install --with-deps chromium
       - name: Ejecutar regresión funcional
         run: npm run test:e2e

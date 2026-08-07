@@ -23,6 +23,10 @@ async function openFinance(page){
   return panel;
 }
 
+function metric(panel,label){
+  return panel.locator('.ee-v27-metric').filter({hasText:label});
+}
+
 test.describe('Finanzas operativas V2.7',()=>{
   test('calcula ventas, costo, resultado y caja sin mezclar compras con COGS',async({page})=>{
     await seed(page,{moves:[
@@ -31,17 +35,17 @@ test.describe('Finanzas operativas V2.7',()=>{
       {id:'M3',date:'2026-08-05',type:'capital_contribution',amount:100000,evidence:'CONFIRMADO',description:'Aporte'}
     ]});
     const panel=await openFinance(page);
-    await expect(panel.getByText('Ventas aprobadas').locator('..')).toContainText('$ 50.000');
-    await expect(panel.getByText('Costo de ventas').locator('..')).toContainText('$ 20.000');
-    await expect(panel.getByText('Resultado operativo').locator('..')).toContainText('$ 15.000');
-    await expect(panel.getByText('Caja estimada').locator('..')).toContainText('$ 2.105.000');
+    await expect(metric(panel,'Ventas aprobadas')).toContainText('$ 50.000');
+    await expect(metric(panel,'Costo de ventas')).toContainText('$ 20.000');
+    await expect(metric(panel,'Resultado operativo')).toContainText('$ 15.000');
+    await expect(metric(panel,'Caja estimada')).toContainText('$ 2.105.000');
   });
 
   test('una compra de inventario reduce caja pero no el resultado operativo',async({page})=>{
     await seed(page,{moves:[{id:'M1',date:'2026-08-05',type:'inventory_purchase',amount:30000,evidence:'CONFIRMADO'}]});
     const panel=await openFinance(page);
-    await expect(panel.getByText('Resultado operativo').locator('..')).toContainText('$ 20.000');
-    await expect(panel.getByText('Caja estimada').locator('..')).toContainText('$ 2.010.000');
+    await expect(metric(panel,'Resultado operativo')).toContainText('$ 20.000');
+    await expect(metric(panel,'Caja estimada')).toContainText('$ 2.010.000');
   });
 
   test('registra un movimiento con evidencia y recalcula el mes',async({page})=>{
@@ -53,7 +57,9 @@ test.describe('Finanzas operativas V2.7',()=>{
     await form.locator('select[name="type"]').selectOption('capex');
     await form.locator('input[name="amount"]').fill('200000');
     await form.locator('input[name="description"]').fill('Selladora al vacío');
+    await expect(form.locator('input[name="amount"]')).toHaveAttribute('step','1');
     await form.getByRole('button',{name:'Registrar movimiento'}).click();
+    await expect(panel.getByText('Movimiento registrado. Caja y resultados fueron recalculados.')).toBeVisible();
     const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v27_finance_movements')||'[]'));
     expect(stored).toHaveLength(1);
     expect(stored[0].type).toBe('capex');

@@ -2,7 +2,7 @@
   'use strict';
 
   const VERSION='2.8.0';
-  const CACHE='el-errante-v2-8-brand-canon-1';
+  const CACHE='el-errante-v2-8-brand-canon-2';
   const BASE='assets/images/brand-final/';
 
   const assets=Object.freeze({

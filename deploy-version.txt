@@ -2,11 +2,11 @@ EL ERRANTE LOCAL CANONICAL RELEASE CANDIDATE
 version=2.8.0
 deploy_source=canonical-v28
 base_reference=segunda-version-local-v27-aprobada
-cache=el-errante-v2-8-brand-canon-1
+cache=el-errante-v2-8-brand-canon-2
 brand_source=assets/brand-canon-v28.js
 content_source=segunda-version-local-aprobada
 source_mode=materialized-no-base64-runtime
 source_generator=scripts/materializar_fuentes_locales_v28.py
 site_builder=scripts/preparar_sitio_materializado_v28.py
 validation_target=main
-updated=2026-08-07T18:08:00Z
+updated=2026-08-07T20:55:00Z

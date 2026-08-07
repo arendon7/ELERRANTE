@@ -37,7 +37,7 @@ if sum(amounts) != 370_000:
     ISSUES.append(f"Gastos provisionales de piloto distintos de $370.000: {sum(amounts)}")
 
 for marker in [
-    'version: "2.4.0"',
+    'version: "2.5.0"',
     'stage: "Piloto"',
     'dataStatus: "ESTIMADO"',
     'provider: runtimeBackend.provider || "supabase"',
@@ -64,7 +64,7 @@ for marker in [
     if marker not in checkout:
         ISSUES.append(f"Checkout comercial incompleto: {marker}")
 
-for marker in ["Operación, producción, materiales, medición, compras y despacho · V2.4", "admin-v15.js", "commerce-v14.css", "noindex,nofollow"]:
+for marker in ["Operación, producción, materiales, medición, compras, abastecimiento y despacho · V2.5", "admin-v15.js", "commerce-v14.css", "noindex,nofollow"]:
     if marker not in admin:
         ISSUES.append(f"Administración comercial incompleta: {marker}")
 if "assets/commerce-v14.js" in admin:
@@ -91,13 +91,13 @@ for marker in [
     if marker not in schema:
         ISSUES.append(f"Esquema seguro incompleto: {marker}")
 
-if "el-errante-v2-4-0" not in worker:
-    ISSUES.append("Service worker no usa la caché V2.3")
+if "el-errante-v2-5-visual-1" not in worker:
+    ISSUES.append("Service worker no usa la caché V2.5")
 for marker in ["commerce-config-v14.js", "commerce-v14.js", "commerce-v14.css", "checkout-v15.js", "admin-v15.js"]:
     if marker not in worker:
         ISSUES.append(f"Activo comercial no precargado: {marker}")
-if 'PUBLIC_VERSION="2.4.0"' not in host or 'ACTIVE_CACHE="el-errante-v2-4-0"' not in host:
-    ISSUES.append("Host público no declara la versión/caché V2.3")
+if 'PUBLIC_VERSION="2.5.0"' not in host or 'ACTIVE_CACHE="el-errante-v2-5-visual-1"' not in host:
+    ISSUES.append("Host público no declara la versión/caché V2.5")
 
 print("EL ERRANTE V1.5 — BARRERA DE OPERACIÓN COMERCIAL")
 print(f"Archivos requeridos: {len(required)}")

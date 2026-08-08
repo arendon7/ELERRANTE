@@ -60,6 +60,8 @@
     return backendReady()&&Boolean(document.querySelector('#admin-dynamic .ee-v15-sessionbar'))&&document.querySelector('#admin-dynamic .ee-v15-sessionbar')?.textContent.includes('Administración conectada');
   }
 
+  const allowsLocalSurface=host=>host?.dataset.v21LocalSurface==='true';
+
   function localOrders(){
     return read(KEYS.orders,[]).map(order=>({
       id:order.id,
@@ -240,7 +242,7 @@
     const host=document.querySelector('#daily-ops-v21');
     if(!host)return;
     const session=document.querySelector('#admin-dynamic .ee-v15-sessionbar');
-    if(!session){host.innerHTML='<div class="ee-v16-pending">La mesa diaria se habilita al ingresar o abrir la simulación local.</div>';return;}
+    if(!session&&!allowsLocalSurface(host)){host.innerHTML='<div class="ee-v16-pending">La mesa diaria se habilita al ingresar o abrir una superficie local autorizada.</div>';return;}
     try{
       compactLegacyOrders();
       const orders=await loadOrders();
@@ -297,9 +299,10 @@
 
   function observeAdmin(){
     const admin=document.querySelector('#admin-dynamic');
-    if(!admin)return;
-    let timer;
-    new MutationObserver(()=>{compactLegacyOrders();clearTimeout(timer);timer=setTimeout(render,90);}).observe(admin,{childList:true,subtree:true});
+    if(admin){
+      let timer;
+      new MutationObserver(()=>{compactLegacyOrders();clearTimeout(timer);timer=setTimeout(render,90);}).observe(admin,{childList:true,subtree:true});
+    }
     render();
   }
 

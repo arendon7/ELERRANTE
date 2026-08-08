@@ -3,6 +3,8 @@
   const VERSION='2.9.0';
   const config=()=>window.EL_ERRANTE_COMMERCE_CONFIG||{};
   const connected=()=>Boolean(config()?.backend?.url&&config()?.backend?.publishableKey);
+  const checkoutPages=new Set(['checkout','checkout-preview','checkout-v29-bootstrap']);
+  const isCheckoutPage=()=>checkoutPages.has(document.body?.dataset?.page||'');
   const checkoutMarkup=`<div class="ee-v29-commerce-offline"><p class="eyebrow">Compra online todavía no activada</p><h2>Tu carrito está listo. El canal que debe recibir el pedido todavía no.</h2><p>Este sitio no tiene un backend comercial conectado ni datos de pago públicos validados. Por eso no te pediremos dirección, comprobante ni datos personales para guardar una “solicitud” que solo existiría en este navegador.</p><div class="data-note"><strong>Qué sí puedes hacer ahora</strong><br>Revisar productos, construir el carrito, consultar preparación y cobertura. Cuando el canal comercial esté conectado, este mismo paso podrá confirmar el pedido de forma real.</div><div class="button-row"><a class="btn btn-dark" href="tienda.html">Volver a la tienda</a><a class="btn btn-outline" href="cobertura.html">Consultar cobertura</a></div></div>`;
   const accountMarkup=`<div class="form-card ee-v29-account-offline"><p class="eyebrow">Seguimiento online todavía no activado</p><h2>No vamos a mostrar un estado local como si viniera de El Errante.</h2><p>Mientras el backend comercial permanezca desconectado, esta página no consulta pedidos reales. Cuando el canal esté activo, la referencia y el correo permitirán consultar únicamente la información pública de seguimiento.</p><a class="btn btn-dark" href="tienda.html">Volver a la tienda</a></div>`;
   const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
@@ -45,7 +47,7 @@
   }
 
   function checkoutPreview(){
-    if(document.body?.dataset?.page!=='checkout'||connected())return;
+    if(!isCheckoutPage()||connected())return;
     document.documentElement.dataset.eePublicCommerce='not-connected';
     const form=document.querySelector('#checkout-form-v14,#checkout-form');
     if(form&&!form.querySelector('.ee-v29-commerce-offline')){
@@ -79,6 +81,7 @@
       checkoutPreview();
     }
   },true);
+  document.addEventListener('ee:checkout-runtime',apply);
 
   function init(){
     apply();

@@ -22,6 +22,10 @@ async function openCash(page){
   await page.getByRole('button',{name:'Gastos y caja',exact:true}).click();
   await expect(page.getByText('Libro de movimientos · V3.2.1')).toBeVisible();
   await expect(page.getByText('Sin borrado',{exact:true})).toBeVisible();
+  const baseAmount=page.locator('#v31-move-form [name="amount"]');
+  await expect(baseAmount).toHaveAttribute('step','1');
+  await baseAmount.fill('3500');
+  expect(await baseAmount.evaluate(el=>el.checkValidity())).toBe(true);
 }
 
 test.describe('Movimientos financieros trazables V3.2.1',()=>{
@@ -33,6 +37,7 @@ test.describe('Movimientos financieros trazables V3.2.1',()=>{
     const dialog=page.locator('#v321-correction-dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText('Servicio inicial');
+    await expect(dialog.locator('[name="amount"]')).toHaveAttribute('step','1');
     await dialog.locator('[name="reason"]').fill('Factura ajustada');
     await dialog.locator('[name="amount"]').fill('3500');
     await dialog.locator('[name="description"]').fill('Servicio corregido');
@@ -70,6 +75,7 @@ test.describe('Movimientos financieros trazables V3.2.1',()=>{
     await dialog.locator('[name="mode"]').selectOption('reverse');
     await dialog.locator('[name="reason"]').fill('Compra anulada');
     await dialog.getByRole('button',{name:'Guardar ajuste trazable',exact:true}).click();
+    await expect(dialog).not.toBeVisible();
     const state=await page.evaluate(()=>{
       const moves=JSON.parse(localStorage.getItem('ee_v27_finance_movements')||'[]');
       return {moves,actual:window.EL_ERRANTE_FINANCE_V31.actual('2026-08')};

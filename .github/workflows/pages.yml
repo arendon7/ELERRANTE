@@ -131,12 +131,14 @@ jobs:
           grep -q 'id="daily-ops-v21"' _site/operacion.html
           grep -q 'id="finance-workbench-v31"' _site/finanzas.html
           grep -q 'assets/finance-workbench-v31.js' _site/finanzas.html
+          grep -q 'assets/finance-starter-v31.js' _site/finanzas.html
           ! grep -q 'assets/production-v22.js' _site/finanzas.html
           grep -q "importScripts('./assets/brand-canon-v28.js')" _site/service-worker.js
           grep -q './acceso.html' _site/service-worker.js
           grep -q './assets/access-v31.js' _site/service-worker.js
           grep -q './assets/internal-shell-v31.js' _site/service-worker.js
           grep -q './assets/finance-workbench-v31.js' _site/service-worker.js
+          grep -q './assets/finance-starter-v31.js' _site/service-worker.js
           grep -q './assets/internal-v31.css' _site/service-worker.js
           node --check _site/assets/generated/data-v28.js
           node --check _site/assets/generated/app-v28.js
@@ -148,10 +150,12 @@ jobs:
           node --check _site/assets/access-v31.js
           node --check _site/assets/internal-shell-v31.js
           node --check _site/assets/finance-workbench-v31.js
+          node --check _site/assets/finance-starter-v31.js
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
           ! grep -qi 'service_role' _site/assets/access-v31.js
           ! grep -qi 'service_role' _site/assets/finance-workbench-v31.js
+          ! grep -qi 'service_role' _site/assets/finance-starter-v31.js
           test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -ge 23
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

@@ -28,6 +28,7 @@
   const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Bogota'});
   const dateLabel=value=>value?new Date(`${value}T12:00:00-05:00`).toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'}):'Sin fecha';
   const isRemote=()=>Boolean(BASE.backend?.url&&BASE.backend?.publishableKey&&window.__EE_ADMIN_SUPABASE__)&&document.querySelector('#admin-dynamic .ee-v15-sessionbar')?.textContent.includes('Administración conectada');
+  const allowsLocalSurface=host=>host?.dataset.v22LocalSurface==='true';
   const itemId=item=>item.productId||item.product_id||item.variantId||item.variant_id||item.name||item.product_name||'producto';
   const itemName=item=>item.name||item.product_name||'Producto El Errante';
   const itemQty=item=>number(item.quantity);
@@ -240,7 +241,7 @@
     const host=document.querySelector('#production-v22');
     if(!host)return;
     const session=document.querySelector('#admin-dynamic .ee-v15-sessionbar');
-    if(!session){host.innerHTML='<div class="ee-v16-pending">La agenda de producción se habilita al ingresar o abrir la simulación local.</div>';return;}
+    if(!session&&!allowsLocalSurface(host)){host.innerHTML='<div class="ee-v16-pending">La agenda de producción se habilita al ingresar o abrir una superficie local autorizada.</div>';return;}
     const generation=++renderGeneration;
     try{
       const orders=await loadOrders();

@@ -8,7 +8,7 @@ V3.1 convierte el conjunto de pantallas administrativas en un sistema interno co
 2. **Selección de contexto**: Operación o Finanzas.
 3. **Trabajo dentro de un módulo**, sin mezclar responsabilidades.
 
-La release estable sigue siendo V3.0 mientras este candidato se valida. El canon visual/materializado V2.8 y la narrativa pública V2.9 no se reescriben.
+V3.1 se valida como candidato sobre la V3.0 publicada; al integrarse a `main` pasa a ser la release integral vigente. El canon visual/materializado V2.8 y la narrativa pública V2.9 no se reescriben.
 
 ## 2. Flujo de acceso
 
@@ -80,19 +80,42 @@ Pregunta principal: **¿qué debemos medir, modelar y decidir?**
 - Un plan no crea compras reales.
 - Los hechos operativos alimentan Finanzas; Finanzas no reescribe hechos operativos.
 
-## 5. Módulo Financiero — Working Model
+## 5. Módulo Financiero — Baseline + Working Model
 
 V3.1 reemplaza la yuxtaposición visual `MFO V3.0 + Finanzas V2.7` por un solo workbench.
 
-### 5.1 Baseline
+### 5.1 Dos formas de iniciar
+
+El usuario puede empezar de dos maneras sin publicar cifras privadas:
+
+**A. Importar MFO privado**
+
+Carga el snapshot JSON exportado localmente desde el MFO v3.3.
+
+**B. Crear modelo desde cero**
+
+`assets/finance-starter-v31.js` genera localmente:
+
+- horizonte de 24 meses desde el mes vigente en Colombia;
+- SKU y precios que ya forman parte del catálogo público;
+- plan de ventas con cantidades iniciales en cero;
+- costos directos en cero y estado `PENDIENTE`;
+- flujo de caja en cero;
+- cuatro escenarios iniciales;
+- supuestos mínimos marcados `PENDIENTE`;
+- un hallazgo de calidad que exige completar el modelo.
+
+El starter no contiene cifras financieras privadas, no hace llamadas de red y no convierte un cero inicial en un dato confirmado.
+
+### 5.2 Baseline
 
 Clave local:
 
 `ee_v30_mfo_snapshot`
 
-Representa la importación privada del MFO v3.3. Es la fuente de referencia y no se modifica al editar el modelo.
+Representa la referencia inmutable del modelo, ya sea importada desde el MFO o creada localmente por el starter. No se modifica al editar.
 
-### 5.2 Modelo de trabajo
+### 5.3 Modelo de trabajo
 
 Clave local:
 
@@ -110,7 +133,7 @@ Se crea como copia del baseline y contiene:
 
 Cada cambio actualiza únicamente esta copia.
 
-### 5.3 Historial
+### 5.4 Historial
 
 Clave local:
 
@@ -230,11 +253,12 @@ Los componentes reutilizan la paleta sobria de El Errante y evitan convertir el 
 
 ## 12. Validación
 
-Barrera específica:
+Barreras específicas:
 
-`scripts/verificar_v31_interno.py`
+- `scripts/verificar_v31_interno.py` — arquitectura y comportamiento interno;
+- `scripts/verificar_release_v31.py` — coherencia de release y publicación.
 
-Valida acceso, criptografía local, separación de módulos, working model, ausencia de red en el motor financiero, protección del baseline, COGS histórico, gráficas, edición, service worker y pruebas responsive.
+Validan acceso, criptografía local, separación de módulos, starter local, working model, ausencia de red en motores financieros, protección del baseline, COGS histórico, gráficas, edición, service worker y responsive.
 
 Playwright cubre:
 
@@ -242,7 +266,8 @@ Playwright cubre:
 - creación del primer acceso;
 - selector de módulos;
 - módulo operativo consolidado;
-- workbench vacío sin baseline;
+- creación segura de un modelo financiero desde cero;
+- importación/uso de baseline MFO;
 - dashboard con gráficas;
 - edición del plan;
 - no mutación del baseline;

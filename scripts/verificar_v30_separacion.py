@@ -25,6 +25,13 @@ test=text('tests/e2e/internal-v30.spec.js')
 mfo_doc=text('documentacion/MFO_SNAPSHOT_V30.md')
 mfo_exporter=text('scripts/exportar_mfo_v30.py')
 gitignore=text('.gitignore')
+worker=text('service-worker.js')
+package=text('package.json')
+readme=text('README.md')
+changelog=text('CHANGELOG.md')
+deploy=text('deploy-version.txt')
+pages_workflow=text('.github/workflows/pages.yml')
+health_workflow=text('.github/workflows/public-health.yml')
 
 canonical_mfo_sheets=(
     '00_INICIO','05_PRODUCTOS_SUPUESTOS','01_PLAN_VENTAS','02_PRODUCCION_COMPRAS',
@@ -76,6 +83,14 @@ checks={
     'exportador no necesita mapeo provisional':'--mapping' not in mfo_exporter and 'MFO_MAPEO_V30' not in mfo_doc,
     'datos financieros privados ignorados':'private-data/' in gitignore,
     'documentación mantiene datos privados':'private-data/mfo_snapshot_v30.json' in mfo_doc and '--inspect' in mfo_doc,
+    'release package V3.0':'"version": "3.0.0"' in package,
+    'README declara V3.0':'# El Errante V3.0' in readme and 'MFO v3.3' in readme,
+    'changelog declara V3.0':'## [3.0.0]' in changelog and '## [2.9.0]' in changelog,
+    'marcador separa release y runtime':'release_version=3.0.0' in deploy and 'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-2' in deploy,
+    'service worker incluye finanzas V3':'./finanzas.html' in worker and './assets/control-v30.js' in worker and './assets/mfo-v30.js' in worker and './assets/internal-v30.css' in worker,
+    'service worker refresca motores V3':"endsWith('/assets/control-v30.js')" in worker and "endsWith('/assets/mfo-v30.js')" in worker,
+    'Pages ejecuta barrera V3':'scripts/verificar_v30_separacion.py' in pages_workflow and 'release_version=3.0.0' in pages_workflow and 'el-errante-v2-8-brand-canon-2' in pages_workflow,
+    'health público comprueba V3':'EXPECTED_RELEASE: 3.0.0' in health_workflow and 'EXPECTED_CACHE: el-errante-v2-8-brand-canon-2' in health_workflow and 'public-finanzas.html' in health_workflow,
 }
 for label,ok in checks.items():
     if not ok: errors.append(label)

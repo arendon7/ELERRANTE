@@ -100,6 +100,19 @@ h2{max-width:900px}
 
 .site-footer{background:linear-gradient(145deg,#171615,#24211f)}
 .footer-brand p{line-height:1.7}
+.ee-user-access-link{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:14px;padding:5px 0;
+  color:rgba(242,236,225,.48)!important;
+  font-size:11px!important;font-weight:600;
+  line-height:1.35;letter-spacing:.09em;text-transform:uppercase;
+  text-decoration:none;border-bottom:1px solid transparent;
+  transition:color .2s ease,border-color .2s ease;
+}
+.ee-user-access-link::before{content:"↳";font-size:11px;opacity:.6}
+.ee-user-access-link:hover,.ee-user-access-link:focus-visible{
+  color:rgba(242,236,225,.9)!important;border-bottom-color:rgba(197,163,106,.55);
+}
 
 .cookie-banner{border:1px solid rgba(242,236,225,.16);box-shadow:0 28px 70px rgba(0,0,0,.32)}
 
@@ -115,6 +128,7 @@ h2{max-width:900px}
   .product-media{aspect-ratio:1/1}
   .section-head{padding-bottom:22px}
   .intent-card{min-height:245px}
+  .ee-user-access-link{font-size:11px!important;margin-top:12px}
   .cookie-banner{padding:16px}
   .cookie-banner p{font-size:.9rem;line-height:1.45}
   .cookie-actions{gap:7px;margin-top:12px}

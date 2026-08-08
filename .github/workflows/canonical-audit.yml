@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   canonical:
-    name: Fuente canónica V3.0 · runtime V2.8
+    name: Fuente canónica V3.1 · runtime V2.8
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -30,6 +30,8 @@ jobs:
           python3 scripts/verificar_activos_hq_v28.py
           python3 scripts/verificar_modulos_v28.py
           python3 scripts/verificar_v30_separacion.py
+          python3 scripts/verificar_v31_interno.py
+          python3 scripts/verificar_release_v31.py
           node --check assets/brand-canon-v28.js
           node --check assets/data.js
           node --check assets/app.js
@@ -41,6 +43,10 @@ jobs:
           node --check assets/control-v30.js
           node --check assets/mfo-v30.js
           node --check assets/finance-v27.js
+          node --check assets/access-v31.js
+          node --check assets/internal-shell-v31.js
+          node --check assets/finance-workbench-v31.js
+          node --check assets/finance-starter-v31.js
           node --check service-worker.js
           node --check scripts/exportar-fuente-canonica.mjs
       - name: Reconstruir fuente efectiva
@@ -65,7 +71,8 @@ jobs:
           assert all(str(p.get('image','')).startswith('assets/images/brand-final/') for p in products)
           assert all(p.get('brand_asset_version')=='2.8.0' for p in products)
           assert all(p.get('gallery') and all(str(i).startswith('assets/images/brand-final/') for i in p['gallery']) for p in products)
-          print('release=3.0.0')
+          print('release=3.1.0')
+          print('previous_release=3.0.0')
           print('brand_runtime=2.8.0')
           print('products=11')
           print('generated_sources=3')

@@ -1,5 +1,50 @@
 # Changelog
 
+## [3.1.0] — Acceso, Operación consolidada y Financial Workbench
+
+### Acceso y arquitectura
+
+- Nuevo `acceso.html` como puerta de usuarios desde un enlace discreto en el footer público.
+- Configuración local del primer usuario sin contraseñas embebidas: PBKDF2/SHA-256, sal aleatoria y sesión de ocho horas.
+- `centro-interno.html` pasa a ser selector explícito entre **Operación** y **Finanzas**.
+- Guard de sesión compartido y acción de cambiar módulo/cerrar sesión.
+- La UI local queda preparada para sustituir el proveedor de autenticación por Supabase Auth + RLS en una fase posterior.
+
+### Operación
+
+- `operacion.html` se consolida como módulo operativo único.
+- El resumen `control-v30` se integra antes de Pedidos, Producción, Materiales, Inventario/Medición y Compras.
+- Se preservan los motores validados V2.1–V2.5 sin introducir métricas financieras dentro del flujo de ejecución.
+- Se mantienen las reglas: necesidad teórica ≠ compra, inventario desconocido ≠ cero y plan financiero ≠ hecho operativo.
+
+### Finanzas
+
+- Nuevo `finance-workbench-v31.js` sustituye la yuxtaposición visible MFO V3.0 + Finanzas V2.7 por una sola aplicación financiera.
+- Snapshot MFO privado tratado como **baseline inmutable**.
+- Nuevo **working model** editable e independiente.
+- Plan de ventas 24M editable por SKU/mes con recálculo de ventas, COGS y caja.
+- Precio, costo directo y calidad del costo editables.
+- Compras, gasto operativo, auxiliares, pago de Juan, reserva tributaria, arriendo y CAPEX plan editables.
+- Registro de movimientos reales separado del plan.
+- Dashboard con KPIs y gráficas SVG autocontenidas para Plan vs. Real, ventas por producto y caja.
+- Escenarios, decisiones y supuestos editables.
+- Historial local de cambios y exportación del working model.
+- COGS real conserva el costo histórico de la línea del pedido y nunca hace fallback al costo actual del catálogo.
+
+### Diseño y experiencia
+
+- Nuevo sistema `internal-v31.css` para acceso, selección de módulos, KPIs, navegación sticky, tablas editables, formularios, estados, gráficas y responsive.
+- Acceso de usuarios integrado de forma pequeña y secundaria en el footer público.
+- Navegación interna reestructurada por contexto en lugar de exponer una colección de pantallas técnicas.
+
+### Calidad
+
+- Nueva barrera `scripts/verificar_v31_interno.py`.
+- `scripts/verificar_v30_separacion.py` pasa a validar invariantes heredados, no una composición visual congelada.
+- Playwright cubre acceso, aislamiento del baseline, edición, gráficos, separación de módulos, footer público y móvil.
+- Service worker incorpora las nuevas superficies V3.1.
+- Supabase permanece inactivo deliberadamente durante esta release.
+
 ## [3.0.0] — Operación y Finanzas separadas
 
 ### Arquitectura interna

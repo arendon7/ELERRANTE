@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""Valida los invariantes de separación introducidos en V3.0.
+
+La UI puede evolucionar (V3.1+), pero estas propiedades no deben degradarse:
+Operación y Finanzas siguen siendo contextos separados; el MFO es privado;
+plan/escenario no reescribe hechos; COGS real exige costo histórico; y una
+necesidad teórica no se convierte automáticamente en compra o inventario.
+"""
 from pathlib import Path
 import sys
 
@@ -18,18 +25,15 @@ ops=text('operacion.html')
 finance=text('finanzas.html')
 ctrl_js=text('assets/control-v30.js')
 mfo_js=text('assets/mfo-v30.js')
+workbench=text('assets/finance-workbench-v31.js')
 daily_js=text('assets/daily-ops-v21.js')
 production_js=text('assets/production-v22.js')
-css=text('assets/internal-v30.css')
+css=text('assets/internal-v30.css')+text('assets/internal-v31.css')
 test=text('tests/e2e/internal-v30.spec.js')
 mfo_doc=text('documentacion/MFO_SNAPSHOT_V30.md')
 mfo_exporter=text('scripts/exportar_mfo_v30.py')
 gitignore=text('.gitignore')
 worker=text('service-worker.js')
-package=text('package.json')
-readme=text('README.md')
-changelog=text('CHANGELOG.md')
-deploy=text('deploy-version.txt')
 pages_workflow=text('.github/workflows/pages.yml')
 health_workflow=text('.github/workflows/public-health.yml')
 
@@ -48,33 +52,34 @@ export_anchors=(
 )
 
 checks={
-    'hub enlaza panel operativo':'href="control.html"' in hub,
-    'hub enlaza finanzas':'href="finanzas.html"' in hub,
-    'control monta V3.0':'id="control-v30"' in control and 'assets/control-v30.js' in control,
-    'control no carga finanzas':'assets/finance-v27.js' not in control and 'id="finance-v27"' not in control,
+    'hub separa operación y finanzas':'href="operacion.html"' in hub and 'href="finanzas.html"' in hub,
+    'control V3.0 sigue disponible':'id="control-v30"' in control and 'assets/control-v30.js' in control,
+    'control no carga finanzas':'assets/finance-v27.js' not in control and 'finance-workbench-v31.js' not in control,
+    'operación incorpora resumen':'id="control-v30"' in ops and 'assets/control-v30.js' in ops,
     'operación conserva agenda':'id="daily-ops-v21"' in ops and 'assets/daily-ops-v21.js' in ops,
     'operación autoriza agenda local':'data-v21-local-surface="true"' in ops and 'v21LocalSurface' in daily_js,
     'operación conserva producción':'id="production-v22"' in ops and 'assets/production-v22.js' in ops,
     'operación autoriza producción local':'data-v22-local-surface="true"' in ops and 'v22LocalSurface' in production_js,
-    'modo remoto sigue ligado a sesión':'Administración conectada' in daily_js and 'Administración conectada' in production_js,
+    'modo remoto heredado sigue ligado a sesión':'Administración conectada' in daily_js and 'Administración conectada' in production_js,
     'operación conserva materiales':'id="materials-v23"' in ops and 'assets/materials-v23.js' in ops,
     'operación conserva abastecimiento':'id="procurement-v25"' in ops and 'assets/procurement-v25.js' in ops,
-    'operación no carga finanzas':'assets/finance-v27.js' not in ops and 'id="finance-v27"' not in ops,
-    'finanzas monta motor V2.7':'id="finance-v27"' in finance and 'assets/finance-v27.js' in finance,
-    'finanzas monta puente MFO V3.0':'id="mfo-v30"' in finance and 'assets/mfo-v30.js' in finance,
-    'finanzas no carga producción':'assets/production-v22.js' not in finance and 'id="production-v22"' not in finance,
-    'finanzas declara plan separado de hechos':'El MFO conserva el plan' in finance and 'una proyección reescriba' in finance,
-    'MFO se conserva solo local':'ee_v30_mfo_snapshot' in mfo_js and 'localStorage.setItem(STORAGE_KEY' in mfo_js,
-    'MFO no hace solicitudes de red':'fetch(' not in mfo_js and 'XMLHttpRequest' not in mfo_js,
+    'operación no carga finanzas':'assets/finance-v27.js' not in ops and 'finance-workbench-v31.js' not in ops,
+    'finanzas no carga producción':all(token not in finance for token in ('assets/production-v22.js','assets/materials-v23.js','assets/procurement-v25.js')),
+    'finanzas monta workbench separado':'id="finance-workbench-v31"' in finance and 'assets/finance-workbench-v31.js' in finance,
+    'baseline MFO sigue separado':"SNAPSHOT_KEY='ee_v30_mfo_snapshot'" in workbench and "WORKING_KEY='ee_v31_finance_working_model'" in workbench,
+    'MFO legado se conserva solo local':'ee_v30_mfo_snapshot' in mfo_js and 'localStorage.setItem(STORAGE_KEY' in mfo_js,
+    'MFO legado no hace red':'fetch(' not in mfo_js and 'XMLHttpRequest' not in mfo_js,
+    'workbench financiero no hace red':all(token not in workbench for token in ('fetch(','XMLHttpRequest','axios')),
     'MFO no sobrescribe operación':all(key not in mfo_js for key in ('ee_v23_material_stock','ee_v22_fulfillment','ee_v25_purchase_orders')),
-    'COGS real exige snapshot':'unit_cost_snapshot' in mfo_js and 'missingCostUnits' in mfo_js,
-    'MFO conserva estados de calidad':'CONFIRMADO' in mfo_js and 'CONTRADICTORIO' in mfo_js and 'PENDIENTE' in mfo_js,
-    'MFO incorpora decisiones y pendientes':'decisions:[]' in mfo_js and 'pending:[]' in mfo_js and 'Decisiones del modelo' in mfo_js and 'Pendientes de calidad y decisión' in mfo_js,
-    'MFO incorpora escenarios útiles':'Escenarios del año 1' in mfo_js and 'simplifiedOperatingResult' in mfo_js and 'peakCapacity' in mfo_js,
+    'working model no escribe inventario/producción':all(key not in workbench for key in ('ee_v23_material_stock','ee_v22_fulfillment','ee_v25_purchase_orders')),
+    'COGS real exige snapshot histórico':'unit_cost_snapshot' in workbench and 'unitCostSnapshot' in workbench and 'missing' in workbench,
+    'COGS real no usa catálogo actual como fallback':'function actual(month)' in workbench and 'byId' not in workbench,
+    'MFO conserva estados de calidad':all(state in workbench for state in ('CONFIRMADO','ESTIMADO','INFERIDO','CONTRADICTORIO','PENDIENTE')),
+    'MFO incorpora decisiones y escenarios':'Decisiones del modelo' in workbench and 'Escenarios' in workbench,
     'control conserva desconocido != cero':'available===null' in ctrl_js and 'Sin conteo' in ctrl_js,
-    'estilos V3 presentes':'.v30-shell' in css and '.v30-table' in css and '.v30-details' in css and '@media' in css,
-    'regresión V3 presente':'Arquitectura interna V3.0' in test and 'Plan vs. real' in test and 'Mesa de pedidos y continuidad local' in test,
-    'regresión cubre MFO v3.3':'MFO v3.3 de prueba' in test and 'Formalización de Juan' in test and 'Escenarios del año 1' in test,
+    'estilos internos presentes':'.v30-shell' in css and '.v31-module-grid' in css and '@media' in css,
+    'regresión protege plan vs real':'sin modificar el baseline' in test and 'stored.baseline.planSales' in test,
+    'regresión protege cadena operativa':'Operación reúne resumen, pedidos' in test and 'Mesa de pedidos y continuidad local' in test,
     'esquema MFO documentado':'Plan / escenario' in mfo_doc and 'unit_cost_snapshot' in mfo_doc and 'no almacena el workbook ni sus cifras' in mfo_doc,
     'documentación reconoce nueve hojas':all(name in mfo_doc for name in canonical_mfo_sheets),
     'exportador MFO presente':'exportar_mfo_v30.py' in mfo_doc and 'perfil exacto' in mfo_exporter,
@@ -83,14 +88,11 @@ checks={
     'exportador no necesita mapeo provisional':'--mapping' not in mfo_exporter and 'MFO_MAPEO_V30' not in mfo_doc,
     'datos financieros privados ignorados':'private-data/' in gitignore,
     'documentación mantiene datos privados':'private-data/mfo_snapshot_v30.json' in mfo_doc and '--inspect' in mfo_doc,
-    'release package V3.0':'"version": "3.0.0"' in package,
-    'README declara V3.0':'# El Errante V3.0' in readme and 'MFO v3.3' in readme,
-    'changelog declara V3.0':'## [3.0.0]' in changelog and '## [2.9.0]' in changelog,
-    'marcador separa release y runtime':'release_version=3.0.0' in deploy and 'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-2' in deploy,
-    'service worker incluye finanzas V3':'./finanzas.html' in worker and './assets/control-v30.js' in worker and './assets/mfo-v30.js' in worker and './assets/internal-v30.css' in worker,
-    'service worker refresca motores V3':"endsWith('/assets/control-v30.js')" in worker and "endsWith('/assets/mfo-v30.js')" in worker,
-    'Pages ejecuta barrera V3':'scripts/verificar_v30_separacion.py' in pages_workflow and 'release_version=3.0.0' in pages_workflow and 'el-errante-v2-8-brand-canon-2' in pages_workflow,
-    'health público comprueba V3':'EXPECTED_RELEASE: 3.0.0' in health_workflow and 'EXPECTED_CACHE: el-errante-v2-8-brand-canon-2' in health_workflow and 'public-finanzas.html' in health_workflow,
+    'service worker conserva base V3.0':'./finanzas.html' in worker and './assets/control-v30.js' in worker and './assets/mfo-v30.js' in worker and './assets/internal-v30.css' in worker,
+    'service worker incorpora V3.1':'./assets/finance-workbench-v31.js' in worker and './assets/internal-v31.css' in worker,
+    'Pages ejecuta invariantes V3.0':'scripts/verificar_v30_separacion.py' in pages_workflow,
+    'Pages ejecuta barrera V3.1':'scripts/verificar_v31_interno.py' in pages_workflow,
+    'health público conserva verificación financiera':'public-finanzas.html' in health_workflow,
 }
 for label,ok in checks.items():
     if not ok: errors.append(label)
@@ -105,13 +107,13 @@ if mfo_exporter:
         if forbidden in lowered_exporter:
             errors.append(f'exportador MFO: transporte o ejecución externa no permitida: {forbidden}')
 
-for path,content in [('control',control+ctrl_js),('operacion',ops),('finanzas',finance+mfo_js)]:
+for path,content in [('control',control+ctrl_js),('operacion',ops),('finanzas',finance+mfo_js+workbench)]:
     lowered=content.lower()
     for forbidden in ('service_role','postgres://','supabase_service'):
         if forbidden in lowered: errors.append(f'{path}: posible secreto {forbidden}')
 
-print('EL ERRANTE V3.0 — SEPARACIÓN OPERACIÓN / FINANZAS')
-print('='*52)
+print('EL ERRANTE — INVARIANTES DE SEPARACIÓN V3.0 → V3.1')
+print('='*57)
 print(f'Controles: {len(checks)}')
 print(f'Problemas: {len(errors)}')
 if errors:

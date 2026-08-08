@@ -78,16 +78,22 @@ test.describe('Editorial y experiencia V2.9', () => {
     await expect(page.locator('#territorio')).toContainText('Aprender de Italia no nos obliga a fingir que estamos allí.');
   });
 
-  test('Equipo es público y el centro interno queda separado', async ({ page }) => {
+  test('Equipo es público y el centro interno exige sesión antes de elegir módulo', async ({ page }) => {
     await page.goto('/equipo.html');
     await expect(page.getByRole('heading', { name: 'El criterio no aparece solo. Hay alguien respondiendo por cada decisión.' })).toBeVisible();
     await expect(page.getByText('Dirección gastronómica', { exact: true })).toBeVisible();
     await expect(page.getByText('Dirección de producto y marca', { exact: true })).toBeVisible();
     await expect(page.locator('main')).not.toContainText('Abrir centro de control');
+
     await page.goto('/centro-interno.html');
-    await expect(page.getByRole('heading', { name: 'Dos preguntas. Dos paneles.' })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Abrir panel de control/ })).toHaveAttribute('href','control.html');
-    await expect(page.getByRole('link', { name: /Abrir panel financiero/ })).toHaveAttribute('href','finanzas.html');
+    await expect(page).toHaveURL(/acceso\.html/);
+    await expect(page.getByRole('heading', { name: /Configura el primer acceso local|Bienvenido de nuevo/ })).toBeVisible();
+
+    await page.evaluate(()=>sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'qa',displayName:'QA',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+3600000).toISOString()})));
+    await page.goto('/centro-interno.html');
+    await expect(page.getByRole('heading', { name: 'Elige el contexto antes de empezar a trabajar.' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Entrar a Operación/ })).toHaveAttribute('href','operacion.html');
+    await expect(page.getByRole('link', { name: /Entrar a Finanzas/ })).toHaveAttribute('href','finanzas.html');
   });
 
   test('Ayuda no finge enviar un caso sin canal conectado', async ({ page }) => {

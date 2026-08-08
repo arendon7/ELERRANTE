@@ -10,6 +10,7 @@ function observe(page) {
 }
 
 async function open(page,path,needsData=true){await page.goto(path,{waitUntil:'domcontentloaded'});if(needsData)await page.waitForFunction(()=>window.EE_DATA?.products?.length===11);await page.waitForTimeout(150);}
+async function seedInternalSession(page){await page.addInitScript(()=>sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'regresion',displayName:'Regresión',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()})));}
 
 async function runtimeState(page){return page.evaluate(()=>({products:window.EE_DATA?.products?.length||0,variants:window.EE_DATA?.products?.reduce((sum,product)=>sum+product.variants.length,0)||0,recipes:window.EE_DATA?.recipes?.length||0,articles:window.EE_DATA?.articles?.length||0,faqs:window.EE_DATA?.faqs?.length||0,coverage:window.EE_DATA?.coverage?.length||0,ready:window.EE_CONTENT_STATUS?.ready,source:window.EE_CONTENT_STATUS?.source||''}));}
 
@@ -33,8 +34,8 @@ test.describe('Superficies públicas',()=>{
 });
 
 test.describe('Herramientas internas',()=>{
-  const modules=[['/centro-interno.html','main',false],['/admin.html','#admin-dynamic',true],['/control.html','#control-v30',true],['/operacion.html','#production-v22',true],['/finanzas.html','#finance-v27',true],['/studio.html','#studio-app',true],['/presentacion.html','.presentation-slide.active',false]];
-  for(const [path,selector,needsData] of modules){test(`${path} renderiza su modelo`,async({page})=>{const clean=observe(page);await open(page,path,needsData);const target=page.locator(selector).first();await expect(target).toBeVisible();expect((await target.innerText()).trim().length).toBeGreaterThan(20);await clean();});}
+  const modules=[['/centro-interno.html','main',false],['/admin.html','#admin-dynamic',true],['/control.html','#control-v30',true],['/operacion.html','#production-v22',true],['/finanzas.html','#finance-workbench-v31',true],['/studio.html','#studio-app',true],['/presentacion.html','.presentation-slide.active',false]];
+  for(const [path,selector,needsData] of modules){test(`${path} renderiza su modelo`,async({page})=>{const clean=observe(page);await seedInternalSession(page);await open(page,path,needsData);const target=page.locator(selector).first();await expect(target).toBeVisible();expect((await target.innerText()).trim().length).toBeGreaterThan(20);await clean();});}
 });
 
 test('menú móvil expone solo destinos públicos principales',async({page},testInfo)=>{test.skip(!testInfo.project.name.includes('mobile'),'Prueba exclusiva del proyecto móvil');const clean=observe(page);await open(page,'/index.html');const toggle=page.locator('.menu-toggle');await expect(toggle).toBeVisible();await toggle.click();const drawer=page.locator('.mobile-drawer');await expect(drawer).toHaveClass(/open/);for(const href of ['tienda.html','en-casa.html','nosotros.html','bitacora.html','en-movimiento.html'])await expect(drawer.locator(`a[href="${href}"]`)).toBeVisible();for(const href of ['admin.html','control.html','centro-interno.html'])await expect(drawer.locator(`a[href="${href}"]`)).toHaveCount(0);await clean();});

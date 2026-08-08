@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Barrera de coherencia de release para El Errante V3.1."""
+"""Barrera de coherencia de release para El Errante V3.1.1."""
 from pathlib import Path
 import json
 import sys
@@ -24,6 +24,7 @@ canonical=read('.github/workflows/canonical-audit.yml')
 functional=read('.github/workflows/functional-regression.yml')
 access=read('acceso.html')
 center=read('centro-interno.html')
+control=read('control.html')
 operation=read('operacion.html')
 finance=read('finanzas.html')
 host=read('assets/host-mode.js')
@@ -41,26 +42,30 @@ except Exception as exc:
     errors.append(f'package.json inválido: {exc}')
 
 checks={
-    'package declara 3.1.0':package.get('version')=='3.1.0',
-    'package conserva referencia a 3.0.0':package.get('releaseHistory',{}).get('previousStable',{}).get('version')=='3.0.0',
-    'README declara V3.1':readme.startswith('# El Errante V3.1') and 'Financial Workbench V3.1' in readme,
-    'changelog abre con V3.1':'## [3.1.0]' in changelog and changelog.index('## [3.1.0]') < changelog.index('## [3.0.0]'),
-    'marcador fuente declara release 3.1':'release_version=3.1.0' in deploy and 'previous_release_version=3.0.0' in deploy,
+    'package declara 3.1.1':package.get('version')=='3.1.1',
+    'package conserva referencia a 3.1.0':package.get('releaseHistory',{}).get('previousStable',{}).get('version')=='3.1.0',
+    'README declara patch V3.1.1':readme.startswith('# El Errante V3.1') and 'Release integral: `3.1.1`' in readme and 'Panel de control' in readme,
+    'changelog abre con V3.1.1':'## [3.1.1]' in changelog and changelog.index('## [3.1.1]') < changelog.index('## [3.1.0]'),
+    'marcador fuente declara release 3.1.1':'release_version=3.1.1' in deploy and 'previous_release_version=3.1.0' in deploy,
     'marcador conserva runtime 2.8':'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-2' in deploy,
-    'marcador declara arquitectura 3.1':'internal_architecture=v3.1-acceso-operacion-finanzas' in deploy and 'finance_workbench=v3.1.0' in deploy,
-    'Pages genera release 3.1':'release_version=3.1.0' in pages and 'Publicar GitHub Pages V3.1' in pages,
-    'Pages verifica arquitectura 3.1':'internal_architecture=v3.1-acceso-operacion-finanzas' in pages and 'finance_workbench=v3.1.0' in pages,
+    'marcador conserva arquitectura 3.1':'internal_architecture=v3.1-acceso-operacion-finanzas' in deploy and 'finance_workbench=v3.1.0' in deploy,
+    'Pages genera release 3.1.1':'release_version=3.1.1' in pages and 'Publicar GitHub Pages V3.1.1' in pages,
+    'Pages verifica navegación V3.1.1':'Abrir Panel de control' in pages and 'data-v31-protected' in pages and 'control.html' in pages,
     'Pages ejecuta barrera release':'scripts/verificar_release_v31.py' in pages,
-    'health espera release 3.1':'EXPECTED_RELEASE: 3.1.0' in health,
+    'health espera release 3.1.1':'EXPECTED_RELEASE: 3.1.1' in health,
     'health espera arquitectura 3.1':'v3.1-acceso-operacion-finanzas' in health,
+    'health verifica control y finanzas':'Abrir Panel de control' in health and 'public-control.html' in health and 'public-finanzas.html' in health,
     'auditoría ejecuta barrera release':'scripts/verificar_release_v31.py' in canonical,
     'regresión ejecuta barrera release':'scripts/verificar_release_v31.py' in functional,
     'portal acceso V3.1':'id="access-v31"' in access and 'assets/access-v31.js' in access,
     'centro protegido':'data-v31-protected' in center and 'assets/internal-shell-v31.js' in center,
-    'centro selector de módulos':'Entrar a Operación' in center and 'Entrar a Finanzas' in center,
+    'centro selector de tres destinos':all(token in center for token in ('Abrir Panel de control','Entrar a Operación','Entrar a Finanzas')),
+    'control protegido':'data-v31-protected' in control and 'assets/internal-shell-v31.js' in control,
+    'control conecta operación y finanzas':'href="operacion.html"' in control and 'href="finanzas.html"' in control,
     'operación protegida':'data-v31-protected' in operation and 'assets/internal-shell-v31.js' in operation,
-    'operación integra control y pedidos':'id="control-v30"' in operation and 'id="daily-ops-v21"' in operation,
+    'operación integra control y pedidos':'id="control-v30"' in operation and 'id="daily-ops-v21"' in operation and 'href="control.html"' in operation,
     'finanzas protegidas':'data-v31-protected' in finance and 'assets/internal-shell-v31.js' in finance,
+    'finanzas accesible desde navegación':'href="control.html"' in finance and 'href="operacion.html"' in finance,
     'finanzas monta workbench':'id="finance-workbench-v31"' in finance and 'assets/finance-workbench-v31.js' in finance,
     'finanzas monta starter seguro':'assets/finance-starter-v31.js' in finance and 'Crear modelo desde cero' in starter_js and 'LOCAL_STARTER_V31' in starter_js,
     'finanzas no monta producción':'assets/production-v22.js' not in finance,
@@ -78,16 +83,14 @@ checks={
 for label,ok in checks.items():
     if not ok: errors.append(label)
 
-# Sólo inspeccionamos artefactos que podrían publicar secretos directamente.
-# Los workflows contienen deliberadamente nombres de secretos y grep defensivos.
 for name,content in [('access',access_js),('shell',shell_js),('finance',finance_js),('starter',starter_js)]:
     lower=content.lower()
     for forbidden in ('service_role','postgres://','private_key','supabase_service'):
         if forbidden in lower:
             errors.append(f'{name}: posible secreto {forbidden}')
 
-print('EL ERRANTE V3.1 — COHERENCIA DE RELEASE')
-print('='*43)
+print('EL ERRANTE V3.1.1 — COHERENCIA DE RELEASE')
+print('='*47)
 print(f'Controles: {len(checks)}')
 print(f'Problemas: {len(errors)}')
 if errors:

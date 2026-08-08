@@ -56,7 +56,7 @@
     }
     setText(document.querySelector('main h1'),'Revisa tu selección. Confirmaremos cuando el canal esté conectado.');
     setText(document.querySelector('main .lead'),'El carrito y el total pueden revisarse aquí. La compra online permanece desactivada hasta que exista un canal capaz de recibir el pedido, validar el pago y coordinar la entrega fuera de este dispositivo.');
-    setText(document.querySelector('.checkout-summary .summary-row:last-of-type span'),'Total estimado');
+    setText(document.querySelector('.checkout-summary > .summary-row:last-of-type span'),'Total estimado');
     renderCheckoutSummary();
   }
 

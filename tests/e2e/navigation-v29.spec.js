@@ -22,13 +22,24 @@ test.describe('Navegación y CTAs V2.9',()=>{
     });
   }
 
-  test('la navegación principal prioriza cinco destinos y no expone herramientas internas',async({page})=>{
+  test('la navegación principal tiene solo cinco destinos públicos',async({page})=>{
     await page.goto('/index.html');
     const nav=page.locator('.main-nav');
+    await expect(nav.locator('a')).toHaveCount(5);
     for(const [href,label] of [['tienda.html','Tienda'],['en-casa.html','En casa'],['nosotros.html','Nuestra cocina'],['bitacora.html','Bitácora'],['en-movimiento.html','Eventos']]){
       await expect(nav.locator(`a[href="${href}"]`)).toContainText(label);
     }
-    for(const href of ['admin.html','control.html','operacion.html','studio.html','centro-interno.html'])await expect(nav.locator(`a[href="${href}"]`)).toHaveCount(0);
+    for(const href of ['producto.html','cuenta.html','admin.html','control.html','operacion.html','studio.html','centro-interno.html'])await expect(nav.locator(`a[href^="${href}"]`)).toHaveCount(0);
+  });
+
+  test('la cabecera y el pie no anuncian funciones que todavía no existen',async({page})=>{
+    await page.goto('/index.html');
+    await expect(page.locator('#site-header a[href="cuenta.html"]')).toHaveCount(0);
+    await expect(page.locator('#site-footer a[href="cuenta.html"]')).toHaveCount(0);
+    await expect(page.locator('#site-header a[href="en-movimiento.html#cotizar"]')).toContainText('Preparar evento');
+    await expect(page.locator('#site-footer')).not.toContainText('Club demo');
+    await expect(page.locator('#site-footer')).not.toContainText('[Razón social');
+    await expect(page.locator('#site-footer a[href="en-movimiento.html#mesa"]')).toHaveCount(0);
   });
 
   test('todos los botones públicos describen una acción real',async({page})=>{

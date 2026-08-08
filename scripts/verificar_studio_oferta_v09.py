@@ -33,13 +33,13 @@ def main():
 
     for marker in ['assets/offer-studio-v09.css','assets/offer-studio-v09.js','assets/offer-governance-v09.js']:
         require(marker in studio,f'Studio no enlaza {marker}')
-    for marker in ['assets/offer-studio-v09.css','assets/offer-studio-v09.js']:
-        require(marker in control,f'Control no enlaza {marker}')
+    require('href="studio.html"' in control,'Panel de Control no enlaza la superficie de datos maestros')
+    for marker in ['assets/offer-studio-v09.css','assets/offer-studio-v09.js','assets/offer-governance-v09.js']:
+        require(marker not in control,f'Panel de Control V3.0 no debe cargar {marker}')
 
     require("documentacion/modelo-oferta-v09.json" in module,'El módulo no consume el modelo canónico de oferta')
     require("ee_v09_offer_governance" in module,'Falta persistencia local separada de gobierno de oferta')
     require("data-offer-studio-v09" in module,'Falta contrato visual de Studio de Oferta')
-    require("data-offer-control-v09" in module,'Falta contrato visual del Centro de Control')
     require("EE_OFFER_STUDIO_V09" in module,'Falta contrato de estado para pruebas funcionales')
     require("window.EE_DATA" not in module,'Studio de Oferta no debe mutar el catálogo público')
     require("localStorage" in adapter,'El adaptador debe preservar decisiones locales')
@@ -66,7 +66,8 @@ def main():
     print('productos=11')
     print('persistencia=local_separada')
     print('tienda_publica=sin_mutaciones')
-    print('studio_y_control=integrados')
+    print('studio=dueno_gobierno_oferta')
+    print('control_v30=sin_acoplamiento_oferta')
 
 
 if __name__=='__main__':

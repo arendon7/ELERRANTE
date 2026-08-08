@@ -37,7 +37,7 @@ test.describe('Economía unitaria V3.2.2',()=>{
     expect(analysis.confirmedShare).toBeLessThan(1);
     expect(analysis.actualCogs).toBe(6000);
     await expect(page.getByText('Ingredientes, empaque, CIF variable y componentes.')).toBeVisible();
-    await expect(page.getByText('Mozzarella',{exact:true})).toBeVisible();
+    await expect(page.locator('.v322-driver').filter({hasText:'Mozzarella'}).first()).toBeVisible();
     await expect(page.getByText('Sensibilidad rápida',{exact:true})).toBeVisible();
   });
 

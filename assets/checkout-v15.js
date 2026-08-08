@@ -40,20 +40,28 @@
 
   async function boot(){
     const initial = window.EL_ERRANTE_COMMERCE_CONFIG || {};
+
+    if(!backendReady(initial)){
+      window.EL_ERRANTE_COMMERCE_CONFIG = initial;
+      document.documentElement.dataset.eeCommerceBackend = "preview";
+      document.documentElement.dataset.eeCheckoutRuntime = "v29-offline";
+      return;
+    }
+
     try{
       window.EL_ERRANTE_COMMERCE_CONFIG = await hydratePublicSettings(initial);
       document.documentElement.dataset.eeCommerceBackend = backendReady(window.EL_ERRANTE_COMMERCE_CONFIG) ? "connected" : "preview";
-    }catch(error){
-      console.warn("No fue posible sincronizar la configuración pública; se usará el modo de contingencia.", error);
-      window.EL_ERRANTE_COMMERCE_CONFIG = initial;
-      document.documentElement.dataset.eeCommerceBackend = "degraded";
-    }
-    try{
+      if(!backendReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
+        document.documentElement.dataset.eeCheckoutRuntime = "v29-offline";
+        return;
+      }
+      document.documentElement.dataset.eeCheckoutRuntime = "legacy-connected";
       await loadLegacyCheckout();
     }catch(error){
-      console.error(error);
-      const form = document.querySelector("#checkout-form");
-      if(form) form.innerHTML = '<div class="form-alert">No fue posible iniciar el formulario. Recarga la página o escríbenos para coordinar tu pedido.</div>';
+      console.warn("No fue posible sincronizar la configuración pública; el checkout permanecerá sin conexión.", error);
+      window.EL_ERRANTE_COMMERCE_CONFIG = initial;
+      document.documentElement.dataset.eeCommerceBackend = "degraded";
+      document.documentElement.dataset.eeCheckoutRuntime = "v29-offline";
     }
   }
 

@@ -81,8 +81,8 @@ test.describe('Editorial y experiencia V2.9', () => {
   test('Equipo es público y el centro interno queda separado', async ({ page }) => {
     await page.goto('/equipo.html');
     await expect(page.getByRole('heading', { name: 'El criterio no aparece solo. Hay alguien respondiendo por cada decisión.' })).toBeVisible();
-    await expect(page.getByText('Dirección gastronómica')).toBeVisible();
-    await expect(page.getByText('Dirección de producto y marca')).toBeVisible();
+    await expect(page.getByText('Dirección gastronómica', { exact: true })).toBeVisible();
+    await expect(page.getByText('Dirección de producto y marca', { exact: true })).toBeVisible();
     await expect(page.locator('main')).not.toContainText('Abrir centro de control');
     await page.goto('/centro-interno.html');
     await expect(page.getByRole('heading', { name: 'Modelo y operación de El Errante.' })).toBeVisible();

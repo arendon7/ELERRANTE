@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   e2e:
-    name: Playwright desktop y móvil V3.1
+    name: Playwright desktop y móvil V3.1.1
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

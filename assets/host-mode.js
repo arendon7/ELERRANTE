@@ -49,7 +49,7 @@
     if(!container)return;
     container.querySelectorAll('a').forEach(link=>{
       const href=hrefOf(link);
-      if(INTERNAL_TARGETS.has(href)||LOW_PRIORITY_NAV.has(href)||href==='historia.html'||href==='equipo.html')link.remove();
+      if(INTERNAL_TARGETS.has(href)||LOW_PRIORITY_NAV.has(href)||href==='historia.html'||href==='equipo.html'||href==='producto.html'||href==='cuenta.html')link.remove();
     });
     const cls=mobile?'btn btn-outline':'';
     add(container,'a[href="tienda.html"]','Tienda','tienda.html',null,cls);
@@ -59,6 +59,19 @@
     add(container,'a[href="en-movimiento.html"]','Eventos','en-movimiento.html',null,cls);
     const labels={'tienda.html':'Tienda','en-casa.html':'En casa','nosotros.html':'Nuestra cocina','bitacora.html':'Bitácora','en-movimiento.html':'Eventos'};
     container.querySelectorAll('a').forEach(link=>{const href=hrefOf(link);if(labels[href])link.textContent=labels[href];});
+  }
+
+  function curatePublicChrome(){
+    document.querySelectorAll('#site-header a[href="cuenta.html"], .mobile-drawer a[href="cuenta.html"], #site-footer a[href="cuenta.html"]').forEach(link=>link.remove());
+    document.querySelectorAll('#site-header a[href="en-movimiento.html#cotizar"]').forEach(link=>{link.textContent='Preparar evento';});
+    document.querySelectorAll('#site-footer a[href="en-movimiento.html#eventos"]').forEach(link=>{link.href='en-movimiento.html#formatos';link.textContent='Formatos';});
+    document.querySelectorAll('#site-footer a[href="en-movimiento.html#talleres"]').forEach(link=>{link.href='en-movimiento.html#formatos';});
+    document.querySelectorAll('#site-footer a[href="en-movimiento.html#mesa"]').forEach(link=>link.remove());
+    document.querySelectorAll('#site-footer p').forEach(paragraph=>{
+      const text=(paragraph.textContent||'').trim();
+      if(text.includes('[Razón social')||text.includes('Datos comerciales, sanitarios y operativos demostrativos'))paragraph.remove();
+      else if(text==='Una masa propia, productos para cocinar en casa y una pizzería capaz de ponerse en movimiento.')paragraph.textContent='Aprendida viajando. Hecha desde Colombia. Masa, fuego y territorio en una cocina que sigue buscando.';
+    });
   }
 
   function removeInternalPublicLinks(){
@@ -86,6 +99,7 @@
     }else{
       curatePublicNav(document.querySelector('.main-nav'));
       curatePublicNav(document.querySelector('.mobile-drawer .drawer-list'),true);
+      curatePublicChrome();
       removeInternalPublicLinks();
       markActive(page);
     }

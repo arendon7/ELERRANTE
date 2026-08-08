@@ -3,6 +3,7 @@ const {test,expect}=require('@playwright/test');
 async function seed(page,{status='PENDIENTE',directCost=0}={}){
   await page.addInitScript(({status,directCost})=>{
     sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'juan',displayName:'Juan',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()}));
+    if(sessionStorage.getItem('ee_v322_test_seeded')==='1')return;
     const months=Array.from({length:24},(_,i)=>{const d=new Date(Date.UTC(2026,7+i,1));return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;});
     const planSales=months.map(month=>({month,sku:'margherita-del-taller',quantity:month==='2026-08'?10:0,unitPrice:20900,sales:month==='2026-08'?209000:0,unitCost:directCost,cogs:month==='2026-08'?10*directCost:0,status,source:'Prueba V3.2.2'}));
     const cashFlow=months.map(month=>({month,openingCash:0,salesCash:0,purchases:0,operatingExpenses:0,auxiliaryPayroll:0,juanCash:0,taxReserve:0,rent:0,capex:0,endingCash:0,status:'PENDIENTE'}));
@@ -10,6 +11,7 @@ async function seed(page,{status='PENDIENTE',directCost=0}={}){
     localStorage.setItem('ee_v14_orders',JSON.stringify([{id:'EE-V322-001',status:'approved',createdAt:'2026-08-08T10:00:00-05:00',total:20900,items:[{productId:'margherita-del-taller',name:'Margherita del Taller',quantity:1,unit_cost_snapshot:6000}]}]));
     localStorage.removeItem('ee_v322_material_cost_overrides');
     localStorage.removeItem('ee_v31_finance_working_model');
+    sessionStorage.setItem('ee_v322_test_seeded','1');
   },{status,directCost});
 }
 

@@ -57,8 +57,8 @@ test.describe('Sistema interno V3.1',()=>{
     await seedSession(page);await seedOperational(page);await page.goto('/operacion.html');
     await expect(page.getByRole('heading',{name:'Del pedido al despacho, con cada decisión visible.'})).toBeVisible();
     await expect(page.locator('#control-v30')).toContainText('Unidades por producir');
-    await expect(page.locator('#daily-ops-v21')).toContainText('Agenda y señales del día');
-    await expect(page.locator('#production-v22')).toContainText('Consolidado para producir y despachar');
+    await expect(page.locator('#daily-ops-v21')).toContainText('Mesa de pedidos y continuidad local');
+    await expect(page.locator('#production-v22')).toContainText('Agenda de alistamiento por fecha');
     await expect(page.locator('#materials-v23')).toBeVisible();
     await expect(page.locator('#procurement-v25')).toBeVisible();
     await expect(page.locator('#finance-workbench-v31')).toHaveCount(0);

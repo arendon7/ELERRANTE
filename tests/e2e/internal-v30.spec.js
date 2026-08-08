@@ -34,8 +34,11 @@ test.describe('Arquitectura interna V3.0',()=>{
     await seedOperational(page);
     await page.goto('/operacion.html');
     await expect(page.getByRole('heading',{name:'Del pedido al despacho, sin saltos invisibles.'})).toBeVisible();
+    await expect(page.locator('#daily-ops-v21')).toContainText('Mesa de pedidos y continuidad local');
     await expect(page.locator('#production-v22')).toContainText('Agenda de alistamiento por fecha');
     await expect(page.locator('#materials-v23')).toContainText('Lo necesario para producir, sin saturar el panel.');
+    await expect(page.locator('html')).toHaveAttribute('data-daily-ops-version','2.1.0');
+    await expect(page.locator('html')).toHaveAttribute('data-production-version','2.2.0');
     await expect(page.locator('#finance-v27')).toHaveCount(0);
   });
 
@@ -49,7 +52,7 @@ test.describe('Arquitectura interna V3.0',()=>{
 
   test('las nuevas superficies internas no desbordan en móvil',async({page},testInfo)=>{
     test.skip(!testInfo.project.name.includes('mobile'),'Validación móvil');
-    for(const path of ['/centro-interno.html','/control.html','/finanzas.html']){
+    for(const path of ['/centro-interno.html','/control.html','/operacion.html','/finanzas.html']){
       await page.goto(path);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       expect(overflow,`overflow en ${path}`).toBeLessThanOrEqual(2);

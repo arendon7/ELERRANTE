@@ -6,21 +6,23 @@ async function seedCart(page) {
   ])));
 }
 
-test.describe('Operación comercial V1.5', () => {
-  test('checkout conserva transferencia y usa bootstrap aislado', async ({ page }) => {
+test.describe('Operación comercial V2.9', () => {
+  test('checkout público no solicita datos ni comprobante sin backend', async ({ page }) => {
     await seedCart(page);
     await page.goto('/checkout.html');
-    await expect(page.getByRole('heading', { name: 'Confirma tu pedido con claridad.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '3. Transferencia y comprobante' })).toBeVisible();
-    await expect(page.locator('#ee-receipt')).toBeVisible();
-    await expect(page.locator('#ee-city')).toHaveAttribute('type', 'text');
-    await expect(page.getByText('No cerramos el pedido por rutas fijas ni por días predeterminados.')).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-ee-commerce-backend', /preview|degraded/);
+    await expect(page.locator('html')).toHaveAttribute('data-ee-public-commerce', 'not-connected');
+    await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+    await expect(page.locator('#ee-name')).toHaveCount(0);
+    await expect(page.locator('#ee-email')).toHaveCount(0);
+    await expect(page.locator('#ee-address')).toHaveCount(0);
+    await expect(page.locator('#ee-receipt')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /enviar pedido|confirmar solicitud/i })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'PSE' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Tarjeta' })).toHaveCount(0);
   });
 
-  test('administración presenta acceso seguro y etapa piloto honesta', async ({ page }) => {
+  test('administración conserva una simulación interna explícita', async ({ page }) => {
     await page.goto('/admin.html');
     await expect(page.getByRole('heading', { name: 'Acceso administrativo seguro.' })).toBeVisible();
     await expect(page.getByText('No existe una contraseña maestra dentro del código.')).toBeVisible();
@@ -34,7 +36,7 @@ test.describe('Operación comercial V1.5', () => {
     await expect(adminPanel.getByRole('heading', { name: 'Datos bancarios visibles en checkout' })).toBeVisible();
   });
 
-  test('datos bancarios de simulación persisten en el checkout', async ({ page }) => {
+  test('datos bancarios de una simulación interna no se exponen como canal público', async ({ page }) => {
     await page.goto('/admin.html');
     await page.getByRole('button', { name: 'Abrir simulación local' }).click();
     await page.locator('#ee-bank-holder').fill('El Errante Cocina');
@@ -43,13 +45,15 @@ test.describe('Operación comercial V1.5', () => {
     await page.getByRole('button', { name: 'Guardar datos de transferencia' }).click();
     await seedCart(page);
     await page.goto('/checkout.html');
-    await expect(page.getByText('El Errante Cocina')).toBeVisible();
-    await expect(page.getByText('123456789')).toBeVisible();
-    await expect(page.getByText('errante@banco')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-ee-public-commerce', 'not-connected');
+    await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+    await expect(page.getByText('123456789')).toHaveCount(0);
+    await expect(page.getByText('errante@banco')).toHaveCount(0);
+    await expect(page.locator('#ee-receipt')).toHaveCount(0);
   });
 
   test('superficies públicas no contienen secretos de servidor', async ({ request }) => {
-    for (const path of ['/assets/commerce-runtime-config.js','/assets/commerce-config-v14.js','/assets/checkout-v15.js','/assets/admin-v15.js']) {
+    for (const path of ['/assets/commerce-runtime-config.js','/assets/commerce-config-v14.js','/assets/checkout-v15.js','/assets/public-commerce-guard-v29.js','/assets/admin-v15.js']) {
       const response = await request.get(path);
       expect(response.ok()).toBeTruthy();
       const body = (await response.text()).toLowerCase();

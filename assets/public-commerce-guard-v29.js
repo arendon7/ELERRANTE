@@ -6,6 +6,8 @@
   const checkoutMarkup=`<div class="ee-v29-commerce-offline"><p class="eyebrow">Compra online todavía no activada</p><h2>Tu carrito está listo. El canal que debe recibir el pedido todavía no.</h2><p>Este sitio no tiene un backend comercial conectado ni datos de pago públicos validados. Por eso no te pediremos dirección, comprobante ni datos personales para guardar una “solicitud” que solo existiría en este navegador.</p><div class="data-note"><strong>Qué sí puedes hacer ahora</strong><br>Revisar productos, construir el carrito, consultar preparación y cobertura. Cuando el canal comercial esté conectado, este mismo paso podrá confirmar el pedido de forma real.</div><div class="button-row"><a class="btn btn-dark" href="tienda.html">Volver a la tienda</a><a class="btn btn-outline" href="cobertura.html">Consultar cobertura</a></div></div>`;
   const accountMarkup=`<div class="form-card ee-v29-account-offline"><p class="eyebrow">Seguimiento online todavía no activado</p><h2>No vamos a mostrar un estado local como si viniera de El Errante.</h2><p>Mientras el backend comercial permanezca desconectado, esta página no consulta pedidos reales. Cuando el canal esté activo, la referencia y el correo permitirán consultar únicamente la información pública de seguimiento.</p><a class="btn btn-dark" href="tienda.html">Volver a la tienda</a></div>`;
 
+  function setText(node,value){if(node&&node.textContent!==value)node.textContent=value;}
+
   function checkoutPreview(){
     if(document.body?.dataset?.page!=='checkout'||connected())return;
     document.documentElement.dataset.eePublicCommerce='not-connected';
@@ -14,12 +16,9 @@
       form.dataset.v29CommerceGuard='true';
       form.innerHTML=checkoutMarkup;
     }
-    const title=document.querySelector('main h1');
-    if(title)title.textContent='Revisa tu selección. Confirmaremos cuando el canal esté conectado.';
-    const intro=document.querySelector('main .lead');
-    if(intro)intro.textContent='El carrito y el total pueden revisarse aquí. La compra online permanece desactivada hasta que exista un canal capaz de recibir el pedido, validar el pago y coordinar la entrega fuera de este dispositivo.';
-    const totalLabel=document.querySelector('.checkout-summary .summary-row:last-of-type span');
-    if(totalLabel)totalLabel.textContent='Total estimado';
+    setText(document.querySelector('main h1'),'Revisa tu selección. Confirmaremos cuando el canal esté conectado.');
+    setText(document.querySelector('main .lead'),'El carrito y el total pueden revisarse aquí. La compra online permanece desactivada hasta que exista un canal capaz de recibir el pedido, validar el pago y coordinar la entrega fuera de este dispositivo.');
+    setText(document.querySelector('.checkout-summary .summary-row:last-of-type span'),'Total estimado');
   }
 
   function accountPreview(){
@@ -30,10 +29,8 @@
       content.dataset.v29CommerceGuard='true';
       content.innerHTML=accountMarkup;
     }
-    const title=document.querySelector('main h1');
-    if(title)title.textContent='Seguimiento real cuando exista una fuente real.';
-    const intro=document.querySelector('main .lead');
-    if(intro)intro.textContent='El seguimiento público se habilitará cuando los pedidos estén sincronizados con el backend comercial. Hasta entonces no usamos registros de este navegador como si fueran estados confirmados.';
+    setText(document.querySelector('main h1'),'Seguimiento real cuando exista una fuente real.');
+    setText(document.querySelector('main .lead'),'El seguimiento público se habilitará cuando los pedidos estén sincronizados con el backend comercial. Hasta entonces no usamos registros de este navegador como si fueran estados confirmados.');
   }
 
   function apply(){checkoutPreview();accountPreview();}

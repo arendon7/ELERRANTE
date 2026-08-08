@@ -5,14 +5,27 @@
 V3.1 convierte el conjunto de pantallas administrativas en un sistema interno con tres momentos explícitos:
 
 1. **Acceso de usuario**.
-2. **Selección de contexto**: Operación o Finanzas.
-3. **Trabajo dentro de un módulo**, sin mezclar responsabilidades.
+2. **Selección de superficie de trabajo**: Panel de control, Operación o Finanzas.
+3. **Trabajo dentro del contexto elegido**, sin mezclar responsabilidades.
 
-V3.1 se valida como candidato sobre la V3.0 publicada; al integrarse a `main` pasa a ser la release integral vigente. El canon visual/materializado V2.8 y la narrativa pública V2.9 no se reescriben.
+La patch V3.1.1 no cambia los contratos de datos de V3.1: formaliza el Panel de control dentro de la misma sesión, lo hace visible desde el selector y conecta transversalmente Control, Operación y Finanzas. El canon visual/materializado V2.8 y la narrativa pública V2.9 no se reescriben.
 
 ## 2. Flujo de acceso
 
 La web pública incorpora un enlace discreto `Acceso usuarios` que conduce a `acceso.html`.
+
+```text
+Web pública
+   ↓
+Acceso usuarios
+   ↓
+Sesión local
+   ↓
+Centro interno
+   ├── Panel de control
+   ├── Operación
+   └── Finanzas
+```
 
 ### Modo local V3.1
 
@@ -32,11 +45,29 @@ GitHub Pages es un host estático. El guard V3.1 es una barrera de experiencia y
 
 Nunca deben versionarse contraseñas, `service_role`, tokens privados ni secretos.
 
-## 3. Centro interno
+## 3. Centro interno y superficies de trabajo
 
-`centro-interno.html` deja de ser un menú técnico y se convierte en un selector de dos contextos:
+`centro-interno.html` deja de ser un menú técnico y se convierte en un selector explícito de tres destinos.
 
-### Operación
+### 3.1 Panel de control
+
+Pregunta principal: **¿qué requiere atención ahora?**
+
+`control.html` concentra una lectura ejecutiva de:
+
+- pedidos comprometidos;
+- alistamiento;
+- BOM reconocida o faltante;
+- inventario conocido / desconocido;
+- faltantes confirmados;
+- compras abiertas;
+- señales y prioridades del día.
+
+El Panel de control no calcula margen, resultado ni caja. Es una superficie operativa de priorización, no un tercer modelo de negocio.
+
+Desde V3.1.1 exige la misma sesión que Operación y Finanzas, muestra el usuario activo y permite ir directamente a ambos módulos.
+
+### 3.2 Operación
 
 Pregunta principal: **¿qué debemos ejecutar?**
 
@@ -48,7 +79,7 @@ Pregunta principal: **¿qué debemos ejecutar?**
 - Compras.
 - Despacho.
 
-### Finanzas
+### 3.3 Finanzas
 
 Pregunta principal: **¿qué debemos medir, modelar y decidir?**
 
@@ -60,6 +91,10 @@ Pregunta principal: **¿qué debemos medir, modelar y decidir?**
 - Escenarios.
 - Decisiones.
 - Supuestos, auditoría e historial.
+
+### Regla de navegación
+
+Control, Operación y Finanzas comparten sesión y shell, pero no comparten responsabilidades. Todas las superficies deben permitir volver al Centro interno y navegar de forma explícita a los otros contextos sin pasar por la web pública.
 
 ## 4. Módulo Operativo
 
@@ -238,7 +273,7 @@ Los supuestos pueden editarse en la copia de trabajo y conservar estado de calid
 `assets/internal-v31.css` introduce un sistema consistente para:
 
 - acceso;
-- selector de módulos;
+- selector de tres destinos;
 - shell interno;
 - navegación sticky;
 - KPIs;
@@ -249,22 +284,30 @@ Los supuestos pueden editarse en la copia de trabajo y conservar estado de calid
 - estados y chips;
 - móvil.
 
+En V3.1.1 el selector usa tres tarjetas diferenciadas: Control para prioridad, Operación para ejecución y Finanzas para decisión. A tablet pasa a dos columnas y en móvil a una sola, sin scroll horizontal estructural.
+
 Los componentes reutilizan la paleta sobria de El Errante y evitan convertir el módulo financiero en una hoja de cálculo visualmente hostil.
 
-## 12. Validación
+## 12. Cache y actualización
+
+Las páginas internas se sirven `network-first`. V3.1.1 hace también `network-first` para `assets/internal-v31.css` y modifica el service worker para que navegadores que ya visitaron V3.1 reciban la nueva shell visual y no queden retenidos en el selector anterior.
+
+## 13. Validación
 
 Barreras específicas:
 
 - `scripts/verificar_v31_interno.py` — arquitectura y comportamiento interno;
 - `scripts/verificar_release_v31.py` — coherencia de release y publicación.
 
-Validan acceso, criptografía local, separación de módulos, starter local, working model, ausencia de red en motores financieros, protección del baseline, COGS histórico, gráficas, edición, service worker y responsive.
+Validan acceso, criptografía local, Panel de control protegido, navegación a Operación/Finanzas, starter local, working model, ausencia de red en motores financieros, protección del baseline, COGS histórico, gráficas, edición, service worker y responsive.
 
 Playwright cubre:
 
 - redirección sin sesión;
 - creación del primer acceso;
-- selector de módulos;
+- selector de Panel de control / Operación / Finanzas;
+- apertura real de Control y Finanzas desde el Centro interno;
+- navegación cruzada Control → Operación / Finanzas;
 - módulo operativo consolidado;
 - creación segura de un modelo financiero desde cero;
 - importación/uso de baseline MFO;
@@ -273,9 +316,9 @@ Playwright cubre:
 - no mutación del baseline;
 - edición de precio/costo;
 - edición de escenarios;
-- móvil.
+- móvil, incluyendo `control.html`.
 
-## 13. Próxima fase — persistencia V3.2
+## 14. Próxima fase — persistencia V3.2
 
 V3.1 no debe activar Supabase por accidente. La siguiente fase deberá migrar de almacenamiento local a contratos backend explícitos:
 

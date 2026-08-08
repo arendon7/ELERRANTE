@@ -13,6 +13,7 @@
   }
   if(!window.EL_ERRANTE_BRAND_V28)(0,eval)(readText('assets/brand-canon-v28.js'));
   const BRAND=window.EL_ERRANTE_BRAND_V28;
+  const PUBLIC_CACHE=`${BRAND.cache}-editorial-v29`;
 
   function applySpecialPageAssets(){
     const page=document.body?.dataset?.page||'';
@@ -32,9 +33,9 @@
 
   async function refresh(){
     try{
-      if('caches' in window){const keys=await caches.keys();await Promise.all(keys.filter(key=>key.startsWith('el-errante-')&&key!==BRAND.cache).map(key=>caches.delete(key)));}
+      if('caches' in window){const keys=await caches.keys();await Promise.all(keys.filter(key=>key.startsWith('el-errante-')&&key!==PUBLIC_CACHE).map(key=>caches.delete(key)));}
       if('serviceWorker' in navigator){const registration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});await registration.update();}
-      localStorage.setItem('ee_public_version','2.9.0-editorial');localStorage.setItem('ee_brand_canon',BRAND.version);
+      localStorage.setItem('ee_public_version','2.9.0-editorial');localStorage.setItem('ee_brand_canon',BRAND.version);localStorage.setItem('ee_public_cache',PUBLIC_CACHE);
     }catch(error){console.warn('No fue posible actualizar la caché canónica de El Errante.',error);}
   }
 
@@ -87,7 +88,7 @@
   function enhance(){
     const page=document.body?.dataset?.page||'';const isInternal=INTERNAL_PAGES.has(page);
     recover();observe();
-    document.documentElement.dataset.eeVisualSystem='brand-canon-v28';document.documentElement.dataset.eeVisualQuality='brand-final-hq';document.documentElement.dataset.eeVersion=BRAND.version;document.documentElement.dataset.eeMode=isInternal?'team-demo':'public';
+    document.documentElement.dataset.eeVisualSystem='brand-canon-v28';document.documentElement.dataset.eeVisualQuality='brand-final-hq';document.documentElement.dataset.eeVersion=BRAND.version;document.documentElement.dataset.eeMode=isInternal?'team-demo':'public';document.documentElement.dataset.eePublicCache='editorial-v29';
 
     if(hosted&&!isInternal){
       document.querySelectorAll('.local-runtime-badge,[data-internal-only],.internal-only').forEach(element=>element.remove());

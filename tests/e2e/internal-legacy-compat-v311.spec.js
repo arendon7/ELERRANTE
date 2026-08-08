@@ -24,7 +24,8 @@ test.describe('Compatibilidad de superficies heredadas V3.1.1', () => {
 
   test('la presentación diferencia Centro interno de Equipo público', async ({ page }) => {
     await page.goto('/presentacion.html');
-    await expect(page.locator('a[href="centro-interno.html"]', { hasText: 'Centro interno' })).toHaveCount(1);
+    const finalSlide = page.locator('.presentation-slide').last();
+    await expect(finalSlide.getByRole('link', { name: 'Centro interno', exact: true })).toHaveAttribute('href', 'centro-interno.html');
     await expect(page.getByRole('link', { name: 'Equipo', exact: true })).toHaveAttribute('href', 'equipo.html');
     await expect(page.getByRole('link', { name: 'Centro integral', exact: true })).toHaveCount(0);
     await expect(page.getByText('Contextos principales', { exact: true })).toBeAttached();

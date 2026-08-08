@@ -1,8 +1,8 @@
 {
   "name": "el-errante-webapp",
-  "version": "2.8.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "Webapp local y pública de El Errante con canon unificado de marca, operación, abastecimiento y finanzas.",
+  "description": "Webapp pública e interna de El Errante con canon de marca V2.8, narrativa V2.9 y operación/finanzas separadas V3.0.",
   "scripts": {
     "test:e2e": "playwright test"
   },

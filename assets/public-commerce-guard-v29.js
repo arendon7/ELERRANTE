@@ -49,7 +49,7 @@
   function checkoutPreview(){
     if(!isCheckoutPage()||connected())return;
     document.documentElement.dataset.eePublicCommerce='not-connected';
-    const form=document.querySelector('#checkout-form-v14,#checkout-form');
+    const form=document.querySelector('#checkout-v29-status,#checkout-form-v14,#checkout-form');
     if(form&&!form.querySelector('.ee-v29-commerce-offline')){
       form.dataset.v29CommerceGuard='true';
       form.innerHTML=checkoutMarkup;
@@ -75,7 +75,7 @@
   function apply(){checkoutPreview();accountPreview();}
   document.addEventListener('submit',event=>{
     if(connected())return;
-    if(event.target?.matches?.('#checkout-form,#checkout-form-v14')){
+    if(event.target?.matches?.('#checkout-v29-status,#checkout-form,#checkout-form-v14')){
       event.preventDefault();
       event.stopImmediatePropagation();
       checkoutPreview();

@@ -3,12 +3,28 @@ const {test,expect}=require('@playwright/test');
 async function seedOperational(page){
   await page.addInitScript(()=>{
     localStorage.setItem('ee_v14_orders',JSON.stringify([{
-      id:'EE-V30-001',status:'approved',createdAt:'2026-08-07T10:00:00.000Z',
+      id:'EE-V30-001',status:'approved',createdAt:'2026-08-07T10:00:00.000Z',total:60000,
       delivery:{requestedDate:'2026-08-07',city:'Medellín'},customer:{name:'Prueba V3'},
-      items:[{productId:'la-errante',name:'La Errante',quantity:2}]
+      items:[{productId:'la-errante',name:'La Errante',quantity:2,unit_cost_snapshot:12000}]
     }]));
     localStorage.setItem('ee_v23_material_stock',JSON.stringify({'MP-HFS':100,'MP-HHO':100,'MP-POM90':0,'MP-MOZ':0,'MP-CHO':0,'MP-CEB':0,'MP-PAR':0,'MP-PYM':0,'MP-ACE':0,'EMP-VAC1':0,'EMP-ETQ':0,'CIF-GAS':0}));
     sessionStorage.setItem('ee_v22_selected_date','2026-08-07');
+  });
+}
+
+async function seedMfo(page){
+  await page.addInitScript(()=>{
+    localStorage.setItem('ee_v30_mfo_snapshot',JSON.stringify({
+      schemaVersion:'3.0',
+      meta:{modelName:'Modelo de prueba',modelDate:'2026-08-07',status:'ESTIMADO',confidence:'Media',source:'fixture Playwright'},
+      planSales:[{month:'2026-08',sku:'SKU-TEST',quantity:10,unitPrice:10000,unitCost:4000,status:'ESTIMADO',confidence:'Media',source:'01_Plan_Ventas'}],
+      productCosts:[{sku:'SKU-TEST',price:10000,directCost:4000,validFrom:'2026-08-01',status:'ESTIMADO',confidence:'Media',source:'02_Productos_Costos'}],
+      cashFlow:[{month:'2026-08',purchases:25000,capex:0,endingCash:50000,status:'ESTIMADO',confidence:'Media',source:'03_Flujo_24M'}],
+      scenarios:[{id:'base',status:'ESTIMADO',confidence:'Media',source:'04_Escenarios_PE'}],
+      assumptions:[{id:'test',status:'PENDIENTE',confidence:'Baja',source:'fixture Playwright'}]
+    }));
+    localStorage.setItem('ee_v27_finance_movements',JSON.stringify([{id:'M1',date:'2026-08-07',type:'inventory_purchase',amount:15000,evidence:'CONFIRMADO'}]));
+    sessionStorage.setItem('ee_v30_mfo_month','2026-08');
   });
 }
 
@@ -45,9 +61,27 @@ test.describe('Arquitectura interna V3.0',()=>{
   test('finanzas monta el motor financiero y no superficies de ejecución',async({page})=>{
     await page.goto('/finanzas.html');
     await expect(page.locator('#finance-v27')).toContainText('Control financiero sin convertir la web en contabilidad.');
+    await expect(page.locator('#mfo-v30')).toContainText('No hay un modelo financiero cargado en este navegador.');
+    await expect(page.locator('html')).toHaveAttribute('data-mfo-state','empty');
     await expect(page.locator('#production-v22')).toHaveCount(0);
     await expect(page.locator('#materials-v23')).toHaveCount(0);
-    await expect(page.getByText('Mapa de migración del MFO')).toBeVisible();
+    await expect(page.getByText('Mapa del modelo financiero')).toBeVisible();
+  });
+
+  test('finanzas carga un snapshot MFO local y mantiene plan separado de real',async({page})=>{
+    await seedOperational(page);
+    await seedMfo(page);
+    await page.goto('/finanzas.html');
+    await expect(page.locator('html')).toHaveAttribute('data-mfo-version','3.0.0');
+    await expect(page.locator('html')).toHaveAttribute('data-mfo-state','loaded');
+    await expect(page.locator('#mfo-v30')).toContainText('Fuente MFO local');
+    await expect(page.locator('#mfo-v30')).toContainText('Plan vs. real');
+    await expect(page.locator('#mfo-v30')).toContainText('Modelo de prueba');
+    await expect(page.locator('#mfo-v30')).toContainText(/100\.000/);
+    await expect(page.locator('#mfo-v30')).toContainText(/60\.000/);
+    await expect(page.locator('#mfo-v30')).toContainText('Solo snapshots del pedido');
+    await expect(page.locator('#production-v22')).toHaveCount(0);
+    await expect(page.locator('#materials-v23')).toHaveCount(0);
   });
 
   test('las nuevas superficies internas no desbordan en móvil',async({page},testInfo)=>{

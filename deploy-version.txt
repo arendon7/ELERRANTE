@@ -1,6 +1,6 @@
 EL ERRANTE RELEASE CANDIDATE
-version=3.0.0
-canonical_runtime=2.8.0
+release_version=3.0.0
+version=2.8.0
 deploy_source=canonical-v28
 base_reference=v2.9-publicada
 cache=el-errante-v2-8-brand-canon-2

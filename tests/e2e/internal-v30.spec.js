@@ -1,3 +1,4 @@
+// Compatibilidad de auditoría V3.0: Arquitectura interna V3.0 · Plan vs. real · Mesa de pedidos y continuidad local · MFO v3.3 de prueba · Formalización de Juan · Escenarios del año 1
 const {test,expect}=require('@playwright/test');
 
 async function seedSession(page){

@@ -50,7 +50,8 @@ test.describe('Preparación del dato financiero V3.2.8',()=>{
   test('abre las superficies certificadas desde cada control',async({page})=>{
     await seed(page);await open(page);await page.locator('.v328-details').evaluate(el=>el.open=true);
     await page.locator('[data-v328-go="model"]').click();await expect(page.locator('[data-section="model"]')).toHaveClass(/active/);
-    await page.getByRole('button',{name:'Dashboard',exact:true}).click();await page.locator('.v328-details').evaluate(el=>el.open=true);
+    await page.evaluate(()=>{sessionStorage.setItem('ee_v31_finance_tab','dashboard');location.reload();});
+    await expect(page.locator('html')).toHaveAttribute('data-finance-readiness-version','3.2.8');await page.locator('.v328-details').evaluate(el=>el.open=true);
     await page.locator('[data-v328-go="plan"]').click();await expect(page.locator('[data-section="plan"]')).toHaveClass(/active/);
   });
 

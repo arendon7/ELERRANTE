@@ -1,47 +1,70 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Contenido gastronómico y conversión V1.7', () => {
-  test('inicio comunica masa, fuego y calidad con claridad', async ({ page }) => {
+test.describe('Editorial y experiencia V2.9', () => {
+  test('inicio cuenta el origen antes de abrir el catálogo', async ({ page }) => {
     await page.goto('/index.html');
-    await expect(page.getByRole('heading', { name: 'Masa con tiempo. Fuego con carácter.' })).toBeVisible();
-    await expect(page.getByText('Calidad que puede explicarse y también probarse.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Una pizza aprendida viajando. Hecha para encontrar su lugar aquí.' })).toBeVisible();
+    await expect(page.getByText('No queríamos imitar una pizza. Queríamos entender qué la hacía posible.')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Elegir pizzas para casa' })).toBeVisible();
-    await expect(page.locator('html')).toHaveAttribute('data-content-version', '1.7.0');
+    await expect(page.locator('html')).toHaveAttribute('data-ee-editorial-version', '2.9.0');
   });
 
-  test('tienda presenta propuesta premium y catálogo intencional', async ({ page }) => {
+  test('tienda ordena la elección por nivel de participación', async ({ page }) => {
     await page.goto('/tienda.html');
-    await expect(page.getByRole('heading', { name: 'Elige cómo quieres vivir la pizza.' })).toBeVisible();
-    await expect(page.getByText('Una colección breve, construida con intención.')).toBeVisible();
-    await expect(page.getByText('Masa protagonista')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Elige cuánto trabajo quieres hacer tú.' })).toBeVisible();
+    await expect(page.getByText('Cuatro puertas. La misma cocina detrás.')).toBeVisible();
+    await expect(page.locator('#product-grid')).toBeVisible();
   });
 
-  test('las fichas reciben copy premium antes del render', async ({ page }) => {
+  test('las once fichas reciben narrativa editorial antes del render', async ({ page }) => {
     await page.goto('/producto.html?id=la-errante');
-    await expect(page.getByText('Territorio, contraste y una firma que permanece.')).toBeVisible();
+    await page.waitForFunction(() => window.EE_DATA?.products?.length === 11);
     const product = await page.evaluate(() => window.EE_DATA.products.find(item => item.id === 'la-errante'));
-    expect(product.tag).toBe('Nuestra pizza insignia');
+    expect(product.tag).toBe('La pizza de la casa');
     expect(product.promise).toContain('chorizo aporta profundidad');
+    expect(product.story_title).toContain('otra geografía');
+    await expect(page.locator('[data-v29-product-story]')).toBeVisible();
   });
 
-  test('en casa diferencia terminar de recalentar', async ({ page }) => {
+  test('Aire y Tiempo no inventa especificaciones todavía no validadas', async ({ page }) => {
+    await page.goto('/producto.html?id=harina-aire-y-tiempo');
+    await page.waitForFunction(() => window.EE_DATA?.products?.length === 11);
+    const technical = await page.evaluate(() => window.EE_DATA.products.find(item => item.id === 'harina-aire-y-tiempo').technical);
+    expect(technical).toHaveLength(4);
+    expect(JSON.stringify(technical)).toContain('valid');
+    expect(JSON.stringify(technical)).not.toMatch(/\bW\s*[:=]\s*\d/i);
+    await expect(page.getByRole('heading', { name: 'Los números tienen que poder sostenerse.' })).toBeVisible();
+  });
+
+  test('En Casa explica por qué terminar no es recalentar', async ({ page }) => {
     await page.goto('/en-casa.html');
-    await expect(page.getByRole('heading', { name: 'El último fuego cambia todo.' })).toBeVisible();
-    await expect(page.getByText('No la calientes. Devuélvela al fuego.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Nosotros hacemos el tiempo. Tú haces el último fuego.' })).toBeVisible();
+    await expect(page.getByText('Tu horno no necesita comportarse como el nuestro.')).toBeVisible();
   });
 
-  test('eventos vende una experiencia gastronómica completa', async ({ page }) => {
-    await page.goto('/en-movimiento.html');
-    await expect(page.getByRole('heading', { name: 'Una pizzería encendida dentro de tu evento.' })).toBeVisible();
-    await expect(page.getByText('No entregamos bandejas. Construimos el momento.')).toBeVisible();
-    await expect(page.getByText('Masa preparada para la jornada')).toBeVisible();
+  test('Bitácora contiene notas editoriales completas', async ({ page }) => {
+    await page.goto('/bitacora.html');
+    await expect(page.locator('#harina')).toContainText('La receta estaba bien. La pregunta estaba incompleta.');
+    await expect(page.locator('#fermentar')).toContainText('Decir “fermentación larga” explica muy poco.');
+    await expect(page.locator('#fuego')).toContainText('Un horno de 400 °C no es un horno de casa acelerado.');
+    await expect(page.locator('#territorio')).toContainText('Aprender de Italia no nos obliga a fingir que estamos allí.');
   });
 
-  test('el activo editorial no incluye afirmaciones no sustentadas', async ({ request }) => {
-    const response = await request.get('/assets/content-v17.js');
+  test('Equipo es público y el centro interno queda separado', async ({ page }) => {
+    await page.goto('/equipo.html');
+    await expect(page.getByRole('heading', { name: 'El criterio no aparece solo. Hay alguien mirando cada decisión.' })).toBeVisible();
+    await expect(page.getByText('Cocina y desarrollo gastronómico')).toBeVisible();
+    await expect(page.locator('main')).not.toContainText('Abrir centro de control');
+    await page.goto('/centro-interno.html');
+    await expect(page.getByRole('heading', { name: 'Modelo y operación de El Errante.' })).toBeVisible();
+  });
+
+  test('el activo editorial no contiene promesas comparativas no sustentadas', async ({ request }) => {
+    const response = await request.get('/assets/editorial-v29.js');
     expect(response.ok()).toBeTruthy();
     const body = (await response.text()).toLowerCase();
     expect(body).not.toContain('la mejor pizza de colombia');
     expect(body).not.toContain('auténtica napolitana certificada');
+    expect(body).not.toContain('igual a caputo');
   });
 });

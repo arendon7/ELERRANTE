@@ -29,7 +29,8 @@ test.describe('Confianza comercial V2.9', () => {
   test('un carrito público desconectado no genera referencia de pedido local', async ({ page }) => {
     await seedCart(page);
     await page.goto('/checkout.html');
-    await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+    await expect(page.getByText('Compra online todavía no activada', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal que debe recibir el pedido todavía no.' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Confirmar solicitud|Enviar pedido/i })).toHaveCount(0);
     const state=await page.evaluate(()=>({orders:JSON.parse(localStorage.getItem('ee_v14_orders')||'[]'),cart:JSON.parse(localStorage.getItem('ee_v2_cart')||'[]')}));
     expect(state.orders).toHaveLength(0);

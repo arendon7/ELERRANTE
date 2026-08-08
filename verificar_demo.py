@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Barrera integral de estructura, marca, contenido y seguridad para El Errante V3.0.
+"""Barrera integral de estructura, marca, contenido y seguridad para El Errante V3.1.1.
 
-V3.0 conserva el runtime/materializador canónico V2.8; por eso esta barrera
-verifica ambas capas de forma explícita en vez de confundir versión de release
-con versión del canon técnico.
+La release integral es V3.1.1, la arquitectura interna permanece en la línea V3.1
+y el runtime/materializador canónico continúa siendo V2.8. Esta barrera valida
+las tres capas explícitamente para evitar confundir versión de producto con el
+canon técnico estable.
 """
 from __future__ import annotations
 
@@ -25,20 +26,23 @@ PUBLIC_PAGES = [
     'legal.html','offline.html'
 ]
 INTERNAL_PAGES = [
-    'centro-interno.html','admin.html','activacion.html','control.html','operacion.html',
+    'acceso.html','centro-interno.html','admin.html','activacion.html','control.html','operacion.html',
     'finanzas.html','studio.html','actas.html','presentacion.html'
 ]
 CRITICAL_FILES = [
     'assets/brand-canon-v28.js','assets/data.js','assets/runtime.js','assets/app.js',
     'assets/preprod.js','assets/host-mode.js','assets/commerce-runtime-config.js',
     'assets/admin-v15.js','assets/control-v30.js','assets/mfo-v30.js','assets/internal-v30.css',
+    'assets/access-v31.js','assets/internal-shell-v31.js','assets/internal-v31.css',
+    'assets/finance-workbench-v31.js','assets/finance-starter-v31.js',
     'assets/daily-ops-v21.js','assets/production-v22.js','assets/materials-data-v23.js',
     'assets/materials-v23.js','assets/measurement-v24.js','assets/procurement-v25.js',
     'assets/procurement-v25-guard.js','assets/finance-v27.js','assets/operations-v16.js',
     'service-worker.js','scripts/exportar-fuente-canonica.mjs','scripts/exportar_mfo_v30.py',
     'scripts/materializar_fuentes_locales_v28.py','scripts/verificar_canon_marca_v28.py',
     'scripts/verificar_activos_hq_v28.py','scripts/verificar_modulos_v28.py',
-    'scripts/verificar_v30_separacion.py','scripts/abrir_local_v28.sh','servidor_demo.py'
+    'scripts/verificar_v30_separacion.py','scripts/verificar_v31_interno.py',
+    'scripts/verificar_release_v31.py','scripts/abrir_local_v28.sh','servidor_demo.py'
 ]
 GENERATED_SOURCES = [
     'assets/generated/data-v28.js','assets/generated/app-v28.js',
@@ -142,8 +146,10 @@ host = read('assets/host-mode.js')
 sw = read('service-worker.js')
 deploy = read('deploy-version.txt')
 admin = read('admin.html')
+access = read('acceso.html')
 hub = read('centro-interno.html')
 control = read('control.html')
+operation = read('operacion.html')
 finance_page = read('finanzas.html')
 products = read('assets/products-v6.js')
 runtime_config = read('assets/commerce-runtime-config.js')
@@ -164,23 +170,27 @@ required_markers = {
     'DOM usa manifiesto compartido': 'BRAND.applyToDom' in host and 'const VISUALS=' not in host,
     'service worker importa manifiesto': "importScripts('./assets/brand-canon-v28.js')" in sw,
     'service worker reconoce fuentes generadas': 'const GENERATED=' in sw and 'assets/generated/data-v28.js' in sw,
-    'service worker incorpora V3.0': './finanzas.html' in sw and './assets/control-v30.js' in sw and './assets/mfo-v30.js' in sw,
+    'service worker incorpora arquitectura V3.1': all(token in sw for token in ('./acceso.html','./control.html','./operacion.html','./finanzas.html','./assets/internal-shell-v31.js','./assets/finance-workbench-v31.js')),
+    'service worker refresca shell V3.1.1': "endsWith('/assets/internal-v31.css')" in sw,
     'materializador declara tres salidas': all(name in materializer for name in ('data-v28.js','app-v28.js','preprod-v28.js')),
-    'release V3.0 sobre runtime V2.8': 'release_version=3.0.0' in deploy and 'version=2.8.0' in deploy and f'cache={EXPECTED_CACHE}' in deploy,
-    'paquete declarado V3.0': '"version": "3.0.0"' in package,
+    'release V3.1.1 sobre runtime V2.8': all(token in deploy for token in ('release_version=3.1.1','previous_release_version=3.1.0','version=2.8.0',f'cache={EXPECTED_CACHE}','internal_architecture=v3.1-acceso-operacion-finanzas')),
+    'paquete declarado V3.1.1': '"version": "3.1.1"' in package,
     'panel heredado identificado V2.8': '· V2.8' in admin,
-    'centro interno V3.0': 'Dos preguntas. Dos paneles.' in hub and 'href="finanzas.html"' in hub,
-    'control V3.0': 'id="control-v30"' in control and 'assets/control-v30.js' in control,
-    'finanzas V3.0': 'id="mfo-v30"' in finance_page and 'assets/mfo-v30.js' in finance_page,
+    'portal de acceso V3.1': 'id="access-v31"' in access and 'assets/access-v31.js' in access,
+    'centro interno V3.1.1': all(token in hub for token in ('data-v31-protected','assets/internal-shell-v31.js','Abrir Panel de control','Entrar a Operación','Entrar a Finanzas')),
+    'control integrado a V3.1.1': all(token in control for token in ('data-v31-protected','assets/internal-shell-v31.js','id="control-v30"','assets/control-v30.js','Ir a Operación','Ir a Finanzas')),
+    'operación V3.1 protegida': all(token in operation for token in ('data-v31-protected','assets/internal-shell-v31.js','href="control.html"','id="control-v30"','id="daily-ops-v21"','id="production-v22"','id="materials-v23"','id="measurement-v24"','id="procurement-v25"')) and 'finance-workbench-v31.js' not in operation,
+    'finanzas V3.1 workbench': all(token in finance_page for token in ('data-v31-protected','assets/internal-shell-v31.js','href="control.html"','id="finance-workbench-v31"','assets/finance-workbench-v31.js','assets/finance-starter-v31.js')) and 'assets/production-v22.js' not in finance_page,
     'servidor local conserva runtime V2.8': 'EL ERRANTE LOCAL V2.8' in server and "range(8787, 8801)" in server,
-    'lanzador materializa y ejecuta barreras V3': 'materializar_fuentes_locales_v28.py' in launcher and all(marker in launcher for marker in ('verificar_demo.py','verificar_canon_marca_v28.py','verificar_activos_hq_v28.py','verificar_modulos_v28.py','verificar_v30_separacion.py')),
-    'README vigente': '# El Errante V3.0' in readme and 'MFO v3.3' in readme,
-    'changelog vigente': '## [3.0.0]' in changelog and '## [2.9.0]' in changelog and '## [2.8.0]' in changelog,
-    'finanzas V2.7 conservadas': 'assets/finance-v27.js' in admin and 'id="finance-v27"' in admin,
+    'lanzador materializa y ejecuta barreras vigentes': 'materializar_fuentes_locales_v28.py' in launcher and all(marker in launcher for marker in ('verificar_demo.py','verificar_canon_marca_v28.py','verificar_activos_hq_v28.py','verificar_modulos_v28.py','verificar_v30_separacion.py','verificar_v31_interno.py','verificar_release_v31.py')),
+    'README vigente': readme.startswith('# El Errante V3.1') and 'Release integral: `3.1.1`' in readme and 'MFO v3.3' in readme and 'Panel de control' in readme,
+    'changelog vigente': all(token in changelog for token in ('## [3.1.1]','## [3.1.0]','## [3.0.0]','## [2.9.0]','## [2.8.0]')) and changelog.index('## [3.1.1]') < changelog.index('## [3.1.0]'),
+    'finanzas V2.7 heredadas conservadas': 'assets/finance-v27.js' in admin and 'id="finance-v27"' in admin,
     'abastecimiento V2.5 conservado': 'assets/procurement-v25.js' in admin and 'id="procurement-v25"' in admin,
 }
 for label, ok in required_markers.items():
-    if not ok: ISSUES.append(f'Falla canónica: {label}')
+    if not ok:
+        ISSUES.append(f'Falla canónica: {label}')
 
 manifest_path = ROOT / 'assets/generated/manifest-v28.json'
 if manifest_path.is_file():
@@ -222,25 +232,36 @@ for name in CANONICAL_WEBPS:
             ISSUES.append(f'WebP inválido o degradado: {path.relative_to(ROOT)}')
 
 for obsolete in OBSOLETE_ACTIVE_FILES:
-    if (ROOT / obsolete).exists(): ISSUES.append(f'Archivo heredado aún activo: {obsolete}')
+    if (ROOT / obsolete).exists():
+        ISSUES.append(f'Archivo heredado aún activo: {obsolete}')
 
 for html in sorted(ROOT.glob('*.html')):
     content = html.read_text(encoding='utf-8', errors='ignore')
     for forbidden in ('brand-final-editorial.js','brand-final-products-a.js','brand-final-products-b.js','brand-final-products-c.js'):
-        if forbidden in content: ISSUES.append(f'{html.name} carga overlay visual obsoleto: {forbidden}')
+        if forbidden in content:
+            ISSUES.append(f'{html.name} carga overlay visual obsoleto: {forbidden}')
     refs = re.findall(r'(?:href|src|poster|action)=["\']([^"\']+)["\']', content, re.I)
     refs += [item.strip().split(' ',1)[0] for group in re.findall(r'srcset=["\']([^"\']+)["\']', content, re.I) for item in group.split(',')]
     for ref in refs:
         clean = clean_reference(ref)
-        if clean and not (ROOT / clean).exists(): ISSUES.append(f'{html.name}: referencia faltante {ref}')
+        if clean and not (ROOT / clean).exists():
+            ISSUES.append(f'{html.name}: referencia faltante {ref}')
 
 if 'url: ""' not in runtime_config or 'publishableKey: ""' not in runtime_config:
     ISSUES.append('La edición local no conserva Supabase inactivo.')
-if re.search(r'\bservice_role\b|postgres://|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', '\n'.join([brand,data,app,preprod,host,sw,runtime_config]), re.I):
+
+sensitive_surface = '\n'.join([
+    brand,data,app,preprod,host,sw,runtime_config,
+    read('assets/access-v31.js'),read('assets/internal-shell-v31.js'),
+    read('assets/finance-workbench-v31.js'),read('assets/finance-starter-v31.js')
+])
+if re.search(r'\bservice_role\b|postgres://|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', sensitive_surface, re.I):
     ISSUES.append('Se detectó material sensible o una credencial privilegiada en el runtime.')
 
-print('EL ERRANTE V3.0 — BARRERA INTEGRAL')
-print('=' * 42)
+print('EL ERRANTE V3.1.1 — BARRERA INTEGRAL')
+print('=' * 46)
+print('Release integral: V3.1.1')
+print('Arquitectura interna: V3.1')
 print('Runtime canónico: V2.8')
 print(f'Páginas públicas: {len(PUBLIC_PAGES)}')
 print(f'Módulos internos: {len(INTERNAL_PAGES)}')
@@ -250,6 +271,7 @@ print(f'Fuentes materializadas: {len(GENERATED_SOURCES) - 1}')
 print(f'Archivos obligatorios comprobados: {len(CHECKED)}')
 print(f'Problemas: {len(ISSUES)}')
 if ISSUES:
-    for issue in ISSUES: print('-', issue)
+    for issue in ISSUES:
+        print('-', issue)
     sys.exit(1)
 print('RESULTADO: PASS')

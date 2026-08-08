@@ -1,11 +1,11 @@
 {
   "name": "el-errante-webapp",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "private": true,
-  "description": "Webapp pública e interna de El Errante. V3.1 incorpora acceso de usuarios, Operación consolidada y un workbench financiero editable sobre el canon técnico V2.8.",
+  "description": "Webapp pública e interna de El Errante. V3.1.1 refuerza el acceso explícito a Panel de control, Operación y Finanzas sobre la arquitectura interna V3.1 y el canon técnico V2.8.",
   "releaseHistory": {
     "previousStable": {
-      "version": "3.0.0"
+      "version": "3.1.0"
     }
   },
   "scripts": {

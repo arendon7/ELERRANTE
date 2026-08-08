@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.1] — Navegación interna y acceso explícito a Control / Operación / Finanzas
+
+### Acceso y navegación
+
+- `centro-interno.html` pasa de dos a tres destinos explícitos: **Panel de control**, **Operación** y **Finanzas**.
+- `control.html` se incorpora formalmente a la shell V3.1, exige sesión y ofrece navegación directa a Operación y Finanzas.
+- Operación y Finanzas incorporan acceso visible al Panel de control y navegación cruzada consistente.
+- El selector interno adopta una composición responsive de tres tarjetas con jerarquía visual diferenciada.
+
+### Calidad
+
+- La regresión E2E exige que el primer acceso permita llegar a Panel de control y Finanzas.
+- La barrera V3.1 valida que Control use el mismo guard de sesión y que los tres destinos estén conectados.
+- El health-check público comprueba que `control.html` esté protegido y que la navegación V3.1.1 exista en Pages.
+
 ## [3.1.0] — Acceso, Operación consolidada y Financial Workbench
 
 ### Acceso y arquitectura

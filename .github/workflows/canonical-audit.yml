@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   canonical:
-    name: Fuente canónica V3.1 · runtime V2.8
+    name: Fuente canónica V3.1.1 · runtime V2.8
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -71,8 +71,8 @@ jobs:
           assert all(str(p.get('image','')).startswith('assets/images/brand-final/') for p in products)
           assert all(p.get('brand_asset_version')=='2.8.0' for p in products)
           assert all(p.get('gallery') and all(str(i).startswith('assets/images/brand-final/') for i in p['gallery']) for p in products)
-          print('release=3.1.0')
-          print('previous_release=3.0.0')
+          print('release=3.1.1')
+          print('previous_release=3.1.0')
           print('brand_runtime=2.8.0')
           print('products=11')
           print('generated_sources=3')

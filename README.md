@@ -2,15 +2,17 @@
 
 **Masa · Fuego · Territorio**
 
-Webapp pública e interna de El Errante. V3.1 mantiene el canon visual/materializado V2.8 y la capa pública/editorial V2.9, y convierte la arquitectura interna V3.0 en dos aplicaciones de trabajo claramente separadas: **Operación** y **Finanzas**.
+Webapp pública e interna de El Errante. La patch V3.1.1 mantiene el canon visual/materializado V2.8 y la capa pública/editorial V2.9, y hace explícitos tres puntos de trabajo dentro de la arquitectura interna V3.1: **Panel de control**, **Operación** y **Finanzas**.
 
 ## Estado canónico
 
-- Release integral: `3.1.0`.
+- Release integral: `3.1.1`.
+- Release anterior estable: `3.1.0`.
 - Línea pública/editorial: V2.9.
 - Canon de identidad, imágenes y materialización: V2.8.
 - Arquitectura interna: V3.1.
 - Acceso de usuarios local: V3.1, preparado para migrar a Auth + RLS.
+- Panel de control: shell V3.1.1 sobre motor Control V3.0.
 - Módulo Operativo: V3.1, reutilizando motores validados V2.1–V2.5 y Control V3.0.
 - Workbench Financiero: V3.1.
 - MFO privado de referencia: perfil v3.3, snapshot schema V3.0.
@@ -20,9 +22,9 @@ Webapp pública e interna de El Errante. V3.1 mantiene el canon visual/materiali
 
 La numeración V2.8 permanece en marca, activos y materialización porque sigue siendo el canon técnico validado. V3.1 no duplica ni renombra una capa estable sin necesidad.
 
-La release anterior se documentó como `# El Errante V3.0`; sus invariantes de separación siguen vigentes y son comprobados por CI.
+La release V3.1.0 introdujo acceso, Operación consolidada y Financial Workbench; V3.1.1 endurece la navegación y el acceso al Panel de control sin alterar las reglas de datos ni los motores financieros.
 
-## Flujo interno V3.1
+## Flujo interno V3.1.1
 
 La web pública incorpora un enlace discreto **Acceso usuarios** en el footer.
 
@@ -34,15 +36,26 @@ Acceso usuarios
 Usuario + contraseña
    ↓
 Centro interno
+   ├── Panel de control
    ├── Operación
    └── Finanzas
 ```
+
+El Centro interno es el punto normal de entrada después del login. Los tres destinos son visibles como tarjetas independientes y también quedan disponibles en la navegación lateral de las superficies internas.
 
 ### Acceso local
 
 `acceso.html` permite configurar el primer usuario del navegador. La contraseña no se guarda como texto: se conserva únicamente un derivado PBKDF2/SHA-256 con sal aleatoria y la sesión expira después de ocho horas.
 
 Esta capa protege la experiencia local, pero GitHub Pages continúa siendo un host estático. La autorización real multiusuario se realizará posteriormente con Supabase Auth, roles y RLS. Nunca deben incorporarse credenciales privadas al JavaScript o al repositorio.
+
+## Panel de control
+
+`control.html` es la vista ejecutiva operativa. Resume pedidos comprometidos, estado de alistamiento, BOM, conteos, faltantes y compras abiertas antes de entrar al flujo completo de ejecución.
+
+V3.1.1 lo incorpora formalmente a la misma sesión interna: exige el guard V3.1, identifica al usuario activo y permite pasar directamente a **Operación** o **Finanzas** sin volver a la web pública.
+
+El Panel de control no calcula margen, resultado ni caja. Su responsabilidad es priorizar la operación.
 
 ## Operación
 

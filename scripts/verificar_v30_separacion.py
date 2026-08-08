@@ -17,6 +17,8 @@ control=text('control.html')
 ops=text('operacion.html')
 finance=text('finanzas.html')
 ctrl_js=text('assets/control-v30.js')
+daily_js=text('assets/daily-ops-v21.js')
+production_js=text('assets/production-v22.js')
 css=text('assets/internal-v30.css')
 test=text('tests/e2e/internal-v30.spec.js')
 
@@ -25,7 +27,11 @@ checks={
     'hub enlaza finanzas':'href="finanzas.html"' in hub,
     'control monta V3.0':'id="control-v30"' in control and 'assets/control-v30.js' in control,
     'control no carga finanzas':'assets/finance-v27.js' not in control and 'id="finance-v27"' not in control,
+    'operación conserva agenda':'id="daily-ops-v21"' in ops and 'assets/daily-ops-v21.js' in ops,
+    'operación autoriza agenda local':'data-v21-local-surface="true"' in ops and 'v21LocalSurface' in daily_js,
     'operación conserva producción':'id="production-v22"' in ops and 'assets/production-v22.js' in ops,
+    'operación autoriza producción local':'data-v22-local-surface="true"' in ops and 'v22LocalSurface' in production_js,
+    'modo remoto sigue ligado a sesión':'Administración conectada' in daily_js and 'Administración conectada' in production_js,
     'operación conserva materiales':'id="materials-v23"' in ops and 'assets/materials-v23.js' in ops,
     'operación conserva abastecimiento':'id="procurement-v25"' in ops and 'assets/procurement-v25.js' in ops,
     'operación no carga finanzas':'assets/finance-v27.js' not in ops and 'id="finance-v27"' not in ops,
@@ -34,7 +40,7 @@ checks={
     'finanzas declara MFO':'Mapa de migración del MFO' in finance and 'Flujo 24M' in finance,
     'control conserva desconocido != cero':'available===null' in ctrl_js and 'Sin conteo' in ctrl_js,
     'estilos V3 presentes':'.v30-shell' in css and '@media' in css,
-    'regresión V3 presente':'Arquitectura interna V3.0' in test and "'/finanzas.html'" in test,
+    'regresión V3 presente':'Arquitectura interna V3.0' in test and "'/finanzas.html'" in test and 'Mesa de pedidos y continuidad local' in test,
 }
 for label,ok in checks.items():
     if not ok: errors.append(label)

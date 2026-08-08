@@ -20,6 +20,7 @@ hub=read('centro-interno.html')
 ops=read('operacion.html')
 finance=read('finanzas.html')
 workbench=read('assets/finance-workbench-v31.js')
+starter=read('assets/finance-starter-v31.js')
 host=read('assets/host-mode.js')
 worker=read('service-worker.js')
 test=read('tests/e2e/internal-v30.spec.js')
@@ -43,9 +44,13 @@ checks={
  'operación no monta workbench financiero':'finance-workbench-v31.js' not in ops,
  'finanzas exige sesión':'data-v31-protected' in finance and 'assets/internal-shell-v31.js' in finance,
  'finanzas monta único workbench':'id="finance-workbench-v31"' in finance and 'assets/finance-workbench-v31.js' in finance,
+ 'finanzas incorpora arranque local':'assets/finance-starter-v31.js' in finance and 'Crear modelo desde cero' in starter,
  'finanzas no monta motores de ejecución':all(token not in finance for token in ('assets/production-v22.js','assets/materials-v23.js','assets/procurement-v25.js')),
  'baseline separado del working model':"SNAPSHOT_KEY='ee_v30_mfo_snapshot'" in workbench and "WORKING_KEY='ee_v31_finance_working_model'" in workbench,
  'baseline no se sobreescribe al editar':'write(SNAPSHOT_KEY' in workbench and 'write(WORKING_KEY' in workbench and 'baseline.planSales' in test,
+ 'starter sólo usa catálogo público':'window.EE_DATA?.products' in starter and 'directCost:0' in starter and "status:'PENDIENTE'" in starter,
+ 'starter crea 24 meses':'Array.from({length:24}' in starter and 'planSales' in starter and 'cashFlow' in starter,
+ 'starter no contiene red ni secreto':all(token not in starter.lower() for token in ('fetch(','xmlhttprequest','axios','service_role','postgres://','private_key')),
  'plan 24M editable':'data-plan-qty' in workbench and 'Plan de ventas' in workbench and 'yearMonths' in workbench,
  'precios y costos editables':'data-product-price' in workbench and 'data-product-cost' in workbench,
  'caja plan editable':'data-cash' in workbench and 'collectionRate' in workbench and 'endingCash' in workbench,
@@ -60,10 +65,11 @@ checks={
  'workbench no usa red':all(token not in workbench for token in ('fetch(','XMLHttpRequest','axios','service_role')),
  'host reconoce finanzas interna':"'finanzas'" in host and "'finanzas.html'" in host,
  'host crea acceso de usuarios':'ensureUserAccess' in host and "href='acceso.html'" in host,
- 'service worker incluye V3.1':all(token in worker for token in ('./acceso.html','./assets/access-v31.js','./assets/internal-shell-v31.js','./assets/finance-workbench-v31.js','./assets/internal-v31.css')),
- 'service worker refresca JS V3.1':all(token in worker for token in ("endsWith('/assets/access-v31.js')","endsWith('/assets/internal-shell-v31.js')","endsWith('/assets/finance-workbench-v31.js')")),
+ 'service worker incluye V3.1':all(token in worker for token in ('./acceso.html','./assets/access-v31.js','./assets/internal-shell-v31.js','./assets/finance-workbench-v31.js','./assets/finance-starter-v31.js','./assets/internal-v31.css')),
+ 'service worker refresca JS V3.1':all(token in worker for token in ("endsWith('/assets/access-v31.js')","endsWith('/assets/internal-shell-v31.js')","endsWith('/assets/finance-workbench-v31.js')","endsWith('/assets/finance-starter-v31.js')")),
  'estilos responsive V3.1':'.v31-access-card' in css and '.v31-module-grid' in css and '.v31-kpis' in css and '@media(max-width:760px)' in css,
  'regresión cubre login':'primer acceso crea credenciales locales' in test,
+ 'regresión cubre arranque desde cero':'Crear modelo desde cero' in test and 'LOCAL_STARTER_V31' in test,
  'regresión cubre aislamiento baseline':'sin modificar el baseline' in test,
  'regresión cubre gráficas':"locator('.v31-chart')" in test,
  'regresión cubre edición':'Plan de ventas modificado' in test and 'data-product-price' in test and 'data-scenario' in test,
@@ -72,7 +78,7 @@ checks={
 for label,ok in checks.items():
     if not ok: errors.append(label)
 
-for name,content in [('acceso',access_js),('shell',shell),('finanzas',workbench)]:
+for name,content in [('acceso',access_js),('shell',shell),('finanzas',workbench),('starter',starter)]:
     lowered=content.lower()
     for forbidden in ('service_role','postgres://','supabase_service','private_key'):
         if forbidden in lowered: errors.append(f'{name}: posible secreto {forbidden}')

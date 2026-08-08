@@ -80,7 +80,7 @@
     const page=document.body?.dataset?.page||'';const isInternal=INTERNAL_PAGES.has(page);recover();observe();
     document.documentElement.dataset.eeVisualSystem='brand-canon-v28';document.documentElement.dataset.eeVisualQuality='brand-final-hq';document.documentElement.dataset.eeVersion=BRAND.version;document.documentElement.dataset.eeMode=isInternal?'team-demo':'public';document.documentElement.dataset.eePublicCache='brand-canon-v28';
     if(hosted&&!isInternal){document.querySelectorAll('.local-runtime-badge,[data-internal-only],.internal-only').forEach(element=>element.remove());document.querySelectorAll('.demo-badge').forEach(element=>{const text=(element.textContent||'').toLowerCase();if(text.includes('gold master')||text.includes('demo')||text.includes('sin internet')||text.includes('biblioteca editorial completa'))element.remove();});}
-    if(isInternal){document.querySelectorAll('a[href="equipo.html"]').forEach(link=>{link.href='centro-interno.html';if((link.textContent||'').trim().toLowerCase()==='equipo')link.textContent='Centro interno';});}
+    if(isInternal){document.querySelectorAll('a[href="equipo.html"]:not([data-public-target])').forEach(link=>{link.href='centro-interno.html';if((link.textContent||'').trim().toLowerCase()==='equipo')link.textContent='Centro interno';});}
     else{curatePublicNav(document.querySelector('.main-nav'));curatePublicNav(document.querySelector('.mobile-drawer .drawer-list'),true);curatePublicChrome();removeInternalPublicLinks();markActive(page);}
   }
 

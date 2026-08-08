@@ -6,13 +6,13 @@ const WORKING_KEY='ee_v31_finance_working_model';
 const HISTORY_KEY='ee_v31_finance_history';
 const ROOT_ID='finance-workbench-v31';
 const monthString=date=>`${date.getUTCFullYear()}-${String(date.getUTCMonth()+1).padStart(2,'0')}`;
-function months24(){const now=new Date();const start=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1));return Array.from({length:24},(_,i)=>monthString(new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth()+i,1))));}
+function months24(){const local=new Date().toLocaleDateString('en-CA',{timeZone:'America/Bogota'});const [year,month]=local.split('-').map(Number);const start=new Date(Date.UTC(year,month-1,1));return Array.from({length:24},(_,i)=>monthString(new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth()+i,1))));}
 function publicSkuRows(){
  const products=Array.isArray(window.EE_DATA?.products)?window.EE_DATA.products:[];
  const rows=[];
  products.forEach(product=>{
   const variants=Array.isArray(product.variants)&&product.variants.length?product.variants:[product];
-  variants.forEach((variant,index)=>{
+  variants.forEach(variant=>{
    const sku=String(variant.id||variant.sku||product.id||`SKU-${rows.length+1}`);
    const name=String(variant.name||product.name||product.title||sku);
    const raw=variant.price??product.price??0;
@@ -27,7 +27,7 @@ function starter(){
  const products=publicSkuRows();
  const planSales=[];
  months.forEach(month=>products.forEach(product=>planSales.push({month,sku:product.sku,quantity:0,unitPrice:product.price,sales:0,unitCost:0,cogs:0,status:'PENDIENTE',confidence:'',source:'Modelo local V3.1'})));
- const cashFlow=months.map((month,index)=>({month,openingCash:index?0:0,salesCash:0,purchases:0,operatingExpenses:0,auxiliaryPayroll:0,juanCash:0,taxReserve:0,rent:0,capex:0,endingCash:0,status:'PENDIENTE',confidence:'',source:'Modelo local V3.1'}));
+ const cashFlow=months.map(month=>({month,openingCash:0,salesCash:0,purchases:0,operatingExpenses:0,auxiliaryPayroll:0,juanCash:0,taxReserve:0,rent:0,capex:0,endingCash:0,status:'PENDIENTE',confidence:'',source:'Modelo local V3.1'}));
  return {
   schemaVersion:'3.0',
   meta:{modelName:'Modelo financiero local El Errante',modelDate:'',exportedAt:new Date().toISOString(),status:'PENDIENTE',confidence:'',source:'Creado en este navegador; sin cifras privadas publicadas',workbookProfile:'LOCAL_STARTER_V31',reconciliation:'LOCAL'},

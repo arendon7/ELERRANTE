@@ -24,7 +24,7 @@ async function seedMfo(page){
   });
 }
 
-test.describe('Sistema interno V3.1',()=>{
+test.describe('Sistema interno V3.1.1',()=>{
   test('la web pública ofrece acceso discreto a usuarios desde el footer',async({page})=>{
     await page.goto('/index.html');
     const link=page.getByRole('link',{name:'Acceso usuarios'});
@@ -41,21 +41,43 @@ test.describe('Sistema interno V3.1',()=>{
     await expect(page.getByRole('heading',{name:/Configura el primer acceso local|Bienvenido de nuevo/})).toBeVisible();
   });
 
-  test('el primer acceso crea credenciales locales y abre el selector de módulos',async({page})=>{
+  test('el primer acceso crea credenciales locales y abre Panel de control, Operación y Finanzas',async({page})=>{
     await page.goto('/acceso.html');
     await page.getByLabel('Usuario').fill('juan');
     await page.getByLabel('Contraseña',{exact:true}).fill('PruebaSegura31!');
     await page.getByLabel('Confirmar contraseña').fill('PruebaSegura31!');
     await page.getByRole('button',{name:'Crear acceso y entrar'}).click();
     await expect(page).toHaveURL(/centro-interno\.html/);
-    await expect(page.getByRole('heading',{name:'Elige el contexto antes de empezar a trabajar.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Elige dónde quieres trabajar.'})).toBeVisible();
+    await expect(page.getByRole('link',{name:/Abrir Panel de control/})).toHaveAttribute('href','control.html');
     await expect(page.getByRole('link',{name:/Entrar a Operación/})).toHaveAttribute('href','operacion.html');
     await expect(page.getByRole('link',{name:/Entrar a Finanzas/})).toHaveAttribute('href','finanzas.html');
+  });
+
+  test('Panel de control exige sesión y conecta con Operación y Finanzas',async({page})=>{
+    await page.goto('/control.html');
+    await expect(page).toHaveURL(/acceso\.html/);
+    await seedSession(page);await seedOperational(page);await page.goto('/control.html');
+    await expect(page.getByRole('heading',{name:'Lo que requiere atención, antes de empezar el día.'})).toBeVisible();
+    await expect(page.locator('#control-v30')).toContainText('Unidades por producir');
+    await expect(page.getByRole('link',{name:'Ir a Operación'})).toHaveAttribute('href','operacion.html');
+    await expect(page.getByRole('link',{name:'Ir a Finanzas'})).toHaveAttribute('href','finanzas.html');
+  });
+
+  test('el Centro interno permite entrar realmente a Panel de control y Finanzas',async({page})=>{
+    await seedSession(page);await seedOperational(page);await page.goto('/centro-interno.html');
+    await page.getByRole('link',{name:/Abrir Panel de control/}).click();
+    await expect(page).toHaveURL(/control\.html/);
+    await expect(page.getByRole('heading',{name:'Lo que requiere atención, antes de empezar el día.'})).toBeVisible();
+    await page.getByRole('link',{name:'Ir a Finanzas'}).click();
+    await expect(page).toHaveURL(/finanzas\.html/);
+    await expect(page.getByRole('heading',{name:'Planificar, modificar, comparar y decidir.'})).toBeVisible();
   });
 
   test('Operación reúne resumen, pedidos y cadena de ejecución sin finanzas',async({page})=>{
     await seedSession(page);await seedOperational(page);await page.goto('/operacion.html');
     await expect(page.getByRole('heading',{name:'Del pedido al despacho, con cada decisión visible.'})).toBeVisible();
+    await expect(page.getByRole('link',{name:'Panel de control'}).first()).toHaveAttribute('href','control.html');
     await expect(page.locator('#control-v30')).toContainText('Unidades por producir');
     await expect(page.locator('#daily-ops-v21')).toContainText('Mesa de pedidos y continuidad local');
     await expect(page.locator('#production-v22')).toContainText('Agenda de alistamiento por fecha');
@@ -67,6 +89,7 @@ test.describe('Sistema interno V3.1',()=>{
   test('Finanzas permite importar MFO o iniciar un modelo local desde cero',async({page})=>{
     await seedSession(page);await page.goto('/finanzas.html');
     await expect(page.getByRole('heading',{name:'Planificar, modificar, comparar y decidir.'})).toBeVisible();
+    await expect(page.getByRole('link',{name:'Panel de control'}).first()).toHaveAttribute('href','control.html');
     await expect(page.locator('#finance-workbench-v31')).toContainText('Carga el baseline privado del MFO.');
     await expect(page.getByRole('button',{name:'Crear modelo desde cero'})).toBeVisible();
     await page.getByRole('button',{name:'Crear modelo desde cero'}).click();
@@ -107,9 +130,9 @@ test.describe('Sistema interno V3.1',()=>{
     expect(data.productCosts[0].price).toBe(12000);expect(data.productCosts[0].directCost).toBe(5000);expect(data.scenarios[0].volumeFactor).toBe(1.25);
   });
 
-  test('las superficies V3.1 no desbordan en móvil',async({page},testInfo)=>{
+  test('las superficies V3.1.1 no desbordan en móvil',async({page},testInfo)=>{
     test.skip(!testInfo.project.name.includes('mobile'),'Validación móvil');
     await seedSession(page);await seedMfo(page);
-    for(const path of ['/centro-interno.html','/operacion.html','/finanzas.html']){await page.goto(path);const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`overflow en ${path}`).toBeLessThanOrEqual(2);}
+    for(const path of ['/centro-interno.html','/control.html','/operacion.html','/finanzas.html']){await page.goto(path);const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overflow,`overflow en ${path}`).toBeLessThanOrEqual(2);}
   });
 });

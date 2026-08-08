@@ -6,18 +6,24 @@ async function seedCart(page) {
   ])));
 }
 
+async function assertPublicCommerceBlocked(page) {
+  await expect(page.locator('html')).toHaveAttribute('data-ee-public-commerce', 'not-connected');
+  await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+  await page.waitForTimeout(1400);
+  await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+  await expect(page.locator('#ee-name')).toHaveCount(0);
+  await expect(page.locator('#ee-email')).toHaveCount(0);
+  await expect(page.locator('#ee-address')).toHaveCount(0);
+  await expect(page.locator('#ee-receipt')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /enviar pedido|confirmar solicitud/i })).toHaveCount(0);
+}
+
 test.describe('Operación comercial V2.9', () => {
   test('checkout público no solicita datos ni comprobante sin backend', async ({ page }) => {
     await seedCart(page);
     await page.goto('/checkout.html');
     await expect(page.locator('html')).toHaveAttribute('data-ee-commerce-backend', /preview|degraded/);
-    await expect(page.locator('html')).toHaveAttribute('data-ee-public-commerce', 'not-connected');
-    await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
-    await expect(page.locator('#ee-name')).toHaveCount(0);
-    await expect(page.locator('#ee-email')).toHaveCount(0);
-    await expect(page.locator('#ee-address')).toHaveCount(0);
-    await expect(page.locator('#ee-receipt')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /enviar pedido|confirmar solicitud/i })).toHaveCount(0);
+    await assertPublicCommerceBlocked(page);
     await expect(page.getByRole('button', { name: 'PSE' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Tarjeta' })).toHaveCount(0);
   });
@@ -45,11 +51,9 @@ test.describe('Operación comercial V2.9', () => {
     await page.getByRole('button', { name: 'Guardar datos de transferencia' }).click();
     await seedCart(page);
     await page.goto('/checkout.html');
-    await expect(page.locator('html')).toHaveAttribute('data-ee-public-commerce', 'not-connected');
-    await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+    await assertPublicCommerceBlocked(page);
     await expect(page.getByText('123456789')).toHaveCount(0);
     await expect(page.getByText('errante@banco')).toHaveCount(0);
-    await expect(page.locator('#ee-receipt')).toHaveCount(0);
   });
 
   test('superficies públicas no contienen secretos de servidor', async ({ request }) => {

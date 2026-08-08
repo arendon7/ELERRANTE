@@ -2,160 +2,162 @@
 
 ## Propósito
 
-La web interna de El Errante separa hechos operativos de escenarios financieros. El MFO puede contener información confidencial y el repositorio es público, por lo que V3.0 **no almacena cifras reales del modelo en GitHub**.
+La web interna de El Errante separa hechos operativos de escenarios financieros. El MFO contiene información sensible y el repositorio es público, por lo que V3.0 **no almacena el workbook ni sus cifras en GitHub**.
 
-`finanzas.html` acepta un snapshot JSON cargado por la persona usuaria. El archivo se guarda únicamente en `localStorage` bajo `ee_v30_mfo_snapshot`. El importador no hace solicitudes de red y no escribe pedidos, inventario, producción ni compras.
+`finanzas.html` acepta un snapshot JSON cargado localmente. El archivo se conserva únicamente en `localStorage` bajo `ee_v30_mfo_snapshot`. El importador no hace solicitudes de red y no escribe pedidos, inventario, producción ni compras.
+
+## Workbook canónico observado
+
+El archivo validado para esta iteración es `MFO_EL_ERRANTE_v3_3_Decisiones_y_Escenarios.xlsx`, identificado por el perfil interno `MFO_V3_3_DECISIONES_ESCENARIOS`.
+
+El perfil real contiene nueve hojas:
+
+- `00_INICIO`
+- `05_PRODUCTOS_SUPUESTOS`
+- `01_PLAN_VENTAS`
+- `02_PRODUCCION_COMPRAS`
+- `03_RESULTADOS_CAJA`
+- `04_DASHBOARD`
+- `06_AUDITORIA`
+- `07_REAL_VS_PLAN`
+- `08_DECISIONES_ESCENARIOS`
+
+Esto sustituye el supuesto provisional anterior de seis hojas. El exportador V3.0 ahora valida esta estructura real y sus anclas textuales antes de leer una cifra.
 
 ## Regla de separación
 
 - **Plan / escenario:** proviene del snapshot MFO.
-- **Real:** proviene de hechos locales ya registrados por los módulos operativos y financieros.
-- Un plan nunca sobrescribe un hecho real.
-- Una cifra sin fuente, estado o confianza se muestra como deuda de calidad, no se eleva silenciosamente a dato confirmado.
-- La caja real no se infiere del plan. Requiere conciliación o una futura capa de hechos de caja.
+- **Real:** proviene de hechos registrados por los módulos operativos y financieros de la web.
+- El plan nunca sobrescribe un hecho real.
+- Compras, costo de ventas e inventario son magnitudes diferentes.
+- La caja real no se infiere del plan.
+- Decisiones recomendadas por el MFO son señales para decidir; no ejecutan compras, contratación, sede ni CAPEX.
+- Hallazgos de auditoría permanecen como pendientes explícitos.
 
-## Esquema mínimo
+## Esquema
 
 ```json
 {
   "schemaVersion": "3.0",
-  "meta": {
-    "modelName": "",
-    "modelDate": "",
-    "exportedAt": "",
-    "status": "PENDIENTE",
-    "confidence": "",
-    "source": ""
-  },
+  "meta": {},
   "planSales": [],
   "productCosts": [],
   "cashFlow": [],
   "scenarios": [],
-  "assumptions": []
+  "assumptions": [],
+  "decisions": [],
+  "pending": []
 }
 ```
 
-Los estados válidos son `CONFIRMADO`, `ESTIMADO`, `INFERIDO`, `CONTRADICTORIO` y `PENDIENTE`.
+Los estados normalizados válidos son `CONFIRMADO`, `ESTIMADO`, `INFERIDO`, `CONTRADICTORIO` y `PENDIENTE`. El estado original del workbook se conserva además en `modelStatus` cuando aplica.
 
-## 01 · Plan de ventas
+## Contenido extraído del MFO v3.3
 
-Una fila por SKU y mes.
+### Plan de ventas
 
-```json
-{
-  "month": "2026-09",
-  "sku": "SKU-001",
-  "quantity": 0,
-  "unitPrice": null,
-  "sales": null,
-  "unitCost": null,
-  "cogs": null,
-  "status": "ESTIMADO",
-  "confidence": "Media",
-  "source": "01_Plan_Ventas"
-}
-```
+Se extraen los dos bloques de `01_PLAN_VENTAS`: año 1 y año 2. Cada SKU se convierte en una fila por mes con cantidad, precio, venta, costo unitario y COGS planificado.
 
-`sales` y `cogs` pueden venir precalculados. Si no vienen, la web intenta calcularlos con cantidad × precio/costo, usando `productCosts` como respaldo de plan. Esto **no** se usa para reconstruir COGS real.
+### Productos y costos
 
-## 02 · Productos y costos
+El maestro se obtiene de `05_PRODUCTOS_SUPUESTOS`. Se preservan SKU, producto, categoría, precio final, costo directo, estado original y fuente.
 
-```json
-{
-  "sku": "SKU-001",
-  "price": null,
-  "directCost": null,
-  "validFrom": "2026-09-01",
-  "status": "ESTIMADO",
-  "confidence": "Media",
-  "source": "02_Productos_Costos"
-}
-```
+### Flujo de caja
 
-Las siguientes versiones deben añadir `validTo`, `costSnapshotId`, impuestos y evidencia documental cuando exista.
+`03_RESULTADOS_CAJA` aporta 24 meses con caja inicial, ventas cobradas, compras pagadas, gastos operativos, auxiliares, Juan, reserva tributaria, arriendo, CAPEX y caja final.
 
-## 03 · Flujo 24M
+### Escenarios
 
-```json
-{
-  "month": "2026-09",
-  "openingCash": null,
-  "salesCash": null,
-  "purchases": null,
-  "operatingExpenses": null,
-  "capex": null,
-  "endingCash": null,
-  "status": "ESTIMADO",
-  "confidence": "Media",
-  "source": "03_Flujo_24M"
-}
-```
+`08_DECISIONES_ESCENARIOS` aporta los escenarios Conservador, Base, Crecimiento y Personalizado, con multiplicadores y resultados del año 1.
 
-Compras, COGS y caja son magnitudes separadas.
+### Decisiones
 
-## 04 · Escenarios y supuestos
+La misma hoja aporta las decisiones de formalización de Juan, activación de sede y CAPEX. El snapshot conserva mes configurado, mes recomendado, diferencia, condición y acción sugerida.
 
-El snapshot conserva escenarios y supuestos como registros independientes. Cada fila debe mantener `status`, `confidence` y `source`. El exportador exige además un nombre y valor explícitos para evitar crear escenarios vacíos o inferidos por posición.
+### Supuestos
 
-## Hechos reales usados por la comparación
+`05_PRODUCTOS_SUPUESTOS` se normaliza en categorías: caja/impuestos/compras, personal/gastos, crecimiento, capacidad, parámetros de producción, costos sensibles y política de pago de Juan.
 
-- Ventas: pedidos locales en estados aprobados/operativos.
-- COGS real: **solo** `unit_cost_snapshot`, `unitCostSnapshot` o `unitCost` guardado en la línea del pedido. Si falta, el panel marca el COGS como incompleto.
-- Compras de inventario y CAPEX: movimientos financieros locales V2.7.
-- Caja real conciliada: todavía no implementada; no se inventa a partir del plan.
+### Pendientes
 
-## Exportador privado del workbook canónico
+`06_AUDITORIA` aporta los hallazgos y decisiones pendientes. Se conservan prioridad, estado original, impacto, decisión recomendada, responsable, fecha, fuente, riesgo y observación.
 
-V3.0 incorpora `scripts/exportar_mfo_v30.py`. El script solo reconoce estas hojas canónicas:
+## Normalización de estados
 
-- `01_Plan_Ventas`
-- `02_Productos_Costos`
-- `03_Flujo_24M`
-- `04_Escenarios_PE`
-- `05_Supuestos`
-- `06_Pendientes`
+Para no elevar supuestos del modelo a hechos reales:
 
-No se adivinan filas ni columnas. El mapeo debe declarar el número exacto de la fila de encabezados y el texto exacto de cada encabezado requerido. El ejemplo versionado está en `documentacion/MFO_MAPEO_V30.example.json`; está deliberadamente incompleto y no puede exportar hasta ser rellenado contra el XLSX real.
+- `APROBADO`, `OFICIAL ...`, `CONFIRMADO` → `CONFIRMADO`.
+- `CALCULADO`, `INFERIDO`, `CONFIRMADO MODELO` → `INFERIDO`.
+- `PROVISIONAL`, `CONFIRMADO PARCIAL` → `ESTIMADO`.
+- `EDITABLE`, `DECISIÓN`, `PENDIENTE` → `PENDIENTE`.
 
-### 1. Preparar el entorno local
+El valor original permanece en `modelStatus`.
+
+## Reconciliación
+
+El exportador no se limita a leer celdas. Antes de generar el JSON reconcilia:
+
+- unidades año 1;
+- ventas año 1;
+- costo directo año 1;
+- unidades año 2;
+- ventas año 2;
+- costo directo año 2;
+- caja final del mes 24.
+
+Si cualquiera de estos controles no coincide con los totales visibles del workbook, la exportación falla. Un snapshot válido queda marcado con `meta.reconciliation = "PASS"`.
+
+## Exportador privado
+
+V3.0 utiliza `scripts/exportar_mfo_v30.py`. El script conoce el perfil confirmado del MFO v3.3; ya no requiere un archivo de mapeo manual.
+
+### Preparar entorno local
 
 ```bash
 python3 -m pip install openpyxl
 ```
 
-### 2. Inspeccionar únicamente encabezados
+### Validar únicamente estructura
 
 ```bash
-python3 scripts/exportar_mfo_v30.py /ruta/MFO_EL_ERRANTE_24_MESES_v2_CLARO.xlsx --inspect
+python3 scripts/exportar_mfo_v30.py /ruta/MFO_EL_ERRANTE_v3_3_Decisiones_y_Escenarios.xlsx --inspect
 ```
 
-La inspección escribe `private-data/mfo_headers_v30.json`. Solo extrae etiquetas de las primeras filas de las seis hojas canónicas; no publica el workbook.
+La inspección solo escribe nombres de hojas y anclas en `private-data/mfo_profile_v33.json`; no exporta cifras.
 
-### 3. Crear el mapeo privado
-
-Copia la plantilla fuera de control de versiones:
+### Generar snapshot privado
 
 ```bash
-mkdir -p private-data
-cp documentacion/MFO_MAPEO_V30.example.json private-data/mfo_mapeo_v30.json
-```
-
-Completa `headerRow` y cada nombre de columna usando exclusivamente la inspección del workbook real. `private-data/` está excluido por `.gitignore`.
-
-### 4. Exportar el snapshot
-
-```bash
-python3 scripts/exportar_mfo_v30.py /ruta/MFO_EL_ERRANTE_24_MESES_v2_CLARO.xlsx \
-  --mapping private-data/mfo_mapeo_v30.json \
+python3 scripts/exportar_mfo_v30.py /ruta/MFO_EL_ERRANTE_v3_3_Decisiones_y_Escenarios.xlsx \
   --output private-data/mfo_snapshot_v30.json
 ```
 
-El exportador falla de forma cerrada si falta una hoja, un encabezado configurado, un valor mínimo obligatorio o si una fórmula del XLSX no tiene valor calculado almacenado. En este último caso se debe abrir y guardar el workbook en Excel o LibreOffice antes de repetir la exportación.
+El exportador falla de forma cerrada cuando:
 
-### 5. Cargar en Finanzas
+- falta una de las nueve hojas esperadas;
+- cambia un título o encabezado crítico;
+- falta alguno de los 14 SKU esperados;
+- hay cantidades, precios o costos obligatorios vacíos;
+- una fórmula no tiene valor calculado almacenado;
+- los totales exportados no reconcilian contra el workbook.
 
-Abre `finanzas.html` y usa **Cargar snapshot JSON** para seleccionar `private-data/mfo_snapshot_v30.json`. El navegador guarda el snapshot localmente; el archivo no se sube al repositorio ni se envía por red.
+`private-data/` está excluido por `.gitignore`.
 
-## Estado del mapeo real
+## Uso en Finanzas
 
-La transferencia financiera identifica `MFO_EL_ERRANTE_24_MESES_v2_CLARO.xlsx` como modelo canónico provisional, pero el XLSX no está incorporado al repositorio público. Por seguridad, V3.0 no inventa los encabezados exactos ni congela un mapeo supuesto. Cuando el workbook esté disponible localmente se ejecutará primero `--inspect`, se completará el mapeo privado y se validarán los totales de control antes de usar el snapshot como plan de referencia.
+Abre `finanzas.html` y usa **Cargar snapshot JSON**. El panel muestra:
+
+- Plan vs. real;
+- decisiones configuradas vs. recomendadas;
+- escenarios del año 1;
+- estructura y trazabilidad del snapshot;
+- pendientes de auditoría, plegados para no saturar la interfaz.
+
+El panel no ejecuta decisiones ni modifica operación.
+
+## Hechos reales usados por la comparación
+
+- Ventas reales: pedidos locales en estados aprobados/operativos.
+- COGS real: únicamente el costo snapshot guardado en cada línea del pedido (`unit_cost_snapshot`, `unitCostSnapshot` o equivalente).
+- Compras y CAPEX reales: movimientos financieros locales V2.7.
+- Caja real conciliada: pendiente de una futura capa específica de hechos de caja.

@@ -66,7 +66,7 @@
   }
 
   function markActive(page){
-    const target={inicio:'index.html',tienda:'tienda.html',nosotros:'nosotros.html',bitacora:'bitacora.html',movimiento:'en-movimiento.html'}[page];
+    const target={inicio:'index.html',tienda:'tienda.html',casa:'en-casa.html',nosotros:'nosotros.html',bitacora:'bitacora.html',movimiento:'en-movimiento.html'}[page];
     if(target)document.querySelectorAll(`a[href="${target}"]`).forEach(link=>link.classList.add('active'));
     if(page==='historia'||page==='equipo')document.querySelectorAll('a[href="nosotros.html"]').forEach(link=>link.classList.add('active'));
   }

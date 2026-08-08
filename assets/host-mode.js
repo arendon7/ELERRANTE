@@ -61,7 +61,7 @@
   function ensureUserAccess(){
     const footer=document.querySelector('#site-footer');if(!footer||footer.querySelector('a[href="acceso.html"]'))return;
     const target=[...footer.querySelectorAll('nav,.footer-links,.footer-bottom,.container,div')].find(node=>node.querySelector?.('a'))||footer;
-    const link=document.createElement('a');link.href='acceso.html';link.textContent='Acceso usuarios';link.className='ee-user-access-link';link.setAttribute('aria-label','Acceso de usuarios al sistema interno');target.appendChild(link);
+    const link=document.createElement('a');link.href='acceso.html';link.textContent='Acceso usuarios';link.className='ee-user-access-link';target.appendChild(link);
   }
 
   function curatePublicChrome(){

@@ -22,6 +22,12 @@ function observe(page) {
   };
 }
 
+async function seedInternalSession(page){
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'qa-oferta',displayName:'QA Oferta',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()}));
+  });
+}
+
 async function openOffer(page,path='/studio.html'){
   await page.goto(path,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.EE_DATA?.products?.length===11);
@@ -110,10 +116,12 @@ test.describe('Studio de Oferta v0.9',()=>{
     await clean();
   });
 
-  test('el Panel de Control V3.0 delega el gobierno de oferta al Studio',async({page})=>{
+  test('el Panel de Control V3.1.1 delega el gobierno de oferta al Studio bajo sesión interna',async({page})=>{
     const clean=observe(page);
+    await seedInternalSession(page);
     await page.goto('/control.html',{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>window.EE_DATA?.products?.length===11);
+    await expect(page).toHaveURL(/control\.html/);
     await expect(page.locator('[data-offer-control-v09]')).toHaveCount(0);
     await expect(page.locator('script[src="assets/offer-studio-v09.js"]')).toHaveCount(0);
     await expect(page.getByRole('link',{name:'Datos maestros'})).toHaveAttribute('href','studio.html');

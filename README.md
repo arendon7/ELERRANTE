@@ -70,13 +70,22 @@ Principios operativos:
 
 `finanzas.html` monta un único **Financial Workbench V3.1**. Ya no presenta el MFO y Finanzas V2.7 como dos paneles superpuestos.
 
-### Baseline privado
+### Dos formas de empezar
 
-El snapshot MFO importado permanece bajo:
+El módulo financiero nunca publica cifras privadas por defecto:
+
+1. **Importar baseline MFO:** carga el snapshot privado del MFO v3.3 en el navegador.
+2. **Crear modelo desde cero:** genera localmente un horizonte editable de 24 meses usando únicamente productos y precios ya públicos; costos, volúmenes y supuestos sensibles nacen en cero o `PENDIENTE` para que el usuario los complete.
+
+El segundo camino permite trabajar inmediatamente con tablas, gráficas, escenarios y editores aunque el archivo privado no esté disponible en ese dispositivo. `assets/finance-starter-v31.js` no hace llamadas de red ni contiene cifras financieras privadas.
+
+### Baseline privado o local
+
+El baseline permanece bajo:
 
 `ee_v30_mfo_snapshot`
 
-Es la referencia inmutable del modelo y no se modifica al trabajar.
+Puede provenir del MFO privado o del starter local. Es la referencia inmutable del modelo y no se modifica al trabajar.
 
 ### Working Model
 
@@ -117,7 +126,7 @@ El dashboard incluye KPIs y visualizaciones SVG autocontenidas para:
 
 ### Real vs. Plan
 
-- **Plan**: working model derivado del MFO.
+- **Plan**: working model derivado del baseline financiero.
 - **Real**: pedidos y movimientos registrados.
 - **COGS real**: sólo costo histórico almacenado en la línea del pedido (`unit_cost_snapshot` / equivalente).
 - Si falta costo histórico, el dato permanece incompleto; no se rellena con el costo actual.
@@ -161,6 +170,7 @@ scripts/verificar_activos_hq_v28.py
 scripts/verificar_modulos_v28.py
 scripts/verificar_v30_separacion.py
 scripts/verificar_v31_interno.py
+scripts/verificar_release_v31.py
 scripts/preparar_sitio_materializado_v28.py
 tests/e2e/
 ```
@@ -172,6 +182,7 @@ La integración a `main` requiere auditoría canónica, validación/materializac
 - Nunca versionar XLSX financieros, snapshots reales, contraseñas, `service_role`, tokens, cadenas de conexión o datos personales reales.
 - El login local no se presenta como seguridad servidor.
 - El MFO es plan/escenario y nunca sobrescribe hechos operativos.
+- El starter financiero no inventa costos privados: éstos nacen en cero y `PENDIENTE`.
 - La autenticación multiusuario, roles, persistencia compartida y auditoría servidor quedan para una fase posterior con Auth + RLS.
 
 ## Documentación principal

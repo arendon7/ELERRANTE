@@ -1,8 +1,8 @@
 {
   "name": "el-errante-webapp",
-  "version": "3.1.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "Webapp pública e interna de El Errante con canon V2.8, narrativa V2.9 y módulos V3.1 de acceso, operación y finanzas editables.",
+  "description": "Webapp pública e interna de El Errante. V3.1 se desarrolla como candidato sobre la release estable 3.0.0 y el canon técnico V2.8.",
   "scripts": {
     "test:e2e": "playwright test"
   },

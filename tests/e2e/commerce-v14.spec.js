@@ -8,9 +8,11 @@ async function seedCart(page) {
 
 async function assertPublicCommerceBlocked(page) {
   await expect(page.locator('html')).toHaveAttribute('data-ee-public-commerce', 'not-connected');
-  await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+  await expect(page.getByText('Compra online todavía no activada', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal que debe recibir el pedido todavía no.' })).toBeVisible();
   await page.waitForTimeout(1400);
-  await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+  await expect(page.getByText('Compra online todavía no activada', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal que debe recibir el pedido todavía no.' })).toBeVisible();
   await expect(page.locator('#ee-name')).toHaveCount(0);
   await expect(page.locator('#ee-email')).toHaveCount(0);
   await expect(page.locator('#ee-address')).toHaveCount(0);

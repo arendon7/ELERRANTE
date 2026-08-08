@@ -1,6 +1,19 @@
 (()=>{
   "use strict";
 
+  const ORIGINAL_PAGE = document.body?.dataset?.page || "";
+  if(ORIGINAL_PAGE === "checkout") document.body.dataset.page = "checkout-v29-bootstrap";
+
+  const v29Root = () => document.querySelector('#checkout-v29-status');
+  const exposeLegacyRoot = () => {
+    const root = v29Root();
+    if(root) root.id = 'checkout-form';
+  };
+  const restoreV29Root = () => {
+    const root = document.querySelector('#checkout-form');
+    if(root && !document.querySelector('#checkout-form-v14')) root.id = 'checkout-v29-status';
+  };
+
   const loadLegacyCheckout = () => new Promise((resolve, reject) => {
     if (document.querySelector('script[data-ee-commerce-v14]')) return resolve();
     const script = document.createElement("script");
@@ -12,6 +25,12 @@
   });
 
   const backendReady = config => Boolean(config?.backend?.url && config?.backend?.publishableKey);
+  const publishRuntime = (backendState, runtime, pageState) => {
+    document.documentElement.dataset.eeCommerceBackend = backendState;
+    document.documentElement.dataset.eeCheckoutRuntime = runtime;
+    if(document.body) document.body.dataset.page = pageState;
+    document.dispatchEvent(new CustomEvent("ee:checkout-runtime", {detail:{backendState,runtime,pageState}}));
+  };
 
   async function hydratePublicSettings(config){
     if(!backendReady(config)) return config;
@@ -40,20 +59,29 @@
 
   async function boot(){
     const initial = window.EL_ERRANTE_COMMERCE_CONFIG || {};
+
+    if(!backendReady(initial)){
+      window.EL_ERRANTE_COMMERCE_CONFIG = initial;
+      restoreV29Root();
+      publishRuntime("preview", "v29-offline", "checkout-preview");
+      return;
+    }
+
     try{
       window.EL_ERRANTE_COMMERCE_CONFIG = await hydratePublicSettings(initial);
-      document.documentElement.dataset.eeCommerceBackend = backendReady(window.EL_ERRANTE_COMMERCE_CONFIG) ? "connected" : "preview";
-    }catch(error){
-      console.warn("No fue posible sincronizar la configuración pública; se usará el modo de contingencia.", error);
-      window.EL_ERRANTE_COMMERCE_CONFIG = initial;
-      document.documentElement.dataset.eeCommerceBackend = "degraded";
-    }
-    try{
+      if(!backendReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
+        restoreV29Root();
+        publishRuntime("preview", "v29-offline", "checkout-preview");
+        return;
+      }
+      exposeLegacyRoot();
+      publishRuntime("connected", "legacy-connected", "checkout");
       await loadLegacyCheckout();
     }catch(error){
-      console.error(error);
-      const form = document.querySelector("#checkout-form");
-      if(form) form.innerHTML = '<div class="form-alert">No fue posible iniciar el formulario. Recarga la página o escríbenos para coordinar tu pedido.</div>';
+      console.warn("No fue posible sincronizar la configuración pública; el checkout permanecerá sin conexión.", error);
+      window.EL_ERRANTE_COMMERCE_CONFIG = initial;
+      restoreV29Root();
+      publishRuntime("degraded", "v29-offline", "checkout-preview");
     }
   }
 

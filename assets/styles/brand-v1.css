@@ -111,7 +111,12 @@ h2{max-width:900px}
 @media (max-width:720px){
   .hero,.hero-mini{min-height:720px}
   .hero-content{padding-top:86px;padding-bottom:56px}
+  .hero-mini h1{font-size:clamp(2.4rem,9.4vw,3rem);line-height:.98}
   .product-media{aspect-ratio:1/1}
   .section-head{padding-bottom:22px}
   .intent-card{min-height:245px}
+  .cookie-banner{padding:16px}
+  .cookie-banner p{font-size:.9rem;line-height:1.45}
+  .cookie-actions{gap:7px;margin-top:12px}
+  .cookie-actions .btn{min-height:42px;padding:9px 13px;font-size:.84rem}
 }

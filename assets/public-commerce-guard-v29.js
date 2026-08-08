@@ -22,7 +22,7 @@
       const variant=variants.find(item=>item.id===variantId)||variants[0]||{};
       const quantity=Math.max(1,number(row.quantity??row.qty??1));
       const unitPrice=number(row.price??variant.price??product.price);
-      return {name:row.name||product.name||product.title||variant.name||'Producto El Errante',quantity,unitPrice,lineTotal:quantity*unitPrice};
+      return {productId,variantId:variant.id||variantId||'',name:row.name||product.name||product.title||variant.name||'Producto El Errante',quantity,unitPrice,lineTotal:quantity*unitPrice};
     });
   }
 
@@ -33,10 +33,13 @@
     if(!lines||!subtotalNode||!totalNode)return;
     const items=cartItems();
     const subtotal=items.reduce((sum,item)=>sum+item.lineTotal,0);
-    const markup=items.length
-      ? items.map(item=>`<div class="summary-row ee-v29-summary-line"><span>${escapeHtml(item.name)} × ${item.quantity}</span><strong>${money(item.lineTotal)}</strong></div>`).join('')
-      : '<p class="muted ee-v29-empty-cart">Tu carrito está vacío.</p>';
-    if(lines.innerHTML!==markup)lines.innerHTML=markup;
+    const signature=JSON.stringify(items.map(item=>[item.productId,item.variantId,item.name,item.quantity,item.unitPrice,item.lineTotal]));
+    if(lines.dataset.v29CartSignature!==signature){
+      lines.innerHTML=items.length
+        ? items.map(item=>`<div class="summary-row ee-v29-summary-line"><span>${escapeHtml(item.name)} × ${item.quantity}</span><strong>${money(item.lineTotal)}</strong></div>`).join('')
+        : '<p class="muted ee-v29-empty-cart">Tu carrito está vacío.</p>';
+      lines.dataset.v29CartSignature=signature;
+    }
     setText(subtotalNode,money(subtotal));
     setText(totalNode,money(subtotal));
   }

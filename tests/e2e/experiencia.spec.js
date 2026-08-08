@@ -33,7 +33,7 @@ test.describe('Superficies públicas',()=>{
 });
 
 test.describe('Herramientas internas',()=>{
-  const modules=[['/centro-interno.html','main',true],['/admin.html','#admin-dynamic',true],['/control.html','#control-center',true],['/operacion.html','#operations-app',true],['/studio.html','#studio-app',true],['/presentacion.html','.presentation-slide.active',false]];
+  const modules=[['/centro-interno.html','main',true],['/admin.html','#admin-dynamic',true],['/control.html','#control-v30',true],['/operacion.html','#production-v22',true],['/finanzas.html','#finance-v27',true],['/studio.html','#studio-app',true],['/presentacion.html','.presentation-slide.active',false]];
   for(const [path,selector,needsData] of modules){test(`${path} renderiza su modelo`,async({page})=>{const clean=observe(page);await open(page,path,needsData);const target=page.locator(selector).first();await expect(target).toBeVisible();expect((await target.innerText()).trim().length).toBeGreaterThan(20);await clean();});}
 });
 

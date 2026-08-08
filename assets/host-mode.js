@@ -25,7 +25,19 @@
   }
 
   function recover(scope=document){BRAND.applyToDom(scope);applySpecialPageAssets();}
-  function observe(){const observer=new MutationObserver(records=>{for(const record of records){for(const node of record.addedNodes){if(node.nodeType!==Node.ELEMENT_NODE)continue;recover(node.matches?.('img[src],source[srcset]')?node.parentElement||document:node);}}});observer.observe(document.body,{childList:true,subtree:true});}
+  function observe(){
+    const observer=new MutationObserver(records=>{
+      for(const record of records){
+        for(const node of record.addedNodes){
+          if(node.nodeType!==Node.ELEMENT_NODE)continue;
+          recover(node.matches?.('img[src],source[srcset]')?node.parentElement||document:node);
+          const touchesFooter=node.id==='site-footer'||node.closest?.('#site-footer')||node.querySelector?.('#site-footer');
+          if(touchesFooter)ensureUserAccess();
+        }
+      }
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
+  }
 
   async function refresh(){
     try{

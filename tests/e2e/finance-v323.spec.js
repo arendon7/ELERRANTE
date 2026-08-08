@@ -69,12 +69,21 @@ test.describe('Caja y tendencias V3.2.3',()=>{
     await expect(page.locator('.v323-chart')).toHaveCount(4);
   });
 
-  test('registra conteos sin sobreescribir el histórico y calcula la brecha contra el plan',async({page})=>{
+  test('registra conteos sin sobreescribir el histórico y calcula la brecha contra el plan',async({page},testInfo)=>{
     await seed(page);await openCashTrends(page);
     const form=page.locator('#v323-count-form');
     await form.locator('[name="amount"]').fill('1950000');
     await form.locator('[name="note"]').fill('Cierre físico inicial');
-    await form.getByRole('button',{name:'Registrar observación',exact:true}).click();
+    const submit=form.getByRole('button',{name:'Registrar observación',exact:true});
+    if(testInfo.project.name.includes('mobile')){
+      await submit.scrollIntoViewIfNeeded();
+      const hit=await submit.evaluate(el=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const r=el.getBoundingClientRect();const x=Math.min(innerWidth-2,Math.max(2,r.left+r.width/2));const y=Math.min(innerHeight-2,Math.max(2,r.top+r.height/2));const target=document.elementFromPoint(x,y);resolve({targeted:target===el||el.contains(target),overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,top:r.top,bottom:r.bottom,viewport:innerHeight});}))));
+      expect(hit.overflow).toBeLessThanOrEqual(2);
+      expect(hit.targeted).toBe(true);
+      expect(hit.bottom).toBeGreaterThan(0);
+      expect(hit.top).toBeLessThan(hit.viewport);
+    }
+    await submit.click();
     const delta=page.locator('.v323-count-delta');
     await expect(delta).toContainText('70.000');
     await expect(delta.locator('strong')).toHaveClass(/negative/);
@@ -125,8 +134,14 @@ test.describe('Caja y tendencias V3.2.3',()=>{
   test('caja y tendencias no desborda horizontalmente en móvil',async({page},testInfo)=>{
     test.skip(!testInfo.project.name.includes('mobile'),'Validación móvil');
     await seed(page);await openCashTrends(page);
-    const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,charts:[...document.querySelectorAll('.v323-chart')].map(x=>x.getBoundingClientRect().width),viewport:window.innerWidth}));
+    const geometry=await page.evaluate(()=>{
+      const table=document.querySelector('.v323-table');const wrap=table.closest('.v31-table-wrap');const rect=wrap.getBoundingClientRect();
+      return {overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,charts:[...document.querySelectorAll('.v323-chart')].map(x=>x.getBoundingClientRect().width),viewport:window.innerWidth,wrapLeft:rect.left,wrapRight:rect.right,wrapOverflow:wrap.scrollWidth-wrap.clientWidth};
+    });
     expect(geometry.overflow).toBeLessThanOrEqual(2);
     expect(geometry.charts.every(w=>w<=geometry.viewport)).toBe(true);
+    expect(geometry.wrapLeft).toBeGreaterThanOrEqual(-2);
+    expect(geometry.wrapRight).toBeLessThanOrEqual(geometry.viewport+2);
+    expect(geometry.wrapOverflow).toBeGreaterThan(0);
   });
 });

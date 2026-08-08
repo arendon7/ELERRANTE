@@ -46,6 +46,7 @@ jobs:
           node --check assets/access-v31.js
           node --check assets/internal-shell-v31.js
           node --check assets/finance-workbench-v31.js
+          node --check assets/finance-starter-v31.js
           node --check service-worker.js
           node --check scripts/exportar-fuente-canonica.mjs
       - name: Reconstruir fuente efectiva

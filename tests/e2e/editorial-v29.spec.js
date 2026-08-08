@@ -11,6 +11,15 @@ test.describe('Editorial y experiencia V2.9', () => {
     await expect(page.locator('html')).toHaveAttribute('data-ee-editorial-version', '2.9.0');
   });
 
+  test('el lenguaje compartido ya no reduce la marca a una réplica napolitana', async ({ page }) => {
+    await page.goto('/index.html');
+    await page.waitForFunction(() => window.EE_DATA?.settings?.content_ready === true);
+    const settings=await page.evaluate(()=>window.EE_DATA.settings);
+    expect(settings.descriptor).toContain('Pizza contemporánea hecha en Colombia');
+    expect(settings.commercial_signature).toBe('Aprendida viajando. Hecha desde Colombia.');
+    await expect(page.locator('body')).not.toContainText('Pizza napolitana, donde sea.');
+  });
+
   test('tienda ordena la elección por nivel de participación', async ({ page }) => {
     await page.goto('/tienda.html');
     await expect(page.getByRole('heading', { name: 'Elige cuánto trabajo quieres hacer tú.' })).toBeVisible();

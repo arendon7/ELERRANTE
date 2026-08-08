@@ -1,7 +1,7 @@
 importScripts('./assets/brand-canon-v28.js');
 
 const BRAND=self.EL_ERRANTE_BRAND_V28;
-const CACHE=BRAND.cache;
+const CACHE=`${BRAND.cache}-editorial-v29`;
 const GENERATED=[
   './assets/generated/data-v28.js','./assets/generated/app-v28.js','./assets/generated/preprod-v28.js',
   './assets/generated/manifest-v28.json','./assets/data-finalize-v28.js',
@@ -40,5 +40,5 @@ self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys
 function canonicalRequest(request){const url=new URL(request.url);const relative=url.pathname.replace(/^.*\/ELERRANTE\//,'').replace(/^\//,'');const resolved=BRAND.resolve(relative);if(!resolved||resolved===relative)return request;return new Request(new URL(resolved,self.registration.scope).toString(),request);}
 async function networkFirst(request){try{const response=await fetch(request,{cache:'no-store'});if(response&&response.ok){const cache=await caches.open(CACHE);await cache.put(request,response.clone());}return response;}catch(error){return (await caches.match(request))||(await caches.match('./offline.html'));}}
 async function cacheFirst(request){const canonical=canonicalRequest(request);const cached=await caches.match(canonical)||await caches.match(request);if(cached)return cached;const response=await fetch(canonical);if(response&&response.ok&&new URL(canonical.url).origin===self.location.origin){const cache=await caches.open(CACHE);await cache.put(canonical,response.clone());}return response;}
-self.addEventListener('fetch',event=>{const request=event.request;if(request.method!=='GET')return;const url=new URL(request.url);if(url.origin!==self.location.origin)return;const fresh=request.mode==='navigate'||request.destination==='document'||url.pathname.endsWith('/deploy-version.txt')||url.pathname.endsWith('/assets/commerce-runtime-config.js')||url.pathname.endsWith('/assets/brand-canon-v28.js')||url.pathname.endsWith('/assets/editorial-v29.js')||url.pathname.endsWith('/assets/public-actions-v29.js')||url.pathname.endsWith('/assets/public-commerce-guard-v29.js')||url.pathname.endsWith('/assets/generated/manifest-v28.json')||url.pathname.endsWith('/materialized-site-v28.json');event.respondWith(fresh?networkFirst(request):cacheFirst(request));});
+self.addEventListener('fetch',event=>{const request=event.request;if(request.method!=='GET')return;const url=new URL(request.url);if(url.origin!==self.location.origin)return;const fresh=request.mode==='navigate'||request.destination==='document'||url.pathname.endsWith('/deploy-version.txt')||url.pathname.endsWith('/assets/commerce-runtime-config.js')||url.pathname.endsWith('/assets/checkout-v15.js')||url.pathname.endsWith('/assets/brand-canon-v28.js')||url.pathname.endsWith('/assets/editorial-v29.js')||url.pathname.endsWith('/assets/public-actions-v29.js')||url.pathname.endsWith('/assets/public-commerce-guard-v29.js')||url.pathname.endsWith('/assets/generated/manifest-v28.json')||url.pathname.endsWith('/materialized-site-v28.json');event.respondWith(fresh?networkFirst(request):cacheFirst(request));});
 self.addEventListener('message',event=>{if(event.data==='SKIP_WAITING')self.skipWaiting();});

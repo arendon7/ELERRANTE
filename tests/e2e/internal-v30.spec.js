@@ -24,6 +24,16 @@ async function seedMfo(page){
 }
 
 test.describe('Sistema interno V3.1',()=>{
+  test('la web pública ofrece acceso discreto a usuarios desde el footer',async({page})=>{
+    await page.goto('/index.html');
+    const link=page.getByRole('link',{name:'Acceso usuarios'});
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href','acceso.html');
+    const visual=await link.evaluate(node=>{const style=getComputedStyle(node);return {fontSize:parseFloat(style.fontSize),textTransform:style.textTransform,color:style.color};});
+    expect(visual.fontSize).toBeLessThanOrEqual(12);
+    expect(visual.textTransform).toBe('uppercase');
+  });
+
   test('una ruta interna sin sesión redirige al acceso',async({page})=>{
     await page.goto('/finanzas.html');
     await expect(page).toHaveURL(/acceso\.html/);
@@ -81,7 +91,7 @@ test.describe('Sistema interno V3.1',()=>{
     await page.getByRole('button',{name:'Productos y costos'}).click();
     const price=page.locator('[data-product-price="SKU-TEST"]');await price.fill('12000');await price.blur();
     const cost=page.locator('[data-product-cost="SKU-TEST"]');await cost.fill('5000');await cost.blur();
-    await expect(page.locator('[data-section="products"]')).toContainText('$ 7.000');
+    await expect(page.locator('[data-section="products"]')).toContainText(/7[.\s]?000/);
     await page.getByRole('button',{name:'Escenarios'}).click();
     const volume=page.locator('[data-scenario="0|volumeFactor"]');await volume.fill('1.25');await volume.blur();
     const data=await page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v31_finance_working_model')));

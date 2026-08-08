@@ -17,6 +17,7 @@ access_js=read('assets/access-v31.js')
 shell=read('assets/internal-shell-v31.js')
 css=read('assets/internal-v31.css')
 hub=read('centro-interno.html')
+control=read('control.html')
 ops=read('operacion.html')
 finance=read('finanzas.html')
 workbench=read('assets/finance-workbench-v31.js')
@@ -33,8 +34,11 @@ checks={
  'sesión expira':'expiresAt' in access_js and 'SESSION_HOURS=8' in access_js,
  'guard de páginas internas':'ee_v31_session' in shell and 'location.replace' in shell and 'acceso.html' in shell,
  'centro exige sesión':'data-v31-protected' in hub and 'assets/internal-shell-v31.js' in hub,
- 'centro ofrece dos módulos':'Entrar a Operación' in hub and 'Entrar a Finanzas' in hub,
+ 'centro ofrece tres destinos':all(token in hub for token in ('Abrir Panel de control','Entrar a Operación','Entrar a Finanzas','href="control.html"','href="operacion.html"','href="finanzas.html"')),
+ 'control exige sesión':'data-v31-protected' in control and 'assets/internal-shell-v31.js' in control,
+ 'control conecta módulos':all(token in control for token in ('href="operacion.html"','href="finanzas.html"','href="centro-interno.html"','id="control-v30"')),
  'operación exige sesión':'data-v31-protected' in ops and 'assets/internal-shell-v31.js' in ops,
+ 'operación enlaza panel control':'href="control.html"' in ops,
  'operación consolida resumen':'id="control-v30"' in ops and 'assets/control-v30.js' in ops,
  'operación conserva pedidos':'id="daily-ops-v21"' in ops and 'assets/daily-ops-v21.js' in ops,
  'operación conserva producción':'id="production-v22"' in ops and 'assets/production-v22.js' in ops,
@@ -43,6 +47,7 @@ checks={
  'operación conserva compras':'id="procurement-v25"' in ops and 'assets/procurement-v25.js' in ops,
  'operación no monta workbench financiero':'finance-workbench-v31.js' not in ops,
  'finanzas exige sesión':'data-v31-protected' in finance and 'assets/internal-shell-v31.js' in finance,
+ 'finanzas enlaza panel control':'href="control.html"' in finance and 'href="operacion.html"' in finance,
  'finanzas monta único workbench':'id="finance-workbench-v31"' in finance and 'assets/finance-workbench-v31.js' in finance,
  'finanzas incorpora arranque local':'assets/finance-starter-v31.js' in finance and 'Crear modelo desde cero' in starter,
  'finanzas no monta motores de ejecución':all(token not in finance for token in ('assets/production-v22.js','assets/materials-v23.js','assets/procurement-v25.js')),
@@ -67,8 +72,11 @@ checks={
  'host crea acceso de usuarios':'ensureUserAccess' in host and "href='acceso.html'" in host,
  'service worker incluye V3.1':all(token in worker for token in ('./acceso.html','./assets/access-v31.js','./assets/internal-shell-v31.js','./assets/finance-workbench-v31.js','./assets/finance-starter-v31.js','./assets/internal-v31.css')),
  'service worker refresca JS V3.1':all(token in worker for token in ("endsWith('/assets/access-v31.js')","endsWith('/assets/internal-shell-v31.js')","endsWith('/assets/finance-workbench-v31.js')","endsWith('/assets/finance-starter-v31.js')")),
+ 'estilos selector tres módulos':'.v31-module-card.control' in css and 'repeat(3,minmax(0,1fr))' in css,
  'estilos responsive V3.1':'.v31-access-card' in css and '.v31-module-grid' in css and '.v31-kpis' in css and '@media(max-width:760px)' in css,
  'regresión cubre login':'primer acceso crea credenciales locales' in test,
+ 'regresión cubre panel control':'Abrir Panel de control' in test and 'Panel de control exige sesión' in test,
+ 'regresión cubre acceso finanzas':'Entrar a Finanzas' in test and 'finanzas.html' in test,
  'regresión cubre arranque desde cero':'Crear modelo desde cero' in test and 'LOCAL_STARTER_V31' in test,
  'regresión cubre aislamiento baseline':'sin modificar el baseline' in test,
  'regresión cubre gráficas':"locator('.v31-chart')" in test,
@@ -83,8 +91,8 @@ for name,content in [('acceso',access_js),('shell',shell),('finanzas',workbench)
     for forbidden in ('service_role','postgres://','supabase_service','private_key'):
         if forbidden in lowered: errors.append(f'{name}: posible secreto {forbidden}')
 
-print('EL ERRANTE V3.1 — ACCESO / OPERACIÓN / FINANZAS')
-print('='*54)
+print('EL ERRANTE V3.1.1 — ACCESO / CONTROL / OPERACIÓN / FINANZAS')
+print('='*63)
 print(f'Controles: {len(checks)}')
 print(f'Problemas: {len(errors)}')
 if errors:

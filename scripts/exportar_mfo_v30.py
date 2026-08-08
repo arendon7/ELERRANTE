@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Exporta el MFO canónico de El Errante a un snapshot JSON V3.0.
 
-El workbook y el snapshot son privados. Este script vive en el repositorio, pero
-no contiene cifras financieras. El mapeo de columnas debe ser explícito: nunca
-se infieren columnas por posición.
+El workbook, el mapeo completado y el snapshot son privados. Este script vive en
+el repositorio, pero no contiene cifras financieras. El mapeo de columnas debe
+ser explícito: nunca se infieren columnas por posición.
 """
 from __future__ import annotations
 
@@ -26,11 +26,11 @@ REQUIRED_SHEETS = {
 VALID_STATES = {"CONFIRMADO", "ESTIMADO", "INFERIDO", "CONTRADICTORIO", "PENDIENTE"}
 REQUIRED_FIELDS = {
     "planSales": ("month", "sku", "quantity"),
-    "productCosts": ("sku",),
-    "cashFlow": ("month",),
-    "scenarios": (),
-    "assumptions": (),
-    "pending": (),
+    "productCosts": ("sku", "price", "directCost"),
+    "cashFlow": ("month", "endingCash"),
+    "scenarios": ("name", "value"),
+    "assumptions": ("name", "value"),
+    "pending": ("topic",),
 }
 
 
@@ -115,6 +115,9 @@ def validate_mapping(mapping: dict[str, Any]) -> None:
         for field in REQUIRED_FIELDS[logical]:
             if not isinstance(columns.get(field), str) or not columns[field].strip():
                 die(f"{logical}: falta encabezado explícito para {field}.")
+        configured = [header for header in columns.values() if isinstance(header, str) and header.strip()]
+        if not configured:
+            die(f"{logical}: no hay columnas configuradas.")
         for field, header in columns.items():
             if header is not None and (not isinstance(header, str) or not header.strip()):
                 die(f"{logical}: encabezado inválido para {field}.")
@@ -172,12 +175,9 @@ def extract_rows(ws_values, ws_formulas, cfg: dict[str, Any], logical: str, defa
         record["status"] = normalize_state(record.get("status"), defaults["status"])
         record["confidence"] = str(record.get("confidence") or defaults["confidence"])
         record["source"] = str(record.get("source") or ws_values.title)
-        if logical == "planSales" and (not record.get("month") or not record.get("sku")):
-            die(f"{ws_values.title} fila {row_idx}: planSales exige month y sku.")
-        if logical == "productCosts" and not record.get("sku"):
-            die(f"{ws_values.title} fila {row_idx}: productCosts exige sku.")
-        if logical == "cashFlow" and not record.get("month"):
-            die(f"{ws_values.title} fila {row_idx}: cashFlow exige month.")
+        missing_values = [field for field in REQUIRED_FIELDS[logical] if record.get(field) in (None, "")]
+        if missing_values:
+            die(f"{ws_values.title} fila {row_idx}: faltan valores requeridos: {', '.join(missing_values)}.")
         output.append(record)
     return output
 

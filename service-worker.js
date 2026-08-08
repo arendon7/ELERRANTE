@@ -1,7 +1,7 @@
 importScripts('./assets/brand-canon-v28.js');
 
 const BRAND=self.EL_ERRANTE_BRAND_V28;
-const CACHE=`${BRAND.cache}-editorial-v29`;
+const CACHE=BRAND.cache;
 const GENERATED=[
   './assets/generated/data-v28.js','./assets/generated/app-v28.js','./assets/generated/preprod-v28.js',
   './assets/generated/manifest-v28.json','./assets/data-finalize-v28.js',

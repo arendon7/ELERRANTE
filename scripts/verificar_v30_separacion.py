@@ -31,6 +31,13 @@ canonical_mfo_sheets=(
     '01_Plan_Ventas','02_Productos_Costos','03_Flujo_24M',
     '04_Escenarios_PE','05_Supuestos','06_Pendientes'
 )
+required_export_contract=(
+    '"productCosts": ("sku", "price", "directCost")',
+    '"cashFlow": ("month", "endingCash")',
+    '"scenarios": ("name", "value")',
+    '"assumptions": ("name", "value")',
+    '"pending": ("topic",)',
+)
 
 checks={
     'hub enlaza panel operativo':'href="control.html"' in hub,
@@ -60,7 +67,7 @@ checks={
     'esquema MFO documentado':'Plan / escenario' in mfo_doc and 'unit_cost_snapshot' in mfo_doc and 'no almacena cifras reales' in mfo_doc,
     'exportador MFO presente':'exportar_mfo_v30.py' in mfo_doc and 'No se adivinan columnas' in mfo_exporter,
     'exportador exige mapeo explícito':'--mapping' in mfo_exporter and 'headerRow debe ser un entero >= 1' in mfo_exporter,
-    'exportador exige valores mínimos':all(token in mfo_exporter for token in ("'productCosts': ('sku', 'price', 'directCost')", "'cashFlow': ('month', 'endingCash')", "'scenarios': ('name', 'value')", "'assumptions': ('name', 'value')", "'pending': ('topic',)")),
+    'exportador exige valores mínimos':all(token in mfo_exporter for token in required_export_contract),
     'exportador reconoce seis hojas canónicas':all(name in mfo_exporter for name in canonical_mfo_sheets),
     'plantilla reconoce seis hojas canónicas':all(name in mfo_mapping for name in canonical_mfo_sheets),
     'plantilla es fail-closed':'"headerRow": 0' in mfo_mapping,

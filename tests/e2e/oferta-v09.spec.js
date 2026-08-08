@@ -22,7 +22,7 @@ function observe(page) {
   };
 }
 
-async function openOffer(page,path){
+async function openOffer(page,path='/studio.html'){
   await page.goto(path,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.EE_DATA?.products?.length===11);
   await page.waitForFunction(()=>window.EE_OFFER_STUDIO_V09?.ready===true);
@@ -64,7 +64,7 @@ async function activateVisibleButton(page,button,isMobile){
 test.describe('Studio de Oferta v0.9',()=>{
   test('renderiza las 11 referencias, sus puertas y el filtro de ola 1',async({page})=>{
     const clean=observe(page);
-    await openOffer(page,'/studio.html');
+    await openOffer(page);
 
     const studio=page.locator('[data-offer-studio-v09]');
     await expect(studio).toBeVisible();
@@ -83,7 +83,7 @@ test.describe('Studio de Oferta v0.9',()=>{
 
   test('guarda una decisión local sin modificar el catálogo público',async({page},testInfo)=>{
     const clean=observe(page);
-    await openOffer(page,'/studio.html');
+    await openOffer(page);
 
     const form=page.locator('.offer-governance-form');
     await form.locator('[name="overall_status"]').selectOption('aprobado_con_condiciones');
@@ -110,16 +110,14 @@ test.describe('Studio de Oferta v0.9',()=>{
     await clean();
   });
 
-  test('Centro de Control resume el núcleo sin reemplazar sus herramientas existentes',async({page})=>{
+  test('el Panel de Control V3.0 delega el gobierno de oferta al Studio',async({page})=>{
     const clean=observe(page);
-    await openOffer(page,'/control.html');
-
-    const summary=page.locator('[data-offer-control-v09]');
-    await expect(summary).toBeVisible();
-    await expect(summary.locator('.offer-wave-table tbody tr')).toHaveCount(6);
-    await expect(summary).toContainText('Estado del núcleo de piloto');
-    await expect(page.locator('#seller-form')).toBeVisible();
-    await expect(page.locator('.control-products tbody tr')).toHaveCount(14);
+    await page.goto('/control.html',{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>window.EE_DATA?.products?.length===11);
+    await expect(page.locator('[data-offer-control-v09]')).toHaveCount(0);
+    await expect(page.locator('script[src="assets/offer-studio-v09.js"]')).toHaveCount(0);
+    await expect(page.getByRole('link',{name:'Datos maestros'})).toHaveAttribute('href','studio.html');
+    expect(await page.evaluate(()=>typeof window.EE_OFFER_STUDIO_V09)).toBe('undefined');
     await clean();
   });
 });

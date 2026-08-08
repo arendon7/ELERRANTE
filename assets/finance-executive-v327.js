@@ -1,0 +1,50 @@
+(()=>{
+'use strict';
+const VERSION='3.2.7';
+const ROOT_ID='finance-workbench-v31';
+const MONTH_KEY='ee_v327_executive_month';
+const n=v=>{const x=Number(v);return Number.isFinite(x)?x:0;};
+const esc=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const money=v=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(n(v));
+const percent=v=>new Intl.NumberFormat('es-CO',{style:'percent',maximumFractionDigits:0}).format(n(v));
+const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Bogota'});
+const currentMonth=()=>today().slice(0,7);
+const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch(_){return fallback;}};
+function working(){return window.EL_ERRANTE_FINANCE_V31?.working?.()||null;}
+function months(data){return [...new Set((data?.planSales||[]).map(r=>r.month).filter(Boolean))].sort();}
+function selectedMonth(data){const ms=months(data);let month=sessionStorage.getItem(MONTH_KEY)||currentMonth();if(ms.length&&!ms.includes(month))month=ms[0];sessionStorage.setItem(MONTH_KEY,month);return month;}
+function scenarioCash(data,month){if(!window.EL_ERRANTE_FINANCE_V324)return null;const ms=months(data),position=ms.indexOf(month);if(position<0)return null;const year=Math.floor(position/12),row=position%12,items=window.EL_ERRANTE_FINANCE_V324.projections(data,year).scenarios||[],values=items.map(s=>s.rows?.[row]?.endingCash).filter(v=>Number.isFinite(Number(v))).map(n);return values.length?{min:Math.min(...values),max:Math.max(...values),count:values.length}:null;}
+function summary(data,month=selectedMonth(data)){
+ const close=window.EL_ERRANTE_FINANCE_V32?.closeData?.(data,month)||null;
+ const trend=(window.EL_ERRANTE_FINANCE_V323?.trendData?.(data,Math.floor(Math.max(0,months(data).indexOf(month))/12))||[]).find(r=>r.month===month)||null;
+ const count=window.EL_ERRANTE_FINANCE_V323?.latestCount?.(month)||null;
+ const decisions=window.EL_ERRANTE_FINANCE_V325?.summary?.(data)||null;
+ const procurement=window.EL_ERRANTE_FINANCE_V326?.monthSummary?.(data,month)||null;
+ const scenarios=scenarioCash(data,month);
+ const future=month>currentMonth();
+ const salesPlan=close?.plan?.sales??0,realSales=future?null:(close?.a?.sales??0),salesCoverage=realSales===null||!salesPlan?null:realSales/salesPlan;
+ const realMargin=future||close?.a?.cogs===null?null:(close.a.sales-close.a.cogs);
+ const observedCash=count?n(count.amount):null,planCash=close?.cash?.ending??trend?.planCash??0,minimum=close?.cash?.minimum??0;
+ const alerts=[];
+ if(close?.a?.cogs===null&&!future)alerts.push({tone:'warn',title:'COGS real incompleto',text:`${n(close.a.missing)} unidad(es) sin snapshot histórico.`,go:'close'});
+ if(close?.quality?.zero)alerts.push({tone:'warn',title:'Costos por completar',text:`${close.quality.zero} producto(s) con costo directo en cero.`,go:'unit'});
+ if(minimum>0&&planCash<minimum)alerts.push({tone:'warn',title:'Caja plan bajo mínimo',text:`${money(planCash)} vs. mínimo ${money(minimum)}.`,go:'cash'});
+ if(observedCash!==null&&minimum>0&&observedCash<minimum)alerts.push({tone:'bad',title:'Caja observada bajo mínimo',text:`${money(observedCash)} observados.`,go:'cash'});
+ if(decisions?.overdue)alerts.push({tone:'bad',title:'Decisiones vencidas',text:`${decisions.overdue} requieren revisión.`,go:'decisions'});
+ if(decisions?.now)alerts.push({tone:'warn',title:'Decisiones para evaluar ahora',text:`${decisions.now} en el mes recomendado.`,go:'decisions'});
+ if(procurement?.gapExposure>0)alerts.push({tone:'warn',title:'Brecha indicativa de abastecimiento',text:`${money(procurement.gapExposure)} con stock conocido.`,go:'procurement'});
+ if(procurement?.unknownStock)alerts.push({tone:'warn',title:'Conteos físicos faltantes',text:`${procurement.unknownStock} material(es) requeridos sin conteo.`,go:'procurement'});
+ if(!alerts.length)alerts.push({tone:'good',title:'Sin alertas estructurales',text:'No hay señales críticas en las fuentes disponibles.',go:'close'});
+ return {month,future,close,trend,count,decisions,procurement,scenarios,salesPlan,realSales,salesCoverage,realMargin,observedCash,planCash,minimum,alerts};
+}
+function metric(label,value,detail='',tone=''){return `<article class="v327-metric ${tone}"><small>${esc(label)}</small><strong>${esc(value)}</strong><span>${esc(detail)}</span></article>`;}
+function html(data){const s=summary(data),ms=months(data),opts=ms.map(m=>`<option value="${esc(m)}" ${m===s.month?'selected':''}>${esc(m)}</option>`).join(''),marginPlan=s.close?s.close.plan.sales-s.close.plan.cogs:0,quality=s.close?.quality,proc=s.procurement,decision=s.decisions;return `<section class="v327-executive" data-v327-executive><div class="v327-head"><div><p class="eyebrow">Resumen ejecutivo · Finanzas V3.2.7</p><h2>Lo importante primero.</h2><p>Una lectura compacta del mes seleccionado. Cada cifra conserva su fuente y abre el módulo especializado para profundizar.</p></div><label class="v31-field"><span>Mes</span><select data-v327-month>${opts}</select></label></div><div class="v327-grid">${metric('Ventas plan',money(s.salesPlan),s.realSales===null?'Real no disponible todavía':`Real ${money(s.realSales)} · ${s.salesCoverage===null?'sin ratio':percent(s.salesCoverage)}`)}${metric('Margen directo',money(marginPlan),s.realMargin===null?'Real incompleto/no disponible':`Real ${money(s.realMargin)}`,s.realMargin!==null&&s.realMargin>=0?'good':'')}${metric('Caja plan',money(s.planCash),s.minimum?`Mínimo ${money(s.minimum)}`:'Sin mínimo configurado',s.minimum&&s.planCash<s.minimum?'warn':'good')}${metric('Caja observada',s.observedCash===null?'Sin conteo':money(s.observedCash),s.count?`${s.count.date} · ${s.count.evidence}`:'No se infiere desde movimientos',s.observedCash!==null&&s.minimum&&s.observedCash<s.minimum?'warn':'')}${metric('Calidad de costos',quality?`${quality.confirmed}/${quality.products}`:'Sin lectura',quality?`${percent(quality.confirmedRate)} confirmado · ${quality.zero} en cero`:'',quality?.zero?'warn':'good')}${metric('Abastecimiento',proc?money(proc.gapExposure):'Sin lectura',proc?`${proc.unknownStock} sin conteo · ${proc.ops.orders.length} pedido(s) activo(s)`:'',proc?.gapExposure||proc?.unknownStock?'warn':'good')}${metric('Decisiones',decision?`${decision.open} abiertas`:'Sin decisiones',decision?`${decision.overdue} vencidas · ${decision.now} ahora`:'',decision?.overdue||decision?.now?'warn':'good')}${metric('Caja en escenarios',s.scenarios?`${money(s.scenarios.min)} → ${money(s.scenarios.max)}`:'Sin escenarios',s.scenarios?`${s.scenarios.count} escenario(s), no plan`:'') }</div><div class="v327-actions"><button type="button" data-v327-go="close">Abrir detalle · Cierre</button><button type="button" data-v327-go="cash">Abrir detalle · Caja</button><button type="button" data-v327-go="unit">Abrir detalle · Economía unitaria</button><button type="button" data-v327-go="procurement">Abrir detalle · Abastecimiento</button><button type="button" data-v327-go="scenarios">Abrir detalle · Escenarios</button><button type="button" data-v327-go="decisions">Abrir detalle · Decisiones</button></div><div class="v327-alerts">${s.alerts.slice(0,6).map(a=>`<button type="button" class="v327-alert ${a.tone}" data-v327-go="${esc(a.go)}"><strong>${esc(a.title)}</strong><span>${esc(a.text)}</span></button>`).join('')}</div><p class="v327-rule"><strong>Sin nueva contabilidad.</strong> Este resumen no escribe plan, hechos, inventario, escenarios o decisiones; únicamente sintetiza APIs ya certificadas.</p></section>`;}
+const selectors={close:'[data-v32-close="1"]',cash:'[data-v323-cash="1"]',unit:'[data-v322-unit="1"]',procurement:'[data-v326-procurement="1"]',scenarios:'[data-v324-scenarios="1"]',decisions:'[data-tab="decisions"]'};
+function bind(root){if(root.dataset.v327Bound)return;root.dataset.v327Bound='1';root.addEventListener('click',e=>{const go=e.target.closest('[data-v327-go]');if(!go)return;root.querySelector(selectors[go.dataset.v327Go]||'__none__')?.click();});root.addEventListener('change',e=>{const m=e.target.closest('[data-v327-month]');if(!m)return;sessionStorage.setItem(MONTH_KEY,m.value);decorate(true);});}
+function signature(data){return JSON.stringify([(data.planSales||[]).map(r=>[r.month,r.sales,r.cogs,r.quantity]),(data.cashFlow||[]).map(r=>[r.month,r.endingCash,r.purchases]),(data.productCosts||[]).map(r=>[r.sku,r.directCost,r.status]),(data.decisions||[]).map(r=>[r.name,r.configuredMonth,r.recommendedMonth,r.decisionState]),(data.scenarios||[]).map(r=>[r.name,r.volumeFactor,r.priceFactor,r.directCostFactor,r.opexFactor,r.purchaseFactor,r.collectionFactor]),read('ee_v323_cash_counts',[]),read('ee_v14_orders',[]),read('ee_v23_material_stock',{}),read('ee_v25_purchase_orders',[]),read('ee_v24_material_purchases',[]),read('ee_v27_finance_movements',[]),sessionStorage.getItem(MONTH_KEY)||'']);}
+let decorating=false;
+function decorate(force=false){if(decorating)return;decorating=true;try{const root=document.getElementById(ROOT_ID),data=working(),dashboard=root?.querySelector('[data-section="dashboard"]');if(!root||!data||!dashboard)return;const sig=signature(data),existing=dashboard.querySelector('[data-v327-executive]');if(force||!existing||existing.dataset.signature!==sig){existing?.remove();dashboard.insertAdjacentHTML('afterbegin',html(data));const next=dashboard.querySelector('[data-v327-executive]');if(next)next.dataset.signature=sig;}bind(root);document.documentElement.dataset.financeExecutiveVersion=VERSION;}finally{decorating=false;}}
+function start(){decorate();const root=document.getElementById(ROOT_ID);if(!root)return;let queued=false;new MutationObserver(()=>{if(queued||decorating)return;queued=true;requestAnimationFrame(()=>{queued=false;decorate();});}).observe(root,{childList:true,subtree:true});window.addEventListener('storage',()=>decorate(true));}
+window.EL_ERRANTE_FINANCE_V327={version:VERSION,summary,scenarioCash};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();

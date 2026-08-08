@@ -91,7 +91,8 @@ test.describe('Editorial y experiencia V2.9', () => {
 
     await page.evaluate(()=>sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'qa',displayName:'QA',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+3600000).toISOString()})));
     await page.goto('/centro-interno.html');
-    await expect(page.getByRole('heading', { name: 'Elige el contexto antes de empezar a trabajar.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Elige dónde quieres trabajar.' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Abrir Panel de control/ })).toHaveAttribute('href','control.html');
     await expect(page.getByRole('link', { name: /Entrar a Operación/ })).toHaveAttribute('href','operacion.html');
     await expect(page.getByRole('link', { name: /Entrar a Finanzas/ })).toHaveAttribute('href','finanzas.html');
   });

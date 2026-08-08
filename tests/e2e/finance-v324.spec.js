@@ -112,6 +112,33 @@ test.describe('Escenarios comparables V3.2.4',()=>{
     expect(after.history.some(h=>h.label==='Escenario creado')).toBe(true);
   });
 
+  test('maneja un modelo sin escenarios y permite crear el primero',async({page})=>{
+    await seed(page);await openScenarios(page);
+    const before=await page.evaluate(()=>{
+      const data=window.EL_ERRANTE_FINANCE_V31.working();
+      const plan=JSON.stringify(data.planSales),cash=JSON.stringify(data.cashFlow);
+      data.scenarios=[];
+      localStorage.setItem('ee_v31_finance_working_model',JSON.stringify(data));
+      sessionStorage.removeItem('ee_v324_scenario_selected');
+      return {plan,cash};
+    });
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-finance-scenario-version','3.2.4');
+    await page.getByRole('button',{name:'Escenarios',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'Aún no hay escenarios editables.'})).toBeVisible();
+    await expect(page.locator('[data-v324-factor]')).toHaveCount(0);
+    await expect(page.locator('.v324-scenario-card')).toHaveCount(1);
+    await page.getByRole('button',{name:'Crear primer escenario',exact:true}).click();
+    const after=await page.evaluate(()=>{
+      const data=window.EL_ERRANTE_FINANCE_V31.working();return {count:data.scenarios.length,row:data.scenarios[0],plan:JSON.stringify(data.planSales),cash:JSON.stringify(data.cashFlow)};
+    });
+    expect(after.count).toBe(1);
+    expect(after.row.volumeFactor).toBe(1);
+    expect(after.row.priceFactor).toBe(1);
+    expect(after.plan).toBe(before.plan);
+    expect(after.cash).toBe(before.cash);
+  });
+
   test('las tablas comparativas tienen scroll interno y no ensanchan el documento móvil',async({page},testInfo)=>{
     test.skip(!testInfo.project.name.includes('mobile'),'Validación móvil');
     await seed(page);await openScenarios(page);

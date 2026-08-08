@@ -20,7 +20,7 @@ test.describe('Profundidad financiera V3.2',()=>{
     await seed(page);await page.goto('/finanzas.html');
     await expect(page.locator('html')).toHaveAttribute('data-finance-depth-version','3.2.0');
     await expect(page.getByText('Pulso · 2026-08')).toBeVisible();
-    await page.getByRole('button',{name:'Ver cierre mensual'}).click();
+    await page.getByRole('button',{name:'Ver cierre mensual',exact:true}).click();
     await expect(page.getByRole('heading',{name:'Un mes, una lectura para decidir.'})).toBeVisible();
     await expect(page.getByRole('heading',{name:'Punto de equilibrio'})).toBeVisible();
     await expect(page.getByRole('heading',{name:'Calidad de costos'})).toBeVisible();
@@ -43,17 +43,17 @@ test.describe('Profundidad financiera V3.2',()=>{
 
   test('expone calidad de costo y semáforo de liquidez en los editores existentes',async({page})=>{
     await seed(page);await page.goto('/finanzas.html');
-    await page.getByRole('button',{name:'Productos y costos'}).click();
+    await page.getByRole('button',{name:'Productos y costos',exact:true}).click();
     await expect(page.locator('[data-v32-quality]')).toContainText('1/1 costos confirmados');
-    await page.getByRole('button',{name:'Gastos y caja'}).click();
-    await expect(page.locator('[data-v32-cash]')).toContainText('Caja final planificada');
+    await page.getByRole('button',{name:'Gastos y caja',exact:true}).click();
+    await expect(page.locator('[data-v32-cash]')).toContainText('caja final planificada');
     await expect(page.locator('[data-v32-cash]')).toContainText('Política mínima');
   });
 
   test('el cierre V3.2 no desborda horizontalmente en móvil',async({page},testInfo)=>{
     test.skip(!testInfo.project.name.includes('mobile'),'Validación móvil');
     await seed(page);await page.goto('/finanzas.html');
-    await page.getByRole('button',{name:'Cierre mensual'}).click();
+    await page.locator('[data-v32-close="1"]').click();
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(2);
   });

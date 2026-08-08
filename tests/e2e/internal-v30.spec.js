@@ -64,10 +64,18 @@ test.describe('Sistema interno V3.1',()=>{
     await expect(page.locator('#finance-workbench-v31')).toHaveCount(0);
   });
 
-  test('Finanzas muestra un único workbench y exige baseline privado',async({page})=>{
+  test('Finanzas permite importar MFO o iniciar un modelo local desde cero',async({page})=>{
     await seedSession(page);await page.goto('/finanzas.html');
     await expect(page.getByRole('heading',{name:'Planificar, modificar, comparar y decidir.'})).toBeVisible();
     await expect(page.locator('#finance-workbench-v31')).toContainText('Carga el baseline privado del MFO.');
+    await expect(page.getByRole('button',{name:'Crear modelo desde cero'})).toBeVisible();
+    await page.getByRole('button',{name:'Crear modelo desde cero'}).click();
+    await expect(page.getByText('Dashboard financiero')).toBeVisible();
+    const local=await page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v30_mfo_snapshot')));
+    expect(local.meta.workbookProfile).toBe('LOCAL_STARTER_V31');
+    expect(local.planSales.length).toBeGreaterThanOrEqual(24);
+    expect(local.productCosts.length).toBeGreaterThan(0);
+    expect(local.productCosts.every(row=>row.directCost===0&&row.status==='PENDIENTE')).toBeTruthy();
     await expect(page.locator('#finance-v27')).toHaveCount(0);
     await expect(page.locator('#production-v22')).toHaveCount(0);
   });

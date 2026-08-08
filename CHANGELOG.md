@@ -1,5 +1,49 @@
 # Changelog
 
+## [3.0.0] — Operación y Finanzas separadas
+
+### Arquitectura interna
+
+- `centro-interno.html` pasa a ser la puerta interna de El Errante.
+- `control.html` concentra prioridades y alertas operativas.
+- `operacion.html` compone Agenda V2.1, Producción V2.2, Materiales/BOM V2.3, Medición V2.4 y Abastecimiento V2.5.
+- `finanzas.html` queda aislado de producción e inventario operativo.
+- `admin.html` permanece temporalmente como superficie heredada de compatibilidad.
+
+### Panel operativo
+
+- Pedidos comprometidos se convierten en prioridades diarias.
+- Explosión BOM y lectura de requerimientos sin generar compras automáticas.
+- Distinción estricta entre inventario desconocido y cero confirmado.
+- Alertas por SKU sin BOM, pedidos sin fecha, faltantes físicos y alistamientos incompletos.
+
+### MFO / Finanzas
+
+- Finanzas V2.7 conserva hechos locales y V3.0 añade Plan vs. Real.
+- El snapshot MFO se guarda únicamente en el navegador y nunca sobrescribe hechos operativos.
+- COGS real exige costo capturado en la línea del pedido; no se reconstruye desde el plan.
+- Compras, COGS, inventario y caja permanecen separados.
+- Integración del perfil real `MFO v3.3` de nueve hojas.
+- Exportador privado con reconciliación de plan, costos, caja, supuestos, escenarios, decisiones y auditoría.
+- Panel enriquecido con decisiones del modelo, escenarios del año 1 y pendientes de calidad.
+
+### Seguridad y calidad
+
+- `private-data/` queda fuera de Git.
+- El workbook financiero y snapshots con cifras no se versionan.
+- Barrera `scripts/verificar_v30_separacion.py` y regresión Playwright desktop/móvil.
+- Supabase continúa inactivo deliberadamente.
+
+## [2.9.0] — Narrativa, contenido y recorrido de cliente
+
+- Home reorganizada como recorrido de origen → método → elección → credibilidad → conversión.
+- Historia, Nuestra cocina, Equipo y Bitácora pasan a tener funciones editoriales diferenciadas.
+- Las 11 referencias reciben relato, perfil, proceso, uso y límites propios.
+- Equipo deja de ser una superficie técnica; las herramientas internas pasan a `centro-interno.html`.
+- Navegación pública simplificada.
+- Checkout, Ayuda, Eventos y Seguimiento dejan de simular acciones que el backend inactivo no puede confirmar.
+- Correcciones responsive y de checkout validadas en desktop y móvil.
+
 ## [2.8.0] — Canon transversal y superficie materializada
 
 ### Consolidado
@@ -7,7 +51,7 @@
 - La segunda versión local V2.7 se adopta como referencia visual y editorial aprobada.
 - `assets/brand-canon-v28.js` queda como única fuente activa de identidad, aliases, imágenes y galerías.
 - Se conservan Abastecimiento V2.5 y Finanzas Operativas V2.7 dentro de la aplicación integral V2.8.
-- La caché global se unifica en `el-errante-v2-8-brand-canon-1`.
+- La caché global se unifica bajo el canon V2.8.
 
 ### Separación fuente / ejecución
 
@@ -31,15 +75,6 @@
 - Overlays: `archive/legacy-brand-overlays/`.
 - Validadores globales antiguos: `archive/legacy-verifiers/`.
 - Informes V0.x: `archive/early-iterations/`.
-
-### Validación
-
-- Barrera integral de estructura, referencias y seguridad.
-- Canon visual único.
-- Integridad física de WebP HQ.
-- Verificación modular de operación, backend, activación, materiales, medición, abastecimiento y finanzas.
-- Comprobación de fuentes generadas y ausencia de loaders Base64 en la superficie ejecutable.
-- Playwright desktop/móvil y Pages pendientes de ejecución remota cuando GitHub Actions esté operativo.
 
 ## [2.7.0] — Finanzas Operativas
 

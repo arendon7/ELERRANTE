@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Barrera integral de estructura, marca, contenido y seguridad para El Errante V2.8."""
+"""Barrera integral de estructura, marca, contenido y seguridad para El Errante V3.0.
+
+V3.0 conserva el runtime/materializador canónico V2.8; por eso esta barrera
+verifica ambas capas de forma explícita en vez de confundir versión de release
+con versión del canon técnico.
+"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -13,23 +18,27 @@ ISSUES: list[str] = []
 CHECKED: list[str] = []
 
 PUBLIC_PAGES = [
-    'index.html','historia.html','nosotros.html','tienda.html','producto.html',
+    'index.html','historia.html','nosotros.html','equipo.html','tienda.html','producto.html',
     'producto-harina.html','producto-crea-tuya.html','en-casa.html','en-movimiento.html',
     'bitacora.html','articulo.html','recetas.html','receta.html','herramientas.html',
     'cobertura.html','ayuda.html','checkout.html','cuenta.html','caso-evento.html',
     'legal.html','offline.html'
 ]
-INTERNAL_PAGES = ['equipo.html','admin.html','activacion.html','control.html','operacion.html','studio.html','actas.html','presentacion.html']
-CRITICAL_SCRIPTS = [
+INTERNAL_PAGES = [
+    'centro-interno.html','admin.html','activacion.html','control.html','operacion.html',
+    'finanzas.html','studio.html','actas.html','presentacion.html'
+]
+CRITICAL_FILES = [
     'assets/brand-canon-v28.js','assets/data.js','assets/runtime.js','assets/app.js',
     'assets/preprod.js','assets/host-mode.js','assets/commerce-runtime-config.js',
-    'assets/admin-v15.js','assets/daily-ops-v21.js','assets/production-v22.js',
-    'assets/materials-data-v23.js','assets/materials-v23.js','assets/measurement-v24.js',
-    'assets/procurement-v25.js','assets/procurement-v25-guard.js','assets/finance-v27.js',
-    'assets/operations-v16.js','service-worker.js','scripts/exportar-fuente-canonica.mjs',
+    'assets/admin-v15.js','assets/control-v30.js','assets/mfo-v30.js','assets/internal-v30.css',
+    'assets/daily-ops-v21.js','assets/production-v22.js','assets/materials-data-v23.js',
+    'assets/materials-v23.js','assets/measurement-v24.js','assets/procurement-v25.js',
+    'assets/procurement-v25-guard.js','assets/finance-v27.js','assets/operations-v16.js',
+    'service-worker.js','scripts/exportar-fuente-canonica.mjs','scripts/exportar_mfo_v30.py',
     'scripts/materializar_fuentes_locales_v28.py','scripts/verificar_canon_marca_v28.py',
     'scripts/verificar_activos_hq_v28.py','scripts/verificar_modulos_v28.py',
-    'scripts/abrir_local_v28.sh','servidor_demo.py'
+    'scripts/verificar_v30_separacion.py','scripts/abrir_local_v28.sh','servidor_demo.py'
 ]
 GENERATED_SOURCES = [
     'assets/generated/data-v28.js','assets/generated/app-v28.js',
@@ -118,7 +127,7 @@ def clean_reference(value: str) -> str | None:
 
 for page in PUBLIC_PAGES: require(page, 'Página pública')
 for page in INTERNAL_PAGES: require(page, 'Módulo interno')
-for script in CRITICAL_SCRIPTS: require(script, 'Runtime o barrera crítica')
+for file in CRITICAL_FILES: require(file, 'Runtime o barrera crítica')
 for generated in GENERATED_SOURCES: require(generated, 'Fuente materializada V2.8')
 for entry in LOCAL_ENTRYPOINTS: require(entry, 'Acceso local V2.8')
 for path in ['deploy-version.txt','assets/logo-mark.svg','assets/logo-lockup.svg','manifest.webmanifest','package.json','README.md','CHANGELOG.md']:
@@ -133,6 +142,9 @@ host = read('assets/host-mode.js')
 sw = read('service-worker.js')
 deploy = read('deploy-version.txt')
 admin = read('admin.html')
+hub = read('centro-interno.html')
+control = read('control.html')
+finance_page = read('finanzas.html')
 products = read('assets/products-v6.js')
 runtime_config = read('assets/commerce-runtime-config.js')
 package = read('package.json')
@@ -152,14 +164,18 @@ required_markers = {
     'DOM usa manifiesto compartido': 'BRAND.applyToDom' in host and 'const VISUALS=' not in host,
     'service worker importa manifiesto': "importScripts('./assets/brand-canon-v28.js')" in sw,
     'service worker reconoce fuentes generadas': 'const GENERATED=' in sw and 'assets/generated/data-v28.js' in sw,
+    'service worker incorpora V3.0': './finanzas.html' in sw and './assets/control-v30.js' in sw and './assets/mfo-v30.js' in sw,
     'materializador declara tres salidas': all(name in materializer for name in ('data-v28.js','app-v28.js','preprod-v28.js')),
-    'release declarada V2.8': 'version=2.8.0' in deploy and f'cache={EXPECTED_CACHE}' in deploy,
-    'paquete declarado V2.8': '"version": "2.8.0"' in package,
-    'panel integral identificado V2.8': '· V2.8' in admin,
-    'servidor local identificado V2.8': 'EL ERRANTE LOCAL V2.8' in server and "range(8787, 8801)" in server,
-    'lanzador materializa y ejecuta barreras': 'materializar_fuentes_locales_v28.py' in launcher and all(marker in launcher for marker in ('verificar_demo.py','verificar_canon_marca_v28.py','verificar_activos_hq_v28.py','verificar_modulos_v28.py')),
-    'README vigente': '# El Errante V2.8' in readme,
-    'changelog vigente': '## [2.8.0]' in changelog,
+    'release V3.0 sobre runtime V2.8': 'release_version=3.0.0' in deploy and 'version=2.8.0' in deploy and f'cache={EXPECTED_CACHE}' in deploy,
+    'paquete declarado V3.0': '"version": "3.0.0"' in package,
+    'panel heredado identificado V2.8': '· V2.8' in admin,
+    'centro interno V3.0': 'Dos preguntas. Dos paneles.' in hub and 'href="finanzas.html"' in hub,
+    'control V3.0': 'id="control-v30"' in control and 'assets/control-v30.js' in control,
+    'finanzas V3.0': 'id="mfo-v30"' in finance_page and 'assets/mfo-v30.js' in finance_page,
+    'servidor local conserva runtime V2.8': 'EL ERRANTE LOCAL V2.8' in server and "range(8787, 8801)" in server,
+    'lanzador materializa y ejecuta barreras V3': 'materializar_fuentes_locales_v28.py' in launcher and all(marker in launcher for marker in ('verificar_demo.py','verificar_canon_marca_v28.py','verificar_activos_hq_v28.py','verificar_modulos_v28.py','verificar_v30_separacion.py')),
+    'README vigente': '# El Errante V3.0' in readme and 'MFO v3.3' in readme,
+    'changelog vigente': '## [3.0.0]' in changelog and '## [2.9.0]' in changelog and '## [2.8.0]' in changelog,
     'finanzas V2.7 conservadas': 'assets/finance-v27.js' in admin and 'id="finance-v27"' in admin,
     'abastecimiento V2.5 conservado': 'assets/procurement-v25.js' in admin and 'id="procurement-v25"' in admin,
 }
@@ -223,8 +239,9 @@ if 'url: ""' not in runtime_config or 'publishableKey: ""' not in runtime_config
 if re.search(r'\bservice_role\b|postgres://|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', '\n'.join([brand,data,app,preprod,host,sw,runtime_config]), re.I):
     ISSUES.append('Se detectó material sensible o una credencial privilegiada en el runtime.')
 
-print('EL ERRANTE V2.8 — BARRERA INTEGRAL')
+print('EL ERRANTE V3.0 — BARRERA INTEGRAL')
 print('=' * 42)
+print('Runtime canónico: V2.8')
 print(f'Páginas públicas: {len(PUBLIC_PAGES)}')
 print(f'Módulos internos: {len(INTERNAL_PAGES)}')
 print(f'Productos: {len(PRODUCT_IDS)}')

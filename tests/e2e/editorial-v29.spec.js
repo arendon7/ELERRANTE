@@ -85,7 +85,9 @@ test.describe('Editorial y experiencia V2.9', () => {
     await expect(page.getByText('Dirección de producto y marca', { exact: true })).toBeVisible();
     await expect(page.locator('main')).not.toContainText('Abrir centro de control');
     await page.goto('/centro-interno.html');
-    await expect(page.getByRole('heading', { name: 'Modelo y operación de El Errante.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Dos preguntas. Dos paneles.' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Abrir panel de control/ })).toHaveAttribute('href','control.html');
+    await expect(page.getByRole('link', { name: /Abrir panel financiero/ })).toHaveAttribute('href','finanzas.html');
   });
 
   test('Ayuda no finge enviar un caso sin canal conectado', async ({ page }) => {

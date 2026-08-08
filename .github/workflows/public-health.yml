@@ -10,8 +10,9 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_VERSION: 2.8.0
-  EXPECTED_CACHE: el-errante-v2-8-brand-canon-1
+  EXPECTED_RELEASE: 3.0.0
+  EXPECTED_RUNTIME: 2.8.0
+  EXPECTED_CACHE: el-errante-v2-8-brand-canon-2
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -19,7 +20,7 @@ concurrency:
 
 jobs:
   health:
-    name: GitHub Pages corresponde a main V2.8
+    name: GitHub Pages corresponde a main V3.0
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -37,18 +38,20 @@ jobs:
           for attempt in $(seq 1 12); do
             curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-observed.txt || true
             sha="$(sed -n 's/^release_commit=//p' deploy-version-observed.txt | tr -d '\r')"
-            version="$(sed -n 's/^version=//p' deploy-version-observed.txt | tr -d '\r')"
+            release="$(sed -n 's/^release_version=//p' deploy-version-observed.txt | tr -d '\r')"
+            runtime="$(sed -n 's/^version=//p' deploy-version-observed.txt | tr -d '\r')"
             cache="$(sed -n 's/^cache=//p' deploy-version-observed.txt | tr -d '\r')"
             source="$(sed -n 's/^deploy_source=//p' deploy-version-observed.txt | tr -d '\r')"
             mode="$(sed -n 's/^source_mode=//p' deploy-version-observed.txt | tr -d '\r')"
-            if [ "$sha" = "$EXPECTED_SHA" ] && [ "$version" = "$EXPECTED_VERSION" ] && [ "$cache" = "$EXPECTED_CACHE" ] && [ "$source" = "main" ] && [ "$mode" = "materialized-no-base64-runtime" ]; then success=1; break; fi
+            architecture="$(sed -n 's/^internal_architecture=//p' deploy-version-observed.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ] && [ "$release" = "$EXPECTED_RELEASE" ] && [ "$runtime" = "$EXPECTED_RUNTIME" ] && [ "$cache" = "$EXPECTED_CACHE" ] && [ "$source" = "main" ] && [ "$mode" = "materialized-no-base64-runtime" ] && [ "$architecture" = "v3.0-operacion-finanzas" ]; then success=1; break; fi
             sleep 5
           done
           test "$success" -eq 1
       - name: Verificar superficie materializada
         run: |
           set -euo pipefail
-          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js commerce-runtime-config.js; do
+          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js internal-v30.css commerce-runtime-config.js; do
             curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
           for asset in data-v28.js app-v28.js preprod-v28.js; do
@@ -57,7 +60,7 @@ jobs:
           curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/generated/manifest-v28.json?verify=$EXPECTED_SHA" > public-generated-manifest-v28.json
           curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/materialized-site-v28.json?verify=$EXPECTED_SHA" > public-materialized-site-v28.json
           curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
-          for page in index tienda producto admin activacion; do curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"; done
+          for page in index tienda producto admin activacion centro-interno control operacion finanzas; do curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"; done
           grep -q 'assets/generated/data-v28.js' public-index.html
           grep -q 'assets/generated/app-v28.js' public-index.html
           grep -q 'assets/generated/preprod-v28.js' public-index.html
@@ -72,7 +75,15 @@ jobs:
           grep -q '· V2.8' public-admin.html
           grep -q 'assets/finance-v27.js' public-admin.html
           grep -q 'assets/procurement-v25.js' public-admin.html
+          grep -q 'Dos preguntas. Dos paneles.' public-centro-interno.html
+          grep -q 'id="control-v30"' public-control.html
+          grep -q 'id="daily-ops-v21"' public-operacion.html
+          grep -q 'id="mfo-v30"' public-finanzas.html
+          grep -q 'assets/control-v30.js' public-control.html
+          grep -q 'assets/mfo-v30.js' public-finanzas.html
           grep -q "importScripts('./assets/brand-canon-v28.js')" public-service-worker.js
+          grep -q './finanzas.html' public-service-worker.js
+          grep -q './assets/mfo-v30.js' public-service-worker.js
           ! grep -qi 'service_role' public-commerce-runtime-config.js
           for script in public-*.js; do node --check "$script"; done
           python3 - <<'PY'

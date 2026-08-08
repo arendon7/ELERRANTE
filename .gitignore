@@ -22,6 +22,9 @@ _site/
 test-results/
 playwright-report/
 
+# Datos financieros privados V3.0
+private-data/
+
 # Compressed deliveries
 *.zip
 

@@ -78,6 +78,20 @@ test.describe('Editorial y experiencia V2.9', () => {
     await expect(page.getByRole('heading', { name: 'Modelo y operación de El Errante.' })).toBeVisible();
   });
 
+  test('Ayuda no finge enviar un caso sin canal conectado', async ({ page }) => {
+    await page.goto('/ayuda.html');
+    await expect(page.getByText(/este formulario no envía información a El Errante/i)).toBeVisible();
+    await expect(page.locator('#ee-v29-help-copy')).toHaveAttribute('type','button');
+    await expect(page.locator('#ee-v29-help-copy')).toContainText('Guardar y copiar');
+  });
+
+  test('Eventos prepara un borrador local en lugar de simular una cotización enviada', async ({ page }) => {
+    await page.goto('/en-movimiento.html#cotizar');
+    await expect(page.locator('#cotizar')).toContainText('no envía ni reserva el evento');
+    await expect(page.locator('#ee-v29-quote-copy')).toHaveAttribute('type','button');
+    await expect(page.locator('#ee-v29-quote-copy')).toContainText('Guardar y copiar');
+  });
+
   test('el activo editorial no contiene promesas comparativas no sustentadas', async ({ request }) => {
     const response = await request.get('/assets/editorial-v29.js');
     expect(response.ok()).toBeTruthy();

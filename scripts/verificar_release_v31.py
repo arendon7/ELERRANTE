@@ -30,6 +30,7 @@ host=read('assets/host-mode.js')
 access_js=read('assets/access-v31.js')
 shell_js=read('assets/internal-shell-v31.js')
 finance_js=read('assets/finance-workbench-v31.js')
+starter_js=read('assets/finance-starter-v31.js')
 worker=read('service-worker.js')
 architecture=read('documentacion/ARQUITECTURA_INTERNA_V31.md')
 
@@ -61,14 +62,16 @@ checks={
     'operación integra control y pedidos':'id="control-v30"' in operation and 'id="daily-ops-v21"' in operation,
     'finanzas protegidas':'data-v31-protected' in finance and 'assets/internal-shell-v31.js' in finance,
     'finanzas monta workbench':'id="finance-workbench-v31"' in finance and 'assets/finance-workbench-v31.js' in finance,
+    'finanzas monta starter seguro':'assets/finance-starter-v31.js' in finance and 'Crear modelo desde cero' in starter_js and 'LOCAL_STARTER_V31' in starter_js,
     'finanzas no monta producción':'assets/production-v22.js' not in finance,
     'footer público prepara acceso':'ensureUserAccess' in host and "href='acceso.html'" in host,
     'login no contiene contraseña fija':'password="' not in access_js.lower() and 'service_role' not in access_js.lower(),
     'guard comparte sesión V3.1':'ee_v31_session' in shell_js and 'acceso.html' in shell_js,
     'workbench baseline/working separados':"SNAPSHOT_KEY='ee_v30_mfo_snapshot'" in finance_js and "WORKING_KEY='ee_v31_finance_working_model'" in finance_js,
     'workbench sin red':all(token not in finance_js for token in ('fetch(','XMLHttpRequest','axios')),
+    'starter sin red y sin costo privado':all(token not in starter_js.lower() for token in ('fetch(','xmlhttprequest','axios','service_role','postgres://','private_key')) and 'directCost:0' in starter_js,
     'service worker publica acceso':'./acceso.html' in worker and './assets/access-v31.js' in worker,
-    'service worker publica workbench':'./assets/internal-shell-v31.js' in worker and './assets/finance-workbench-v31.js' in worker and './assets/internal-v31.css' in worker,
+    'service worker publica workbench':'./assets/internal-shell-v31.js' in worker and './assets/finance-workbench-v31.js' in worker and './assets/finance-starter-v31.js' in worker and './assets/internal-v31.css' in worker,
     'documentación V3.1 vigente':'# Arquitectura interna V3.1' in architecture and 'Working Model' in architecture,
 }
 
@@ -77,7 +80,7 @@ for label,ok in checks.items():
 
 # Sólo inspeccionamos artefactos que podrían publicar secretos directamente.
 # Los workflows contienen deliberadamente nombres de secretos y grep defensivos.
-for name,content in [('access',access_js),('shell',shell_js),('finance',finance_js)]:
+for name,content in [('access',access_js),('shell',shell_js),('finance',finance_js),('starter',starter_js)]:
     lower=content.lower()
     for forbidden in ('service_role','postgres://','private_key','supabase_service'):
         if forbidden in lower:

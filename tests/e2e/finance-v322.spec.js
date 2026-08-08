@@ -7,7 +7,7 @@ async function seed(page,{status='PENDIENTE',directCost=0}={}){
     const months=Array.from({length:24},(_,i)=>{const d=new Date(Date.UTC(2026,7+i,1));return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;});
     const planSales=months.map(month=>({month,sku:'margherita-del-taller',quantity:month==='2026-08'?10:0,unitPrice:20900,sales:month==='2026-08'?209000:0,unitCost:directCost,cogs:month==='2026-08'?10*directCost:0,status,source:'Prueba V3.2.2'}));
     const cashFlow=months.map(month=>({month,openingCash:0,salesCash:0,purchases:0,operatingExpenses:0,auxiliaryPayroll:0,juanCash:0,taxReserve:0,rent:0,capex:0,endingCash:0,status:'PENDIENTE'}));
-    localStorage.setItem('ee_v30_mfo_snapshot',JSON.stringify({schemaVersion:'3.0',meta:{modelName:'MFO prueba V3.2.2',status:'PENDIENTE'},planSales,productCosts:[{sku:'margherita-del-taller',name:'Margherita del Taller',category:'Pizza',price:20900,directCost,status,confidence:'',source:'Prueba V3.2.2'}],cashFlow,scenarios:[],assumptions:[],decisions:[],pending:[]}));
+    localStorage.setItem('ee_v30_mfo_snapshot',JSON.stringify({schemaVersion:'3.0',meta:{modelName:'MFO prueba V3.2.2',status:'PENDIENTE'},planSales,productCosts:[{sku:'margherita-del-taller',name:'Margherita del Taller',category:'Pizza',price:20900,directCost,status,confidence:'',source:'Prueba V3.2.2'},{sku:'salsa-tomate',name:'Salsa de tomate',category:'Salsa',price:19900,directCost:0,status:'PENDIENTE',confidence:'',source:'Prueba V3.2.2'}],cashFlow,scenarios:[],assumptions:[],decisions:[],pending:[]}));
     localStorage.setItem('ee_v14_orders',JSON.stringify([{id:'EE-V322-001',status:'approved',createdAt:'2026-08-08T10:00:00-05:00',total:20900,items:[{productId:'margherita-del-taller',name:'Margherita del Taller',quantity:1,unit_cost_snapshot:6000}]}]));
     localStorage.removeItem('ee_v322_material_cost_overrides');
     localStorage.removeItem('ee_v31_finance_working_model');
@@ -41,6 +41,15 @@ test.describe('Economía unitaria V3.2.2',()=>{
     await expect(page.getByText('Sensibilidad rápida',{exact:true})).toBeVisible();
   });
 
+  test('preserva cantidades fraccionarias de la BOM en la interfaz',async({page})=>{
+    await seed(page);await openUnit(page);
+    await page.locator('[data-v322-select="salsa-tomate"]').click();
+    const pomodoro=page.locator('.v322-driver').filter({hasText:'Pomodoro porción grande'});
+    await expect(pomodoro).toContainText('5,56 porción');
+    const analysis=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V322.analyses().find(a=>a.row.sku==='salsa-tomate').calc.lines.find(l=>l.id==='MP-POM90').qty);
+    expect(analysis).toBeCloseTo(5.56,5);
+  });
+
   test('simula un insumo por separado y solo aplica la BOM mediante acción explícita',async({page})=>{
     await seed(page);await openUnit(page);
     const mozzarella=page.locator('[data-v322-material-cost="MP-MOZ"]');
@@ -48,7 +57,7 @@ test.describe('Economía unitaria V3.2.2',()=>{
     await mozzarella.fill('30');
     await page.getByRole('button',{name:'Guardar simulación',exact:true}).click();
     const simulated=await page.evaluate(()=>{
-      const a=window.EL_ERRANTE_FINANCE_V322.analyses()[0];
+      const a=window.EL_ERRANTE_FINANCE_V322.analyses().find(x=>x.row.sku==='margherita-del-taller');
       const data=window.EL_ERRANTE_FINANCE_V31.working();
       return {bom:a.calc.total,directCost:data.productCosts[0].directCost,planCost:data.planSales.find(r=>r.month==='2026-08').unitCost,override:JSON.parse(localStorage.getItem('ee_v322_material_cost_overrides')||'{}')['MP-MOZ']};
     });
@@ -84,6 +93,15 @@ test.describe('Economía unitaria V3.2.2',()=>{
     const data=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V31.working().productCosts[0]);
     expect(data.directCost).toBe(7000);
     expect(data.status).toBe('CONFIRMADO');
+  });
+
+  test('un costo confirmado parcial conserva su evidencia pero admite una aplicación explícita',async({page})=>{
+    await seed(page,{status:'CONFIRMADO PARCIAL',directCost:7000});await openUnit(page);
+    const apply=page.getByRole('button',{name:'Aplicar BOM como costo estimado',exact:true});
+    await expect(apply).toBeEnabled();
+    const data=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V31.working().productCosts[0]);
+    expect(data.directCost).toBe(7000);
+    expect(data.status).toBe('CONFIRMADO PARCIAL');
   });
 
   test('la economía unitaria no desborda horizontalmente en móvil',async({page},testInfo)=>{

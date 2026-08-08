@@ -158,6 +158,8 @@ jobs:
           ! grep -qi 'service_role' _site/assets/finance-starter-v31.js
           test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -ge 23
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

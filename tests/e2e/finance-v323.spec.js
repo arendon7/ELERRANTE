@@ -5,8 +5,8 @@ async function seed(page){
     sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'juan',displayName:'Juan',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()}));
     if(sessionStorage.getItem('ee_v323_test_seeded')==='1')return;
     const months=Array.from({length:24},(_,i)=>{const d=new Date(Date.UTC(2026,7+i,1));return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;});
-    const planSales=months.map(month=>({month,sku:'SKU-CASH',quantity:month==='2026-08'?10:0,unitPrice:10000,sales:month==='2026-08'?100000:0,unitCost:4000,cogs:month==='2026-08'?40000:0,status:'ESTIMADO'}));
-    const cashFlow=months.map(month=>month==='2026-08'?{month,openingCash:2000000,salesCash:80000,purchases:25000,operatingExpenses:20000,auxiliaryPayroll:5000,juanCash:0,taxReserve:0,rent:10000,capex:0,endingCash:2020000,status:'ESTIMADO'}:{month,openingCash:0,salesCash:0,purchases:0,operatingExpenses:0,auxiliaryPayroll:0,juanCash:0,taxReserve:0,rent:0,capex:0,endingCash:0,status:'ESTIMADO'});
+    const planSales=months.map(month=>({month,sku:'SKU-CASH',quantity:month==='2026-08'?10:month==='2026-09'?12:0,unitPrice:10000,sales:month==='2026-08'?100000:month==='2026-09'?120000:0,unitCost:4000,cogs:month==='2026-08'?40000:month==='2026-09'?48000:0,status:'ESTIMADO'}));
+    const cashFlow=months.map(month=>month==='2026-08'?{month,openingCash:2000000,salesCash:80000,purchases:25000,operatingExpenses:20000,auxiliaryPayroll:5000,juanCash:0,taxReserve:0,rent:10000,capex:0,endingCash:2020000,status:'ESTIMADO'}:month==='2026-09'?{month,openingCash:2020000,salesCash:100000,purchases:30000,operatingExpenses:20000,auxiliaryPayroll:5000,juanCash:0,taxReserve:0,rent:10000,capex:0,endingCash:2055000,status:'ESTIMADO'}:{month,openingCash:0,salesCash:0,purchases:0,operatingExpenses:0,auxiliaryPayroll:0,juanCash:0,taxReserve:0,rent:0,capex:0,endingCash:0,status:'ESTIMADO'});
     localStorage.setItem('ee_v30_mfo_snapshot',JSON.stringify({schemaVersion:'3.0',meta:{modelName:'MFO prueba V3.2.3',workbookProfile:'MFO_V3_3_DECISIONES_ESCENARIOS',reconciliation:'PASS'},planSales,productCosts:[{sku:'SKU-CASH',name:'Producto caja',category:'Prueba',price:10000,directCost:4000,status:'CONFIRMADO'}],cashFlow,scenarios:[],assumptions:[{name:'Caja mínima',value:1000000,unit:'COP',status:'CONFIRMADO',category:'Caja'}],decisions:[],pending:[]}));
     localStorage.setItem('ee_v14_orders',JSON.stringify([{id:'EE-V323-001',status:'approved',createdAt:'2026-08-08T10:00:00-05:00',total:60000,items:[{productId:'SKU-CASH',name:'Producto caja',quantity:2,unit_cost_snapshot:12000}]}]));
     localStorage.setItem('ee_v27_finance_movements',JSON.stringify([
@@ -39,8 +39,8 @@ test.describe('Caja y tendencias V3.2.3',()=>{
       const data=window.EL_ERRANTE_FINANCE_V31.working();
       const bridge=window.EL_ERRANTE_FINANCE_V323.planBridge(data,'2026-08');
       const flow=window.EL_ERRANTE_FINANCE_V323.recordedFlow('2026-08');
-      const trend=window.EL_ERRANTE_FINANCE_V323.trendData(data,0)[0];
-      return {ending:bridge.at(-1).end,flow,trend};
+      const rows=window.EL_ERRANTE_FINANCE_V323.trendData(data,0);
+      return {ending:bridge.at(-1).end,flow,trend:rows[0],future:rows[1]};
     });
     expect(state.ending).toBe(2020000);
     expect(state.flow.contribution).toBe(100000);
@@ -59,7 +59,13 @@ test.describe('Caja y tendencias V3.2.3',()=>{
     expect(state.trend.realOpex).toBe(5000);
     expect(state.trend.planCash).toBe(2020000);
     expect(state.trend.observedCash).toBeNull();
+    expect(state.future.month).toBe('2026-09');
+    expect(state.future.isFuture).toBe(true);
+    expect(state.future.realSales).toBeNull();
+    expect(state.future.realMargin).toBeNull();
+    expect(state.future.realOpex).toBeNull();
     await expect(page.getByText('Se muestran aparte porque una venta registrada no prueba por sí sola que el efectivo haya sido cobrado.')).toBeVisible();
+    await expect(page.getByText('Cobertura ventas YTD',{exact:true})).toBeVisible();
     await expect(page.locator('.v323-chart')).toHaveCount(4);
   });
 
@@ -69,13 +75,15 @@ test.describe('Caja y tendencias V3.2.3',()=>{
     await form.locator('[name="amount"]').fill('1950000');
     await form.locator('[name="note"]').fill('Cierre físico inicial');
     await form.getByRole('button',{name:'Registrar observación',exact:true}).click();
-    await expect(page.getByText('−$ 70.000').first()).toBeVisible();
+    const delta=page.locator('.v323-count-delta');
+    await expect(delta).toContainText('70.000');
+    await expect(delta.locator('strong')).toHaveClass(/negative/);
     let counts=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V323.allCounts());
     expect(counts).toHaveLength(1);
     expect(counts[0].amount).toBe(1950000);
     expect(counts[0].supersedes).toBeNull();
 
-    const second=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V323.recordCashCount({month:'2026-08',date:'2026-08-09',amount:1960000,evidence:'CONFIRMADO',note:'Segundo cierre'}));
+    const second=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V323.recordCashCount({month:'2026-08',date:'2026-08-08',amount:1960000,evidence:'CONFIRMADO',note:'Segundo cierre'}));
     expect(second.supersedes).toBe(counts[0].id);
     counts=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V323.allCounts());
     expect(counts).toHaveLength(2);
@@ -94,6 +102,24 @@ test.describe('Caja y tendencias V3.2.3',()=>{
     expect(state.observed).toBe(1950000);
     expect(state.plan).toBe(2020000);
     expect(state.workingEnding).toBe(2020000);
+  });
+
+  test('bloquea conteos futuros y fechas que no pertenecen al mes',async({page})=>{
+    await seed(page);await openCashTrends(page);
+    const result=await page.evaluate(()=>{
+      const attempt=payload=>{try{window.EL_ERRANTE_FINANCE_V323.recordCashCount(payload);return '';}catch(e){return e.message;}};
+      return {
+        future:attempt({month:'2026-09',date:'2026-09-01',amount:100,evidence:'CONFIRMADO'}),
+        wrongMonth:attempt({month:'2026-08',date:'2026-07-31',amount:100,evidence:'CONFIRMADO'}),
+        invalidAmount:attempt({month:'2026-08',date:'2026-08-08',amount:'abc',evidence:'CONFIRMADO'})
+      };
+    });
+    expect(result.future).toContain('mes futuro');
+    expect(result.wrongMonth).toContain('debe pertenecer al mes');
+    expect(result.invalidAmount).toContain('valor válido');
+    await page.locator('#v323-month').selectOption('2026-09');
+    await expect(page.locator('#v323-count-form [name="amount"]')).toBeDisabled();
+    await expect(page.getByText('Mes futuro: los conteos observados se habilitan cuando llegue el periodo.')).toBeVisible();
   });
 
   test('caja y tendencias no desborda horizontalmente en móvil',async({page},testInfo)=>{

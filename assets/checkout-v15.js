@@ -4,6 +4,16 @@
   const ORIGINAL_PAGE = document.body?.dataset?.page || "";
   if(ORIGINAL_PAGE === "checkout") document.body.dataset.page = "checkout-v29-bootstrap";
 
+  const v29Root = () => document.querySelector('#checkout-v29-status');
+  const exposeLegacyRoot = () => {
+    const root = v29Root();
+    if(root) root.id = 'checkout-form';
+  };
+  const restoreV29Root = () => {
+    const root = document.querySelector('#checkout-form');
+    if(root && !document.querySelector('#checkout-form-v14')) root.id = 'checkout-v29-status';
+  };
+
   const loadLegacyCheckout = () => new Promise((resolve, reject) => {
     if (document.querySelector('script[data-ee-commerce-v14]')) return resolve();
     const script = document.createElement("script");
@@ -52,6 +62,7 @@
 
     if(!backendReady(initial)){
       window.EL_ERRANTE_COMMERCE_CONFIG = initial;
+      restoreV29Root();
       publishRuntime("preview", "v29-offline", "checkout-preview");
       return;
     }
@@ -59,14 +70,17 @@
     try{
       window.EL_ERRANTE_COMMERCE_CONFIG = await hydratePublicSettings(initial);
       if(!backendReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
+        restoreV29Root();
         publishRuntime("preview", "v29-offline", "checkout-preview");
         return;
       }
+      exposeLegacyRoot();
       publishRuntime("connected", "legacy-connected", "checkout");
       await loadLegacyCheckout();
     }catch(error){
       console.warn("No fue posible sincronizar la configuración pública; el checkout permanecerá sin conexión.", error);
       window.EL_ERRANTE_COMMERCE_CONFIG = initial;
+      restoreV29Root();
       publishRuntime("degraded", "v29-offline", "checkout-preview");
     }
   }

@@ -53,7 +53,7 @@ jobs:
       - name: Verificar superficie materializada V3.1
         run: |
           set -euo pipefail
-          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js finance-workbench-v31.js commerce-runtime-config.js; do
+          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js finance-workbench-v31.js finance-starter-v31.js commerce-runtime-config.js; do
             curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
           done
           for asset in data-v28.js app-v28.js preprod-v28.js; do
@@ -100,6 +100,7 @@ jobs:
           grep -q 'Planificar, modificar, comparar y decidir.' public-finanzas.html
           grep -q 'id="finance-workbench-v31"' public-finanzas.html
           grep -q 'assets/finance-workbench-v31.js' public-finanzas.html
+          grep -q 'assets/finance-starter-v31.js' public-finanzas.html
           grep -q 'data-v31-protected' public-finanzas.html
           ! grep -q '<script src="assets/production-v22.js"' public-finanzas.html
           ! grep -q '<script src="assets/materials-v23.js"' public-finanzas.html
@@ -113,17 +114,22 @@ jobs:
           grep -q 'Ventas · Plan vs. real' public-finance-workbench-v31.js
           grep -q 'Plan de ventas' public-finance-workbench-v31.js
           grep -q 'Escenarios' public-finance-workbench-v31.js
+          grep -q 'Crear modelo desde cero' public-finance-starter-v31.js
+          grep -q 'LOCAL_STARTER_V31' public-finance-starter-v31.js
+          grep -q 'directCost:0' public-finance-starter-v31.js
 
           grep -q "importScripts('./assets/brand-canon-v28.js')" public-service-worker.js
           grep -q './acceso.html' public-service-worker.js
           grep -q './assets/access-v31.js' public-service-worker.js
           grep -q './assets/internal-shell-v31.js' public-service-worker.js
           grep -q './assets/finance-workbench-v31.js' public-service-worker.js
+          grep -q './assets/finance-starter-v31.js' public-service-worker.js
           grep -q './assets/internal-v31.css' public-service-worker.js
 
           ! grep -qi 'service_role' public-commerce-runtime-config.js
           ! grep -qi 'service_role' public-access-v31.js
           ! grep -qi 'service_role' public-finance-workbench-v31.js
+          ! grep -qi 'service_role' public-finance-starter-v31.js
           for script in public-*.js; do node --check "$script"; done
           python3 - <<'PY'
           import json

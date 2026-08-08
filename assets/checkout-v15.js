@@ -1,6 +1,9 @@
 (()=>{
   "use strict";
 
+  const ORIGINAL_PAGE = document.body?.dataset?.page || "";
+  if(ORIGINAL_PAGE === "checkout") document.body.dataset.page = "checkout-v29-bootstrap";
+
   const loadLegacyCheckout = () => new Promise((resolve, reject) => {
     if (document.querySelector('script[data-ee-commerce-v14]')) return resolve();
     const script = document.createElement("script");
@@ -12,6 +15,12 @@
   });
 
   const backendReady = config => Boolean(config?.backend?.url && config?.backend?.publishableKey);
+  const publishRuntime = (backendState, runtime, pageState) => {
+    document.documentElement.dataset.eeCommerceBackend = backendState;
+    document.documentElement.dataset.eeCheckoutRuntime = runtime;
+    if(document.body) document.body.dataset.page = pageState;
+    document.dispatchEvent(new CustomEvent("ee:checkout-runtime", {detail:{backendState,runtime,pageState}}));
+  };
 
   async function hydratePublicSettings(config){
     if(!backendReady(config)) return config;
@@ -43,25 +52,22 @@
 
     if(!backendReady(initial)){
       window.EL_ERRANTE_COMMERCE_CONFIG = initial;
-      document.documentElement.dataset.eeCommerceBackend = "preview";
-      document.documentElement.dataset.eeCheckoutRuntime = "v29-offline";
+      publishRuntime("preview", "v29-offline", "checkout-preview");
       return;
     }
 
     try{
       window.EL_ERRANTE_COMMERCE_CONFIG = await hydratePublicSettings(initial);
-      document.documentElement.dataset.eeCommerceBackend = backendReady(window.EL_ERRANTE_COMMERCE_CONFIG) ? "connected" : "preview";
       if(!backendReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
-        document.documentElement.dataset.eeCheckoutRuntime = "v29-offline";
+        publishRuntime("preview", "v29-offline", "checkout-preview");
         return;
       }
-      document.documentElement.dataset.eeCheckoutRuntime = "legacy-connected";
+      publishRuntime("connected", "legacy-connected", "checkout");
       await loadLegacyCheckout();
     }catch(error){
       console.warn("No fue posible sincronizar la configuración pública; el checkout permanecerá sin conexión.", error);
       window.EL_ERRANTE_COMMERCE_CONFIG = initial;
-      document.documentElement.dataset.eeCommerceBackend = "degraded";
-      document.documentElement.dataset.eeCheckoutRuntime = "v29-offline";
+      publishRuntime("degraded", "v29-offline", "checkout-preview");
     }
   }
 

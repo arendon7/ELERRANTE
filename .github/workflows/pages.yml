@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Regresión integral V3.1
+    name: Regresión integral V3.1.1
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -62,7 +62,7 @@ jobs:
           retention-days: 14
 
   deploy:
-    name: Publicar GitHub Pages V3.1
+    name: Publicar GitHub Pages V3.1.1
     if: github.event_name != 'pull_request'
     needs: validate
     environment:
@@ -89,13 +89,13 @@ jobs:
           config={'environment':'connected' if url and key else 'preview','backend':{'provider':'supabase','url':url,'publishableKey':key,'receiptBucket':'payment-receipts','shopperStorageKey':'ee-shopper-auth-v15','adminStorageKey':'ee-admin-auth-v15'}}
           Path('_site/assets/commerce-runtime-config.js').write_text('window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze('+json.dumps(config,ensure_ascii=False,separators=(',',':'))+');\n',encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nrelease_version=3.1.0\nprevious_release_version=3.0.0\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-2\nbrand_source=assets/brand-canon-v28.js\ncontent_source=v2.9-editorial\ninternal_architecture=v3.1-acceso-operacion-finanzas\nmfo_baseline=v3.0-schema-mfo-v3.3\nfinance_workbench=v3.1.0\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nrelease_version=3.1.1\nprevious_release_version=3.1.0\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-2\nbrand_source=assets/brand-canon-v28.js\ncontent_source=v2.9-editorial\ninternal_architecture=v3.1-acceso-operacion-finanzas\nmfo_baseline=v3.0-schema-mfo-v3.3\nfinance_workbench=v3.1.0\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         run: |
           set -euo pipefail
-          grep -q '^release_version=3.1.0$' _site/deploy-version.txt
-          grep -q '^previous_release_version=3.0.0$' _site/deploy-version.txt
+          grep -q '^release_version=3.1.1$' _site/deploy-version.txt
+          grep -q '^previous_release_version=3.1.0$' _site/deploy-version.txt
           grep -q '^version=2.8.0$' _site/deploy-version.txt
           grep -q '^cache=el-errante-v2-8-brand-canon-2$' _site/deploy-version.txt
           grep -q '^internal_architecture=v3.1-acceso-operacion-finanzas$' _site/deploy-version.txt
@@ -124,11 +124,19 @@ jobs:
           grep -q 'assets/procurement-v25.js' _site/admin.html
           test -s _site/acceso.html
           grep -q 'id="access-v31"' _site/acceso.html
-          grep -q 'Elige el contexto antes de empezar a trabajar.' _site/centro-interno.html
+          grep -q 'Elige dónde quieres trabajar.' _site/centro-interno.html
+          grep -q 'Abrir Panel de control' _site/centro-interno.html
           grep -q 'Entrar a Operación' _site/centro-interno.html
           grep -q 'Entrar a Finanzas' _site/centro-interno.html
+          grep -q 'data-v31-protected' _site/control.html
+          grep -q 'assets/internal-shell-v31.js' _site/control.html
+          grep -q 'Ir a Operación' _site/control.html
+          grep -q 'Ir a Finanzas' _site/control.html
+          grep -q 'id="control-v30"' _site/control.html
+          grep -q 'href="control.html"' _site/operacion.html
           grep -q 'id="control-v30"' _site/operacion.html
           grep -q 'id="daily-ops-v21"' _site/operacion.html
+          grep -q 'href="control.html"' _site/finanzas.html
           grep -q 'id="finance-workbench-v31"' _site/finanzas.html
           grep -q 'assets/finance-workbench-v31.js' _site/finanzas.html
           grep -q 'assets/finance-starter-v31.js' _site/finanzas.html

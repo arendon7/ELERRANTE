@@ -26,7 +26,9 @@ test.describe('Compatibilidad de superficies heredadas V3.1.1', () => {
     await page.goto('/presentacion.html');
     const finalSlide = page.locator('.presentation-slide').last();
     await expect(finalSlide.locator('a[href="centro-interno.html"]')).toHaveText('Centro interno');
-    await expect(page.getByRole('link', { name: 'Equipo', exact: true })).toHaveAttribute('href', 'equipo.html');
+    const publicTeam = page.locator('[data-public-target="team"]');
+    await expect(publicTeam).toHaveAttribute('href', 'equipo.html');
+    await expect(publicTeam).toHaveText('Equipo');
     await expect(page.getByRole('link', { name: 'Centro integral', exact: true })).toHaveCount(0);
     await expect(page.getByText('Contextos principales', { exact: true })).toBeAttached();
   });

@@ -10,7 +10,7 @@ permissions:
 
 env:
   PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
-  EXPECTED_RELEASE: 3.1.0
+  EXPECTED_RELEASE: 3.1.1
   EXPECTED_RUNTIME: 2.8.0
   EXPECTED_CACHE: el-errante-v2-8-brand-canon-2
   EXPECTED_ARCHITECTURE: v3.1-acceso-operacion-finanzas
@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   health:
-    name: GitHub Pages corresponde a main V3.1
+    name: GitHub Pages corresponde a main V3.1.1
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -50,7 +50,7 @@ jobs:
             sleep 5
           done
           test "$success" -eq 1
-      - name: Verificar superficie materializada V3.1
+      - name: Verificar superficie materializada V3.1.1
         run: |
           set -euo pipefail
           for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js finance-workbench-v31.js finance-starter-v31.js commerce-runtime-config.js; do
@@ -82,13 +82,22 @@ jobs:
 
           grep -q 'id="access-v31"' public-acceso.html
           grep -q 'assets/access-v31.js' public-acceso.html
-          grep -q 'Elige el contexto antes de empezar a trabajar.' public-centro-interno.html
+          grep -q 'Elige dónde quieres trabajar.' public-centro-interno.html
+          grep -q 'Abrir Panel de control' public-centro-interno.html
           grep -q 'Entrar a Operación' public-centro-interno.html
           grep -q 'Entrar a Finanzas' public-centro-interno.html
           grep -q 'data-v31-protected' public-centro-interno.html
           grep -q 'assets/internal-shell-v31.js' public-centro-interno.html
 
+          grep -q 'Lo que requiere atención, antes de empezar el día.' public-control.html
+          grep -q 'data-v31-protected' public-control.html
+          grep -q 'assets/internal-shell-v31.js' public-control.html
+          grep -q 'Ir a Operación' public-control.html
+          grep -q 'Ir a Finanzas' public-control.html
+          grep -q 'id="control-v30"' public-control.html
+
           grep -q 'Del pedido al despacho, con cada decisión visible.' public-operacion.html
+          grep -q 'href="control.html"' public-operacion.html
           grep -q 'id="control-v30"' public-operacion.html
           grep -q 'id="daily-ops-v21"' public-operacion.html
           grep -q 'id="production-v22"' public-operacion.html
@@ -98,6 +107,7 @@ jobs:
           ! grep -q 'finance-workbench-v31.js' public-operacion.html
 
           grep -q 'Planificar, modificar, comparar y decidir.' public-finanzas.html
+          grep -q 'href="control.html"' public-finanzas.html
           grep -q 'id="finance-workbench-v31"' public-finanzas.html
           grep -q 'assets/finance-workbench-v31.js' public-finanzas.html
           grep -q 'assets/finance-starter-v31.js' public-finanzas.html
@@ -109,6 +119,7 @@ jobs:
           grep -q 'ensureUserAccess' public-host-mode.js
           grep -q "href='acceso.html'" public-host-mode.js
           grep -q '.ee-user-access-link' public-internal-v31.css
+          grep -q '.v31-module-card.control' public-internal-v31.css
           grep -q "SNAPSHOT_KEY='ee_v30_mfo_snapshot'" public-finance-workbench-v31.js
           grep -q "WORKING_KEY='ee_v31_finance_working_model'" public-finance-workbench-v31.js
           grep -q 'Ventas · Plan vs. real' public-finance-workbench-v31.js

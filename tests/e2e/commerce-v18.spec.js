@@ -40,7 +40,8 @@ test.describe('Experiencia comercial V2.9', () => {
     await configurePreviewBank(page);
     await page.goto('/checkout.html');
     await expect(page.locator('html')).toHaveAttribute('data-ee-public-commerce', 'not-connected');
-    await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+    await expect(page.getByText('Compra online todavía no activada', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal que debe recibir el pedido todavía no.' })).toBeVisible();
     await expect(page.getByText('123456789')).toHaveCount(0);
     await expect(page.getByText('errante@banco')).toHaveCount(0);
     await expect(page.locator('[data-checkout-step]')).toHaveCount(0);
@@ -50,9 +51,9 @@ test.describe('Experiencia comercial V2.9', () => {
   test('checkout desconectado conserva carrito pero no crea pedidos locales', async ({ page }) => {
     await seedCart(page, 2);
     await page.goto('/checkout.html');
-    await expect(page.getByText('La Errante')).toBeVisible();
+    await expect(page.locator('#checkout-lines')).toContainText('La Errante × 2');
     await expect(page.locator('#checkout-total')).not.toHaveText('');
-    await expect(page.getByText('Tu carrito está listo. El canal que debe recibir el pedido todavía no.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal que debe recibir el pedido todavía no.' })).toBeVisible();
     const state = await page.evaluate(() => ({ cart: JSON.parse(localStorage.getItem('ee_v2_cart') || '[]'), orders: JSON.parse(localStorage.getItem('ee_v14_orders') || '[]') }));
     expect(state.cart).toHaveLength(1);
     expect(state.cart[0].qty).toBe(2);
@@ -63,7 +64,8 @@ test.describe('Experiencia comercial V2.9', () => {
     test.skip(!testInfo.project.name.toLowerCase().includes('mobile'), 'Validación exclusiva de proyecto móvil');
     await seedCart(page);
     await page.goto('/checkout.html');
-    await expect(page.getByRole('heading', { name: 'Compra online todavía no activada' })).toBeVisible();
+    await expect(page.getByText('Compra online todavía no activada', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal que debe recibir el pedido todavía no.' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Volver a la tienda' })).toBeVisible();
     await expect(page.locator('[data-v18="mobile-total"]')).toHaveCount(0);
   });

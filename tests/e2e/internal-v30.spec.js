@@ -16,12 +16,14 @@ async function seedMfo(page){
   await page.addInitScript(()=>{
     localStorage.setItem('ee_v30_mfo_snapshot',JSON.stringify({
       schemaVersion:'3.0',
-      meta:{modelName:'Modelo de prueba',modelDate:'2026-08-07',status:'ESTIMADO',confidence:'Media',source:'fixture Playwright'},
-      planSales:[{month:'2026-08',sku:'SKU-TEST',quantity:10,unitPrice:10000,unitCost:4000,status:'ESTIMADO',confidence:'Media',source:'01_Plan_Ventas'}],
-      productCosts:[{sku:'SKU-TEST',price:10000,directCost:4000,validFrom:'2026-08-01',status:'ESTIMADO',confidence:'Media',source:'02_Productos_Costos'}],
-      cashFlow:[{month:'2026-08',purchases:25000,capex:0,endingCash:50000,status:'ESTIMADO',confidence:'Media',source:'03_Flujo_24M'}],
-      scenarios:[{id:'base',status:'ESTIMADO',confidence:'Media',source:'04_Escenarios_PE'}],
-      assumptions:[{id:'test',status:'PENDIENTE',confidence:'Baja',source:'fixture Playwright'}]
+      meta:{modelName:'MFO v3.3 de prueba',modelDate:'',status:'ESTIMADO',confidence:'Media',source:'fixture Playwright',workbookProfile:'MFO_V3_3_DECISIONES_ESCENARIOS',reconciliation:'PASS'},
+      planSales:[{month:'2026-08',sku:'SKU-TEST',quantity:10,unitPrice:10000,unitCost:4000,status:'ESTIMADO',confidence:'Media',source:'01_PLAN_VENTAS'}],
+      productCosts:[{sku:'SKU-TEST',price:10000,directCost:4000,validFrom:'2026-08-01',status:'ESTIMADO',confidence:'Media',source:'05_PRODUCTOS_SUPUESTOS'}],
+      cashFlow:[{month:'2026-08',purchases:25000,capex:0,endingCash:50000,status:'ESTIMADO',confidence:'Media',source:'03_RESULTADOS_CAJA'}],
+      scenarios:[{name:'Base',volumeFactor:1,directCostFactor:1,year1Sales:150000000,directMarginPct:.63,simplifiedOperatingResult:28000000,overloadMonths:4,peakCapacity:1.09,status:'ESTIMADO',confidence:'Media',source:'08_DECISIONES_ESCENARIOS'}],
+      assumptions:[{name:'Caja mínima',value:1000000,status:'CONFIRMADO',confidence:'Alta',source:'05_PRODUCTOS_SUPUESTOS'}],
+      decisions:[{name:'Formalización de Juan',configuredMonth:16,recommendedMonth:8,decisionState:'CONSERVADOR',condition:'3 meses cubriendo costo formal + liquidez',suggestedAction:'Puede adelantarse si la operación real confirma.',status:'INFERIDO',confidence:'Media',source:'08_DECISIONES_ESCENARIOS'}],
+      pending:[{priority:'Alta',finding:'Validar costos especiales',modelStatus:'PENDIENTE',impact:'Margen',recommendedDecision:'Medir recetas',owner:'Juan',status:'PENDIENTE',confidence:'Media',source:'06_AUDITORIA'}]
     }));
     localStorage.setItem('ee_v27_finance_movements',JSON.stringify([{id:'M1',date:'2026-08-07',type:'inventory_purchase',amount:15000,evidence:'CONFIRMADO'}]));
     sessionStorage.setItem('ee_v30_mfo_month','2026-08');
@@ -68,18 +70,23 @@ test.describe('Arquitectura interna V3.0',()=>{
     await expect(page.getByText('Mapa del modelo financiero')).toBeVisible();
   });
 
-  test('finanzas carga un snapshot MFO local y mantiene plan separado de real',async({page})=>{
+  test('finanzas carga MFO v3.3, compara plan-real y muestra decisiones sin ejecutar cambios',async({page})=>{
     await seedOperational(page);
     await seedMfo(page);
     await page.goto('/finanzas.html');
-    await expect(page.locator('html')).toHaveAttribute('data-mfo-version','3.0.0');
+    await expect(page.locator('html')).toHaveAttribute('data-mfo-version','3.0.1');
     await expect(page.locator('html')).toHaveAttribute('data-mfo-state','loaded');
     await expect(page.locator('#mfo-v30')).toContainText('Fuente MFO local');
     await expect(page.locator('#mfo-v30')).toContainText('Plan vs. real');
-    await expect(page.locator('#mfo-v30')).toContainText('Modelo de prueba');
+    await expect(page.locator('#mfo-v30')).toContainText('MFO v3.3 de prueba');
     await expect(page.locator('#mfo-v30')).toContainText(/100\.000/);
     await expect(page.locator('#mfo-v30')).toContainText(/60\.000/);
     await expect(page.locator('#mfo-v30')).toContainText('Solo snapshots del pedido');
+    await expect(page.locator('#mfo-v30')).toContainText('Decisiones del modelo');
+    await expect(page.locator('#mfo-v30')).toContainText('Formalización de Juan');
+    await expect(page.locator('#mfo-v30')).toContainText('Escenarios del año 1');
+    await expect(page.locator('#mfo-v30')).toContainText('Base');
+    await expect(page.locator('#mfo-v30')).toContainText('Pendientes de calidad y decisión');
     await expect(page.locator('#production-v22')).toHaveCount(0);
     await expect(page.locator('#materials-v23')).toHaveCount(0);
   });

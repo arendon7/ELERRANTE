@@ -182,7 +182,7 @@ def product_master(wbv, wbf) -> tuple[list[dict[str, Any]], dict[str, dict[str, 
             "category": checked_value(v, f, row, headers["Categoría"]),
             "price": checked_value(v, f, row, headers["Precio final (COP)"]),
             "directCost": checked_value(v, f, row, headers["Costo directo (COP)"]),
-            "validFrom": "2026-09-01",
+            "validFrom": "",
             "status": status,
             "modelStatus": model_status,
             "confidence": confidence_for(status),
@@ -533,7 +533,6 @@ def export_snapshot(workbook: Path, output: Path) -> dict[str, Any]:
         "pending": pending_rows,
     }
 
-    # Controles de reconciliación contra totales visibles del workbook.
     y1 = plan_sales[: 14 * 12]
     y2 = plan_sales[14 * 12 :]
     expected = {

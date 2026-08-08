@@ -23,6 +23,14 @@ production_js=text('assets/production-v22.js')
 css=text('assets/internal-v30.css')
 test=text('tests/e2e/internal-v30.spec.js')
 mfo_doc=text('documentacion/MFO_SNAPSHOT_V30.md')
+mfo_mapping=text('documentacion/MFO_MAPEO_V30.example.json')
+mfo_exporter=text('scripts/exportar_mfo_v30.py')
+gitignore=text('.gitignore')
+
+canonical_mfo_sheets=(
+    '01_Plan_Ventas','02_Productos_Costos','03_Flujo_24M',
+    '04_Escenarios_PE','05_Supuestos','06_Pendientes'
+)
 
 checks={
     'hub enlaza panel operativo':'href="control.html"' in hub,
@@ -50,9 +58,29 @@ checks={
     'estilos V3 presentes':'.v30-shell' in css and '.v30-table' in css and '@media' in css,
     'regresión V3 presente':'Arquitectura interna V3.0' in test and 'Plan vs. real' in test and 'Mesa de pedidos y continuidad local' in test,
     'esquema MFO documentado':'Plan / escenario' in mfo_doc and 'unit_cost_snapshot' in mfo_doc and 'no almacena cifras reales' in mfo_doc,
+    'exportador MFO presente':'exportar_mfo_v30.py' in mfo_doc and 'No se adivinan columnas' in mfo_exporter,
+    'exportador exige mapeo explícito':'--mapping' in mfo_exporter and 'headerRow debe ser un entero >= 1' in mfo_exporter,
+    'exportador exige valores mínimos':all(token in mfo_exporter for token in ("'productCosts': ('sku', 'price', 'directCost')", "'cashFlow': ('month', 'endingCash')", "'scenarios': ('name', 'value')", "'assumptions': ('name', 'value')", "'pending': ('topic',)")),
+    'exportador reconoce seis hojas canónicas':all(name in mfo_exporter for name in canonical_mfo_sheets),
+    'plantilla reconoce seis hojas canónicas':all(name in mfo_mapping for name in canonical_mfo_sheets),
+    'plantilla es fail-closed':'"headerRow": 0' in mfo_mapping,
+    'datos financieros privados ignorados':'private-data/' in gitignore,
+    'documentación mantiene datos privados':'private-data/mfo_snapshot_v30.json' in mfo_doc and '--inspect' in mfo_doc,
 }
 for label,ok in checks.items():
     if not ok: errors.append(label)
+
+# El exportador puede depender de openpyxl local, pero su propio código debe ser
+# sintácticamente válido y no contener transporte de red.
+if mfo_exporter:
+    try:
+        compile(mfo_exporter, 'scripts/exportar_mfo_v30.py', 'exec')
+    except SyntaxError as exc:
+        errors.append(f'exportador MFO: sintaxis inválida: {exc}')
+    lowered_exporter=mfo_exporter.lower()
+    for forbidden in ('requests.', 'urllib.request', 'http://', 'https://', 'subprocess'):
+        if forbidden in lowered_exporter:
+            errors.append(f'exportador MFO: transporte o ejecución externa no permitida: {forbidden}')
 
 for path,content in [('control',control+ctrl_js),('operacion',ops),('finanzas',finance+mfo_js)]:
     lowered=content.lower()

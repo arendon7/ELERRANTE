@@ -5,10 +5,14 @@ const SESSION_KEY='ee_v31_session';
 function read(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY));}catch(_){return null;}}
 function session(){const s=read();if(!s||!s.expiresAt||Date.parse(s.expiresAt)<=Date.now()){sessionStorage.removeItem(SESSION_KEY);return null;}return s;}
 function signOut(){sessionStorage.removeItem(SESSION_KEY);location.href='acceso.html';}
+function requestedTarget(){
+ const page=location.pathname.split('/').pop()||'centro-interno.html';
+ return `${page}${location.hash||''}`;
+}
 function boot(){
  const body=document.body;if(!body)return;
  const s=session();
- if(!s){location.replace(`acceso.html?next=${encodeURIComponent(location.pathname.split('/').pop()||'centro-interno.html')}`);return;}
+ if(!s){location.replace(`acceso.html?next=${encodeURIComponent(requestedTarget())}`);return;}
  body.dataset.v31Authenticated='true';document.documentElement.dataset.internalVersion=VERSION;
  document.querySelectorAll('[data-v31-user]').forEach(node=>node.textContent=s.displayName||s.username||'Usuario');
  document.querySelectorAll('[data-v31-role]').forEach(node=>node.textContent=s.role||'Usuario');
@@ -21,6 +25,6 @@ function boot(){
  });
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-window.EL_ERRANTE_INTERNAL_V31={version:VERSION,session,signOut};
+window.EL_ERRANTE_INTERNAL_V31={version:VERSION,session,signOut,requestedTarget};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

@@ -1,13 +1,22 @@
 (()=>{
   const runtime = window.EL_ERRANTE_RUNTIME_CONFIG || {};
   const runtimeBackend = runtime.backend || {};
+  const INTERNAL_DEMO_PAGES = new Set(['centro-interno','control','operacion','finanzas']);
+  const operationalDemoActive = (()=>{
+    try{
+      const page = String(document.body?.dataset?.page || '');
+      return INTERNAL_DEMO_PAGES.has(page) && Boolean(localStorage.getItem('ee_v311_operational_demo'));
+    }catch(_){
+      return false;
+    }
+  })();
   window.EL_ERRANTE_COMMERCE_CONFIG = Object.freeze({
     version: "2.5.0",
     environment: runtime.environment || "preview",
     backend: {
       provider: runtimeBackend.provider || "supabase",
-      url: runtimeBackend.url || "",
-      publishableKey: runtimeBackend.publishableKey || "",
+      url: operationalDemoActive ? "" : (runtimeBackend.url || ""),
+      publishableKey: operationalDemoActive ? "" : (runtimeBackend.publishableKey || ""),
       receiptBucket: runtimeBackend.receiptBucket || "payment-receipts",
       shopperStorageKey: runtimeBackend.shopperStorageKey || "ee-shopper-auth-v15",
       adminStorageKey: runtimeBackend.adminStorageKey || "ee-admin-auth-v15"

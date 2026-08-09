@@ -83,7 +83,7 @@ function readiness(date=selectedDate()){
   const productionApplicable=facts.productionOrders.length>0||facts.measurements.length>0;
   const productionReady=facts.measurements.length>0||has('production_lot');
   const yieldReady=facts.measurements.length>0;
-  const inventoryApplicable=facts.productionOrders.length>0||facts.knownStock>0||has('inventory_count');
+  const inventoryApplicable=facts.productionOrders.length>0||facts.measurements.length>0||has('inventory_count');
   const inventoryReady=has('inventory_count');
   const receiptApplicable=facts.purchases.length>0||facts.purchaseOrders.length>0||has('purchase_receipt');
   const receiptsSupported=facts.purchases.length>0&&facts.purchases.every(row=>String(row.invoiceReference||row.invoice_reference||'').trim());
@@ -154,7 +154,7 @@ function bind(){
   target.querySelector('[data-v330-cancel]')?.addEventListener('click',cancelCorrection);
 }
 window.EL_ERRANTE_OPERATION_V330={version:VERSION,key:KEY,allEvidence,activeEvidence,recordEvidence,sourceFacts,readiness,summary,selectedDate};
-window.addEventListener('ee:v22:reload',()=>requestAnimationFrame(()=>{if(target.isConnected&&selectedDate()!==target.querySelector('#v330-date')?.value)render();}));
+window.addEventListener('ee:v22:reload',()=>requestAnimationFrame(()=>{if(target.isConnected)render();}));
 window.addEventListener('ee:v24:reload',render);
 window.addEventListener('ee:v25:reload',render);
 render();

@@ -92,7 +92,7 @@ test.describe('Caja y tendencias V3.2.3',()=>{
     expect(counts[0].amount).toBe(1950000);
     expect(counts[0].supersedes).toBeNull();
 
-    const second=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V323.recordCashCount({month:'2026-08',date:'2026-08-08',amount:1960000,evidence:'CONFIRMADO',note:'Segundo cierre'}));
+    const second=await page.evaluate(date=>window.EL_ERRANTE_FINANCE_V323.recordCashCount({month:'2026-08',date,amount:1960000,evidence:'CONFIRMADO',note:'Segundo cierre'}),counts[0].date);
     expect(second.supersedes).toBe(counts[0].id);
     counts=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V323.allCounts());
     expect(counts).toHaveLength(2);

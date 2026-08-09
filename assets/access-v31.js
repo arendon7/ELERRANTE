@@ -4,7 +4,12 @@ const VERSION='3.1.0';
 const ACCOUNT_KEY='ee_v31_local_account';
 const SESSION_KEY='ee_v31_session';
 const SESSION_HOURS=8;
-const ALLOWED_NEXT=new Set(['centro-interno.html','control.html','operacion.html','finanzas.html']);
+const ALLOWED_NEXT={
+ 'centro-interno.html':new Set(['']),
+ 'control.html':new Set(['']),
+ 'operacion.html':new Set(['','#resumen','#pedidos','#produccion','#materiales','#medicion','#compras']),
+ 'finanzas.html':new Set([''])
+};
 const enc=new TextEncoder();
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const b64=bytes=>btoa(String.fromCharCode(...new Uint8Array(bytes)));
@@ -13,7 +18,14 @@ const read=(key,where=localStorage)=>{try{return JSON.parse(where.getItem(key));
 function nextTarget(){
  try{
   const candidate=new URLSearchParams(location.search).get('next');
-  return ALLOWED_NEXT.has(candidate)?candidate:'centro-interno.html';
+  if(!candidate)return 'centro-interno.html';
+  const match=String(candidate).match(/^([a-z0-9-]+\.html)(#[a-z0-9-]+)?$/i);
+  if(!match)return 'centro-interno.html';
+  const page=match[1];
+  const hash=match[2]||'';
+  const allowedHashes=ALLOWED_NEXT[page];
+  if(!allowedHashes)return 'centro-interno.html';
+  return allowedHashes.has(hash)?`${page}${hash}`:page;
  }catch(_){return 'centro-interno.html';}
 }
 async function derive(password,salt){
@@ -57,6 +69,6 @@ function render(){
   }catch(error){msg.textContent=error.message||'No fue posible iniciar sesión.';msg.dataset.tone='error';}
  });
 }
-window.EL_ERRANTE_ACCESS_V31={version:VERSION,accountKey:ACCOUNT_KEY,sessionKey:SESSION_KEY,allowedNext:[...ALLOWED_NEXT],nextTarget,validSession};
+window.EL_ERRANTE_ACCESS_V31={version:VERSION,accountKey:ACCOUNT_KEY,sessionKey:SESSION_KEY,allowedNext:Object.fromEntries(Object.entries(ALLOWED_NEXT).map(([page,hashes])=>[page,[...hashes]])),nextTarget,validSession};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
 })();

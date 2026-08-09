@@ -1,4 +1,4 @@
-EL ERRANTE RELEASE CANDIDATE
+EL ERRANTE RELEASE METADATA
 release_version=3.1.1
 previous_release_version=3.1.0
 version=2.8.0
@@ -8,10 +8,15 @@ cache=el-errante-v2-8-brand-canon-2
 brand_source=assets/brand-canon-v28.js
 content_source=v2.9-editorial
 internal_architecture=v3.1-acceso-operacion-finanzas
+session_shell=v3.1.1
+control_engine=v3.0
+operation_module=v3.3.0
 mfo_baseline=v3.0-schema-mfo-v3.3
-finance_workbench=v3.1.0
+finance_workbench_core=v3.1.0
+finance_module=v3.2.9
+finance_demo=v3.2.9
 source_mode=materialized-no-base64-runtime
 source_generator=scripts/materializar_fuentes_locales_v28.py
 site_builder=scripts/preparar_sitio_materializado_v28.py
 validation_target=main
-updated=2026-08-08T09:30:00Z
+updated=2026-08-09T23:52:00Z

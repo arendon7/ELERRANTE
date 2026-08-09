@@ -15,7 +15,7 @@ const TYPES={
   other:{label:'Otra evidencia',short:'Otra'}
 };
 const STATUSES=new Set(['OBSERVADO','CONFIRMADO']);
-const ACTIVE_PRODUCTION=new Set(['approved','preparing']);
+const ACTIVE_PRODUCTION=new Set(['approved','preparing','dispatched','delivered']);
 let flash='';
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch(_){return fallback;}};
 const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
@@ -27,7 +27,8 @@ const uid=()=>`EVI-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
 const dateOnly=value=>String(value||'').slice(0,10);
 const isFuture=date=>date>today();
 const sessionUser=()=>{try{const s=JSON.parse(sessionStorage.getItem('ee_v31_session'));return s?.displayName||s?.username||'Usuario local';}catch(_){return 'Usuario local';}};
-function allEvidence(){return read(KEY,[]).filter(row=>row&&row.id&&row.date&&TYPES[row.kind]);}
+function rawEvidence(){const rows=read(KEY,[]);return Array.isArray(rows)?rows:[];}
+function allEvidence(){return rawEvidence().filter(row=>row&&row.id&&row.date&&TYPES[row.kind]);}
 function supersededIds(rows=allEvidence()){return new Set(rows.map(row=>row.supersedes).filter(Boolean));}
 function activeEvidence(date=null){const rows=allEvidence(),superseded=supersededIds(rows);return rows.filter(row=>!superseded.has(row.id)&&(!date||row.date===date));}
 function validate(payload){
@@ -38,6 +39,7 @@ function validate(payload){
   const status=String(payload.status||'OBSERVADO').trim().toUpperCase();
   const durationRaw=payload.durationMinutes;
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('La fecha de evidencia no es válida.');
+  if(isFuture(date))throw new Error('No se puede registrar evidencia con fecha futura.');
   if(!TYPES[kind])throw new Error('Selecciona un tipo de evidencia válido.');
   if(!reference)throw new Error('La referencia es obligatoria.');
   if(!STATUSES.has(status))throw new Error('El estado de evidencia no es válido.');
@@ -56,7 +58,7 @@ function validate(payload){
 function recordEvidence(payload){
   const clean=validate(payload);
   const row={id:uid(),...clean,createdAt:new Date().toISOString(),createdBy:sessionUser(),dataStatus:clean.status};
-  const rows=allEvidence();rows.unshift(row);write(KEY,rows);
+  const rows=rawEvidence();rows.unshift(row);write(KEY,rows);
   window.dispatchEvent(new CustomEvent('ee:v330:evidence',{detail:{id:row.id,date:row.date,kind:row.kind}}));
   return row;
 }

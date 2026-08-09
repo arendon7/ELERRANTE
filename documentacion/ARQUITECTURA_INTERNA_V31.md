@@ -1,335 +1,263 @@
 # Arquitectura interna V3.1 — El Errante
 
-## 1. Objetivo
+## 1. Alcance
 
-V3.1 convierte el conjunto de pantallas administrativas en un sistema interno con tres momentos explícitos:
+La arquitectura interna V3.1 sigue siendo el contrato estructural vigente de El Errante: acceso, selección de contexto y separación de responsabilidades entre **Panel de control**, **Operación** y **Finanzas**.
 
-1. **Acceso de usuario**.
-2. **Selección de superficie de trabajo**: Panel de control, Operación o Finanzas.
-3. **Trabajo dentro del contexto elegido**, sin mezclar responsabilidades.
+La release integral publicada continúa siendo V3.1.1. Sobre ella, los módulos han avanzado de forma compatible:
 
-La patch V3.1.1 no cambia los contratos de datos de V3.1: formaliza el Panel de control dentro de la misma sesión, lo hace visible desde el selector y conecta transversalmente Control, Operación y Finanzas. El canon visual/materializado V2.8 y la narrativa pública V2.9 no se reescriben.
+- shell y sesión: V3.1.1;
+- Panel de control: shell V3.1.1 sobre motor V3.0;
+- Operación efectiva: V3.3.0;
+- Finanzas efectiva: V3.2.9;
+- runtime/materialización: V2.8.0.
+
+La matriz completa está en `documentacion/MAPA_VERSIONES_ACTIVAS.md`.
 
 ## 2. Flujo de acceso
-
-La web pública incorpora un enlace discreto `Acceso usuarios` que conduce a `acceso.html`.
 
 ```text
 Web pública
    ↓
 Acceso usuarios
    ↓
-Sesión local
+Sesión local V3.1.1
    ↓
 Centro interno
    ├── Panel de control
-   ├── Operación
-   └── Finanzas
+   ├── Operación V3.3.0
+   └── Finanzas V3.2.9
 ```
 
-### Modo local V3.1
+### Sesión local V3.1.1
 
-Mientras Supabase siga inactivo, el primer navegador configura un usuario local:
+Mientras Supabase permanezca inactivo, el navegador configura y conserva el acceso local mediante:
 
-- nombre de usuario;
+- usuario local;
 - contraseña de mínimo 8 caracteres;
-- sal aleatoria de 16 bytes;
-- derivación PBKDF2 / SHA-256 / 150.000 iteraciones;
-- sesión almacenada en `sessionStorage` con vencimiento a 8 horas.
+- sal aleatoria;
+- PBKDF2 / SHA-256 / 150.000 iteraciones;
+- sesión en `sessionStorage` con vencimiento de ocho horas.
 
-La contraseña no se almacena. El navegador conserva únicamente sal y hash derivado.
+La shell V3.1.1 revalida la expiración en pestañas abiertas, en foco, `pageshow` y cambios de visibilidad. El retorno a una sección interna se limita a destinos permitidos mediante `?next=`.
 
 ### Límite de seguridad
 
-GitHub Pages es un host estático. El guard V3.1 es una barrera de experiencia y de uso local, no una autorización servidor. No debe considerarse sustituto de Auth + RLS. La activación multiusuario real debe usar el esquema Supabase ya existente (`auth.users`, `admin_users`, `is_admin()`, RLS y auditoría).
+GitHub Pages es un host estático. La sesión local es una barrera de experiencia, no autorización servidor. La fase multiusuario deberá usar Supabase Auth, roles, RLS y auditoría real.
 
-Nunca deben versionarse contraseñas, `service_role`, tokens privados ni secretos.
-
-## 3. Centro interno y superficies de trabajo
-
-`centro-interno.html` deja de ser un menú técnico y se convierte en un selector explícito de tres destinos.
+## 3. Separación de contextos
 
 ### 3.1 Panel de control
 
 Pregunta principal: **¿qué requiere atención ahora?**
 
-`control.html` concentra una lectura ejecutiva de:
+Responsabilidades:
 
 - pedidos comprometidos;
 - alistamiento;
-- BOM reconocida o faltante;
-- inventario conocido / desconocido;
+- BOM;
+- inventario conocido/desconocido;
 - faltantes confirmados;
 - compras abiertas;
-- señales y prioridades del día.
+- señales y prioridades.
 
-El Panel de control no calcula margen, resultado ni caja. Es una superficie operativa de priorización, no un tercer modelo de negocio.
+El Panel usa la shell V3.1.1 y conserva `control-v30.js` como motor V3.0. No calcula margen, resultado ni caja.
 
-Desde V3.1.1 exige la misma sesión que Operación y Finanzas, muestra el usuario activo y permite ir directamente a ambos módulos.
+### 3.2 Operación V3.3.0
 
-### 3.2 Operación
+Pregunta principal: **¿qué debemos ejecutar y qué evidencia existe?**
 
-Pregunta principal: **¿qué debemos ejecutar?**
-
-- Resumen y prioridades.
-- Pedidos.
-- Producción.
-- Materiales / BOM.
-- Inventario y medición.
-- Compras.
-- Despacho.
-
-### 3.3 Finanzas
-
-Pregunta principal: **¿qué debemos medir, modelar y decidir?**
-
-- Dashboard.
-- Plan de ventas 24M.
-- Productos y costos.
-- Gastos y caja.
-- Real vs. Plan.
-- Escenarios.
-- Decisiones.
-- Supuestos, auditoría e historial.
-
-### Regla de navegación
-
-Control, Operación y Finanzas comparten sesión y shell, pero no comparten responsabilidades. Todas las superficies deben permitir volver al Centro interno y navegar de forma explícita a los otros contextos sin pasar por la web pública.
-
-## 4. Módulo Operativo
-
-`operacion.html` compone en una sola superficie los motores ya validados:
+`operacion.html` compone:
 
 - `control-v30.js` — resumen de prioridades;
 - `daily-ops-v21.js` — pedidos y continuidad;
-- `production-v22.js` — agenda y alistamiento;
+- `production-v22.js` — producción y alistamiento;
 - `materials-v23.js` — BOM y requerimientos;
 - `measurement-v24.js` — lotes, conteos, rendimiento y merma;
-- `procurement-v25.js` — abastecimiento controlado.
+- `procurement-v25.js` — abastecimiento controlado;
+- `operational-evidence-v330.js` — evidencia y cierre.
 
-### Invariantes
+#### Evidencia y cierre V3.3.0
 
-- Necesidad teórica ≠ orden de compra.
-- Inventario desconocido ≠ cero.
-- Un escenario financiero no crea producción.
-- Un plan no crea compras reales.
-- Los hechos operativos alimentan Finanzas; Finanzas no reescribe hechos operativos.
+La nueva capa no sustituye los motores anteriores. Los lee y añade una bitácora local independiente:
 
-## 5. Módulo Financiero — Baseline + Working Model
+`ee_v330_operational_evidence`
 
-V3.1 reemplaza la yuxtaposición visual `MFO V3.0 + Finanzas V2.7` por un solo workbench.
+Controles de cierre:
 
-### 5.1 Dos formas de iniciar
+1. producción / lote;
+2. rendimiento y merma;
+3. conteo físico;
+4. recepción y soporte;
+5. tiempo / novedad.
 
-El usuario puede empezar de dos maneras sin publicar cifras privadas:
+Invariantes:
 
-**A. Importar MFO privado**
+- necesidad teórica ≠ orden de compra;
+- inventario desconocido ≠ cero;
+- periodo futuro ≠ incumplimiento;
+- no se admite evidencia con fecha futura;
+- una corrección crea un nuevo evento y referencia el anterior mediante `supersedes`;
+- registrar evidencia no modifica pedidos, inventario, recetas, compras ni Finanzas;
+- una fila histórica no se elimina como efecto secundario de anexar otra evidencia.
 
-Carga el snapshot JSON exportado localmente desde el MFO v3.3.
+### 3.3 Finanzas V3.2.9
 
-**B. Crear modelo desde cero**
+Pregunta principal: **¿qué debemos medir, modelar y decidir?**
 
-`assets/finance-starter-v31.js` genera localmente:
+El núcleo sigue siendo `finance-workbench-v31.js`, pero la profundidad efectiva del módulo se construye por capas acumulativas:
 
-- horizonte de 24 meses desde el mes vigente en Colombia;
-- SKU y precios que ya forman parte del catálogo público;
-- plan de ventas con cantidades iniciales en cero;
-- costos directos en cero y estado `PENDIENTE`;
-- flujo de caja en cero;
-- cuatro escenarios iniciales;
-- supuestos mínimos marcados `PENDIENTE`;
-- un hallazgo de calidad que exige completar el modelo.
+- `finance-depth-v32.js` — V3.2.0;
+- `finance-ledger-v321.js` — V3.2.1;
+- `finance-unit-economics-v322.js` — V3.2.2;
+- `finance-cash-trends-v323.js` — V3.2.3;
+- `finance-scenarios-v324.js` — V3.2.4;
+- `finance-decisions-v325.js` — V3.2.5;
+- `finance-procurement-v326.js` — V3.2.6;
+- `finance-executive-v327.js` — V3.2.7;
+- `finance-readiness-v328.js` — V3.2.8;
+- `finance-demo-v329.js` — V3.2.9.
 
-El starter no contiene cifras financieras privadas, no hace llamadas de red y no convierte un cero inicial en un dato confirmado.
+Estas capas amplían el workbench sin cambiar el contrato fundamental de separación entre plan y hechos.
 
-### 5.2 Baseline
+## 4. Baseline + Working Model
+
+### 4.1 Baseline
 
 Clave local:
 
 `ee_v30_mfo_snapshot`
 
-Representa la referencia inmutable del modelo, ya sea importada desde el MFO o creada localmente por el starter. No se modifica al editar.
+Es la referencia inmutable del modelo, importada desde un MFO privado o generada por el starter local.
 
-### 5.3 Modelo de trabajo
+### 4.2 Working Model
 
 Clave local:
 
 `ee_v31_finance_working_model`
 
-Se crea como copia del baseline y contiene:
+El **Working Model** es una copia editable independiente que puede contener:
 
 - plan de ventas;
 - productos y costos;
 - flujo de caja;
 - escenarios;
-- supuestos;
 - decisiones;
-- pendientes.
+- supuestos;
+- pendientes de calidad.
 
-Cada cambio actualiza únicamente esta copia.
+Editar el Working Model no modifica el baseline ni hechos operativos.
 
-### 5.4 Historial
+### 4.3 Historial financiero
 
 Clave local:
 
 `ee_v31_finance_history`
 
-Registra hasta 120 eventos locales de edición con fecha, tipo de cambio y detalle.
+Registra cambios locales. No es todavía un ledger de auditoría multiusuario.
 
-No es todavía un ledger de auditoría multiusuario. Esa responsabilidad corresponde a la futura persistencia backend.
+## 5. Plan vs. hechos
 
-## 6. Recalculo financiero
+### Plan
 
-### Plan de ventas
+Proviene del baseline y del Working Model. Incluye cantidades, precios, costos directos, egresos, caja, escenarios y decisiones.
 
-La cantidad por SKU/mes es editable. Cuando cambia:
+### Hechos
 
-1. se lee precio y costo directo del producto en el working model;
-2. se recalculan ventas;
-3. se recalcula COGS planificado;
-4. se recalcula caja planificada.
+Provienen de pedidos, movimientos, compras, conteos y evidencia operativa bajo sus propios contratos.
 
-La modificación no crea pedidos reales.
+Reglas:
 
-### Productos y costos
+- una proyección no crea pedidos;
+- una decisión no crea producción;
+- una compra planificada no crea una orden real;
+- Finanzas puede leer hechos, pero no reescribirlos;
+- COGS real sólo usa costo histórico capturado en la línea del pedido;
+- compras ≠ COGS ≠ inventario ≠ caja.
 
-Precio y costo directo son editables en el working model. El margen y el plan se recalculan inmediatamente.
+## 6. Demo operativa y demo financiera
 
-Un pedido cerrado conserva su costo snapshot histórico y no se revaloriza con el costo actual.
+### Demo operativa V3.1.1
 
-### Caja
+- local;
+- reversible;
+- aislada de configuración remota;
+- respalda y restaura pedidos, fulfillment, stock, mediciones, compras, órdenes y evidencia V3.3.0.
 
-V3.1 conserva por mes la relación de cobro observada en el baseline (`salesCash / sales plan`) y la aplica al nuevo plan de ventas. Los egresos editables incluyen:
+### Demo financiera V3.2.9
 
-- compras;
-- gasto operativo;
-- auxiliares;
-- pago de Juan;
-- reserva de impuestos;
-- arriendo;
-- CAPEX.
+- local;
+- reversible;
+- usa únicamente cifras sintéticas;
+- no publica costos reales;
+- no puede apilarse sobre la demo operativa;
+- restaura el estado anterior al salir.
 
-La caja se encadena mes a mes dentro del modelo de trabajo.
+## 7. Runtime y materialización V2.8
 
-## 7. Hechos reales
+La superficie ejecutable continúa generándose con:
 
-### Ventas reales
+```text
+scripts/materializar_fuentes_locales_v28.py
+scripts/preparar_sitio_materializado_v28.py
+```
 
-Provienen de pedidos en estados aprobados/operativos.
+V2.8 sigue siendo el contrato técnico de materialización, cache y fuente canónica. Las mejoras modulares no justifican renombrar ese runtime mientras no cambie el contrato de construcción.
 
-### COGS real
+## 8. Marcador de despliegue
 
-Sólo se reconoce cuando la línea del pedido conserva `unit_cost_snapshot`, `unitCostSnapshot` o equivalente.
+`deploy-version.txt` debe publicar las capas por separado:
 
-Si falta costo histórico, el COGS real queda incompleto. **No se reemplaza por el costo actual del catálogo.**
+```text
+release_version=3.1.1
+version=2.8.0
+internal_architecture=v3.1-acceso-operacion-finanzas
+session_shell=v3.1.1
+control_engine=v3.0
+operation_module=v3.3.0
+finance_workbench_core=v3.1.0
+finance_module=v3.2.9
+finance_demo=v3.2.9
+mfo_baseline=v3.0-schema-mfo-v3.3
+```
 
-### Movimientos reales
+Este marcador evita tratar la versión modular más alta como versión global del producto.
 
-Se registran separadamente bajo la capa de movimientos financieros locales:
+## 9. Service worker y frescura
 
-- gasto operativo;
-- compra de inventario;
-- CAPEX;
-- aporte de capital;
-- retiro/pago del propietario;
-- otro ingreso.
+Las páginas internas y los assets críticos de sesión, Finanzas y evidencia operativa usan política fresca/network-first cuando corresponde. El service worker debe conservar explícitamente:
 
-Compras ≠ COGS ≠ inventario ≠ caja.
+- shell V3.1.1;
+- demo interna V3.1.1;
+- configuración comercial efectiva;
+- capas financieras V3.1–V3.2.9;
+- evidencia operativa V3.3.0.
 
-## 8. Visualización
+La frescura no debe eliminar el aislamiento de demo introducido en la shell/configuración local.
 
-El dashboard V3.1 usa SVG nativo para evitar dependencias externas y mantener Pages autocontenido.
+## 10. Validación
 
-Incluye:
+Barreras principales:
 
-- ventas Plan vs. Real;
-- ventas planificadas por producto;
-- evolución de caja;
-- KPIs de ventas, margen directo, resultado simplificado, caja, COGS, compras, CAPEX y ventas reales.
+- `scripts/verificar_v31_interno.py`;
+- `scripts/verificar_release_v31.py`;
+- validadores V2.8 de canon y materialización;
+- Playwright desktop y móvil;
+- health-check público sobre el SHA desplegado.
 
-## 9. Escenarios
+La barrera de release debe comprobar no sólo `release_version=3.1.1`, sino también la matriz modular vigente.
 
-Los escenarios permiten modificar, como mínimo:
+## 11. Próxima fase estructural
 
-- factor de volumen;
-- factor de costo directo.
-
-Se recalculan ventas, margen directo y resultado simplificado. Son señales de planeación; no ejecutan decisiones operativas.
-
-## 10. Decisiones y supuestos
-
-Las decisiones permiten modificar el mes configurado y su estado de trabajo, manteniendo el mes recomendado como referencia del modelo.
-
-Los supuestos pueden editarse en la copia de trabajo y conservar estado de calidad:
-
-- CONFIRMADO;
-- ESTIMADO;
-- INFERIDO;
-- CONTRADICTORIO;
-- PENDIENTE.
-
-## 11. Responsive y sistema visual
-
-`assets/internal-v31.css` introduce un sistema consistente para:
-
-- acceso;
-- selector de tres destinos;
-- shell interno;
-- navegación sticky;
-- KPIs;
-- gráficas;
-- tablas editables;
-- paneles;
-- formularios;
-- estados y chips;
-- móvil.
-
-En V3.1.1 el selector usa tres tarjetas diferenciadas: Control para prioridad, Operación para ejecución y Finanzas para decisión. A tablet pasa a dos columnas y en móvil a una sola, sin scroll horizontal estructural.
-
-Los componentes reutilizan la paleta sobria de El Errante y evitan convertir el módulo financiero en una hoja de cálculo visualmente hostil.
-
-## 12. Cache y actualización
-
-Las páginas internas se sirven `network-first`. V3.1.1 hace también `network-first` para `assets/internal-v31.css` y modifica el service worker para que navegadores que ya visitaron V3.1 reciban la nueva shell visual y no queden retenidos en el selector anterior.
-
-## 13. Validación
-
-Barreras específicas:
-
-- `scripts/verificar_v31_interno.py` — arquitectura y comportamiento interno;
-- `scripts/verificar_release_v31.py` — coherencia de release y publicación.
-
-Validan acceso, criptografía local, Panel de control protegido, navegación a Operación/Finanzas, starter local, working model, ausencia de red en motores financieros, protección del baseline, COGS histórico, gráficas, edición, service worker y responsive.
-
-Playwright cubre:
-
-- redirección sin sesión;
-- creación del primer acceso;
-- selector de Panel de control / Operación / Finanzas;
-- apertura real de Control y Finanzas desde el Centro interno;
-- navegación cruzada Control → Operación / Finanzas;
-- módulo operativo consolidado;
-- creación segura de un modelo financiero desde cero;
-- importación/uso de baseline MFO;
-- dashboard con gráficas;
-- edición del plan;
-- no mutación del baseline;
-- edición de precio/costo;
-- edición de escenarios;
-- móvil, incluyendo `control.html`.
-
-## 14. Próxima fase — persistencia V3.2
-
-V3.1 no debe activar Supabase por accidente. La siguiente fase deberá migrar de almacenamiento local a contratos backend explícitos:
+La próxima versión integral no debe abrirse sólo por continuar aumentando números. El salto de release tendrá sentido cuando cambie un contrato transversal, por ejemplo:
 
 - Auth real;
 - roles Operador / Financiero / Administrador;
 - RLS;
-- auditoría de cambios;
-- hechos financieros reconciliados;
+- persistencia compartida;
+- auditoría servidor;
 - inventario por movimientos autorizados;
 - costos versionados;
-- persistencia del working model por usuario/empresa;
-- sincronización controlada entre dispositivos.
+- sincronización entre dispositivos.
 
-La UI V3.1 se diseña para que esta migración cambie el proveedor de datos y autenticación, no la experiencia fundamental del usuario.
+Hasta entonces, las iteraciones compatibles de Operación y Finanzas pueden avanzar modularmente sobre la release integral V3.1.1.

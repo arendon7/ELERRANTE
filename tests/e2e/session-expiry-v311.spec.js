@@ -1,13 +1,12 @@
 const {test,expect}=require('@playwright/test');
 
-function sessionPayload(expiresOffsetMs){
-  const now=Date.now();
-  return {version:'3.1.0',username:'juan',displayName:'Juan',role:'Administrador',issuedAt:new Date(now).toISOString(),expiresAt:new Date(now+expiresOffsetMs).toISOString()};
-}
-
 async function seedSession(page,expiresOffsetMs){
-  const payload=sessionPayload(expiresOffsetMs);
-  await page.addInitScript(value=>sessionStorage.setItem('ee_v31_session',JSON.stringify(value)),payload);
+  await page.goto('/index.html');
+  await page.evaluate(offset=>{
+    const now=Date.now();
+    const payload={version:'3.1.0',username:'juan',displayName:'Juan',role:'Administrador',issuedAt:new Date(now).toISOString(),expiresAt:new Date(now+offset).toISOString()};
+    sessionStorage.setItem('ee_v31_session',JSON.stringify(payload));
+  },expiresOffsetMs);
 }
 
 async function expectAccess(page,next){
@@ -23,7 +22,7 @@ test.describe('Expiración de sesión interna V3.1.1',()=>{
   });
 
   test('una pestaña abierta sale automáticamente cuando vence la sesión',async({page})=>{
-    await seedSession(page,1500);
+    await seedSession(page,3000);
     await page.goto('/operacion.html#compras');
     await expect(page.locator('body')).toHaveAttribute('data-v31-authenticated','true');
     await expect(page.locator('#compras')).toBeVisible();

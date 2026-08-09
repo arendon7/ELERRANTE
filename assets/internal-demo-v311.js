@@ -9,7 +9,8 @@ const KEYS={
   stock:'ee_v23_material_stock',
   measurements:'ee_v24_production_measurements',
   purchases:'ee_v24_material_purchases',
-  purchaseOrders:'ee_v25_purchase_orders'
+  purchaseOrders:'ee_v25_purchase_orders',
+  operationalEvidence:'ee_v330_operational_evidence'
 };
 const SESSION_KEYS=['ee_v22_selected_date'];
 const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Bogota'});
@@ -40,7 +41,8 @@ function makeDemo(){
     stock:{'MP-HFS':100,'MP-HHO':100,'MP-MOZ':260},
     measurements:[{id:'DEMO-MED-001',kind:'recipe',referenceId:'REC-MASA-BASE-V23',referenceName:'Masa base con poolish',batchCode:`DEMO-MASA-${date}`,productionDate:date,expectedQty:12516,actualQty:11600,wasteQty:916,unit:'g',note:'Medición sintética con desviación deliberada para mostrar la alerta de rendimiento.',createdAt:stamp,dataStatus:'DEMO',demoV311:true}],
     purchases:[{id:'DEMO-COM-001',materialId:'MP-HFS',supplier:'Molino demo',receivedDate:previous,invoiceReference:'DEMO-FAC-001',quantity:1000,totalCost:2800,unitCost:2.8,note:'Compra observada sintética para demostración.',createdAt:stamp,dataStatus:'DEMO',demoV311:true}],
-    purchaseOrders:[{id:'DEMO-PO-001',code:'DEMO-OC-001',materialId:'MP-HFS',supplier:'Molino demo',status:'draft',requestedQty:150,receivedQty:0,unitCost:2.8,expectedDate:expected,externalReference:'DEMO-COT-001',note:'Borrador sintético; no representa una compra real.',createdAt:stamp,updatedAt:stamp,dataStatus:'DEMO',demoV311:true}]
+    purchaseOrders:[{id:'DEMO-PO-001',code:'DEMO-OC-001',materialId:'MP-HFS',supplier:'Molino demo',status:'draft',requestedQty:150,receivedQty:0,unitCost:2.8,expectedDate:expected,externalReference:'DEMO-COT-001',note:'Borrador sintético; no representa una compra real.',createdAt:stamp,updatedAt:stamp,dataStatus:'DEMO',demoV311:true}],
+    operationalEvidence:[{id:'DEMO-EVI-001',date,kind:'time_incident',reference:`DEMO-MASA-${date}`,supportRef:'DEMO-BITACORA-001',status:'OBSERVADO',durationMinutes:95,supersedes:null,note:'Tiempo sintético de preparación y alistamiento para recorrer el cierre operativo V3.3.0.',createdAt:stamp,createdBy:'Demo operativa',dataStatus:'DEMO',demoV330:true}]
   };
 }
 function writeDemo(data){
@@ -50,6 +52,7 @@ function writeDemo(data){
   localStorage.setItem(KEYS.measurements,JSON.stringify(data.measurements));
   localStorage.setItem(KEYS.purchases,JSON.stringify(data.purchases));
   localStorage.setItem(KEYS.purchaseOrders,JSON.stringify(data.purchaseOrders));
+  localStorage.setItem(KEYS.operationalEvidence,JSON.stringify(data.operationalEvidence||[]));
   sessionStorage.setItem('ee_v22_selected_date',data.date);
 }
 function loadDemo(){
@@ -74,7 +77,7 @@ function centerPanel(){
   const main=document.querySelector('.v30-main'),grid=main?.querySelector('.v31-module-grid');if(!main||!grid||main.querySelector('[data-v311-operational-demo-panel]'))return;
   const panel=document.createElement('section');panel.className='v30-panel';panel.dataset.v311OperationalDemoPanel='1';
   const isActive=active(),blocked=financeState();
-  panel.innerHTML=`<div class="v30-panel-head"><div><p class="eyebrow">Demo operativa reversible · V3.1.1</p><h2>${isActive?'Datos sintéticos operativos activos.':'Recorre el flujo completo sin cargar datos reales.'}</h2><p>${isActive?'Control y Operación están leyendo un escenario local sintético. Puedes recorrer pedidos, producción, BOM, inventario, medición y compras; al salir se restaura el navegador anterior.':blocked?'Hay un contexto financiero activo en este navegador. Por seguridad, restaura o retira ese modelo antes de sustituir temporalmente hechos operativos.':'Carga dos pedidos sintéticos y evidencia operativa mínima en este navegador. La demo no toca Supabase, no crea compras reales y no modifica ningún MFO.'}</p></div><div data-v311-demo-actions></div></div>`;
+  panel.innerHTML=`<div class="v30-panel-head"><div><p class="eyebrow">Demo operativa reversible · V3.1.1</p><h2>${isActive?'Datos sintéticos operativos activos.':'Recorre el flujo completo sin cargar datos reales.'}</h2><p>${isActive?'Control y Operación están leyendo un escenario local sintético. Puedes recorrer pedidos, producción, BOM, inventario, medición, compras y evidencia; al salir se restaura el navegador anterior.':blocked?'Hay un contexto financiero activo en este navegador. Por seguridad, restaura o retira ese modelo antes de sustituir temporalmente hechos operativos.':'Carga dos pedidos sintéticos y evidencia operativa mínima en este navegador. La demo no toca Supabase, no crea compras reales y no modifica ningún MFO.'}</p></div><div data-v311-demo-actions></div></div>`;
   const actions=panel.querySelector('[data-v311-demo-actions]');
   if(isActive){actions.appendChild(button('Salir y restaurar demo',clearDemo));}
   else{const load=button('Cargar demo operativa',loadDemo);if(blocked){load.disabled=true;load.title='Existe un contexto financiero activo';}actions.appendChild(load);}
@@ -86,7 +89,7 @@ function activeBanner(){
   const main=document.querySelector('.v30-main'),hero=main?.querySelector('.v31-module-hero');if(!main||main.querySelector('[data-v311-operational-demo-banner]'))return;
   const panel=document.createElement('section');panel.className='v30-panel';panel.dataset.v311OperationalDemoBanner='1';
   const finance=page==='finanzas';
-  panel.innerHTML=`<div class="v30-panel-head"><div><p class="eyebrow">Modo demo operativa · V3.1.1</p><h2>Hechos sintéticos activos</h2><p>${finance?'Los pedidos, conteos y compras visibles provienen de la demo operativa. No cargues ni analices un MFO privado hasta salir y restaurar los hechos anteriores.':'Este módulo está leyendo pedidos, conteos, alistamiento, mediciones y compras sintéticas. Nada de este escenario debe interpretarse como evidencia real.'}</p></div><div data-v311-demo-actions></div></div>`;
+  panel.innerHTML=`<div class="v30-panel-head"><div><p class="eyebrow">Modo demo operativa · V3.1.1</p><h2>Hechos sintéticos activos</h2><p>${finance?'Los pedidos, conteos, compras y evidencias visibles provienen de la demo operativa. No cargues ni analices un MFO privado hasta salir y restaurar los hechos anteriores.':'Este módulo está leyendo pedidos, conteos, alistamiento, mediciones, compras y evidencia sintéticas. Nada de este escenario debe interpretarse como evidencia real.'}</p></div><div data-v311-demo-actions></div></div>`;
   panel.querySelector('[data-v311-demo-actions]').appendChild(button('Salir y restaurar demo',clearDemo));
   if(hero)hero.insertAdjacentElement('afterend',panel);else main.prepend(panel);
   document.documentElement.dataset.operationalDemoVersion=VERSION;

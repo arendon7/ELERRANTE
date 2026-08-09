@@ -10,7 +10,8 @@ async function seedSession(page,expiresOffsetMs){
 }
 
 async function expectAccess(page,next){
-  await expect.poll(()=>page.evaluate(()=>({pathname:location.pathname,search:location.search}))).toEqual({pathname:'/acceso.html',search:`?next=${encodeURIComponent(next)}`});
+  const expectedSearch=`?next=${encodeURIComponent(next)}`;
+  await page.waitForURL(url=>url.pathname.endsWith('/acceso.html')&&url.search===expectedSearch);
   await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('ee_v31_session'))).toBeNull();
 }
 

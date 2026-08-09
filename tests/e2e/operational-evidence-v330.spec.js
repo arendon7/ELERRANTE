@@ -2,6 +2,7 @@ const {test,expect}=require('@playwright/test');
 
 async function seed(page,{preexistingEvidence=[]}={}){
   await page.addInitScript(({preexistingEvidence})=>{
+    if(sessionStorage.getItem('ee_v330_test_seeded')==='1')return;
     const now=Date.now();
     const date=new Date().toLocaleDateString('en-CA',{timeZone:'America/Bogota'});
     sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'juan',displayName:'Juan',role:'Administrador',issuedAt:new Date(now).toISOString(),expiresAt:new Date(now+8*3600000).toISOString()}));
@@ -17,6 +18,7 @@ async function seed(page,{preexistingEvidence=[]}={}){
     localStorage.removeItem('ee_v30_mfo_snapshot');
     localStorage.removeItem('ee_v31_finance_working_model');
     localStorage.removeItem('ee_v329_finance_demo');
+    sessionStorage.setItem('ee_v330_test_seeded','1');
   },{preexistingEvidence});
 }
 

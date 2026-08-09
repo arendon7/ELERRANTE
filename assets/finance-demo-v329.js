@@ -12,6 +12,7 @@ const STOCK_KEY='ee_v23_material_stock';
 const MATERIAL_PURCHASE_KEY='ee_v24_material_purchases';
 const PURCHASE_ORDER_KEY='ee_v25_purchase_orders';
 const MARKER_KEY='ee_v329_finance_demo';
+const OP_DEMO_KEY='ee_v311_operational_demo';
 const MANAGED=[SNAPSHOT_KEY,WORKING_KEY,HISTORY_KEY,ORDER_KEY,MOVE_KEY,CASH_KEY,STOCK_KEY,MATERIAL_PURCHASE_KEY,PURCHASE_ORDER_KEY];
 const n=v=>{const x=Number(v);return Number.isFinite(x)?x:0;};
 const money=v=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(n(v));
@@ -45,11 +46,20 @@ function demoFacts(model){
  };
 }
 function loadDemo(){
+ if(localStorage.getItem(OP_DEMO_KEY)){alert('Sal de la demo operativa y restaura sus datos antes de cargar la demo financiera. Las dos demostraciones no se apilan para evitar mezclar hechos sintéticos con el plan.');return;}
  if(localStorage.getItem(SNAPSHOT_KEY)){alert('Ya existe un baseline financiero en este navegador. La demo solo se activa desde una superficie financiera vacía para no mezclar información.');return;}
  const marker=backup();const model=makeDemo(),facts=demoFacts(model);localStorage.setItem(MARKER_KEY,JSON.stringify(marker));localStorage.setItem(SNAPSHOT_KEY,JSON.stringify(model));localStorage.removeItem(WORKING_KEY);localStorage.removeItem(HISTORY_KEY);localStorage.setItem(ORDER_KEY,JSON.stringify(facts.orders));localStorage.setItem(MOVE_KEY,JSON.stringify(facts.moves));localStorage.setItem(CASH_KEY,JSON.stringify(facts.cash));localStorage.setItem(STOCK_KEY,JSON.stringify(facts.stock));localStorage.setItem(MATERIAL_PURCHASE_KEY,JSON.stringify(facts.materialPurchases));localStorage.setItem(PURCHASE_ORDER_KEY,JSON.stringify(facts.purchaseOrders));sessionStorage.setItem('ee_v31_finance_tab','dashboard');sessionStorage.setItem('ee_v327_executive_month',currentMonth());location.reload();
 }
 function clearDemo(){const marker=read(MARKER_KEY,null);if(!marker)return;restore(marker);sessionStorage.removeItem('ee_v327_executive_month');sessionStorage.setItem('ee_v31_finance_tab','dashboard');location.reload();}
-function emptyEnhance(root){if(localStorage.getItem(SNAPSHOT_KEY)||read(MARKER_KEY,null))return;const row=root.querySelector('.v31-empty .v31-import-row');if(!row||row.querySelector('[data-v329-load-demo]'))return;const button=document.createElement('button');button.type='button';button.className='v31-btn';button.dataset.v329LoadDemo='1';button.textContent='Cargar demo financiera';button.addEventListener('click',loadDemo);row.appendChild(button);const note=document.createElement('p');note.className='v31-inline-note v329-demo-note';note.innerHTML='<strong>Demo aislada y reversible.</strong> Carga cifras sintéticas, pedidos, movimientos y caja de ejemplo únicamente en este navegador. No publica costos reales y al salir restaura el estado local anterior.';root.querySelector('.v31-empty')?.appendChild(note);}
+function emptyEnhance(root){
+ if(localStorage.getItem(SNAPSHOT_KEY)||read(MARKER_KEY,null))return;
+ const row=root.querySelector('.v31-empty .v31-import-row');if(!row||row.querySelector('[data-v329-load-demo]'))return;
+ if(localStorage.getItem(OP_DEMO_KEY)){
+  if(root.querySelector('[data-v329-blocked-by-operational]'))return;
+  const note=document.createElement('p');note.className='v31-inline-note v329-demo-note';note.dataset.v329BlockedByOperational='1';note.innerHTML='<strong>Demo operativa activa.</strong> Restaura primero los hechos operativos anteriores. La demo financiera permanece bloqueada para no apilar escenarios sintéticos.';root.querySelector('.v31-empty')?.appendChild(note);return;
+ }
+ const button=document.createElement('button');button.type='button';button.className='v31-btn';button.dataset.v329LoadDemo='1';button.textContent='Cargar demo financiera';button.addEventListener('click',loadDemo);row.appendChild(button);const note=document.createElement('p');note.className='v31-inline-note v329-demo-note';note.innerHTML='<strong>Demo aislada y reversible.</strong> Carga cifras sintéticas, pedidos, movimientos y caja de ejemplo únicamente en este navegador. No publica costos reales y al salir restaura el estado local anterior.';root.querySelector('.v31-empty')?.appendChild(note);
+}
 function activeEnhance(root){const marker=read(MARKER_KEY,null),data=window.EL_ERRANTE_FINANCE_V31?.working?.();if(!marker||data?.meta?.demoVersion!==VERSION)return;const finance=root.querySelector('.v31-finance');if(!finance||finance.querySelector('[data-v329-demo-banner]'))return;const banner=document.createElement('div');banner.className='v329-demo-banner';banner.dataset.v329DemoBanner='1';banner.innerHTML=`<div><small>Modo demo financiero · V3.2.9</small><strong>Datos sintéticos activos</strong><span>Explora ventas, costos, caja, escenarios y alertas sin usar cifras privadas. Nada de esta demo debe interpretarse como dato real.</span></div><button type="button" class="v31-btn" data-v329-clear-demo>Salir y restaurar datos</button>`;finance.prepend(banner);banner.querySelector('[data-v329-clear-demo]').addEventListener('click',clearDemo);document.documentElement.dataset.financeDemoVersion=VERSION;}
 let decorating=false;function enhance(){if(decorating)return;decorating=true;try{const root=document.getElementById(ROOT_ID);if(!root)return;emptyEnhance(root);activeEnhance(root);}finally{decorating=false;}}
 function start(){enhance();const root=document.getElementById(ROOT_ID);if(!root)return;let queued=false;new MutationObserver(()=>{if(queued||decorating)return;queued=true;requestAnimationFrame(()=>{queued=false;enhance();});}).observe(root,{childList:true,subtree:true});}

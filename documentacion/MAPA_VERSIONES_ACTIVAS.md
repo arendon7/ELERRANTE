@@ -23,7 +23,7 @@ Por tanto, no debe deducirse la versión integral a partir del número más alto
 | Motor Materiales / BOM | **2.3.1** | Requerimientos, lectura de stock y conteos visibles | `materials-v23.js`; el pack maestro `materials-data-v23.js` conserva schema V2.3.0. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | Núcleo `finance-workbench-v31.js`. |
 | Módulo Financiero efectivo | **3.2.9** | Profundidad financiera acumulativa | Capas V3.2.0–V3.2.9 sobre el workbench base. |
-| Datos maestros | **shell 3.1.1 / gobierno V1.0.0 / oferta V0.9** | Gobierno de materiales, proveedores, producto, SKU, fuentes y evidencia | `master-data-v10.js` añade overlay separado; oferta V0.9 permanece como expediente editorial. |
+| Datos maestros | **shell 3.1.1 / core gobierno V1.0.0 / propuestas de costo V1.1.0 / oferta V0.9** | Gobierno de materiales, proveedores, costos propuestos, producto, SKU, fuentes y evidencia | V1.1 amplía el core V1.0 sin aplicar costos al estándar; oferta V0.9 permanece separada. |
 | Actas | **shell 3.1.1 / motores oferta V0.9** | Trazabilidad de sesiones, evidencia y decisiones | Superficie auxiliar `actas.html`. |
 | Demo financiera | **3.2.9** | Escenario sintético local y reversible | No contiene cifras privadas reales. |
 | Snapshot MFO | **schema 3.0 / workbook profile v3.3** | Perfil de importación del MFO privado | El XLSX real permanece fuera del repositorio. |
@@ -44,14 +44,23 @@ El retorno seguro mediante `?next=` sólo admite esos destinos y hashes operativ
 
 Esta coherencia de shell no cambia la limitación esencial: GitHub Pages es estático y la sesión local no es autorización servidor.
 
-## Datos maestros V1.0.0
+## Datos maestros V1.0.0 + V1.1.0
 
-`studio.html` contiene ahora dos capas distintas y compatibles:
+`studio.html` contiene ahora tres capas distintas y compatibles:
 
-- **Gobierno de materiales/proveedores V1.0.0**: lee el pack `materials-data-v23.js` y las compras observadas `ee_v24_material_purchases`, pero persiste exclusivamente metadata de gobierno en `ee_v10_master_governance`.
+- **Core de gobierno de materiales/proveedores V1.0.0**: lee el pack `materials-data-v23.js` y las compras observadas `ee_v24_material_purchases`, pero persiste exclusivamente metadata de gobierno en `ee_v10_master_governance`.
+- **Propuestas de costo V1.1.0**: toma una compra observada del mismo material como evidencia y registra un ledger local append-only en `ee_v11_cost_proposal_events`.
 - **Gobierno de oferta V0.9**: conserva expediente de producto/SKU, contenido, fuentes y gates de lanzamiento.
 
 V1.0.0 permite registrar por material o proveedor responsable, fuente específica, fecha de revisión, calidad, sensibilidad operativa y nota. La última compra observada se presenta como evidencia separada; no se promueve automáticamente a costo estándar/provisional, no modifica BOM y no reescribe el historial de compras.
+
+V1.1.0 añade el flujo:
+
+`CREATED → SUBMITTED → APPROVED / REJECTED`
+
+Su estado derivado **`APPROVED_FOR_MATERIALIZATION`** significa únicamente que la propuesta fue aprobada para una materialización futura controlada. No significa que el costo maestro haya cambiado. El módulo no expone una función de aplicación, no reescribe `materials-data-v23.js`, no modifica BOM/productos y no altera `ee_v24_material_purchases`.
+
+Cada propuesta conserva el costo estándar vigente al momento de crearla, el costo propuesto y el snapshot de la compra observada que la sustenta. Aprobar o rechazar exige una razón explícita y agrega un nuevo evento al historial en lugar de modificar eventos anteriores.
 
 ## Composición del módulo Operativo V3.3.0
 
@@ -97,7 +106,9 @@ El marcador de despliegue debe declarar por separado:
 - `session_shell=v3.1.1`
 - `control_engine=v3.0`
 - `operation_module=v3.3.0`
-- `master_data_module=v1.0.0`
+- `master_data_governance_core=v1.0.0`
+- `master_data_module=v1.1.0`
+- `master_cost_proposals=v1.1.0`
 - `finance_workbench_core=v3.1.0`
 - `finance_module=v3.2.9`
 - `mfo_baseline=v3.0-schema-mfo-v3.3`
@@ -118,7 +129,7 @@ La release integral sólo debe cambiar cuando el conjunto publicado requiera un 
 
 Una mejora aislada y compatible de Operación, Finanzas o una superficie auxiliar puede conservar `release_version=3.1.1` mientras no cambie el contrato transversal.
 
-## Invariantes de numeración
+## Invariantes de numeración y gobierno
 
 1. No renombrar activos V2.8 sólo para hacerlos coincidir con la versión más alta del producto.
 2. No llamar V3.3.0 a toda la web únicamente porque Operación esté en V3.3.0.
@@ -127,4 +138,6 @@ Una mejora aislada y compatible de Operación, Finanzas o una superficie auxilia
 5. No declarar Supabase activo mientras Auth, RLS y persistencia compartida no estén realmente habilitados y certificados.
 6. Toda nueva capa modular debe conservar una prueba que demuestre que no rompe los contratos inferiores que reutiliza.
 7. Las herramientas auxiliares deben compartir la shell interna si aparecen dentro del mapa de navegación protegido.
-8. Datos maestros no puede convertir una compra observada en costo estándar ni reescribir hechos históricos sin un flujo explícito de aprobación futuro.
+8. Una compra observada no puede convertirse automáticamente en costo estándar.
+9. Una propuesta `APPROVED_FOR_MATERIALIZATION` sigue sin ser costo vigente hasta que exista un proceso explícito de materialización, versionado y certificación.
+10. El ledger de propuestas debe conservar la historia por eventos; las decisiones posteriores no deben borrar ni reescribir eventos anteriores.

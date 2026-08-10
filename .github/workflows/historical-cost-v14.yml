@@ -1,0 +1,74 @@
+name: Certificar costo histórico V1.4
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "historical-cost-v14-${{ github.event.pull_request.number || github.event.workflow_run.head_sha }}"
+  cancel-in-progress: true
+
+jobs:
+  structural:
+    name: Contrato histórico V1.4
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar contrato y sintaxis
+        run: |
+          python3 scripts/verificar_historical_cost_snapshots_v14.py
+          node --check assets/historical-cost-snapshots-v14.js
+          node --check assets/finance-historical-cost-v14.js
+          node --check tests/e2e/historical-cost-snapshots-v14.spec.js
+
+  public-health:
+    name: Publicación histórica V1.4 corresponde a main
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+      EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Esperar SHA publicado y marcador V1.4
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/deploy-version.txt?v14=$EXPECTED_SHA&attempt=$attempt" > deploy-observed.txt || true
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/historical-cost-version.txt?v14=$EXPECTED_SHA&attempt=$attempt" > historical-observed.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-observed.txt | tr -d '\r')"
+            layer="$(sed -n 's/^historical_cost_snapshots=//p' historical-observed.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ] && [ "$layer" = "v1.4.0" ]; then success=1; break; fi
+            sleep 5
+          done
+          test "$success" -eq 1
+      - name: Verificar superficie pública V1.4
+        run: |
+          set -euo pipefail
+          fetch_public(){ curl --fail --silent --show-error --location --max-time 20 --retry 4 --retry-delay 2 -H 'Cache-Control: no-cache' "$1" > "$2"; }
+          fetch_public "$PUBLIC_BASE/assets/historical-cost-snapshots-v14.js?verify=$EXPECTED_SHA" historical-core.js
+          fetch_public "$PUBLIC_BASE/assets/finance-historical-cost-v14.js?verify=$EXPECTED_SHA" historical-finance.js
+          fetch_public "$PUBLIC_BASE/assets/historical-cost-v14.css?verify=$EXPECTED_SHA" historical.css
+          fetch_public "$PUBLIC_BASE/operacion.html?verify=$EXPECTED_SHA" operacion.html
+          fetch_public "$PUBLIC_BASE/finanzas.html?verify=$EXPECTED_SHA" finanzas.html
+          grep -q "const VERSION='1.4.0'" historical-core.js
+          grep -q "EVENT_KEY='ee_v14_cost_snapshot_events'" historical-core.js
+          grep -q 'materialAt' historical-core.js
+          grep -q 'productCostAt' historical-core.js
+          grep -q 'LEGACY_ORDER_COST' historical-core.js
+          grep -q 'OBSERVED_ONLY_STANDARD_UNKNOWN' historical-core.js
+          grep -q "PANEL_ID='finance-historical-cost-v14'" historical-finance.js
+          grep -q 'Incompleto' historical-finance.js
+          grep -q 'assets/historical-cost-snapshots-v14.js?v=1.4.0' operacion.html
+          grep -q 'assets/historical-cost-snapshots-v14.js?v=1.4.0' finanzas.html
+          grep -q 'assets/finance-historical-cost-v14.js?v=1.4.0' finanzas.html
+          grep -q 'assets/historical-cost-v14.css' finanzas.html

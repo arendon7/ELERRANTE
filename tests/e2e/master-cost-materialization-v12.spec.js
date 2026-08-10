@@ -86,12 +86,13 @@ test.describe('Datos maestros V1.2 · materialización controlada',()=>{
       const api=window.EL_ERRANTE_MASTER_COST_MATERIALIZATION_V12;
       const product=window.EL_ERRANTE_MATERIALS_V23.products.find(x=>x.sku==='EE-MAR-01');
       const before=api.effectiveProductCost(product);
-      const legacy=product.cost;
+      const legacyBefore=product.cost;
       api.materializeProposal(proposalId,{actor:'Dirección',reason:'Actualizar estándar prospectivo con trazabilidad'});
       const after=api.effectiveProductCost(product);
-      return {before,after,legacyAfter:product.cost,delta:after-before};
+      return {before,after,legacyBefore,legacyAfter:product.cost,delta:after-before};
     },proposal.proposalId);
-    expect(result.legacyAfter).toBe(result.legacyAfter);
+    expect(result.legacyBefore).toBe(7090);
+    expect(result.legacyAfter).toBe(7090);
     expect(result.delta).toBeCloseTo(105,6);
     expect(result.after).toBeGreaterThan(result.before);
   });

@@ -16,21 +16,24 @@ async function configurePreviewBank(page) {
   });
 }
 
-test.describe('Experiencia comercial V2.9', () => {
-  test('tienda usa solo la jerarquía editorial V2.9', async ({ page }) => {
+test.describe('Experiencia comercial V3.0', () => {
+  test('tienda usa la jerarquía comercial V3 sin capas V1.8 duplicadas', async ({ page }) => {
     await page.goto('/tienda.html');
-    await expect(page.getByRole('heading', { name: 'Elige cuánto trabajo quieres hacer tú.' })).toBeVisible();
-    await expect(page.getByText('Cuatro puertas. La misma cocina detrás.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Elige en qué momento quieres entrar al proceso.' })).toBeVisible();
+    await expect(page.getByText('Cuatro puertas. Distintos niveles de participación.')).toBeVisible();
     await expect(page.getByText('Once referencias. Cada una con una razón de existir.')).toBeVisible();
+    await expect(page.getByText('En Casa nombra la línea. Segundo Fuego explica cómo la pensamos.')).toBeVisible();
     await expect(page.locator('[data-v18="store-trust"]')).toHaveCount(0);
     await expect(page.locator('html')).not.toHaveAttribute('data-commerce-ux-version', '1.8.0');
   });
 
-  test('ficha usa historia y decisiones V2.9 sin recorrido duplicado V1.8', async ({ page }) => {
+  test('ficha conserva historia V2.9 y añade la capa gastronómica V3 sin recorrido V1.8', async ({ page }) => {
     await page.goto('/producto.html?id=la-errante');
     await expect(page.locator('[data-v29-product-story]')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Una receta que no intenta fingir otra geografía.' })).toBeVisible();
     await expect(page.getByText('Compra sabiendo qué parte del proceso es nuestra y cuál será tuya.')).toBeVisible();
+    await page.waitForFunction(() => document.querySelector('#dynamic-product')?.dataset?.v30Ready === 'true');
+    await expect(page.locator('[data-v30-block="identity"]')).toBeVisible();
     await expect(page.locator('[data-v18]')).toHaveCount(0);
     await expect(page.locator('html')).not.toHaveAttribute('data-commerce-ux-version', '1.8.0');
   });

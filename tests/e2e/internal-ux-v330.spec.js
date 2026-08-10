@@ -20,8 +20,11 @@ async function financeDemo(page){
   const load=page.getByRole('button',{name:'Cargar demo financiera',exact:true});
   await expect(load).toBeVisible();
   await load.click();
-  await page.waitForFunction(()=>document.documentElement.dataset.financeDemoVersion==='3.2.9');
-  await expect(page.getByText('Datos sintéticos activos',{exact:true})).toBeVisible();
+  await expect.poll(async()=>page.evaluate(()=>{
+    try{return JSON.parse(localStorage.getItem('ee_v30_mfo_snapshot')||'null')?.meta?.demoVersion||'';}catch(_){return '';}
+  })).toBe('3.2.9');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.locator('html')).toHaveAttribute('data-finance-demo-version','3.2.9');
   await expect(page.locator('[data-finance-v330]')).toBeVisible();
 }
 

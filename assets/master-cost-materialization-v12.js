@@ -20,7 +20,7 @@
 
   function events(){const rows=readJSON(EVENTS_KEY,[]);return Array.isArray(rows)?rows:[];}
   function material(id){return DATA?.materials?.find(item=>item.id===id)||null;}
-  function materialEvents(materialId){return events().filter(event=>event.type==='MATERIALIZED'&&event.materialId===materialId).sort((a,b)=>String(a.at).localeCompare(String(b.at)));}
+  function materialEvents(materialId){return events().filter(event=>event.type==='MATERIALIZED'&&event.materialId===materialId).sort((a,b)=>(Number(a.toRevision)||0)-(Number(b.toRevision)||0)||String(a.at).localeCompare(String(b.at)));}
   function materializationForProposal(proposalId){return events().find(event=>event.type==='MATERIALIZED'&&event.proposalId===proposalId)||null;}
   function currentStandard(materialId){
     const base=material(materialId);

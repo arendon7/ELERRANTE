@@ -42,17 +42,19 @@ jobs:
         run: |
           set -euo pipefail
           test -s graphify-out/graph.json
+          test -s graphify-out/GRAPH_REPORT.md
           test -d knowledge/90_GRAPHIFY_AUTO
           python - <<'PY'
           import json
           from pathlib import Path
-          p = Path('graphify-out/graph.json')
-          data = json.loads(p.read_text())
+          data = json.loads(Path('graphify-out/graph.json').read_text())
           nodes = data.get('nodes', [])
-          edges = data.get('edges', [])
+          edges = data.get('edges', data.get('links', []))
           print(f'Graphify: {len(nodes)} nodos / {len(edges)} relaciones')
           if not nodes:
               raise SystemExit('grafo vacío')
+          if not edges:
+              raise SystemExit('grafo sin relaciones')
           PY
 
       - name: Versionar memoria generada en la rama piloto

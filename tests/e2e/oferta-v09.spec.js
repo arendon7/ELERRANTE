@@ -29,6 +29,7 @@ async function seedInternalSession(page){
 }
 
 async function openOffer(page,path='/studio.html'){
+  await seedInternalSession(page);
   await page.goto(path,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.EE_DATA?.products?.length===11);
   await page.waitForFunction(()=>window.EE_OFFER_STUDIO_V09?.ready===true);

@@ -21,6 +21,26 @@ test.describe('Continuidad de acceso interno V3.1.1',()=>{
     await expect(page.locator('body')).toHaveAttribute('data-v31-authenticated','true');
   });
 
+  test('Datos maestros exige sesión y conserva el destino solicitado',async({page})=>{
+    await page.goto('/studio.html');
+    await expect(page).toHaveURL(/\/acceso\.html\?next=studio\.html$/);
+    await createLocalAccess(page);
+    await expectLocation(page,'/studio.html');
+    await expect(page.locator('body')).toHaveAttribute('data-v31-authenticated','true');
+    await expect(page.locator('html')).toHaveAttribute('data-internal-version','3.1.1');
+    await expect(page.getByRole('heading',{name:'Gobernar productos y fuentes sin mezclar la operación.'})).toBeVisible();
+  });
+
+  test('Actas exige sesión y conserva el destino solicitado',async({page})=>{
+    await page.goto('/actas.html');
+    await expect(page).toHaveURL(/\/acceso\.html\?next=actas\.html$/);
+    await createLocalAccess(page);
+    await expectLocation(page,'/actas.html');
+    await expect(page.locator('body')).toHaveAttribute('data-v31-authenticated','true');
+    await expect(page.locator('html')).toHaveAttribute('data-internal-version','3.1.1');
+    await expect(page.getByRole('heading',{name:'Validar con evidencia y dejar la decisión trazable.'})).toBeVisible();
+  });
+
   test('el reingreso conserva el módulo solicitado con una cuenta ya creada',async({page})=>{
     await page.goto('/acceso.html?next=control.html');
     await createLocalAccess(page);
@@ -45,6 +65,15 @@ test.describe('Continuidad de acceso interno V3.1.1',()=>{
     await expect(page.locator('body')).toHaveAttribute('data-v31-authenticated','true');
   });
 
+  test('el deep link de evidencia V3.3.0 también sobrevive al acceso',async({page})=>{
+    await page.goto('/operacion.html#evidencia');
+    await expect(page).toHaveURL(/\/acceso\.html\?next=operacion\.html%23evidencia$/);
+    await createLocalAccess(page);
+    await expectLocation(page,'/operacion.html','#evidencia');
+    await expect(page.locator('#evidencia')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-operational-evidence-version','3.3.0');
+  });
+
   test('un hash no reconocido se descarta sin perder el módulo permitido',async({page})=>{
     await page.goto('/acceso.html?next=operacion.html%23seccion-inventada');
     await createLocalAccess(page,'admin','OtraClave123');
@@ -59,10 +88,21 @@ test.describe('Continuidad de acceso interno V3.1.1',()=>{
     await expect(page.locator('body')).toHaveAttribute('data-v31-authenticated','true');
   });
 
-  test('una sesión vigente también respeta un next interno permitido con sección',async({page})=>{
+  test('la metadata V3.1.1 declara sólo destinos internos permitidos',async({page})=>{
+    await page.goto('/acceso.html');
+    const contract=await page.evaluate(()=>({version:window.EL_ERRANTE_ACCESS_V31.version,allowed:window.EL_ERRANTE_ACCESS_V31.allowedNext}));
+    expect(contract.version).toBe('3.1.1');
+    expect(contract.allowed['studio.html']).toEqual(['']);
+    expect(contract.allowed['actas.html']).toEqual(['']);
+    expect(contract.allowed['operacion.html']).toContain('#evidencia');
+    expect(Object.keys(contract.allowed).sort()).toEqual(['actas.html','centro-interno.html','control.html','finanzas.html','operacion.html','studio.html'].sort());
+  });
+
+  test('una sesión V3.1.0 vigente sigue siendo compatible con la shell V3.1.1',async({page})=>{
     await page.addInitScript(()=>sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'juan',displayName:'Juan',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()})));
-    await page.goto('/acceso.html?next=operacion.html%23materiales');
-    await expectLocation(page,'/operacion.html','#materiales');
+    await page.goto('/acceso.html?next=studio.html');
+    await expectLocation(page,'/studio.html');
     await expect(page.locator('body')).toHaveAttribute('data-v31-authenticated','true');
+    await expect(page.locator('html')).toHaveAttribute('data-internal-version','3.1.1');
   });
 });

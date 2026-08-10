@@ -23,7 +23,7 @@ Por tanto, no debe deducirse la versión integral a partir del número más alto
 | Motor Materiales / BOM | **2.3.1** | Requerimientos, lectura de stock y conteos visibles | `materials-v23.js`; el pack maestro `materials-data-v23.js` conserva schema V2.3.0. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | Núcleo `finance-workbench-v31.js`. |
 | Módulo Financiero efectivo | **3.2.9** | Profundidad financiera acumulativa | Capas V3.2.0–V3.2.9 sobre el workbench base. |
-| Datos maestros | **shell 3.1.1 / core gobierno V1.0.0 / propuestas de costo V1.1.0 / oferta V0.9** | Gobierno de materiales, proveedores, costos propuestos, producto, SKU, fuentes y evidencia | V1.1 amplía el core V1.0 sin aplicar costos al estándar; oferta V0.9 permanece separada. |
+| Datos maestros | **shell 3.1.1 / core V1.0.0 / propuestas V1.1.0 / materialización V1.2.0 / oferta V0.9** | Gobierno de materiales, proveedores, costos, producto, SKU, fuentes y evidencia | V1.2 convierte una aprobación V1.1 en revisión prospectiva trazable sin reescribir baseline ni hechos históricos. |
 | Actas | **shell 3.1.1 / motores oferta V0.9** | Trazabilidad de sesiones, evidencia y decisiones | Superficie auxiliar `actas.html`. |
 | Demo financiera | **3.2.9** | Escenario sintético local y reversible | No contiene cifras privadas reales. |
 | Snapshot MFO | **schema 3.0 / workbook profile v3.3** | Perfil de importación del MFO privado | El XLSX real permanece fuera del repositorio. |
@@ -44,12 +44,13 @@ El retorno seguro mediante `?next=` sólo admite esos destinos y hashes operativ
 
 Esta coherencia de shell no cambia la limitación esencial: GitHub Pages es estático y la sesión local no es autorización servidor.
 
-## Datos maestros V1.0.0 + V1.1.0
+## Datos maestros V1.0.0 + V1.1.0 + V1.2.0
 
-`studio.html` contiene ahora tres capas distintas y compatibles:
+`studio.html` contiene ahora cuatro capas distintas y compatibles:
 
 - **Core de gobierno de materiales/proveedores V1.0.0**: lee el pack `materials-data-v23.js` y las compras observadas `ee_v24_material_purchases`, pero persiste exclusivamente metadata de gobierno en `ee_v10_master_governance`.
 - **Propuestas de costo V1.1.0**: toma una compra observada del mismo material como evidencia y registra un ledger local append-only en `ee_v11_cost_proposal_events`.
+- **Materialización controlada V1.2.0**: convierte una propuesta aprobada en una nueva revisión del estándar efectivo mediante `ee_v12_cost_materialization_events`, sin editar el baseline canónico ni reescribir hechos.
 - **Gobierno de oferta V0.9**: conserva expediente de producto/SKU, contenido, fuentes y gates de lanzamiento.
 
 V1.0.0 permite registrar por material o proveedor responsable, fuente específica, fecha de revisión, calidad, sensibilidad operativa y nota. La última compra observada se presenta como evidencia separada; no se promueve automáticamente a costo estándar/provisional, no modifica BOM y no reescribe el historial de compras.
@@ -58,9 +59,13 @@ V1.1.0 añade el flujo:
 
 `CREATED → SUBMITTED → APPROVED / REJECTED`
 
-Su estado derivado **`APPROVED_FOR_MATERIALIZATION`** significa únicamente que la propuesta fue aprobada para una materialización futura controlada. No significa que el costo maestro haya cambiado. El módulo no expone una función de aplicación, no reescribe `materials-data-v23.js`, no modifica BOM/productos y no altera `ee_v24_material_purchases`.
+Su estado derivado **`APPROVED_FOR_MATERIALIZATION`** significa únicamente que la propuesta fue aprobada para una materialización controlada. No significa por sí solo que el costo maestro haya cambiado. V1.1 no expone una función de aplicación, no reescribe `materials-data-v23.js`, no modifica BOM/productos y no altera `ee_v24_material_purchases`.
 
 Cada propuesta conserva el costo estándar vigente al momento de crearla, el costo propuesto y el snapshot de la compra observada que la sustenta. Aprobar o rechazar exige una razón explícita y agrega un nuevo evento al historial en lugar de modificar eventos anteriores.
+
+V1.2.0 añade el paso explícito **`MATERIALIZED`** en un ledger separado. Cada evento conserva revisión anterior/nueva, costo anterior/nuevo, propuesta, aprobación, evidencia, actor, razón y fecha. El estándar efectivo se reconstruye como `baseline canónico + revisiones materializadas`; la fuente `materials-data-v23.js` permanece inmutable.
+
+La materialización usa control optimista de concurrencia: si el estándar vigente ya no coincide con el snapshot contra el que nació la propuesta, la aprobación se considera obsoleta y se bloquea. Una misma propuesta tampoco puede materializarse dos veces. Después de una materialización, una propuesta nueva debe capturar como `standardCost` la revisión efectiva vigente y no el baseline original.
 
 ## Composición del módulo Operativo V3.3.0
 
@@ -107,8 +112,9 @@ El marcador de despliegue debe declarar por separado:
 - `control_engine=v3.0`
 - `operation_module=v3.3.0`
 - `master_data_governance_core=v1.0.0`
-- `master_data_module=v1.1.0`
+- `master_data_module=v1.2.0`
 - `master_cost_proposals=v1.1.0`
+- `master_cost_materialization=v1.2.0`
 - `finance_workbench_core=v3.1.0`
 - `finance_module=v3.2.9`
 - `mfo_baseline=v3.0-schema-mfo-v3.3`
@@ -139,5 +145,8 @@ Una mejora aislada y compatible de Operación, Finanzas o una superficie auxilia
 6. Toda nueva capa modular debe conservar una prueba que demuestre que no rompe los contratos inferiores que reutiliza.
 7. Las herramientas auxiliares deben compartir la shell interna si aparecen dentro del mapa de navegación protegido.
 8. Una compra observada no puede convertirse automáticamente en costo estándar.
-9. Una propuesta `APPROVED_FOR_MATERIALIZATION` sigue sin ser costo vigente hasta que exista un proceso explícito de materialización, versionado y certificación.
+9. Una propuesta `APPROVED_FOR_MATERIALIZATION` no es costo vigente hasta que V1.2 registre un evento `MATERIALIZED` válido.
 10. El ledger de propuestas debe conservar la historia por eventos; las decisiones posteriores no deben borrar ni reescribir eventos anteriores.
+11. El ledger V1.2 no puede reescribir baseline, compras, propuestas, BOM, productos ni hechos históricos.
+12. Una propuesta obsoleta respecto del estándar vigente debe bloquearse y volver al flujo de propuesta en vez de sobrescribir una revisión posterior.
+13. Los cálculos prospectivos podrán consumir el estándar efectivo V1.2; los hechos históricos deben conservar sus snapshots y no recalcularse retroactivamente.

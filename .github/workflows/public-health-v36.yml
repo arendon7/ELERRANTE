@@ -1,0 +1,88 @@
+name: Verificar publicación V3.6
+
+on:
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+
+concurrency:
+  group: "public-health-v36-${{ github.event.workflow_run.head_sha }}"
+  cancel-in-progress: true
+
+jobs:
+  health-v36:
+    name: GitHub Pages publica cierre diario V3.6
+    if: github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Definir expectativa
+        run: |
+          echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
+
+      - name: Exigir despliegue fuente exitoso
+        run: test "$SOURCE_CONCLUSION" = "success"
+
+      - name: Esperar SHA publicado
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 \
+              -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-v36.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-version-v36.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ]; then success=1; break; fi
+            sleep 5
+          done
+          test "$success" -eq 1
+
+      - name: Verificar assets y superficies V3.6
+        run: |
+          set -euo pipefail
+          fetch_public() {
+            local url="$1" output="$2"
+            curl --fail --silent --show-error --location --max-time 20 \
+              --retry 5 --retry-delay 2 --retry-all-errors \
+              -H 'Cache-Control: no-cache' "$url" > "$output"
+          }
+
+          fetch_public "$PUBLIC_BASE/assets/daily-close-v36.js?verify=$EXPECTED_SHA" public-daily-close-v36.js
+          fetch_public "$PUBLIC_BASE/assets/daily-close-v36.css?verify=$EXPECTED_SHA" public-daily-close-v36.css
+          fetch_public "$PUBLIC_BASE/control.html?verify=$EXPECTED_SHA" public-control.html
+          fetch_public "$PUBLIC_BASE/operacion.html?verify=$EXPECTED_SHA" public-operacion.html
+          fetch_public "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" public-service-worker.js
+
+          grep -q "const VERSION='3.6.0'" public-daily-close-v36.js
+          grep -q "KEY='ee_v36_daily_close_events'" public-daily-close-v36.js
+          grep -q 'function closeDay' public-daily-close-v36.js
+          grep -q 'function carryoverFromPrevious' public-daily-close-v36.js
+          grep -q 'function weeklySummary' public-daily-close-v36.js
+          grep -q 'supersedes:prior?.id' public-daily-close-v36.js
+          grep -q '.v36-shell' public-daily-close-v36.css
+
+          grep -q 'Panel de control · V3.6' public-control.html
+          grep -q 'assets/daily-close-v36.css?v=3.6.0' public-control.html
+          grep -q 'assets/daily-close-v36.js?v=3.6.0' public-control.html
+          ! grep -q 'finance-workbench-v31.js' public-control.html
+
+          grep -q 'Módulo Operativo · V3.6' public-operacion.html
+          grep -q 'href="#cierre-diario"' public-operacion.html
+          grep -q 'assets/daily-close-v36.css?v=3.6.0' public-operacion.html
+          grep -q 'assets/daily-close-v36.js?v=3.6.0' public-operacion.html
+          grep -q 'assets/operational-evidence-v330.js' public-operacion.html
+          ! grep -q 'finance-workbench-v31.js' public-operacion.html
+
+          grep -q "'./assets/daily-close-v36.js'" public-service-worker.js
+          grep -q "'./assets/daily-close-v36.css'" public-service-worker.js
+          grep -q "endsWith('/assets/daily-close-v36.js')" public-service-worker.js
+          grep -q "endsWith('/assets/daily-close-v36.css')" public-service-worker.js
+          ! grep -qi 'service_role' public-daily-close-v36.js
+          node --check public-daily-close-v36.js

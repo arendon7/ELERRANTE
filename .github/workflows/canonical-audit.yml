@@ -35,6 +35,7 @@ jobs:
           python3 scripts/verificar_master_data_v10.py
           python3 scripts/verificar_master_cost_proposals_v11.py
           python3 scripts/verificar_master_cost_materialization_v12.py
+          python3 scripts/verificar_master_cost_bridge_v13.py
           node --check assets/brand-canon-v28.js
           node --check assets/data.js
           node --check assets/app.js
@@ -51,8 +52,11 @@ jobs:
           node --check assets/master-data-v10.js
           node --check assets/master-cost-proposals-v11.js
           node --check assets/master-cost-materialization-v12.js
+          node --check assets/master-cost-prospective-v13.js
+          node --check assets/materials-v23.js
           node --check assets/finance-workbench-v31.js
           node --check assets/finance-starter-v31.js
+          node --check assets/finance-unit-economics-v322.js
           node --check service-worker.js
           node --check scripts/exportar-fuente-canonica.mjs
       - name: Reconstruir fuente efectiva
@@ -81,9 +85,10 @@ jobs:
           print('previous_release=3.1.0')
           print('brand_runtime=2.8.0')
           print('master_data_governance_core=1.0.0')
-          print('master_data_module=1.2.0')
+          print('master_data_module=1.3.0')
           print('master_cost_proposals=1.1.0')
           print('master_cost_materialization=1.2.0')
+          print('master_cost_bridge=1.3.0')
           print('products=11')
           print('generated_sources=3')
           print('canonical_json_sha256='+report['canonical_json_sha256'])

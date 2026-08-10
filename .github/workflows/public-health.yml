@@ -63,16 +63,20 @@ jobs:
       - name: Verificar superficie materializada V3.1.1
         run: |
           set -euo pipefail
+          fetch_public() {
+            local url="$1" output="$2"
+            curl --fail --silent --show-error --location --max-time 20 --retry 5 --retry-delay 2 --retry-all-errors -H 'Cache-Control: no-cache' "$url" > "$output"
+          }
           for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js operational-evidence-v330.js finance-workbench-v31.js finance-starter-v31.js finance-demo-v329.js commerce-runtime-config.js; do
-            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" > "public-$asset"
+            fetch_public "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" "public-$asset"
           done
           for asset in data-v28.js app-v28.js preprod-v28.js; do
-            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/generated/$asset?verify=$EXPECTED_SHA" > "public-generated-$asset"
+            fetch_public "$PUBLIC_BASE/assets/generated/$asset?verify=$EXPECTED_SHA" "public-generated-$asset"
           done
-          curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/generated/manifest-v28.json?verify=$EXPECTED_SHA" > public-generated-manifest-v28.json
-          curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/materialized-site-v28.json?verify=$EXPECTED_SHA" > public-materialized-site-v28.json
-          curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" > public-service-worker.js
-          for page in index tienda producto admin activacion acceso centro-interno control operacion finanzas; do curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" > "public-${page}.html"; done
+          fetch_public "$PUBLIC_BASE/assets/generated/manifest-v28.json?verify=$EXPECTED_SHA" public-generated-manifest-v28.json
+          fetch_public "$PUBLIC_BASE/materialized-site-v28.json?verify=$EXPECTED_SHA" public-materialized-site-v28.json
+          fetch_public "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" public-service-worker.js
+          for page in index tienda producto admin activacion acceso centro-interno control operacion finanzas; do fetch_public "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" "public-${page}.html"; done
 
           grep -q 'assets/generated/data-v28.js' public-index.html
           grep -q 'assets/generated/app-v28.js' public-index.html
@@ -175,7 +179,11 @@ jobs:
       - name: Verificar WebP HQ críticos
         run: |
           set -euo pipefail
-          for image in home-hero home-hero-mobile producto-margherita producto-la-errante evento-hero; do curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/assets/images/brand-final/${image}.webp?verify=$EXPECTED_SHA" > "public-${image}.webp"; done
+          fetch_public() {
+            local url="$1" output="$2"
+            curl --fail --silent --show-error --location --max-time 20 --retry 5 --retry-delay 2 --retry-all-errors -H 'Cache-Control: no-cache' "$url" > "$output"
+          }
+          for image in home-hero home-hero-mobile producto-margherita producto-la-errante evento-hero; do fetch_public "$PUBLIC_BASE/assets/images/brand-final/${image}.webp?verify=$EXPECTED_SHA" "public-${image}.webp"; done
           python3 - <<'PY'
           from pathlib import Path
           for path in Path('.').glob('public-*.webp'):

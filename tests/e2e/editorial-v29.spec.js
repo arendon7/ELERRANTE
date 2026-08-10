@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 const v30Ids=['margherita-del-taller','la-errante','bosque','diavola-errante','cuatro-quesos-montana'];
+const forbiddenClosedClaims=['A 400 grados','400 °C','Trabajamos tomate San Marzano','Usamos tomate San Marzano','Trabajamos con biga y masa madre','Biga · Masa madre · Tiempo'];
 
 test.describe('Editorial y autoridad V3.0 candidate', () => {
   test('inicio presenta obra, autor, método y carta por territorios', async ({ page }) => {
@@ -42,22 +43,12 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
     await expect(page.getByText('El primero puede impresionar. El cuarto empieza a decir la verdad.')).toBeVisible();
   });
 
-  test('historia narra el arco autoral sin convertir hipótesis técnicas en claims', async ({ page }) => {
+  test('historia narra el arco autoral y Bitácora queda firmada y versionada', async ({ page }) => {
     await page.goto('/historia.html');
     await expect(page.getByRole('heading',{name:'Viajar hasta una tradición para aprender a no copiarla.'})).toBeVisible();
     await expect(page.getByRole('heading',{name:'Primero estuvo la cocina.'})).toBeVisible();
     await expect(page.getByText('Juan David Ocampo', { exact:false })).toBeVisible();
     await expect(page.getByText('El reloj organiza. La masa confirma.')).toBeVisible();
-    const main=page.locator('main');
-    await expect(main).not.toContainText('A 400 grados');
-    await expect(main).not.toContainText('400 °C');
-    await expect(main).not.toContainText('Trabajamos tomate San Marzano');
-    await expect(main).not.toContainText('Usamos tomate San Marzano');
-    await expect(main).not.toContainText('Trabajamos con biga y masa madre');
-    await expect(main).not.toContainText('Biga · Masa madre · Tiempo');
-  });
-
-  test('bitácora es un archivo firmado, versionado y seguro frente a claims abiertos', async ({ page }) => {
     await page.goto('/bitacora.html');
     await expect(page.getByText('Por Juan David Ocampo · Chef · El Errante')).toBeVisible();
     await expect(page.getByText('MAS-001 · En prueba')).toBeVisible();
@@ -66,13 +57,27 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
     await expect(page.getByText('MGH-001 · Prioritaria')).toBeVisible();
     await expect(page.getByText('Poolish, biga o masa madre no son una identidad.')).toBeVisible();
     await expect(page.getByText('La cocina genera contenido. El contenido no genera cocina.')).toBeVisible();
-    const main=page.locator('main');
-    await expect(main).not.toContainText('A 400 grados');
-    await expect(main).not.toContainText('400 °C');
-    await expect(main).not.toContainText('Trabajamos tomate San Marzano');
-    await expect(main).not.toContainText('Usamos tomate San Marzano');
-    await expect(main).not.toContainText('Trabajamos con biga y masa madre');
-    await expect(main).not.toContainText('Biga · Masa madre · Tiempo');
+  });
+
+  test('superficies públicas centrales no convierten hipótesis técnicas en claims cerrados', async ({ page }) => {
+    for(const path of ['/index.html','/historia.html','/bitacora.html','/tienda.html','/en-casa.html','/metodo.html','/juan-david-ocampo.html']){
+      await page.goto(path,{waitUntil:'domcontentloaded'});
+      const main=page.locator('main');
+      for(const claim of forbiddenClosedClaims) await expect(main,`${path}: ${claim}`).not.toContainText(claim);
+    }
+    await page.goto('/ayuda.html',{waitUntil:'domcontentloaded'});
+    const faqSnapshot=await page.evaluate(()=>JSON.stringify(window.EE_DATA?.public_faqs||[]));
+    expect(faqSnapshot).not.toContain('San Marzano');
+    expect(faqSnapshot).not.toContain('Trabajamos con biga y masa madre');
+    expect(faqSnapshot).toContain('Segundo Fuego');
+  });
+
+  test('En Casa mantiene claridad comercial y Segundo Fuego como segunda capa', async ({ page }) => {
+    await page.goto('/en-casa.html');
+    await expect(page.getByRole('heading',{name:'Nosotros hacemos el tiempo. Tú completas el fuego.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Diseñar una pizza sabiendo que todavía no ha terminado.'})).toBeVisible();
+    await expect(page.getByText('Segundo Fuego es el nombre que damos a la investigación detrás de En Casa.')).toBeVisible();
+    await expect(page.getByText('La etiqueta tiene la última palabra.')).toBeVisible();
   });
 
   test('cinco pizzas reciben el contrato gastronómico V3 sin perder catálogo', async ({ page }) => {

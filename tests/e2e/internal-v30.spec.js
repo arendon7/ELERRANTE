@@ -71,7 +71,7 @@ test.describe('Sistema interno V3.1.1',()=>{
     await expect(page.getByRole('heading',{name:'Lo que requiere atención, antes de empezar el día.'})).toBeVisible();
     await page.getByRole('link',{name:'Ir a Finanzas'}).click();
     await expect(page).toHaveURL(/finanzas\.html/);
-    await expect(page.getByRole('heading',{name:'Planificar, modificar, comparar y decidir.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Entender, comparar y decidir sin perderse en el modelo.'})).toBeVisible();
   });
 
   test('Operación reúne resumen, pedidos y cadena de ejecución sin finanzas',async({page})=>{
@@ -88,7 +88,7 @@ test.describe('Sistema interno V3.1.1',()=>{
 
   test('Finanzas permite importar MFO o iniciar un modelo local desde cero',async({page})=>{
     await seedSession(page);await page.goto('/finanzas.html');
-    await expect(page.getByRole('heading',{name:'Planificar, modificar, comparar y decidir.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Entender, comparar y decidir sin perderse en el modelo.'})).toBeVisible();
     await expect(page.getByRole('link',{name:'Panel de control'}).first()).toHaveAttribute('href','control.html');
     await expect(page.locator('#finance-workbench-v31')).toContainText('Carga el baseline privado del MFO.');
     await expect(page.getByRole('button',{name:'Crear modelo desde cero'})).toBeVisible();

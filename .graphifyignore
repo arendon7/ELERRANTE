@@ -1,0 +1,18 @@
+# ELERRANTE — corpus canónico para Graphify
+# No mezclar código productivo con históricos, materializaciones ni artefactos.
+archive/
+graphify-out/
+knowledge/90_GRAPHIFY_AUTO/
+.local_site/
+assets/generated/
+node_modules/
+playwright-report/
+test-results/
+.artifacts/
+exports/
+_site/
+private-data/
+*.zip
+*.log
+*.tmp
+*.bak

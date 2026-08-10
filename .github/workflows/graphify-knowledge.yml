@@ -1,0 +1,72 @@
+name: Graphify — memoria estructural ELERRANTE
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "graphify-${{ github.event_name }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build-knowledge:
+    name: Construir y validar grafo
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar uv validado
+        run: python -m pip install --disable-pip-version-check "uv==0.12.3"
+
+      - name: Construir Graphify
+        env:
+          GRAPHIFY_VERSION: "0.9.26"
+          GRAPHIFY_FULL_OBSIDIAN: "0"
+        run: ./scripts/refresh_graphify_knowledge.sh
+
+      - name: Validar memoria estructural
+        run: |
+          set -euo pipefail
+          test -s graphify-out/graph.json
+          test -s graphify-out/GRAPH_REPORT.md
+          test -s graphify-out/wiki/index.md
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('graphify-out/graph.json').read_text())
+          nodes = data.get('nodes', [])
+          edges = data.get('edges', data.get('links', []))
+          wiki = list(Path('graphify-out/wiki').glob('*.md'))
+          print(f'Graphify: {len(nodes)} nodos / {len(edges)} relaciones / {len(wiki)} notas wiki')
+          if not nodes:
+              raise SystemExit('grafo vacío')
+          if not edges:
+              raise SystemExit('grafo sin relaciones')
+          if len(wiki) < 2:
+              raise SystemExit('wiki vacía')
+          PY
+
+      - name: Publicar snapshot fuera de main
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          LIVE_BRANCH: "knowledge/graphify-live"
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f graphify-out
+          git commit -m "chore(graphify): snapshot ${GITHUB_SHA::8} [skip ci]"
+          git push --force origin "HEAD:refs/heads/${LIVE_BRANCH}"

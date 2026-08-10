@@ -20,7 +20,7 @@
         decision:'La distribución deja respiraciones entre tomate, queso y masa. El objetivo es que el calor pueda evaporar, fundir y fijar estructura sin convertir el centro en una zona saturada.',
         result:'Buscamos que el tomate conserve acidez, el lácteo se sienta limpio y la base siga sosteniendo el bocado. Si algo falla, la sencillez lo revela.'
       },
-      second_fire_focus:'Recuperar base y fundencia sin secar el lácteo.',
+      second_fire_focus:'Recuperar base y fundencia sin secar el lácteo ni convertir el centro en una zona húmeda y pesada.',
       second_fire_finish:'Los aromas frescos tienen sentido al final. La forma exacta de terminarlos depende de la presentación y de la instrucción vigente.',
       research_program:'MGH · Claridad',research_state:'desarrollo de canon',
       author_note:'La Margherita me interesa porque no concede demasiados lugares para distraer la atención. Si algo falla, queda expuesto.',

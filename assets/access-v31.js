@@ -11,7 +11,7 @@ const REVIEW_ACCOUNTS=Object.freeze([
 const ALLOWED_NEXT={
  'centro-interno.html':new Set(['']),
  'control.html':new Set(['']),
- 'operacion.html':new Set(['','#resumen','#pedidos','#produccion','#materiales','#medicion','#compras','#evidencia']),
+ 'operacion.html':new Set(['','#resumen','#cierre-diario','#pedidos','#produccion','#materiales','#medicion','#compras','#evidencia']),
  'finanzas.html':new Set(['']),
  'studio.html':new Set(['']),
  'actas.html':new Set([''])

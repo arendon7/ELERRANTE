@@ -27,6 +27,8 @@ center=read('centro-interno.html')
 control=read('control.html')
 operation=read('operacion.html')
 finance=read('finanzas.html')
+studio=read('studio.html')
+acts=read('actas.html')
 host=read('assets/host-mode.js')
 access_js=read('assets/access-v31.js')
 shell_js=read('assets/internal-shell-v31.js')
@@ -58,16 +60,23 @@ checks={
     'Pages genera release 3.1.1':'release_version=3.1.1' in pages and 'Publicar GitHub Pages V3.1.1' in pages,
     'Pages publica matriz modular':'operation_module=v3.3.0' in pages and 'finance_workbench_core=v3.1.0' in pages and 'finance_module=v3.2.9' in pages,
     'Pages verifica módulos vigentes':'operational-evidence-v330.js' in pages and 'finance-demo-v329.js' in pages,
+    'Pages verifica perímetro auxiliar':'_site/studio.html' in pages and '_site/actas.html' in pages and "grep -q 'data-v31-protected' _site/studio.html" in pages and "grep -q 'data-v31-protected' _site/actas.html" in pages,
     'Pages ejecuta barrera release':'scripts/verificar_release_v31.py' in pages,
     'health espera release 3.1.1':'EXPECTED_RELEASE: 3.1.1' in health,
     'health espera arquitectura 3.1':'v3.1-acceso-operacion-finanzas' in health,
     'health verifica matriz modular':'EXPECTED_OPERATION: v3.3.0' in health and 'EXPECTED_FINANCE: v3.2.9' in health and 'finance_workbench_core' in health,
-    'health verifica control operación y finanzas':'public-control.html' in health and 'public-operacion.html' in health and 'public-finanzas.html' in health,
+    'health verifica perímetro principal':'public-control.html' in health and 'public-operacion.html' in health and 'public-finanzas.html' in health,
+    'health verifica perímetro auxiliar':'public-studio.html' in health and 'public-actas.html' in health and "grep -q 'data-v31-protected' public-studio.html" in health and "grep -q 'data-v31-protected' public-actas.html" in health,
     'auditoría ejecuta barrera release':'scripts/verificar_release_v31.py' in canonical,
     'regresión ejecuta barrera release':'scripts/verificar_release_v31.py' in functional,
     'portal acceso V3.1':'id="access-v31"' in access and 'assets/access-v31.js' in access,
+    'acceso declara metadata V3.1.1':"const VERSION='3.1.1'" in access_js,
+    'shell declara metadata V3.1.1':"const VERSION='3.1.1'" in shell_js,
+    'destinos seguros incluyen auxiliares':"'studio.html':new Set([''])" in access_js and "'actas.html':new Set([''])" in access_js,
+    'destino seguro incluye evidencia V3.3.0':"'#evidencia'" in access_js,
     'centro protegido':'data-v31-protected' in center and 'assets/internal-shell-v31.js' in center,
     'centro selector de tres destinos':all(token in center for token in ('Abrir Panel de control','Entrar a Operación','Entrar a Finanzas')),
+    'centro conecta herramientas auxiliares':'href="studio.html"' in center and 'href="actas.html"' in center,
     'control protegido':'data-v31-protected' in control and 'assets/internal-shell-v31.js' in control,
     'control conecta operación y finanzas':'href="operacion.html"' in control and 'href="finanzas.html"' in control,
     'operación protegida':'data-v31-protected' in operation and 'assets/internal-shell-v31.js' in operation,
@@ -79,13 +88,15 @@ checks={
     'finanzas monta starter seguro':'assets/finance-starter-v31.js' in finance and 'Crear modelo desde cero' in starter_js and 'LOCAL_STARTER_V31' in starter_js,
     'finanzas alcanza profundidad 3.2.9':all(token in finance for token in ('assets/finance-depth-v32.js','assets/finance-ledger-v321.js','assets/finance-unit-economics-v322.js','assets/finance-cash-trends-v323.js','assets/finance-scenarios-v324.js','assets/finance-decisions-v325.js','assets/finance-procurement-v326.js','assets/finance-executive-v327.js','assets/finance-readiness-v328.js','assets/finance-demo-v329.js')) and "const VERSION='3.2.9'" in finance_v329,
     'finanzas no monta producción':'assets/production-v22.js' not in finance,
+    'datos maestros protegido':'data-v31-protected' in studio and 'assets/internal-shell-v31.js' in studio,
+    'actas protegidas':'data-v31-protected' in acts and 'assets/internal-shell-v31.js' in acts,
     'footer público prepara acceso':'ensureUserAccess' in host and "href='acceso.html'" in host,
     'login no contiene contraseña fija':'password="' not in access_js.lower() and 'service_role' not in access_js.lower(),
     'guard comparte sesión V3.1':'ee_v31_session' in shell_js and 'acceso.html' in shell_js,
     'workbench baseline/working separados':"SNAPSHOT_KEY='ee_v30_mfo_snapshot'" in finance_js and "WORKING_KEY='ee_v31_finance_working_model'" in finance_js,
     'workbench sin red':all(token not in finance_js for token in ('fetch(','XMLHttpRequest','axios')),
     'starter sin red y sin costo privado':all(token not in starter_js.lower() for token in ('fetch(','xmlhttprequest','axios','service_role','postgres://','private_key')) and 'directCost:0' in starter_js,
-    'service worker publica acceso':'./acceso.html' in worker and './assets/access-v31.js' in worker,
+    'service worker publica acceso y auxiliares':'./acceso.html' in worker and './studio.html' in worker and './actas.html' in worker and './assets/access-v31.js' in worker,
     'service worker publica módulos actuales':'./assets/operational-evidence-v330.js' in worker and './assets/finance-demo-v329.js' in worker and './assets/internal-v31.css' in worker,
     'mapa de versiones vigente':'# Mapa de versiones activas' in version_map and 'Release integral' in version_map and '**3.3.0**' in version_map and '**3.2.9**' in version_map,
     'documentación arquitectura vigente':'# Arquitectura interna V3.1' in architecture and 'Working Model' in architecture and 'Operación V3.3.0' in architecture and 'Finanzas V3.2.9' in architecture,
@@ -100,8 +111,8 @@ for name,content in [('access',access_js),('shell',shell_js),('operation-v330',o
         if forbidden in lower:
             errors.append(f'{name}: posible secreto {forbidden}')
 
-print('EL ERRANTE V3.1.1 — COHERENCIA DE RELEASE Y MÓDULOS')
-print('='*58)
+print('EL ERRANTE V3.1.1 — COHERENCIA DE RELEASE, MÓDULOS Y PERÍMETRO')
+print('='*70)
 print(f'Controles: {len(checks)}')
 print(f'Problemas: {len(errors)}')
 if errors:

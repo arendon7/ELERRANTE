@@ -1,6 +1,13 @@
 const { test, expect } = require('@playwright/test');
 
+async function seedInternalSession(page){
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'qa-actas',displayName:'QA Actas',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()}));
+  });
+}
+
 async function openActs(page){
+  await seedInternalSession(page);
   await page.goto('/actas.html',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.EE_VALIDATION_ACTS_V09?.ready===true);
   await page.waitForFunction(()=>window.EE_AIRE_TIEMPO_COMMITTEE_V09?.ready===true);

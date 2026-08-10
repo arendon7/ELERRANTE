@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='3.1.0';
+const VERSION='3.1.1';
 const SESSION_KEY='ee_v31_session';
 let expiryTimer=null;
 function read(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY));}catch(_){return null;}}

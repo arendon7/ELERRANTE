@@ -74,6 +74,15 @@ test.describe('Continuidad de acceso interno V3.1.1',()=>{
     await expect(page.locator('html')).toHaveAttribute('data-operational-evidence-version','3.3.0');
   });
 
+  test('el deep link de cierre diario V3.6 sobrevive al acceso',async({page})=>{
+    await page.goto('/operacion.html#cierre-diario');
+    await expect(page).toHaveURL(/\/acceso\.html\?next=operacion\.html%23cierre-diario$/);
+    await createLocalAccess(page);
+    await expectLocation(page,'/operacion.html','#cierre-diario');
+    await expect(page.locator('#cierre-diario')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-daily-close-version','3.6.0');
+  });
+
   test('un hash no reconocido se descarta sin perder el módulo permitido',async({page})=>{
     await page.goto('/acceso.html?next=operacion.html%23seccion-inventada');
     await createLocalAccess(page,'admin','OtraClave123');
@@ -95,6 +104,7 @@ test.describe('Continuidad de acceso interno V3.1.1',()=>{
     expect(contract.allowed['studio.html']).toEqual(['']);
     expect(contract.allowed['actas.html']).toEqual(['']);
     expect(contract.allowed['operacion.html']).toContain('#evidencia');
+    expect(contract.allowed['operacion.html']).toContain('#cierre-diario');
     expect(Object.keys(contract.allowed).sort()).toEqual(['actas.html','centro-interno.html','control.html','finanzas.html','operacion.html','studio.html'].sort());
   });
 

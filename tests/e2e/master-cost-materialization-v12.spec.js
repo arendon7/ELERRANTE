@@ -3,12 +3,15 @@ const {test,expect}=require('@playwright/test');
 async function openStudio(page){
   await page.addInitScript(()=>{
     sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.1',username:'juan',displayName:'Juan',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()}));
-    localStorage.setItem('ee_v24_material_purchases',JSON.stringify([
-      {id:'COM-1',materialId:'MP-HFS',supplier:'Molinos Demo',receivedDate:'2026-08-09',quantity:25000,totalCost:85000,unitCost:3.4,dataStatus:'OBSERVADO',createdAt:'2026-08-09T12:00:00Z'},
-      {id:'COM-2',materialId:'MP-HHO',supplier:'Molinos Demo',receivedDate:'2026-08-08',quantity:25000,totalCost:80000,unitCost:3.2,dataStatus:'OBSERVADO',createdAt:'2026-08-08T12:00:00Z'}
-    ]));
-    localStorage.removeItem('ee_v11_cost_proposal_events');
-    localStorage.removeItem('ee_v12_cost_materialization_events');
+    if(localStorage.getItem('ee_v12_test_seeded')!=='1'){
+      localStorage.setItem('ee_v24_material_purchases',JSON.stringify([
+        {id:'COM-1',materialId:'MP-HFS',supplier:'Molinos Demo',receivedDate:'2026-08-09',quantity:25000,totalCost:85000,unitCost:3.4,dataStatus:'OBSERVADO',createdAt:'2026-08-09T12:00:00Z'},
+        {id:'COM-2',materialId:'MP-HHO',supplier:'Molinos Demo',receivedDate:'2026-08-08',quantity:25000,totalCost:80000,unitCost:3.2,dataStatus:'OBSERVADO',createdAt:'2026-08-08T12:00:00Z'}
+      ]));
+      localStorage.removeItem('ee_v11_cost_proposal_events');
+      localStorage.removeItem('ee_v12_cost_materialization_events');
+      localStorage.setItem('ee_v12_test_seeded','1');
+    }
   });
   await page.goto('/studio.html');
   await expect(page.locator('body')).toHaveAttribute('data-v31-authenticated','true');
@@ -97,7 +100,22 @@ test.describe('Datos maestros V1.2 · materialización controlada',()=>{
     expect(result.after).toBeGreaterThan(result.before);
   });
 
-  test('la UI expone aprobación pendiente, estándar efectivo e historial',async({page})=>{
+  test('una propuesta posterior captura el estándar efectivo materializado',async({page})=>{
+    await openStudio(page);
+    const first=await approved(page,'MP-HFS','COM-1',3.4);
+    const result=await page.evaluate(firstId=>{
+      const materialization=window.EL_ERRANTE_MASTER_COST_MATERIALIZATION_V12;
+      const proposals=window.EL_ERRANTE_MASTER_COST_PROPOSALS_V11;
+      materialization.materializeProposal(firstId,{actor:'Dirección',reason:'Cerrar primera revisión del estándar'});
+      const next=proposals.createProposal({materialId:'MP-HFS',evidencePurchaseId:'COM-1',proposedCost:3.6,rationale:'Nueva evidencia se compara con el estándar ya materializado',actor:'Costos'});
+      return {standard:materialization.currentStandard('MP-HFS'),next};
+    },first.proposalId);
+    expect(result.standard).toMatchObject({cost:3.4,revision:1,source:'MATERIALIZED'});
+    expect(result.next.standardCost).toBe(3.4);
+    expect(result.next.proposedCost).toBe(3.6);
+  });
+
+  test('la UI conserva aprobación pendiente tras recargar',async({page})=>{
     await openStudio(page);
     await approved(page);
     await page.reload();

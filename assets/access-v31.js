@@ -1,14 +1,16 @@
 (()=>{
 'use strict';
-const VERSION='3.1.0';
+const VERSION='3.1.1';
 const ACCOUNT_KEY='ee_v31_local_account';
 const SESSION_KEY='ee_v31_session';
 const SESSION_HOURS=8;
 const ALLOWED_NEXT={
  'centro-interno.html':new Set(['']),
  'control.html':new Set(['']),
- 'operacion.html':new Set(['','#resumen','#pedidos','#produccion','#materiales','#medicion','#compras']),
- 'finanzas.html':new Set([''])
+ 'operacion.html':new Set(['','#resumen','#pedidos','#produccion','#materiales','#medicion','#compras','#evidencia']),
+ 'finanzas.html':new Set(['']),
+ 'studio.html':new Set(['']),
+ 'actas.html':new Set([''])
 };
 const enc=new TextEncoder();
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));

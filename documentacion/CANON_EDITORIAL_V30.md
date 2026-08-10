@@ -1,6 +1,6 @@
-# CANON EDITORIAL EL ERRANTE V3.0
+# CANON EDITORIAL EL ERRANTE V3.0.1
 
-**Estado:** candidato V3.0 · no publicado en `main`  
+**Estado:** V3.0.1 · densidad gastronómica sobre canon V3.0  
 **Dirección gastronómica:** Juan David Ocampo  
 **Firma:** Masa · Fuego · Territorio
 
@@ -42,6 +42,14 @@ Evitar como recursos principales: `premium`, `gourmet`, `auténtico`, `exclusivo
 
 Preferir precisión culinaria: estructura, madurez, fermentación, fuego, producto, humedad, acidez, grasa, tostado, ritmo, persistencia, criterio, prueba, decisión.
 
+### Regla V3.0.1 · densidad gastronómica
+
+La prudencia no debe convertir el lenguaje en abstracción. Cuando exista base suficiente, introducir **anclajes técnicos concretos** que expliquen una consecuencia culinaria: temperatura, humedad, secuencia, madurez, estructura, expansión, fundencia, estabilización o comportamiento del producto.
+
+Regla:
+
+> El dato no entra para impresionar. Entra cuando ayuda a entender por qué cocinamos de una manera determinada.
+
 ## 4. Masa · Fuego · Territorio
 
 - **Masa:** tiempo, fermentación, estructura y oficio.
@@ -82,6 +90,20 @@ Frase de experiencia:
 
 Segundo Fuego nunca reemplaza las instrucciones operativas específicas de preparación, conservación o lote.
 
+### Arquitectura de dos fuegos
+
+La explicación pública puede distinguir:
+
+1. **Primer Fuego:** alta temperatura, expansión, fijación de estructura y manejo inicial de humedad.
+2. **Transición:** enfriamiento, estabilización y congelación como variables que modifican agua, textura y respuesta posterior.
+3. **Segundo Fuego:** terminación doméstica de estructura, fundencia, temperatura de servicio y acabados.
+
+No describir En Casa como una pizza completamente terminada que simplemente se recalienta.
+
+Forma preferida:
+
+> No congelamos una pizza terminada. Diseñamos una pizza para terminarse dos veces.
+
 ## 7. Cinco territorios gastronómicos
 
 | Pizza | Territorio | Verbo | Pregunta |
@@ -110,11 +132,21 @@ Los términos `poolish`, `biga` o `masa madre` pueden aparecer en Bitácora como
 
 ### Temperatura de horno
 
-No publicar `400 °C` o `a 400 grados` como parámetro canónico hasta contar con medición validada para la operación correspondiente.
+Puede comunicarse que los hornos de El Errante trabajan en un **entorno de alta temperatura capaz de acercarse a 400 °C**, siempre que la cifra se utilice para explicar el régimen térmico y sus consecuencias culinarias, no como setpoint universal de cada pizza.
 
-Forma segura:
+Formas seguras:
 
-> cocción intensa y de alta temperatura.
+> nuestros hornos trabajan en un entorno de alta temperatura capaz de acercarse a los 400 °C.
+
+> cerca de 400 °C, el orden de las cosas cambia.
+
+No afirmar sin registro operacional correspondiente:
+
+- `todas nuestras pizzas se hornean a 400 °C`;
+- `la temperatura exacta de cocción es 400 °C`;
+- tiempos exactos universales asociados a esa cifra.
+
+Cuando se comunique la temperatura, explicar al menos una consecuencia real: expansión rápida, fijación de estructura, evaporación, comportamiento de quesos/vegetales o secuencia de incorporación.
 
 ### Tomate / San Marzano
 
@@ -149,13 +181,13 @@ Regla interna:
 
 ## 10. Misión por página
 
-- **Home:** deseo + identidad + puertas de entrada.
-- **Historia:** cómo llegamos hasta aquí; no repetir el manual técnico.
+- **Home:** deseo + identidad + puertas de entrada + dos o tres pruebas concretas de oficio.
+- **Historia:** cómo llegamos hasta aquí; puede utilizar detalles técnicos cuando explican un giro real de la historia.
 - **Juan David:** perfil de autor, pensamiento e investigación actual.
-- **Método:** cómo se convierten preguntas en decisiones y producto.
+- **Método:** cómo se convierten preguntas en decisiones y producto; principal lugar para explicar física culinaria y secuencia.
 - **Bitácora:** archivo firmado de pruebas, estados y cambios de criterio.
 - **Producto:** deseo → elección → criterio → investigación.
-- **En Casa:** claridad comercial y de preparación; Segundo Fuego como profundidad secundaria.
+- **En Casa:** claridad comercial y de preparación; Segundo Fuego como profundidad secundaria y arquitectura de dos fuegos.
 - **En Movimiento:** hospitalidad y oficio cuando cambia el lugar.
 
 ## 11. Navegación pública V3.0

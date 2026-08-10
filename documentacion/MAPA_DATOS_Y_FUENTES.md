@@ -43,7 +43,7 @@ La experiencia pública compone el canon técnico V2.8 con capas editoriales pos
 
 ## 3. Datos maestros y catálogo
 
-Responsabilidad: definir **qué es** cada entidad, no registrar qué ocurrió en una jornada.
+Responsabilidad: definir **qué es** cada entidad y gobernar la calidad de esa definición, no registrar qué ocurrió en una jornada.
 
 Incluye, según la capa:
 
@@ -54,15 +54,45 @@ Incluye, según la capa:
 - recetas/BOM;
 - materiales e insumos;
 - unidades;
+- proveedores;
 - fuentes y estados de evidencia;
+- responsable de revisión;
+- sensibilidad operativa;
 - atributos editoriales y comerciales.
 
 Superficie auxiliar: `studio.html`.
 
-Regla:
+### Pack maestro Materiales V2.3.0
+
+`assets/materials-data-v23.js` conserva el estándar/provisional utilizado por BOM y costeo operativo. Sus campos de costo, estado y confianza no son hechos de compra y no deben mutarse por el simple registro de una recepción.
+
+### Overlay de gobierno Datos maestros V1.0.0
+
+Clave local:
+
+`ee_v10_master_governance`
+
+Este overlay guarda exclusivamente metadata de gobierno para materiales y proveedores:
+
+- responsable;
+- fuente específica;
+- fecha de revisión;
+- calidad (`PENDIENTE`, `PARCIAL`, `REVISADO`, `VALIDADO`);
+- sensibilidad (`SIN_CLASIFICAR`, `BAJA`, `MEDIA`, `ALTA`, `CRITICA`);
+- nota y timestamp de actualización.
+
+Datos maestros V1.0.0 **lee** `ee_v24_material_purchases` para mostrar la última compra como evidencia observada, pero no la escribe. Tampoco modifica BOM, recetas, costo maestro/provisional ni productos. Una compra puede motivar una revisión futura del estándar, pero esa promoción requerirá un flujo explícito de aprobación que V1.0.0 no implementa.
+
+### Gobierno de oferta V0.9
+
+El expediente V0.9 continúa separado para producto/SKU, contenido, fuentes editoriales y gates de lanzamiento. Convive en Studio sin compartir persistencia con `ee_v10_master_governance`.
+
+Reglas:
 
 - un dato maestro puede estar completo para demo y seguir `PENDIENTE` de validación gastronómica, sanitaria, financiera o jurídica;
-- modificar un maestro no debe reescribir hechos históricos ya capturados.
+- modificar gobierno no debe reescribir hechos históricos ya capturados;
+- una compra observada no se convierte automáticamente en costo estándar;
+- estándar provisional, hecho observado y metadata de gobierno son capas diferentes.
 
 ## 4. Hechos operativos locales
 
@@ -84,9 +114,11 @@ Mientras no exista persistencia multiusuario activa, los hechos operativos viven
 - requerimiento BOM ≠ compra;
 - orden de compra ≠ recepción;
 - compra ≠ COGS;
+- compra observada ≠ costo estándar vigente;
 - una corrección de evidencia no borra el evento anterior;
 - una fecha futura no admite evidencia como si fuera un hecho ocurrido;
-- Finanzas puede leer estos hechos, pero no debe reescribirlos.
+- Finanzas puede leer estos hechos, pero no debe reescribirlos;
+- Datos maestros puede leer compras como evidencia, pero no debe reescribirlas.
 
 ## 5. Finanzas local y privada
 
@@ -231,6 +263,8 @@ La aplicación ya utiliza distintos términos por módulo. Conceptualmente deben
 - **PENDIENTE**: falta validar o completar;
 - **DEMO**: sintético, exclusivamente demostrativo;
 - **DESCONOCIDO**: ausencia explícita de dato; nunca convertir automáticamente en cero.
+
+Los estados `REVISADO` y `VALIDADO` de Datos maestros V1.0.0 describen **calidad del proceso de gobierno**, no sustituyen el estado de evidencia del dato subyacente.
 
 ## 13. Regla de persistencia futura
 

@@ -6,20 +6,31 @@
   const ORDER_KEY='ee_v14_orders';
   const STOCK_KEY='ee_v23_material_stock';
   const DATE_KEY='ee_v22_selected_date';
+  const STANDARD_KEY='ee_v12_cost_materialization_events';
   const ACTIVE=new Set(['approved','preparing']);
   const money=value=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(value)||0);
   const qty=(value,unit)=>`${new Intl.NumberFormat('es-CO',{maximumFractionDigits:2}).format(Number(value)||0)} ${unit}`;
-  const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+  const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt',"'":'&#39;','"':'&quot;'}[char]));
   const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch(_){return fallback;}};
   const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
   const norm=value=>String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
   const selectedDate=()=>sessionStorage.getItem(DATE_KEY)||new Date().toLocaleDateString('en-CA',{timeZone:'America/Bogota'});
+  const bridge=()=>window.EL_ERRANTE_MASTER_COST_BRIDGE_V13||null;
 
   function findProduct(item){
     const ids=[item.productId,item.product_id,item.variantId,item.variant_id].filter(Boolean).map(String);
     const name=norm(item.name||item.product_name);
     return DATA.products.find(product=>product.ids.some(id=>ids.includes(id))||product.names.some(candidate=>norm(candidate)===name)||norm(product.name)===name)||null;
   }
+
+  function standardProduct(product){
+    const resolved=bridge()?.productCost?.(product);
+    if(resolved&&Number.isFinite(Number(resolved.total)))return resolved;
+    return {sku:product?.sku||'',total:Number(product?.cost)||0,lines:[],hasMaterialized:false,hasSimulation:false,legacyCost:Number(product?.cost)||0};
+  }
+
+  function standardProductCost(product){return Number(standardProduct(product).total)||0;}
+  function standardOrigin(product){const resolved=standardProduct(product);return resolved.hasMaterialized?'Estándar materializado':'Baseline canónico';}
 
   function explodeProduct(product,amount,bag=new Map(),seen=new Set()){
     if(!product||seen.has(product.sku))return bag;
@@ -45,7 +56,7 @@
       const product=findProduct(item);
       if(!product){unmatched+=amount;return;}
       const row=products.get(product.sku)||{product,qty:0};row.qty+=amount;products.set(product.sku,row);
-      estimatedCost+=product.cost*amount;
+      estimatedCost+=standardProductCost(product)*amount;
       explodeProduct(product,amount,materials);
     }));
     return {date:selectedDate(),orders,products:[...products.values()],materials,estimatedCost,unmatched};
@@ -54,7 +65,8 @@
   function materialRows(planData){
     const stock=read(STOCK_KEY,{});
     return [...planData.materials.entries()].map(([id,required])=>{
-      const material=DATA.materials.find(item=>item.id===id)||{id,name:id,unit:'unidad',cost:0,status:'PENDIENTE'};
+      const base=DATA.materials.find(item=>item.id===id)||{id,name:id,unit:'unidad',cost:0,status:'PENDIENTE'};
+      const material=bridge()?.standardMaterial?.(base)||base;
       const raw=stock[id];
       const known=raw!==undefined&&raw!==null&&raw!=='';
       const available=known?Number(raw):null;
@@ -66,12 +78,12 @@
 
   function productTable(rows){
     if(!rows.length)return '<div class="ee-v23-empty">No hay productos aprobados o en preparación para la fecha seleccionada.</div>';
-    return `<div class="ee-v23-table-wrap"><table class="ee-v23-table"><thead><tr><th>Producto</th><th>Unidades</th><th>Físicas</th><th>Costo variable aprox.</th></tr></thead><tbody>${rows.map(({product,qty:amount})=>`<tr data-v23-product="${esc(product.sku)}"><td><strong>${esc(product.name)}</strong><small>${esc(product.status)}</small></td><td>${amount}</td><td>${amount*product.physicalUnits}</td><td>${money(product.cost*amount)}</td></tr>`).join('')}</tbody></table></div>`;
+    return `<div class="ee-v23-table-wrap"><table class="ee-v23-table"><thead><tr><th>Producto</th><th>Unidades</th><th>Físicas</th><th>Costo estándar aprox.</th></tr></thead><tbody>${rows.map(({product,qty:amount})=>{const cost=standardProductCost(product);const origin=standardOrigin(product);return `<tr data-v23-product="${esc(product.sku)}"><td><strong>${esc(product.name)}</strong><small>${esc(product.status)}</small></td><td>${amount}</td><td>${amount*product.physicalUnits}</td><td>${money(cost*amount)}<small>${esc(origin)}</small></td></tr>`;}).join('')}</tbody></table></div>`;
   }
 
   function requirementTable(rows){
     if(!rows.length)return '<div class="ee-v23-empty">La agenda todavía no genera requerimientos de materiales.</div>';
-    return `<div class="ee-v23-table-wrap"><table class="ee-v23-table"><thead><tr><th>Materia prima o empaque</th><th>Requerido</th><th>Disponible</th><th>Decisión</th></tr></thead><tbody>${rows.map(row=>`<tr data-v23-material="${esc(row.material.id)}"><td><strong>${esc(row.material.name)}</strong><small>${esc(row.material.status)} · confianza ${esc(row.material.confidence||'pendiente')}</small></td><td>${qty(row.required,row.material.unit)}</td><td>${row.available===null?'<span class="ee-v23-muted">Sin conteo</span>':qty(row.available,row.material.unit)}</td><td><span class="ee-v23-state" data-state="${row.status}">${row.status==='ok'?'Cubierto':row.status==='short'?`Faltan ${qty(row.gap,row.material.unit)}`:'Contar inventario'}</span></td></tr>`).join('')}</tbody></table></div>`;
+    return `<div class="ee-v23-table-wrap"><table class="ee-v23-table"><thead><tr><th>Materia prima o empaque</th><th>Requerido</th><th>Disponible</th><th>Decisión</th></tr></thead><tbody>${rows.map(row=>`<tr data-v23-material="${esc(row.material.id)}"><td><strong>${esc(row.material.name)}</strong><small>${esc(row.material.status)} · confianza ${esc(row.material.confidence||'pendiente')}${Number(row.material.standardRevision)>0?` · estándar r${esc(row.material.standardRevision)}`:''}</small></td><td>${qty(row.required,row.material.unit)}</td><td>${row.available===null?'<span class="ee-v23-muted">Sin conteo</span>':qty(row.available,row.material.unit)}</td><td><span class="ee-v23-state" data-state="${row.status}">${row.status==='ok'?'Cubierto':row.status==='short'?`Faltan ${qty(row.gap,row.material.unit)}`:'Contar inventario'}</span></td></tr>`).join('')}</tbody></table></div>`;
   }
 
   function stockEditor(rows){
@@ -102,7 +114,9 @@
     const product=DATA.products.find(item=>item.sku===sku);
     if(!target||!product)return;
     const lines=(product.components?.length?product.components.map(component=>{const child=DATA.products.find(item=>item.sku===component.sku);return `${component.qty} × ${child?.name||component.sku}`;}):product.bom.map(line=>{const material=DATA.materials.find(item=>item.id===line.materialId);return `${qty(line.qty,material?.unit||'unidad')} · ${material?.name||line.materialId}`;}));
-    target.innerHTML=`<div class="ee-v23-recipe-head"><div><h4>${esc(product.name)}</h4><p>${esc(product.sku)} · ${esc(product.status)}</p></div><strong>${money(product.cost)}</strong></div><ul>${lines.map(line=>`<li>${esc(line)}</li>`).join('')}</ul><p class="ee-v23-note">Costo directo provisional. No incluye mano de obra formal, impuestos definitivos ni validación de rendimiento.</p>`;
+    const resolved=standardProduct(product);
+    const origin=resolved.hasMaterialized?'Estándar materializado':'Baseline canónico';
+    target.innerHTML=`<div class="ee-v23-recipe-head"><div><h4>${esc(product.name)}</h4><p>${esc(product.sku)} · ${esc(product.status)}</p></div><strong>${money(resolved.total)}</strong></div><ul>${lines.map(line=>`<li>${esc(line)}</li>`).join('')}</ul><p class="ee-v23-note">Costo estándar prospectivo · ${esc(origin)}. No modifica el snapshot de pedidos anteriores ni equivale a costo real histórico.</p>`;
   }
 
   function wrapFinance(){
@@ -119,17 +133,20 @@
     const p=plan();const rows=materialRows(p);
     const shortages=rows.filter(row=>row.status==='short').length;
     const unknown=rows.filter(row=>row.status==='pending').length;
-    target.innerHTML=`<section class="ee-v23-shell"><div class="ee-v23-heading"><div><p class="eyebrow">Materias primas e inventario inteligente · V${VERSION}</p><h2>Lo necesario para producir, sin saturar el panel.</h2><p>La agenda se convierte en requerimientos de materiales y costos provisionales. Solo aparecen decisiones que requieren atención.</p></div><span class="ee-v23-mode">Modelo provisional</span></div><div class="ee-v23-notice"><strong>Lectura responsable del dato</strong><span>${esc(DATA.notice)}</span></div><div class="ee-v23-metrics"><article><small>Pedidos de la fecha</small><strong>${p.orders.length}</strong></article><article><small>Costo variable aprox.</small><strong>${money(p.estimatedCost)}</strong></article><article><small>Faltantes confirmados</small><strong>${shortages}</strong></article><article><small>Conteos pendientes</small><strong>${unknown}</strong></article></div><div class="ee-v23-grid"><section class="ee-v23-panel"><div class="ee-v23-panel-head"><div><p class="eyebrow">Qué producir</p><h3>Productos comprometidos · ${esc(p.date)}</h3></div></div>${productTable(p.products)}</section><section class="ee-v23-panel"><div class="ee-v23-panel-head"><div><p class="eyebrow">Qué hace falta</p><h3>Materiales y empaques</h3></div><span>${rows.length} requerimientos</span></div>${requirementTable(rows)}</section></div>${stockEditor(rows)}${recipeExplorer()}${p.unmatched?`<div class="ee-v23-warning"><strong>${p.unmatched} unidad(es) sin BOM reconocida</strong><span>Revisa el nombre o variante antes de usar este cálculo para comprar.</span></div>`:''}</section>`;
+    target.innerHTML=`<section class="ee-v23-shell"><div class="ee-v23-heading"><div><p class="eyebrow">Materias primas e inventario inteligente · V${VERSION}</p><h2>Lo necesario para producir, sin saturar el panel.</h2><p>La agenda se convierte en requerimientos de materiales y costo estándar prospectivo. Solo aparecen decisiones que requieren atención.</p></div><span class="ee-v23-mode">Estándar efectivo · puente V1.3</span></div><div class="ee-v23-notice"><strong>Lectura responsable del dato</strong><span>${esc(DATA.notice)}</span></div><div class="ee-v23-metrics"><article><small>Pedidos de la fecha</small><strong>${p.orders.length}</strong></article><article><small>Costo estándar aprox.</small><strong>${money(p.estimatedCost)}</strong></article><article><small>Faltantes confirmados</small><strong>${shortages}</strong></article><article><small>Conteos pendientes</small><strong>${unknown}</strong></article></div><div class="ee-v23-grid"><section class="ee-v23-panel"><div class="ee-v23-panel-head"><div><p class="eyebrow">Qué producir</p><h3>Productos comprometidos · ${esc(p.date)}</h3></div></div>${productTable(p.products)}</section><section class="ee-v23-panel"><div class="ee-v23-panel-head"><div><p class="eyebrow">Qué hace falta</p><h3>Materiales y empaques</h3></div><span>${rows.length} requerimientos</span></div>${requirementTable(rows)}</section></div>${stockEditor(rows)}${recipeExplorer()}${p.unmatched?`<div class="ee-v23-warning"><strong>${p.unmatched} unidad(es) sin BOM reconocida</strong><span>Revisa el nombre o variante antes de usar este cálculo para comprar.</span></div>`:''}</section>`;
     target.querySelector('#ee-v23-save-stock')?.addEventListener('click',()=>{saveVisibleStock(target);shell();});
     const select=target.querySelector('#ee-v23-recipe-select');select?.addEventListener('change',()=>renderRecipe(select.value));if(select)renderRecipe(select.value);
     document.documentElement.dataset.materialsVersion=VERSION;
+    document.documentElement.dataset.masterCostBridge='1.3.0';
     wrapFinance();
   }
 
   const boot=()=>{shell();wrapFinance();};
+  window.EL_ERRANTE_MATERIALS_V231=Object.freeze({version:VERSION,plan,standardProduct,standardProductCost,materialRows,saveVisibleStock});
   window.addEventListener('ee:v22:reload',shell);
   window.addEventListener('ee:admin:ready',shell);
   window.addEventListener('ee:v24:stock-updated',shell);
-  window.addEventListener('storage',event=>{if([ORDER_KEY,STOCK_KEY].includes(event.key))shell();});
+  window.addEventListener('ee:v13:standard-changed',shell);
+  window.addEventListener('storage',event=>{if([ORDER_KEY,STOCK_KEY,STANDARD_KEY].includes(event.key))shell();});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,50),{once:true});else setTimeout(boot,50);
 })();

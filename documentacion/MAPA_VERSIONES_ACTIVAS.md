@@ -23,7 +23,7 @@ Por tanto, no debe deducirse la versión integral a partir del número más alto
 | Motor Materiales / BOM | **2.3.1** | Requerimientos, lectura de stock y conteos visibles | `materials-v23.js`; el pack maestro `materials-data-v23.js` conserva schema V2.3.0. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | Núcleo `finance-workbench-v31.js`. |
 | Módulo Financiero efectivo | **3.2.9** | Profundidad financiera acumulativa | Capas V3.2.0–V3.2.9 sobre el workbench base. |
-| Datos maestros | **shell 3.1.1 / motor oferta V0.9** | Gobierno de producto, SKU, fuentes y evidencia | Superficie auxiliar `studio.html`. |
+| Datos maestros | **shell 3.1.1 / gobierno V1.0.0 / oferta V0.9** | Gobierno de materiales, proveedores, producto, SKU, fuentes y evidencia | `master-data-v10.js` añade overlay separado; oferta V0.9 permanece como expediente editorial. |
 | Actas | **shell 3.1.1 / motores oferta V0.9** | Trazabilidad de sesiones, evidencia y decisiones | Superficie auxiliar `actas.html`. |
 | Demo financiera | **3.2.9** | Escenario sintético local y reversible | No contiene cifras privadas reales. |
 | Snapshot MFO | **schema 3.0 / workbook profile v3.3** | Perfil de importación del MFO privado | El XLSX real permanece fuera del repositorio. |
@@ -43,6 +43,15 @@ Comparten la misma barrera local de sesión:
 El retorno seguro mediante `?next=` sólo admite esos destinos y hashes operativos expresamente permitidos, incluido `operacion.html#evidencia`.
 
 Esta coherencia de shell no cambia la limitación esencial: GitHub Pages es estático y la sesión local no es autorización servidor.
+
+## Datos maestros V1.0.0
+
+`studio.html` contiene ahora dos capas distintas y compatibles:
+
+- **Gobierno de materiales/proveedores V1.0.0**: lee el pack `materials-data-v23.js` y las compras observadas `ee_v24_material_purchases`, pero persiste exclusivamente metadata de gobierno en `ee_v10_master_governance`.
+- **Gobierno de oferta V0.9**: conserva expediente de producto/SKU, contenido, fuentes y gates de lanzamiento.
+
+V1.0.0 permite registrar por material o proveedor responsable, fuente específica, fecha de revisión, calidad, sensibilidad operativa y nota. La última compra observada se presenta como evidencia separada; no se promueve automáticamente a costo estándar/provisional, no modifica BOM y no reescribe el historial de compras.
 
 ## Composición del módulo Operativo V3.3.0
 
@@ -88,6 +97,7 @@ El marcador de despliegue debe declarar por separado:
 - `session_shell=v3.1.1`
 - `control_engine=v3.0`
 - `operation_module=v3.3.0`
+- `master_data_module=v1.0.0`
 - `finance_workbench_core=v3.1.0`
 - `finance_module=v3.2.9`
 - `mfo_baseline=v3.0-schema-mfo-v3.3`
@@ -117,3 +127,4 @@ Una mejora aislada y compatible de Operación, Finanzas o una superficie auxilia
 5. No declarar Supabase activo mientras Auth, RLS y persistencia compartida no estén realmente habilitados y certificados.
 6. Toda nueva capa modular debe conservar una prueba que demuestre que no rompe los contratos inferiores que reutiliza.
 7. Las herramientas auxiliares deben compartir la shell interna si aparecen dentro del mapa de navegación protegido.
+8. Datos maestros no puede convertir una compra observada en costo estándar ni reescribir hechos históricos sin un flujo explícito de aprobación futuro.

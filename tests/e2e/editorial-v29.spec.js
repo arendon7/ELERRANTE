@@ -17,10 +17,10 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
   test('navegación pública prioriza método y autoría y no expone equipo genérico', async ({ page }) => {
     await page.goto('/index.html');
     const nav=page.locator('.main-nav');
-    await expect(nav.getByRole('link',{name:'Método'})).toHaveAttribute('href','metodo.html');
-    await expect(nav.getByRole('link',{name:'Juan David'})).toHaveAttribute('href','juan-david-ocampo.html');
-    await expect(nav.getByRole('link',{name:'En Casa'})).toHaveAttribute('href','en-casa.html');
-    await expect(nav.getByRole('link',{name:'Bitácora'})).toHaveAttribute('href','bitacora.html');
+    await expect(nav.locator('a[href="metodo.html"]')).toHaveAttribute('href','metodo.html');
+    await expect(nav.locator('a[href="juan-david-ocampo.html"]')).toHaveAttribute('href','juan-david-ocampo.html');
+    await expect(nav.locator('a[href="en-casa.html"]')).toHaveAttribute('href','en-casa.html');
+    await expect(nav.locator('a[href="bitacora.html"]')).toHaveAttribute('href','bitacora.html');
     await expect(nav.locator('a[href="equipo.html"]')).toHaveCount(0);
     await expect(nav.locator('a[href="nosotros.html"]')).toHaveCount(0);
   });
@@ -31,7 +31,8 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
     await expect(page.getByText('La Colegiatura', { exact:false })).toBeVisible();
     await expect(page.getByText('El Cielo', { exact:false })).toBeVisible();
     await expect(page.getByText('Carmen', { exact:false })).toBeVisible();
-    await expect(page.getByRole('heading',{name:'Lo que creo hoy'})).toBeVisible();
+    await expect(page.getByText('Lo que creo hoy', { exact:true })).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Cinco ideas que siguen ordenando el trabajo.'})).toBeVisible();
     await expect(page.locator('main')).not.toContainText('Dirección de producto y marca');
     await expect(page.locator('main')).not.toContainText('socios');
   });
@@ -75,7 +76,7 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
   test('En Casa mantiene claridad comercial y Segundo Fuego como segunda capa', async ({ page }) => {
     await page.goto('/en-casa.html');
     await expect(page.getByRole('heading',{name:'Nosotros hacemos el tiempo. Tú completas el fuego.'})).toBeVisible();
-    await expect(page.getByRole('heading',{name:'Diseñar una pizza sabiendo que todavía no ha terminado.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Diseñar sabiendo que la pizza todavía no ha terminado.'})).toBeVisible();
     await expect(page.getByText('Segundo Fuego es el nombre que damos a la investigación detrás de En Casa.')).toBeVisible();
     await expect(page.getByText('La etiqueta tiene la última palabra.')).toBeVisible();
   });
@@ -98,7 +99,7 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
 
   test('ficha dinámica conserva comercio y añade profundidad V3', async ({ page }) => {
     await page.goto('/producto.html?id=la-errante');
-    await page.waitForFunction(() => document.querySelector('#dynamic-product')?.dataset?.v30Ready === 'true');
+    await page.waitForFunction(() => document.querySelector('#dynamic-product')?.dataset?.v30Ready === 'true' && document.querySelector('[data-v30-territory]'));
     await expect(page.locator('[data-v30-territory]')).toContainText('Territorio');
     await expect(page.locator('[data-v30-block="identity"]')).toContainText('Cómo se siente');
     await expect(page.locator('[data-v30-block="workshop"]')).toContainText('¿Cómo puede una técnica aprendida afuera empezar a hablar desde Colombia?');

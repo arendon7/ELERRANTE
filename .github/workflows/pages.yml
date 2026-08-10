@@ -39,6 +39,7 @@ jobs:
           python3 scripts/verificar_master_data_v10.py
           python3 scripts/verificar_master_cost_proposals_v11.py
           python3 scripts/verificar_master_cost_materialization_v12.py
+          python3 scripts/verificar_master_cost_bridge_v13.py
           for test in scripts/verificar_oferta_v09.py scripts/verificar_studio_oferta_v09.py scripts/verificar_actas_oferta_v09.py scripts/verificar_paquete_aire_tiempo_v09.py; do python3 "$test"; done
       - name: Validar JavaScript fuente y materializado
         run: |
@@ -92,7 +93,7 @@ jobs:
           config={'environment':'connected' if url and key else 'preview','backend':{'provider':'supabase','url':url,'publishableKey':key,'receiptBucket':'payment-receipts','shopperStorageKey':'ee-shopper-auth-v15','adminStorageKey':'ee-admin-auth-v15'}}
           Path('_site/assets/commerce-runtime-config.js').write_text('window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze('+json.dumps(config,ensure_ascii=False,separators=(',',':'))+');\n',encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nrelease_version=3.1.1\nprevious_release_version=3.1.0\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-2\nbrand_source=assets/brand-canon-v28.js\ncontent_source=v2.9-editorial\ninternal_architecture=v3.1-acceso-operacion-finanzas\nsession_shell=v3.1.1\ncontrol_engine=v3.0\noperation_module=v3.3.0\nmaster_data_governance_core=v1.0.0\nmaster_data_module=v1.2.0\nmaster_cost_proposals=v1.1.0\nmaster_cost_materialization=v1.2.0\nmfo_baseline=v3.0-schema-mfo-v3.3\nfinance_workbench_core=v3.1.0\nfinance_module=v3.2.9\nfinance_demo=v3.2.9\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nrelease_version=3.1.1\nprevious_release_version=3.1.0\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-2\nbrand_source=assets/brand-canon-v28.js\ncontent_source=v2.9-editorial\ninternal_architecture=v3.1-acceso-operacion-finanzas\nsession_shell=v3.1.1\ncontrol_engine=v3.0\noperation_module=v3.3.0\nmaster_data_governance_core=v1.0.0\nmaster_data_module=v1.3.0\nmaster_cost_proposals=v1.1.0\nmaster_cost_materialization=v1.2.0\nmaster_cost_bridge=v1.3.0\nmfo_baseline=v3.0-schema-mfo-v3.3\nfinance_workbench_core=v3.1.0\nfinance_module=v3.2.9\nfinance_demo=v3.2.9\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         run: |
@@ -106,9 +107,10 @@ jobs:
           grep -q '^control_engine=v3.0$' _site/deploy-version.txt
           grep -q '^operation_module=v3.3.0$' _site/deploy-version.txt
           grep -q '^master_data_governance_core=v1.0.0$' _site/deploy-version.txt
-          grep -q '^master_data_module=v1.2.0$' _site/deploy-version.txt
+          grep -q '^master_data_module=v1.3.0$' _site/deploy-version.txt
           grep -q '^master_cost_proposals=v1.1.0$' _site/deploy-version.txt
           grep -q '^master_cost_materialization=v1.2.0$' _site/deploy-version.txt
+          grep -q '^master_cost_bridge=v1.3.0$' _site/deploy-version.txt
           grep -q '^finance_workbench_core=v3.1.0$' _site/deploy-version.txt
           grep -q '^finance_module=v3.2.9$' _site/deploy-version.txt
           grep -q '^finance_demo=v3.2.9$' _site/deploy-version.txt
@@ -134,11 +136,14 @@ jobs:
           grep -q '· V2.8' _site/admin.html
           grep -q 'assets/finance-v27.js' _site/admin.html
           grep -q 'assets/procurement-v25.js' _site/admin.html
+          grep -q 'assets/master-cost-materialization-v12.js?v=1.2.0' _site/admin.html
+          grep -q 'assets/master-cost-prospective-v13.js?v=1.3.0' _site/admin.html
           test -s _site/acceso.html
           grep -q 'id="access-v31"' _site/acceso.html
           grep -q 'Elige dónde quieres trabajar.' _site/centro-interno.html
           grep -q 'Abrir Panel de control' _site/centro-interno.html
           grep -q 'Entrar a Operación' _site/centro-interno.html
+          grep -q 'Entrar a Finanzas' _site/centro-interno.html
           grep -q 'data-v31-protected' _site/control.html
           grep -q 'assets/internal-shell-v31.js' _site/control.html
           grep -q 'Ir a Operación' _site/control.html
@@ -149,11 +154,15 @@ jobs:
           grep -q 'id="daily-ops-v21"' _site/operacion.html
           grep -q 'id="operational-evidence-v330"' _site/operacion.html
           grep -q 'assets/operational-evidence-v330.js' _site/operacion.html
+          grep -q 'assets/master-cost-materialization-v12.js?v=1.2.0' _site/operacion.html
+          grep -q 'assets/master-cost-prospective-v13.js?v=1.3.0' _site/operacion.html
           grep -q 'href="control.html"' _site/finanzas.html
           grep -q 'id="finance-workbench-v31"' _site/finanzas.html
           grep -q 'assets/finance-workbench-v31.js' _site/finanzas.html
           grep -q 'assets/finance-starter-v31.js' _site/finanzas.html
           grep -q 'assets/finance-demo-v329.js' _site/finanzas.html
+          grep -q 'assets/master-cost-materialization-v12.js?v=1.2.0' _site/finanzas.html
+          grep -q 'assets/master-cost-prospective-v13.js?v=1.3.0' _site/finanzas.html
           ! grep -q 'assets/production-v22.js' _site/finanzas.html
           grep -q 'data-v31-protected' _site/studio.html
           grep -q 'assets/internal-shell-v31.js' _site/studio.html
@@ -185,6 +194,17 @@ jobs:
           grep -q 'materializeProposal' _site/assets/master-cost-materialization-v12.js
           grep -q 'effectiveStandardCost' _site/assets/master-cost-materialization-v12.js
           grep -q 'Propuesta obsoleta' _site/assets/master-cost-materialization-v12.js
+          grep -q "const VERSION='1.3.0'" _site/assets/master-cost-prospective-v13.js
+          grep -q "MATERIALIZATION_KEY='ee_v12_cost_materialization_events'" _site/assets/master-cost-prospective-v13.js
+          grep -q 'MATERIALIZED_STANDARD' _site/assets/master-cost-prospective-v13.js
+          grep -q 'SIMULATION' _site/assets/master-cost-prospective-v13.js
+          grep -q 'productCost' _site/assets/master-cost-prospective-v13.js
+          ! grep -q 'localStorage.setItem' _site/assets/master-cost-prospective-v13.js
+          grep -q 'standardProductCost(product)' _site/assets/materials-v23.js
+          grep -q "ee:v13:standard-changed" _site/assets/materials-v23.js
+          grep -q 'function standardMaterial(material)' _site/assets/finance-unit-economics-v322.js
+          grep -q 'Baseline canónico → estándar materializado → simulación' _site/assets/finance-unit-economics-v322.js
+          grep -q "ee:v13:standard-changed" _site/assets/finance-unit-economics-v322.js
           grep -q "importScripts('./assets/brand-canon-v28.js')" _site/service-worker.js
           grep -q './acceso.html' _site/service-worker.js
           grep -q './studio.html' _site/service-worker.js
@@ -199,6 +219,8 @@ jobs:
           grep -q './assets/master-cost-materialization-v12.css' _site/service-worker.js
           grep -q "endsWith('/assets/master-cost-materialization-v12.js')" _site/service-worker.js
           grep -q "endsWith('/assets/master-cost-materialization-v12.css')" _site/service-worker.js
+          grep -q './assets/master-cost-prospective-v13.js' _site/service-worker.js
+          grep -q "endsWith('/assets/master-cost-prospective-v13.js')" _site/service-worker.js
           grep -q './assets/operational-evidence-v330.js' _site/service-worker.js
           grep -q './assets/finance-workbench-v31.js' _site/service-worker.js
           grep -q './assets/finance-starter-v31.js' _site/service-worker.js
@@ -217,8 +239,11 @@ jobs:
           node --check _site/assets/master-data-v10.js
           node --check _site/assets/master-cost-proposals-v11.js
           node --check _site/assets/master-cost-materialization-v12.js
+          node --check _site/assets/master-cost-prospective-v13.js
+          node --check _site/assets/materials-v23.js
           node --check _site/assets/finance-workbench-v31.js
           node --check _site/assets/finance-starter-v31.js
+          node --check _site/assets/finance-unit-economics-v322.js
           node --check _site/assets/finance-demo-v329.js
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
@@ -226,6 +251,7 @@ jobs:
           ! grep -qi 'service_role' _site/assets/master-data-v10.js
           ! grep -qi 'service_role' _site/assets/master-cost-proposals-v11.js
           ! grep -qi 'service_role' _site/assets/master-cost-materialization-v12.js
+          ! grep -qi 'service_role' _site/assets/master-cost-prospective-v13.js
           ! grep -qi 'service_role' _site/assets/finance-workbench-v31.js
           ! grep -qi 'service_role' _site/assets/finance-starter-v31.js
           ! grep -qi 'service_role' _site/assets/finance-demo-v329.js

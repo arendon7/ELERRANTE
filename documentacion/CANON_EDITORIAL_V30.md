@@ -1,6 +1,6 @@
-# CANON EDITORIAL EL ERRANTE V3.0.1
+# CANON EDITORIAL EL ERRANTE V3.0.2
 
-**Estado:** V3.0.1 · densidad gastronómica sobre canon V3.0  
+**Estado:** V3.0.2 · pruebas de oficio sobre canon V3.0.1  
 **Dirección gastronómica:** Juan David Ocampo  
 **Firma:** Masa · Fuego · Territorio
 
@@ -49,6 +49,23 @@ La prudencia no debe convertir el lenguaje en abstracción. Cuando exista base s
 Regla:
 
 > El dato no entra para impresionar. Entra cuando ayuda a entender por qué cocinamos de una manera determinada.
+
+### Regla V3.0.2 · prueba de oficio
+
+Una ficha de producto no debe limitarse a enumerar ingredientes, perfil sensorial y una idea abstracta. Cuando exista conocimiento suficiente, debe mostrar al menos una **tensión culinaria concreta** que esa referencia obliga a resolver.
+
+La estructura preferida es:
+
+1. **Problema:** qué variable puede comprometer la pizza.
+2. **Observación:** qué leemos para entenderla.
+3. **Decisión:** cómo esa lectura modifica la composición o el proceso.
+4. **Resultado:** qué debe percibirse finalmente en el bocado.
+
+Regla:
+
+> La técnica no se publica para exhibirse. Se vuelve visible cuando explica una consecuencia que el cliente puede comer.
+
+No publicar fórmulas, gramajes, tiempos, temperaturas, proveedores o procedimientos cerrados que no formen parte del canon operacional vigente.
 
 ## 4. Masa · Fuego · Territorio
 
@@ -104,15 +121,23 @@ Forma preferida:
 
 > No congelamos una pizza terminada. Diseñamos una pizza para terminarse dos veces.
 
+### Regla V3.0.2 · Segundo Fuego por referencia
+
+La explicación general de Segundo Fuego puede complementarse con una prioridad específica de cada pizza: qué estructura, ingrediente o relación sensorial necesita proteger al volver al calor y qué función queda para el acabado posterior.
+
+Esto **no sustituye** la instrucción operativa. La etiqueta y el lote siguen teniendo la última palabra.
+
 ## 7. Cinco territorios gastronómicos
 
-| Pizza | Territorio | Verbo | Pregunta |
-|---|---|---|---|
-| Margherita del Taller | Claridad | Reducir | ¿Qué ocurre cuando ya no tenemos dónde esconder un error? |
-| La Errante | Territorio | Componer | ¿Cómo puede una técnica aprendida afuera empezar a hablar desde Colombia? |
-| Bosque | Profundidad vegetal | Extraer | ¿Hasta dónde puede llegar un ingrediente cuando dejamos de tratarlo como topping? |
-| Diavola Errante | Intensidad | Controlar | ¿Cuánto puede crecer la intensidad sin eliminar información? |
-| Cuatro Quesos de Montaña | Arquitectura láctea | Dosificar | ¿Cómo puede la abundancia conservar claridad? |
+| Pizza | Territorio | Verbo | Pregunta | Prueba de oficio V3.0.2 |
+|---|---|---|---|---|
+| Margherita del Taller | Claridad | Reducir | ¿Qué ocurre cuando ya no tenemos dónde esconder un error? | Humedad y exposición |
+| La Errante | Territorio | Componer | ¿Cómo puede una técnica aprendida afuera empezar a hablar desde Colombia? | Ritmo entre grasa, dulzor y acidez |
+| Bosque | Profundidad vegetal | Extraer | ¿Hasta dónde puede llegar un ingrediente cuando dejamos de tratarlo como topping? | Agua y concentración |
+| Diavola Errante | Intensidad | Controlar | ¿Cuánto puede crecer la intensidad sin eliminar información? | Curva de picante |
+| Cuatro Quesos de Montaña | Arquitectura láctea | Dosificar | ¿Cómo puede la abundancia conservar claridad? | Fundencia, grasa y espacio |
+
+Las cinco pruebas deben permanecer **materialmente distintas**. No cambiar únicamente palabras para repetir el mismo argumento de equilibrio, técnica o calidad.
 
 Una futura sexta posición puede funcionar como **En Prueba** y debe nacer de investigación real, no de una necesidad artificial de novedad.
 
@@ -186,7 +211,7 @@ Regla interna:
 - **Juan David:** perfil de autor, pensamiento e investigación actual.
 - **Método:** cómo se convierten preguntas en decisiones y producto; principal lugar para explicar física culinaria y secuencia.
 - **Bitácora:** archivo firmado de pruebas, estados y cambios de criterio.
-- **Producto:** deseo → elección → criterio → investigación.
+- **Producto:** deseo → elección → prueba de oficio → criterio → investigación → Segundo Fuego específico cuando corresponda.
 - **En Casa:** claridad comercial y de preparación; Segundo Fuego como profundidad secundaria y arquitectura de dos fuegos.
 - **En Movimiento:** hospitalidad y oficio cuando cambia el lugar.
 

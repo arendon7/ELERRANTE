@@ -1,0 +1,69 @@
+name: Graphify — mapa y memoria ELERRANTE
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "infra/graphify-obsidian-pilot-v1"
+    paths-ignore:
+      - "graphify-out/**"
+      - "knowledge/90_GRAPHIFY_AUTO/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "graphify-knowledge-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build-knowledge:
+    name: Construir grafo y vault
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar uv
+        run: python -m pip install --disable-pip-version-check uv
+
+      - name: Construir Graphify + Obsidian
+        env:
+          GRAPHIFY_VERSION: "0.9.26"
+        run: ./scripts/refresh_graphify_knowledge.sh
+
+      - name: Validar artefactos mínimos
+        run: |
+          set -euo pipefail
+          test -s graphify-out/graph.json
+          test -d knowledge/90_GRAPHIFY_AUTO
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('graphify-out/graph.json')
+          data = json.loads(p.read_text())
+          nodes = data.get('nodes', [])
+          edges = data.get('edges', [])
+          print(f'Graphify: {len(nodes)} nodos / {len(edges)} relaciones')
+          if not nodes:
+              raise SystemExit('grafo vacío')
+          PY
+
+      - name: Versionar memoria generada en la rama piloto
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A graphify-out knowledge/90_GRAPHIFY_AUTO
+          if git diff --cached --quiet; then
+            echo "Sin cambios de conocimiento."
+            exit 0
+          fi
+          git commit -m "chore: refresh Graphify knowledge [skip graphify]"
+          git push

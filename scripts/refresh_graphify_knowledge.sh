@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GRAPHIFY_VERSION="${GRAPHIFY_VERSION:-0.9.26}"
+GRAPHIFY_FULL_OBSIDIAN="${GRAPHIFY_FULL_OBSIDIAN:-0}"
 cd "$ROOT"
 
 if command -v uvx >/dev/null 2>&1; then
@@ -21,20 +22,26 @@ echo "==> Graphify ${GRAPHIFY_VERSION}: extracción estructural local"
 test -s graphify-out/graph.json
 
 echo "==> Generando reporte arquitectónico"
-# cluster-only recibe la raíz del corpus; Graphify resuelve desde allí
-# <root>/graphify-out/graph.json.
 "${GRAPHIFY[@]}" cluster-only . --no-viz
 
 test -s graphify-out/GRAPH_REPORT.md
 
-# Esta carpeta es 100 % regenerable. Nunca guardar notas humanas aquí.
-rm -rf knowledge/90_GRAPHIFY_AUTO
-mkdir -p knowledge/90_GRAPHIFY_AUTO
+echo "==> Exportando wiki compacta navegable por ChatGPT y Obsidian"
+"${GRAPHIFY[@]}" export wiki
 
-echo "==> Exportando vault automático para Obsidian"
-"${GRAPHIFY[@]}" export obsidian --dir knowledge/90_GRAPHIFY_AUTO
+test -s graphify-out/wiki/index.md
 
-echo "==> Exportando wiki navegable para agentes"
-"${GRAPHIFY[@]}" export wiki || echo "AVISO: wiki no generada; graph.json, reporte y Obsidian siguen siendo válidos."
+# El export Obsidian por nodo es útil para exploración profunda, pero en
+# ELERRANTE genera ~1.500 notas regenerables. Solo se crea localmente bajo
+# demanda y está excluido de Git para no inflar el repositorio.
+if [ "$GRAPHIFY_FULL_OBSIDIAN" = "1" ]; then
+  rm -rf knowledge/90_GRAPHIFY_AUTO
+  mkdir -p knowledge/90_GRAPHIFY_AUTO
+  echo "==> Exportando vault Graphify detallado (local, no versionado)"
+  "${GRAPHIFY[@]}" export obsidian --dir knowledge/90_GRAPHIFY_AUTO
+fi
 
-printf '\nGraphify listo.\n- graphify-out/graph.json\n- graphify-out/GRAPH_REPORT.md\n- graphify-out/wiki/ (si disponible)\n- knowledge/90_GRAPHIFY_AUTO/\n'
+printf '\nGraphify listo.\n- graphify-out/graph.json\n- graphify-out/GRAPH_REPORT.md\n- graphify-out/wiki/\n'
+if [ "$GRAPHIFY_FULL_OBSIDIAN" = "1" ]; then
+  printf '%s\n' '- knowledge/90_GRAPHIFY_AUTO/ (local, ignorado por Git)'
+fi

@@ -28,6 +28,13 @@ jobs:
           node --check assets/historical-cost-snapshots-v14.js
           node --check assets/finance-historical-cost-v14.js
           node --check tests/e2e/historical-cost-snapshots-v14.spec.js
+      - name: Exigir marcador V1.4 en superficie materializada
+        run: |
+          set -euo pipefail
+          python3 scripts/materializar_fuentes_locales_v28.py
+          python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
+          test -s .local_site/historical-cost-version.txt
+          grep -q '^historical_cost_snapshots=v1.4.0$' .local_site/historical-cost-version.txt
 
   public-health:
     name: Publicación histórica V1.4 corresponde a main

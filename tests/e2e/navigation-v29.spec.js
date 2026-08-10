@@ -32,6 +32,13 @@ test.describe('Navegación y CTAs V3.0',()=>{
     for(const href of ['nosotros.html','equipo.html','producto.html','cuenta.html','admin.html','control.html','operacion.html','studio.html','centro-interno.html'])await expect(nav.locator(`a[href^="${href}"]`)).toHaveCount(0);
   });
 
+  test('la PWA incluye las rutas y assets editoriales V3',async({request})=>{
+    const response=await request.get('/service-worker.js');
+    expect(response.ok()).toBeTruthy();
+    const source=await response.text();
+    for(const token of ['./metodo.html','./juan-david-ocampo.html','./assets/editorial-v30.css','./assets/products-v30.js','./assets/product-v30.js']) expect(source).toContain(token);
+  });
+
   test('la cabecera y el pie no anuncian funciones que todavía no existen',async({page})=>{
     await page.goto('/index.html');
     await expect(page.locator('#site-header a[href="cuenta.html"]')).toHaveCount(0);

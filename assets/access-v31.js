@@ -4,6 +4,10 @@ const VERSION='3.1.1';
 const ACCOUNT_KEY='ee_v31_local_account';
 const SESSION_KEY='ee_v31_session';
 const SESSION_HOURS=8;
+const REVIEW_ACCOUNTS=Object.freeze([
+ {username:'juancho',displayName:'Juancho',role:'Revisor',salt:'7MLV0Wa6D78w2lSHznepWw==',hash:'r6PIDylO/U98/MpqrAE7RY837Gqvg7xLYMO3GKEyXyA='},
+ {username:'lucho',displayName:'Lucho',role:'Revisor',salt:'KKFdvOpS0uYDMKIHUGDogg==',hash:'DmDEVWwH43mOiVPYh+DU7fyc1XkC+F9veHA894NW2os='}
+]);
 const ALLOWED_NEXT={
  'centro-interno.html':new Set(['']),
  'control.html':new Set(['']),
@@ -13,7 +17,7 @@ const ALLOWED_NEXT={
  'actas.html':new Set([''])
 };
 const enc=new TextEncoder();
-const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
 const b64=bytes=>btoa(String.fromCharCode(...new Uint8Array(bytes)));
 const unb64=value=>Uint8Array.from(atob(value),c=>c.charCodeAt(0));
 const read=(key,where=localStorage)=>{try{return JSON.parse(where.getItem(key));}catch(_){return null;}};
@@ -46,6 +50,14 @@ async function verify(account,password){
  const a=unb64(account.hash),b=new Uint8Array(hash);if(a.length!==b.length)return false;
  let diff=0;for(let i=0;i<a.length;i++)diff|=a[i]^b[i];return diff===0;
 }
+function findReviewAccount(username){return REVIEW_ACCOUNTS.find(item=>item.username===String(username||'').trim().toLowerCase())||null;}
+async function authenticate(username,password){
+ const reviewer=findReviewAccount(username);
+ if(reviewer&&await verify(reviewer,password))return reviewer;
+ const local=read(ACCOUNT_KEY);
+ if(local&&String(local.username||'').toLowerCase()===String(username||'').trim().toLowerCase()&&await verify(local,password))return local;
+ return null;
+}
 function openSession(account){
  const now=Date.now();
  const session={version:VERSION,username:account.username,displayName:account.displayName||account.username,role:account.role||'Administrador',issuedAt:new Date(now).toISOString(),expiresAt:new Date(now+SESSION_HOURS*3600000).toISOString()};
@@ -54,23 +66,38 @@ function openSession(account){
 }
 function validSession(){const s=read(SESSION_KEY,sessionStorage);return s&&Date.parse(s.expiresAt)>Date.now()?s:null;}
 function field(label,name,type='text',extra=''){return `<label class="v31-field"><span>${label}</span><input name="${name}" type="${type}" ${extra}></label>`;}
-function render(){
+function render(mode='login'){
  const root=document.querySelector('#access-v31');if(!root)return;
  const active=validSession();if(active){location.replace(nextTarget());return;}
- const account=read(ACCOUNT_KEY);
- const first=!account;
- root.innerHTML=`<div class="v31-access-card"><div class="v31-access-brand"><img src="assets/logo-lockup.svg" alt="El Errante"><span>Sistema interno · V3.1</span></div><div class="v31-access-copy"><p class="eyebrow">Acceso usuarios</p><h1>${first?'Configura el primer acceso local.':'Bienvenido de nuevo.'}</h1><p>${first?'Este navegador todavía no tiene un usuario interno. Crea las credenciales que usarás para entrar al Panel de control, Operación y Finanzas.':'Ingresa con tu usuario para continuar al módulo interno que solicitaste.'}</p></div><form id="v31-access-form" class="v31-access-form">${field('Usuario','username','text',`autocomplete="username" required value="${esc(account?.username||'')}"`)}${field('Contraseña','password','password','autocomplete="current-password" minlength="8" required')}${first?field('Confirmar contraseña','confirm','password','autocomplete="new-password" minlength="8" required'):''}<button class="v31-primary" type="submit">${first?'Crear acceso y entrar':'Ingresar al sistema'}</button><div id="v31-access-message" class="v31-form-message" aria-live="polite"></div></form><div class="v31-access-security"><strong>Acceso local protegido</strong><p>La contraseña no se guarda: el navegador conserva únicamente un derivado PBKDF2 con sal aleatoria. Esta capa protege la experiencia local, pero GitHub Pages sigue siendo un host estático; la autorización servidor/RLS se activará al migrar a Supabase.</p></div></div>`;
+ const local=read(ACCOUNT_KEY);
+ const setup=mode==='setup'&&!local;
+ root.innerHTML=`<div class="v31-access-card"><div class="v31-access-brand"><img src="assets/logo-lockup.svg" alt="El Errante"><span>Sistema interno · V3.1</span></div><div class="v31-access-copy"><p class="eyebrow">Acceso usuarios</p><h1>${setup?'Crea el administrador local.':'Acceso al sistema.'}</h1><p>${setup?'Este acceso queda únicamente en este navegador. La contraseña se deriva localmente y no se guarda en texto plano.':'Ingresa con un usuario autorizado. Los usuarios de revisión funcionan en cualquier navegador; el administrador local, si existe, permanece vinculado a este dispositivo.'}</p></div>${setup?`<form id="v31-setup-form" class="v31-access-form">${field('Nuevo usuario administrador','username','text','autocomplete="username" required')}${field('Nueva contraseña','password','password','autocomplete="new-password" minlength="8" required')}${field('Confirmar contraseña','confirm','password','autocomplete="new-password" minlength="8" required')}<button class="v31-primary" type="submit">Crear acceso y entrar</button><button class="v31-btn v31-secondary" type="button" data-v31-login-mode>Volver al ingreso</button><div id="v31-access-message" class="v31-form-message" aria-live="polite"></div></form>`:`<form id="v31-access-form" class="v31-access-form">${field('Usuario','username','text','autocomplete="username" required')}${field('Contraseña','password','password','autocomplete="current-password" minlength="5" required')}<button class="v31-primary" type="submit">Ingresar al sistema</button>${local?'':`<button class="v31-btn v31-secondary" type="button" data-v31-setup-mode>Crear acceso administrador local</button>`}<div id="v31-access-message" class="v31-form-message" aria-live="polite"></div></form>`}<div class="v31-access-security"><strong>Perímetro de revisión local</strong><p>Las cuentas de revisión usan derivados PBKDF2 y crean una sesión temporal de ocho horas. GitHub Pages sigue siendo un host estático: esta capa organiza el acceso a la demo, pero no sustituye autorización de servidor ni Supabase Auth/RLS.</p></div></div>`;
+ if(setup){
+  root.querySelector('[data-v31-login-mode]')?.addEventListener('click',()=>render('login'));
+  root.querySelector('#v31-setup-form').addEventListener('submit',async event=>{
+   event.preventDefault();const fd=new FormData(event.currentTarget);const username=String(fd.get('username')||'').trim();const password=String(fd.get('password')||'');const msg=root.querySelector('#v31-access-message');
+   msg.textContent='Creando acceso…';msg.dataset.tone='';
+   try{
+    if(username.length<2||password.length<8)throw new Error('Usa un usuario válido y una contraseña de mínimo 8 caracteres.');
+    if(findReviewAccount(username))throw new Error('Ese usuario está reservado para revisión. Elige otro nombre.');
+    if(password!==String(fd.get('confirm')||''))throw new Error('Las contraseñas no coinciden.');
+    const created=await createAccount(username,password);openSession(created);
+   }catch(error){msg.textContent=error.message||'No fue posible crear el acceso.';msg.dataset.tone='error';}
+  });
+  return;
+ }
+ root.querySelector('[data-v31-setup-mode]')?.addEventListener('click',()=>render('setup'));
  root.querySelector('#v31-access-form').addEventListener('submit',async event=>{
   event.preventDefault();const fd=new FormData(event.currentTarget);const username=String(fd.get('username')||'').trim();const password=String(fd.get('password')||'');const msg=root.querySelector('#v31-access-message');
   msg.textContent='Validando…';msg.dataset.tone='';
   try{
-   if(username.length<2||password.length<8)throw new Error('Usa un usuario válido y una contraseña de mínimo 8 caracteres.');
-   if(first){if(password!==String(fd.get('confirm')||''))throw new Error('Las contraseñas no coinciden.');const created=await createAccount(username,password);openSession(created);return;}
-   if(username.toLowerCase()!==String(account.username||'').toLowerCase()||!(await verify(account,password)))throw new Error('Usuario o contraseña incorrectos.');
-   openSession(account);
+   if(username.length<2||password.length<5)throw new Error('Usuario o contraseña incorrectos.');
+   const authenticated=await authenticate(username,password);
+   if(!authenticated)throw new Error('Usuario o contraseña incorrectos.');
+   openSession(authenticated);
   }catch(error){msg.textContent=error.message||'No fue posible iniciar sesión.';msg.dataset.tone='error';}
  });
 }
-window.EL_ERRANTE_ACCESS_V31={version:VERSION,accountKey:ACCOUNT_KEY,sessionKey:SESSION_KEY,allowedNext:Object.fromEntries(Object.entries(ALLOWED_NEXT).map(([page,hashes])=>[page,[...hashes]])),nextTarget,validSession};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
+window.EL_ERRANTE_ACCESS_V31={version:VERSION,accountKey:ACCOUNT_KEY,sessionKey:SESSION_KEY,reviewUsers:REVIEW_ACCOUNTS.map(({username,displayName,role})=>({username,displayName,role})),allowedNext:Object.fromEntries(Object.entries(ALLOWED_NEXT).map(([page,hashes])=>[page,[...hashes]])),nextTarget,validSession};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>render(),{once:true});else render();
 })();

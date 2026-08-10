@@ -3,8 +3,10 @@
 ## Estado de la secuencia
 
 - **V1.2 — certificada en main**: materialización controlada y versionada del estándar.
-- **V1.3 — candidato actual**: puente prospectivo hacia Operación y Finanzas.
-- **Siguiente frente al certificar V1.3: V1.4** — snapshots de costo en hechos.
+- **V1.3 — certificada en main**: puente prospectivo hacia Operación y Finanzas.
+- **V1.4 — certificada en main**: snapshots históricos de costo y margen no retroactivo.
+- **V1.5 — candidato actual**: inventario valorizado, variaciones y exposición.
+- **Siguiente frente al certificar V1.5: V1.6** — costo real de producción y merma.
 
 ## V1.2 — materialización controlada
 
@@ -47,11 +49,13 @@ Objetivo: conectar cantidades físicas con valoración sin convertir la aplicaci
 
 Alcance:
 
-- inventario valorizado por material;
+- inventario valorizado por material, manteniendo separado valor estándar y referencia observada;
 - compras comprometidas vs. recibidas;
-- variación precio de compra vs. estándar;
+- variación precio de compra vs. estándar histórico preservado por V1.4;
 - alertas por desviaciones relevantes;
-- cobertura y exposición de caja.
+- cobertura de pedidos activos y exposición de caja;
+- inventario desconocido permanece desconocido: nunca se interpreta como cero;
+- no se declara FIFO, promedio ponderado ni valorización contable por lotes sin evidencia de lotes de adquisición.
 
 ## V1.6 — costo de producción y merma
 
@@ -81,4 +85,4 @@ Alcance:
 
 Cada nueva capa debe separar explícitamente:
 
-`hecho observado ≠ baseline ≠ estándar vigente ≠ simulación ≠ decisión propuesta ≠ decisión aprobada ≠ revisión materializada ≠ costo histórico`
+`hecho observado ≠ baseline ≠ estándar vigente ≠ simulación ≠ decisión propuesta ≠ decisión aprobada ≠ revisión materializada ≠ costo histórico ≠ referencia gerencial de valoración`

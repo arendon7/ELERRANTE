@@ -41,7 +41,32 @@ jobs:
         timeout-minutes: 5
         run: npx playwright install --with-deps chromium
       - name: Ejecutar regresión funcional
-        run: npm run test:e2e
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          npm run test:e2e -- --reporter=line 2>&1 | tee playwright-console.log
+          status=${PIPESTATUS[0]}
+          {
+            echo "Playwright diagnostic summary"
+            echo "commit=${GITHUB_SHA}"
+            echo "exit_code=${status}"
+            echo
+            echo "=== failure signals ==="
+            grep -E -B 8 -A 24 '([0-9]+\) |Error:|Expected:|Received:|failed|TimeoutError)' playwright-console.log | tail -n 700 || true
+            echo
+            echo "=== final console tail ==="
+            tail -n 300 playwright-console.log || true
+          } > playwright-failure-summary.txt
+          exit "$status"
+      - name: Conservar resumen diagnóstico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-summary-${{ github.sha }}
+          path: playwright-failure-summary.txt
+          if-no-files-found: warn
+          retention-days: 14
       - name: Conservar reporte y evidencias
         if: always()
         uses: actions/upload-artifact@v4

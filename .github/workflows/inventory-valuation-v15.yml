@@ -1,0 +1,76 @@
+name: Certificar inventario valorizado V1.5
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "inventory-valuation-v15-${{ github.event.pull_request.number || github.event.workflow_run.head_sha }}"
+  cancel-in-progress: true
+
+jobs:
+  structural:
+    name: Contrato inventario V1.5
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar contrato y sintaxis
+        run: |
+          python3 scripts/verificar_inventory_valuation_v15.py
+          node --check assets/inventory-valuation-v15.js
+          node --check assets/finance-inventory-valuation-v15.js
+          node --check tests/e2e/inventory-valuation-v15.spec.js
+      - name: Exigir marcador V1.5 en superficie materializada
+        run: |
+          set -euo pipefail
+          python3 scripts/materializar_fuentes_locales_v28.py
+          python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
+          test -s .local_site/inventory-valuation-version.txt
+          grep -q '^inventory_valuation=v1.5.0$' .local_site/inventory-valuation-version.txt
+
+  public-health:
+    name: Publicación inventario V1.5 corresponde a main
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+      EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Esperar SHA publicado y marcador V1.5
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/deploy-version.txt?v15=$EXPECTED_SHA&attempt=$attempt" > deploy-observed.txt || true
+            curl --fail --silent --show-error --location --max-time 20 -H 'Cache-Control: no-cache' "$PUBLIC_BASE/inventory-valuation-version.txt?v15=$EXPECTED_SHA&attempt=$attempt" > inventory-observed.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-observed.txt | tr -d '\r')"
+            layer="$(sed -n 's/^inventory_valuation=//p' inventory-observed.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ] && [ "$layer" = "v1.5.0" ]; then success=1; break; fi
+            sleep 5
+          done
+          test "$success" -eq 1
+      - name: Verificar superficie pública V1.5
+        run: |
+          set -euo pipefail
+          fetch_public(){ curl --fail --silent --show-error --location --max-time 20 --retry 4 --retry-delay 2 -H 'Cache-Control: no-cache' "$1" > "$2"; }
+          fetch_public "$PUBLIC_BASE/assets/inventory-valuation-v15.js?verify=$EXPECTED_SHA" inventory-core.js
+          fetch_public "$PUBLIC_BASE/assets/finance-inventory-valuation-v15.js?verify=$EXPECTED_SHA" inventory-finance.js
+          fetch_public "$PUBLIC_BASE/assets/inventory-valuation-v15.css?verify=$EXPECTED_SHA" inventory.css
+          fetch_public "$PUBLIC_BASE/finanzas.html?verify=$EXPECTED_SHA" finanzas.html
+          grep -q "const VERSION='1.5.0'" inventory-core.js
+          grep -q 'purchaseVariances' inventory-core.js
+          grep -q 'totalCashExposure' inventory-core.js
+          grep -q "PANEL_ID='finance-inventory-valuation-v15'" inventory-finance.js
+          grep -q 'Referencia observada' inventory-finance.js
+          grep -q 'assets/inventory-valuation-v15.js?v=1.5.0' finanzas.html
+          grep -q 'assets/finance-inventory-valuation-v15.js?v=1.5.0' finanzas.html
+          grep -q 'assets/inventory-valuation-v15.css' finanzas.html

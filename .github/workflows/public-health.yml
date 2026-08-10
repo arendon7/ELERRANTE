@@ -76,7 +76,7 @@ jobs:
           fetch_public "$PUBLIC_BASE/assets/generated/manifest-v28.json?verify=$EXPECTED_SHA" public-generated-manifest-v28.json
           fetch_public "$PUBLIC_BASE/materialized-site-v28.json?verify=$EXPECTED_SHA" public-materialized-site-v28.json
           fetch_public "$PUBLIC_BASE/service-worker.js?verify=$EXPECTED_SHA" public-service-worker.js
-          for page in index tienda producto admin activacion acceso centro-interno control operacion finanzas; do fetch_public "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" "public-${page}.html"; done
+          for page in index tienda producto admin activacion acceso centro-interno control operacion finanzas studio actas; do fetch_public "$PUBLIC_BASE/${page}.html?verify=$EXPECTED_SHA" "public-${page}.html"; done
 
           grep -q 'assets/generated/data-v28.js' public-index.html
           grep -q 'assets/generated/app-v28.js' public-index.html
@@ -134,10 +134,22 @@ jobs:
           ! grep -q '<script src="assets/materials-v23.js"' public-finanzas.html
           ! grep -q '<script src="assets/procurement-v25.js"' public-finanzas.html
 
+          grep -q 'Gobernar productos y fuentes sin mezclar la operación.' public-studio.html
+          grep -q 'data-v31-protected' public-studio.html
+          grep -q 'assets/internal-shell-v31.js' public-studio.html
+          grep -q 'Validar con evidencia y dejar la decisión trazable.' public-actas.html
+          grep -q 'data-v31-protected' public-actas.html
+          grep -q 'assets/internal-shell-v31.js' public-actas.html
+
           grep -q 'ensureUserAccess' public-host-mode.js
           grep -q "href='acceso.html'" public-host-mode.js
           grep -q '.ee-user-access-link' public-internal-v31.css
           grep -q '.v31-module-card.control' public-internal-v31.css
+          grep -q "const VERSION='3.1.1'" public-access-v31.js
+          grep -q "const VERSION='3.1.1'" public-internal-shell-v31.js
+          grep -q "'studio.html':new Set" public-access-v31.js
+          grep -q "'actas.html':new Set" public-access-v31.js
+          grep -q "'#evidencia'" public-access-v31.js
           grep -q "const VERSION='3.3.0'" public-operational-evidence-v330.js
           grep -q "SNAPSHOT_KEY='ee_v30_mfo_snapshot'" public-finance-workbench-v31.js
           grep -q "WORKING_KEY='ee_v31_finance_working_model'" public-finance-workbench-v31.js
@@ -151,6 +163,8 @@ jobs:
 
           grep -q "importScripts('./assets/brand-canon-v28.js')" public-service-worker.js
           grep -q './acceso.html' public-service-worker.js
+          grep -q './studio.html' public-service-worker.js
+          grep -q './actas.html' public-service-worker.js
           grep -q './assets/access-v31.js' public-service-worker.js
           grep -q './assets/internal-shell-v31.js' public-service-worker.js
           grep -q './assets/operational-evidence-v330.js' public-service-worker.js

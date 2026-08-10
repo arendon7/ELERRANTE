@@ -20,7 +20,7 @@ Por tanto, no debe deducirse la versión integral a partir del número más alto
 | Shell y sesión interna | **3.1.1** | Guard local, navegación, retorno seguro, expiración y demo operativa reversible | Cubre Centro, Control, Operación, Finanzas, Datos maestros y Actas; no equivale a autorización servidor. |
 | Panel de control | **shell 3.1.1 / motor 3.0** | Priorización operativa | `control-v30.js` permanece como motor. |
 | Módulo Operativo | **3.3.0** | Ejecución + evidencia y cierre | Compone motores V2.1–V2.5, Control V3.0 y evidencia V3.3.0. |
-| Motor Materiales / BOM | **2.3.1** + puente V1.3 | Requerimientos, lectura de stock, conteos y valoración prospectiva | `materials-v23.js`; cantidades siguen V2.3.1 y costos prospectivos usan el estándar efectivo V1.3. |
+| Motor Materiales / BOM | **2.3.1** + puente V1.3 | Requerimientos, lectura de stock, conteos y valoración prospectiva | `materials-v23.js`; cantidades siguen V2.3.1 sobre pack de datos V2.3.0 y costos prospectivos usan el estándar efectivo V1.3. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | Núcleo `finance-workbench-v31.js`. |
 | Módulo Financiero efectivo | **3.2.9** + puente V1.3 + histórico V1.4 | Profundidad financiera acumulativa | Economía unitaria usa V1.3; margen histórico usa snapshots V1.4 sin recalcular el pasado. |
 | Datos maestros / estándar | **core V1.0.0 / propuestas V1.1.0 / materialización V1.2.0 / puente V1.3.0** | Gobierno y consumo controlado de materiales, proveedores y costos | V1.3 resuelve el estándar efectivo prospectivo. |
@@ -100,7 +100,7 @@ Finanzas calcula contribución histórica sólo cuando el costo está completo. 
 
 - Agenda / pedidos: V2.1.
 - Producción: V2.2.
-- Materiales / BOM: motor V2.3.1 sobre pack V2.3.0 + valoración prospectiva V1.3.
+- Materiales / BOM: motor V2.3.1 sobre pack de datos V2.3.0 + valoración prospectiva V1.3.
 - Medición: V2.4.
 - Abastecimiento: V2.5.
 - Resumen de control: V3.0.

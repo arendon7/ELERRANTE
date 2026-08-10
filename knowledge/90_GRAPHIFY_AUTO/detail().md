@@ -1,0 +1,26 @@
+---
+source_file: "assets/finance-decisions-v325.js"
+type: "code"
+community: "finance-decisions-v325.js"
+location: "L44"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/finance-decisions-v325js
+---
+
+# detail()
+
+## Connections
+- [[difference()]] - `calls` [EXTRACTED]
+- [[evidence()]] - `calls` [EXTRACTED]
+- [[finance-decisions-v325.js]] - `contains` [EXTRACTED]
+- [[financialPanel()]] - `calls` [EXTRACTED]
+- [[followPanel()]] - `calls` [EXTRACTED]
+- [[months()_1]] - `calls` [EXTRACTED]
+- [[priority()]] - `calls` [EXTRACTED]
+- [[sectionHtml()_1]] - `calls` [EXTRACTED]
+- [[stateOf()]] - `calls` [EXTRACTED]
+- [[timing()]] - `calls` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/finance-decisions-v325js

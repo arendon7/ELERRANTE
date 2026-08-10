@@ -7,15 +7,19 @@ async function internalSession(page){
 }
 
 async function financeDemo(page){
-  await page.addInitScript(()=>{
-    sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'demo',displayName:'Demo',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()}));
-    localStorage.removeItem('ee_v30_mfo_snapshot');
-    localStorage.removeItem('ee_v31_finance_working_model');
-    localStorage.removeItem('ee_v31_finance_history');
-    localStorage.removeItem('ee_v329_finance_demo');
-  });
+  await internalSession(page);
   await page.goto('/finanzas.html');
-  await page.getByRole('button',{name:'Cargar demo financiera',exact:true}).click();
+  await page.evaluate(()=>{
+    [
+      'ee_v30_mfo_snapshot','ee_v31_finance_working_model','ee_v31_finance_history','ee_v329_finance_demo','ee_v311_operational_demo',
+      'ee_v14_orders','ee_v27_finance_movements','ee_v323_cash_counts','ee_v23_material_stock','ee_v24_material_purchases','ee_v25_purchase_orders'
+    ].forEach(key=>localStorage.removeItem(key));
+  });
+  await page.reload();
+  const load=page.getByRole('button',{name:'Cargar demo financiera',exact:true});
+  await expect(load).toBeVisible();
+  await load.click();
+  await page.waitForFunction(()=>document.documentElement.dataset.financeDemoVersion==='3.2.9');
   await expect(page.getByText('Datos sintéticos activos',{exact:true})).toBeVisible();
   await expect(page.locator('[data-finance-v330]')).toBeVisible();
 }

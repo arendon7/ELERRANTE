@@ -90,38 +90,54 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
     await expect(page.getByText('La etiqueta tiene la última palabra.')).toBeVisible();
   });
 
-  test('cinco pizzas reciben el contrato gastronómico V3 sin perder catálogo', async ({ page }) => {
+  test('cinco pizzas reciben contrato gastronómico y prueba de oficio V3.0.2 sin perder catálogo', async ({ page }) => {
     await page.goto('/index.html');
     await page.waitForFunction(() => window.EE_DATA?.products?.length === 11 && window.EE_DATA.products.some(p=>p.editorial_version==='3.0'));
-    const products=await page.evaluate(ids=>ids.map(id=>{const p=window.EE_DATA.products.find(x=>x.id===id);return {id,territory:p?.territory,question:p?.workshop_question,decision:p?.workshop_decision,profile:p?.sensory_profile,home:p?.home_enabled,second:p?.second_fire_enabled};}),v30Ids);
+    const products=await page.evaluate(ids=>ids.map(id=>{const p=window.EE_DATA.products.find(x=>x.id===id);return {id,territory:p?.territory,question:p?.workshop_question,decision:p?.workshop_decision,profile:p?.sensory_profile,home:p?.home_enabled,second:p?.second_fire_enabled,craft:p?.craft_proof,secondFocus:p?.second_fire_focus,secondFinish:p?.second_fire_finish,detailRelease:p?.product_detail_release};}),v30Ids);
     expect(products).toHaveLength(5);
     for(const product of products){
       expect(product.territory.length,`${product.id}: territory`).toBeGreaterThan(5);
       expect(product.question.length,`${product.id}: question`).toBeGreaterThan(25);
       expect(product.decision.length,`${product.id}: decision`).toBeGreaterThan(100);
       expect(Object.keys(product.profile||{}).length,`${product.id}: profile`).toBeGreaterThanOrEqual(5);
+      expect(product.craft?.axis?.length,`${product.id}: craft axis`).toBeGreaterThan(8);
+      expect(product.craft?.problem?.length,`${product.id}: craft problem`).toBeGreaterThan(100);
+      expect(product.craft?.observation?.length,`${product.id}: craft observation`).toBeGreaterThan(100);
+      expect(product.craft?.decision?.length,`${product.id}: craft decision`).toBeGreaterThan(100);
+      expect(product.craft?.result?.length,`${product.id}: craft result`).toBeGreaterThan(100);
+      expect(product.secondFocus?.length,`${product.id}: second fire focus`).toBeGreaterThan(60);
+      expect(product.secondFinish?.length,`${product.id}: second fire finish`).toBeGreaterThan(60);
+      expect(product.detailRelease).toBe('3.0.2');
       expect(product.home).toBe(true);
       expect(product.second).toBe(true);
     }
     expect(new Set(products.map(p=>p.territory)).size).toBe(5);
+    expect(new Set(products.map(p=>p.craft.axis)).size).toBe(5);
   });
 
-  test('ficha dinámica conserva comercio y añade profundidad V3', async ({ page }) => {
+  test('ficha dinámica conserva comercio y hace visible la prueba de oficio V3.0.2', async ({ page }) => {
     await page.goto('/producto.html?id=la-errante');
-    await page.waitForFunction(() => document.querySelector('#dynamic-product')?.dataset?.v30Ready === 'true' && document.querySelector('[data-v30-territory]'));
+    await page.waitForFunction(() => document.querySelector('#dynamic-product')?.dataset?.v302Ready === 'true' && document.querySelector('[data-v302-block="craft-proof"]'));
     await expect(page.locator('[data-v30-territory]')).toContainText('Territorio');
     await expect(page.locator('[data-v30-block="identity"]')).toContainText('Cómo se siente');
+    await expect(page.locator('[data-v302-block="craft-proof"]')).toContainText('Ritmo entre grasa, dulzor y acidez');
+    await expect(page.locator('[data-v302-block="craft-proof"]')).toContainText('Qué observamos');
+    await expect(page.locator('[data-v302-block="craft-proof"]')).toContainText('Qué hacemos con esa información');
+    await expect(page.locator('[data-v302-block="craft-proof"]')).toContainText('Qué debe ocurrir en el bocado');
     await expect(page.locator('[data-v30-block="workshop"]')).toContainText('¿Cómo puede una técnica aprendida afuera empezar a hablar desde Colombia?');
     await expect(page.locator('[data-v30-block="second-fire"]')).toContainText('En Casa · Segundo Fuego');
+    await expect(page.locator('[data-v302-fire-specific]')).toContainText('Integrar la grasa del chorizo sin prolongar el fuego');
     await expect(page.locator('[data-v30-block="author"]')).toContainText('Juan David Ocampo');
     await expect(page.locator('#dynamic-product')).toContainText('La Errante');
+    await expect(page.locator('#dynamic-product')).toHaveAttribute('data-v302-ready','true');
   });
 
   test('V3 no convierte precios demo ni hipótesis en verdad comercial', async ({ page }) => {
     await page.goto('/index.html');
     await page.waitForFunction(() => window.EE_DATA?.settings?.editorial_release === 'v3.0-authority-candidate');
-    const snapshot=await page.evaluate(()=>({settings:window.EE_DATA.settings,products:window.EE_DATA.products.filter(p=>p.editorial_version==='3.0').map(p=>({id:p.id,canon_note:p.canon_note||'',workshop:p.workshop_decision||''}))}));
+    const snapshot=await page.evaluate(()=>({settings:window.EE_DATA.settings,products:window.EE_DATA.products.filter(p=>p.editorial_version==='3.0').map(p=>({id:p.id,canon_note:p.canon_note||'',workshop:p.workshop_decision||'',craft:p.craft_proof||{}}))}));
     expect(snapshot.settings.editorial_release).toBe('v3.0-authority-candidate');
+    expect(snapshot.settings.product_detail_release).toBe('v3.0.2-pruebas-de-oficio');
     expect(JSON.stringify(snapshot.products).toLowerCase()).not.toContain('la mejor pizza de colombia');
     expect(JSON.stringify(snapshot.products).toLowerCase()).not.toContain('auténtica napolitana certificada');
     const qso=snapshot.products.find(p=>p.id==='cuatro-quesos-montana');

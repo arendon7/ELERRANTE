@@ -19,6 +19,8 @@ No debe deducirse la versión integral a partir del número más alto visible en
 | Arquitectura interna | **3.1** | Control / Operación / Finanzas + herramientas auxiliares | Studio y Actas permanecen como gobierno. |
 | Shell y sesión | **3.1.1** | Guard local, navegación y expiración | No equivale a autorización servidor. |
 | Motor Control | **3.0** | Priorización operativa base | `control-v30.js`. |
+| Motor Materiales / BOM | **2.3.1** | Requerimientos, stock visible y valoración prospectiva | Motor `materials-v23.js` sobre pack de datos V2.3.0. |
+| Módulo Operativo base | **3.3.0** | Ejecución + evidencia y cierre | Sigue siendo el motor/base operativo persistente. |
 | Evidencia operativa | **3.3.0** | Readiness y ledger de evidencia | `operational-evidence-v330.js`. |
 | Horizonte operativo | **3.4.0** | Próximos siete días, BOM, faltantes y compras | `business-pulse-v34.js`. |
 | Cierre gerencial / capacidad | **3.5.0** | Capacidad observada y puente gerencial/tesorería | `management-pulse-v35.js`. |
@@ -26,6 +28,7 @@ No debe deducirse la versión integral a partir del número más alto visible en
 | Superficie Control efectiva | **V3.6** | Control V3.0 + overlays V3.4/V3.5/V3.6 | No escribe Finanzas ni hechos operativos. |
 | Superficie Operación efectiva | **V3.6** | V2.1–V2.5 + V3.0 + V3.3–V3.6 | Cierre diario coordina hechos existentes. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | `finance-workbench-v31.js`. |
+| Módulo Financiero base | **3.2.9** | Profundidad financiera acumulativa | Motor base preservado para compatibilidad. |
 | Profundidad financiera | **3.2.0–3.2.9** | Ledger, economía unitaria, caja, escenarios, decisiones y readiness | Capas acumulativas. |
 | Puente financiero operativo | **3.4.0** | Contexto de compromisos operativos | No convierte pedido en ingreso/caja. |
 | Cierre gerencial financiero | **3.5.0** | Cierre mensual, tesorería corta y capacidad | Preserva profundidad V3.4. |
@@ -52,16 +55,18 @@ Control sólo resume y enlaza. La acción de registrar/corregir el cierre vive e
 
 1. Pedidos V2.1.
 2. Producción V2.2.
-3. Materiales/BOM V2.3.
+3. Motor Materiales / BOM **2.3.1** sobre pack de datos V2.3.0.
 4. Medición V2.4.
 5. Abastecimiento V2.5.
 6. Control base V3.0.
-7. Evidencia y readiness V3.3.
+7. Evidencia y readiness **3.3.0**.
 8. Horizonte V3.4.
 9. Capacidad V3.5.
 10. Cierre diario y continuidad V3.6.
 
-V3.6 no duplica esas fuentes. Consume sus APIs/stores y escribe sólo `ee_v36_daily_close_events`.
+El Módulo Operativo base sigue siendo **3.3.0**; V3.4–V3.6 son overlays compatibles que amplían lectura y coordinación sin reemplazar los stores de ejecución.
+
+V3.6 no duplica fuentes. Consume APIs/stores existentes y escribe sólo `ee_v36_daily_close_events`.
 
 ## Contrato del cierre V3.6
 
@@ -84,6 +89,7 @@ El arrastre al día siguiente sólo conserva señales que siguen abiertas. Resol
 `finanzas.html` conserva:
 
 - workbench V3.1;
+- Módulo Financiero base **3.2.9**;
 - capas V3.2.0–V3.2.9;
 - costos históricos V1.4;
 - inventario valorizado V1.5;

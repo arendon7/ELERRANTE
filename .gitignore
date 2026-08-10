@@ -33,11 +33,12 @@ private-data/
 .idea/
 
 # Graphify / Obsidian
-# Se versionan graph.json, GRAPH_REPORT.md y la wiki compacta para que ChatGPT
-# pueda consultarlos desde GitHub. El vault detallado por nodo es local/regenerable.
+# Se versionan el grafo actual, GRAPH_REPORT.md y la wiki compacta. Los backups
+# fechados y el vault detallado por nodo son regenerables y no pertenecen a Git.
 graphify-out/cache/
 graphify-out/cost.json
 graphify-out/graph.html
+graphify-out/20??-??-??/
 knowledge/90_GRAPHIFY_AUTO/
 .obsidian/
 knowledge/.obsidian/

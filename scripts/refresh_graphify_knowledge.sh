@@ -31,6 +31,12 @@ echo "==> Exportando wiki compacta navegable por ChatGPT y Obsidian"
 
 test -s graphify-out/wiki/index.md
 
+# Graphify puede conservar backups fechados del grafo previo. Son útiles para
+# depuración local, pero no deben acumularse como historia paralela dentro de Git.
+find graphify-out -mindepth 1 -maxdepth 1 -type d \
+  -regextype posix-extended -regex '.*/[0-9]{4}-[0-9]{2}-[0-9]{2}' \
+  -exec rm -rf {} + 2>/dev/null || true
+
 # El export Obsidian por nodo es útil para exploración profunda, pero en
 # ELERRANTE genera ~1.500 notas regenerables. Solo se crea localmente bajo
 # demanda y está excluido de Git para no inflar el repositorio.

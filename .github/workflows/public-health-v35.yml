@@ -1,0 +1,95 @@
+name: Verificar publicación V3.5
+
+on:
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+
+concurrency:
+  group: "public-health-v35-${{ github.event.workflow_run.head_sha }}"
+  cancel-in-progress: true
+
+jobs:
+  health-v35:
+    name: GitHub Pages publica cierre gerencial V3.5
+    if: github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Definir expectativa
+        run: |
+          echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
+
+      - name: Exigir despliegue fuente exitoso
+        run: test "$SOURCE_CONCLUSION" = "success"
+
+      - name: Esperar SHA publicado
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 \
+              -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-v35.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-version-v35.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ]; then
+              success=1
+              break
+            fi
+            sleep 5
+          done
+          test "$success" -eq 1
+
+      - name: Verificar assets y superficies V3.5
+        run: |
+          set -euo pipefail
+          fetch_public() {
+            local url="$1" output="$2"
+            curl --fail --silent --show-error --location --max-time 20 \
+              --retry 5 --retry-delay 2 --retry-all-errors \
+              -H 'Cache-Control: no-cache' "$url" > "$output"
+          }
+
+          fetch_public "$PUBLIC_BASE/assets/management-pulse-v35.js?verify=$EXPECTED_SHA" public-management-pulse-v35.js
+          fetch_public "$PUBLIC_BASE/assets/management-pulse-v35.css?verify=$EXPECTED_SHA" public-management-pulse-v35.css
+          fetch_public "$PUBLIC_BASE/control.html?verify=$EXPECTED_SHA" public-control.html
+          fetch_public "$PUBLIC_BASE/operacion.html?verify=$EXPECTED_SHA" public-operacion.html
+          fetch_public "$PUBLIC_BASE/finanzas.html?verify=$EXPECTED_SHA" public-finanzas.html
+
+          grep -q "const VERSION='3.5.0'" public-management-pulse-v35.js
+          grep -q "CAPACITY_KEY='ee_v35_capacity_history'" public-management-pulse-v35.js
+          grep -q 'function recordCapacity' public-management-pulse-v35.js
+          grep -q 'function treasuryState' public-management-pulse-v35.js
+          grep -q 'function closeReadiness' public-management-pulse-v35.js
+          grep -q '.v35-shell' public-management-pulse-v35.css
+
+          grep -q 'Panel de control · V3.5' public-control.html
+          grep -q 'id="management-pulse-v35"' public-control.html
+          grep -q 'data-management-surface="control"' public-control.html
+          grep -q 'assets/management-pulse-v35.css?v=3.5.0' public-control.html
+          grep -q 'assets/management-pulse-v35.js?v=3.5.0' public-control.html
+          ! grep -q 'finance-workbench-v31.js' public-control.html
+
+          grep -q 'Módulo Operativo · V3.5' public-operacion.html
+          grep -q 'id="management-pulse-v35"' public-operacion.html
+          grep -q 'data-management-surface="operation"' public-operacion.html
+          grep -q 'assets/management-pulse-v35.css?v=3.5.0' public-operacion.html
+          grep -q 'assets/management-pulse-v35.js?v=3.5.0' public-operacion.html
+          ! grep -q 'finance-workbench-v31.js' public-operacion.html
+
+          grep -q 'Módulo Financiero · V3.5' public-finanzas.html
+          grep -q 'profundidad V3.4 preservada' public-finanzas.html
+          grep -q 'id="finance-management-v35"' public-finanzas.html
+          grep -q 'assets/management-pulse-v35.css?v=3.5.0' public-finanzas.html
+          grep -q 'assets/management-pulse-v35.js?v=3.5.0' public-finanzas.html
+          grep -q 'assets/finance-workbench-v31.js' public-finanzas.html
+
+          grep -q 'Un pedido próximo no se suma a caja sin evidencia de cobro' public-finanzas.html
+          grep -q 'Capacidad no registrada no equivale a capacidad infinita ni a cero' public-operacion.html

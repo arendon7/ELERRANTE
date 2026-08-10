@@ -18,6 +18,7 @@ def require(condition,message):
         issues.append(message)
 
 studio=read('studio.html')
+centro=read('centro-interno.html')
 module=read('assets/master-cost-materialization-v12.js')
 styles=read('assets/master-cost-materialization-v12.css')
 test=read('tests/e2e/master-cost-materialization-v12.spec.js')
@@ -28,6 +29,8 @@ health=read('.github/workflows/public-health.yml')
 
 for marker in ('id="master-cost-materialization-v12"','assets/master-cost-materialization-v12.js?v=1.2.0','assets/master-cost-materialization-v12.css?v=1.2.0'):
     require(marker in studio,f'Studio no integra {marker}')
+for marker in ('Elige dónde quieres trabajar.','Abrir Panel de control','Entrar a Operación','Entrar a Finanzas'):
+    require(marker in centro,f'V1.2 no puede degradar navegación interna: falta {marker}')
 require("const VERSION='1.2.0'" in module,'Motor de materialización no declara V1.2.0')
 require("EVENTS_KEY='ee_v12_cost_materialization_events'" in module,'Falta ledger separado V1.2')
 require("PROPOSALS_KEY='ee_v11_cost_proposal_events'" in module,'Falta anclaje explícito al ledger de propuestas')
@@ -40,19 +43,21 @@ require("proposal.lastEvent?.type!=='APPROVED'" in module,'Sólo una aprobación
 require('Propuesta obsoleta: el estándar cambió desde que fue creada' in module,'Falta guard contra aprobación obsoleta')
 require('La propuesta ya fue materializada' in module,'Falta guard contra doble materialización')
 require('reason.length<8' in module,'Materializar debe exigir razón explícita')
+require('toRevision' in module and 'Number(a.toRevision)' in module,'La reconstrucción del estándar debe ordenar por revisión materializada')
 require('writeEvents=events=>localStorage.setItem(EVENTS_KEY' in module,'V1.2 debe escribir únicamente su ledger')
 require('localStorage.setItem(PURCHASES_KEY' not in module,'V1.2 no puede escribir compras')
 require('localStorage.setItem(PROPOSALS_KEY' not in module,'V1.2 no puede reescribir decisiones V1.1')
 require('DATA.materials=' not in module and '.cost=' not in module,'V1.2 no puede mutar fuente canónica')
 require('fetch(' not in module and 'XMLHttpRequest' not in module and 'axios' not in module,'V1.2 debe operar localmente sin red propia')
 require(len(styles)>2000 and '@media(max-width:850px)' in styles,'Capa responsive V1.2 incompleta')
-for marker in ('materializa una aprobación como nueva revisión sin mutar fuente ni hechos','bloquea doble materialización y aprobación obsoleta','resolver recalcula costos prospectivos','no genera desbordamiento horizontal en móvil'):
+for marker in ('materializa una aprobación como nueva revisión sin mutar fuente ni hechos','bloquea doble materialización y aprobación obsoleta','resolver recalcula costos prospectivos','una propuesta posterior captura el estándar efectivo materializado','UI conserva aprobación pendiente tras recargar','no genera desbordamiento horizontal en móvil'):
     require(marker in test,f'Falta regresión V1.2: {marker}')
 require('./assets/master-cost-materialization-v12.js' in worker and './assets/master-cost-materialization-v12.css' in worker,'Service worker no precachea V1.2')
 require("endsWith('/assets/master-cost-materialization-v12.js')" in worker and "endsWith('/assets/master-cost-materialization-v12.css')" in worker,'Service worker no sirve fresco V1.2')
 require('master_data_module=v1.2.0' in deploy and 'master_cost_materialization=v1.2.0' in deploy,'Metadata no declara V1.2 efectivo')
 require('master_data_module=v1.2.0' in pages and 'master_cost_materialization=v1.2.0' in pages,'Pages no certifica V1.2')
 require('EXPECTED_MASTER_DATA: v1.2.0' in health and 'EXPECTED_COST_MATERIALIZATION: v1.2.0' in health,'Health-check no espera V1.2')
+require("grep -q 'Entrar a Finanzas' public-centro-interno.html" in health,'Health-check público debe conservar acceso a Finanzas')
 for forbidden in ('service_role','postgres://','private_key','supabase_service'):
     require(forbidden not in module.lower(),f'Posible secreto en V1.2: {forbidden}')
 
@@ -68,4 +73,5 @@ print('ledger=append_only_local')
 print('baseline=immutable')
 print('approval=required')
 print('stale_guard=enabled')
+print('navigation_guard=preserved')
 print('effective_standard=versioned_overlay')

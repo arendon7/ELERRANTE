@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   health-v35:
-    name: GitHub Pages publica cierre gerencial V3.5
+    name: GitHub Pages preserva cierre gerencial V3.5
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -47,7 +47,7 @@ jobs:
           done
           test "$success" -eq 1
 
-      - name: Verificar assets y superficies V3.5
+      - name: Verificar assets V3.5 preservados en superficies V3.6
         run: |
           set -euo pipefail
           fetch_public() {
@@ -70,14 +70,14 @@ jobs:
           grep -q 'function closeReadiness' public-management-pulse-v35.js
           grep -q '.v35-shell' public-management-pulse-v35.css
 
-          grep -q 'Panel de control · V3.5' public-control.html
+          grep -q 'Panel de control · V3.6' public-control.html
           grep -q 'id="management-pulse-v35"' public-control.html
           grep -q 'data-management-surface="control"' public-control.html
           grep -q 'assets/management-pulse-v35.css?v=3.5.0' public-control.html
           grep -q 'assets/management-pulse-v35.js?v=3.5.0' public-control.html
           ! grep -q 'finance-workbench-v31.js' public-control.html
 
-          grep -q 'Módulo Operativo · V3.5' public-operacion.html
+          grep -q 'Módulo Operativo · V3.6' public-operacion.html
           grep -q 'id="management-pulse-v35"' public-operacion.html
           grep -q 'data-management-surface="operation"' public-operacion.html
           grep -q 'assets/management-pulse-v35.css?v=3.5.0' public-operacion.html

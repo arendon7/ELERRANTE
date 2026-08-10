@@ -77,6 +77,7 @@
     document.querySelectorAll('#site-footer a[href="en-movimiento.html#eventos"]').forEach(link=>{link.href='en-movimiento.html#formatos';link.textContent='Formatos';});
     document.querySelectorAll('#site-footer a[href="en-movimiento.html#talleres"]').forEach(link=>{link.href='en-movimiento.html#formatos';});document.querySelectorAll('#site-footer a[href="en-movimiento.html#mesa"]').forEach(link=>link.remove());
     document.querySelectorAll('#site-footer p').forEach(paragraph=>{const text=(paragraph.textContent||'').trim();if(text.includes('[Razón social')||text.includes('Datos comerciales, sanitarios y operativos demostrativos'))paragraph.remove();else if(text==='Una masa propia, productos para cocinar en casa y una pizzería capaz de ponerse en movimiento.'||text==='Aprendida viajando. Hecha desde Colombia. Masa, fuego y territorio en una cocina que sigue buscando.')paragraph.textContent='Masa · Fuego · Territorio. Una cocina construida desde Colombia y una búsqueda que sigue abierta.';});
+    document.querySelectorAll('.visual-note').forEach(note=>{if((note.textContent||'').includes('El retrato autoral definitivo'))note.textContent='La técnica tiene que desaparecer dentro del placer.';});
     ensureUserAccess();
   }
 

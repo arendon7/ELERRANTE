@@ -1,5 +1,55 @@
 # Changelog
 
+## Estado modular vigente sobre release integral 3.1.1
+
+Esta sección registra capas compatibles incorporadas después de la publicación integral V3.1.1. **No implica que toda la aplicación haya cambiado su release integral a 3.2.9 o 3.3.0.**
+
+### Operación V3.3.0 — evidencia y cierre trazable
+
+- `operacion.html` incorpora **06 · Evidencia y cierre**.
+- Nueva bitácora `ee_v330_operational_evidence` para soportes, tiempos, novedades y correcciones.
+- Cinco controles de cierre: producción/lote, rendimiento/merma, conteo físico, recepción/soporte y tiempo/novedad.
+- Las correcciones son append-only mediante `supersedes`; el registro anterior permanece intacto.
+- Se rechaza evidencia con fecha futura y un periodo futuro se interpreta como `No aplica`, no como cero o incumplimiento.
+- La nueva capa lee Producción, Medición y Compras sin modificar sus fuentes.
+- La demo operativa respalda y restaura también la bitácora V3.3.0.
+- Responsive móvil certificado sin overflow horizontal.
+
+### Finanzas V3.2.0–V3.2.9 — profundidad acumulativa
+
+El núcleo `finance-workbench-v31.js` permanece como contrato V3.1.0. Sobre él se cargan capas compatibles:
+
+- V3.2.0 — profundidad financiera.
+- V3.2.1 — ledger / movimientos trazables.
+- V3.2.2 — economía unitaria.
+- V3.2.3 — caja y tendencias.
+- V3.2.4 — escenarios.
+- V3.2.5 — decisiones.
+- V3.2.6 — compras e inventario leídos desde Finanzas sin mutar Operación.
+- V3.2.7 — resumen ejecutivo.
+- V3.2.8 — readiness / calidad del dato.
+- V3.2.9 — demo financiera sintética, aislada y reversible.
+
+La profundidad efectiva actual del módulo financiero es V3.2.9.
+
+### Hardening de shell V3.1.1
+
+- Panel de control protegido por la misma sesión que Operación y Finanzas.
+- Retorno seguro a destinos internos permitidos mediante `?next=`.
+- Expiración efectiva en pestañas abiertas con revalidación de sesión.
+- Demo operativa reversible y aislamiento de configuración remota.
+- Navegación cruzada coherente entre Control, Operación y Finanzas.
+
+### Gobierno de versiones
+
+- Release integral: V3.1.1.
+- Runtime/materialización: V2.8.0.
+- Arquitectura interna: V3.1.
+- Shell/sesión: V3.1.1.
+- Operación: V3.3.0.
+- Finanzas: V3.2.9.
+- La matriz canónica vive en `documentacion/MAPA_VERSIONES_ACTIVAS.md`.
+
 ## [3.1.1] — Navegación interna y acceso explícito a Control / Operación / Finanzas
 
 ### Acceso y navegación

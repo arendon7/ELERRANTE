@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Barrera de coherencia de release para El Errante V3.1.1."""
+"""Barrera de coherencia de release integral V3.1.1 y módulos activos."""
 from pathlib import Path
 import json
 import sys
@@ -30,10 +30,13 @@ finance=read('finanzas.html')
 host=read('assets/host-mode.js')
 access_js=read('assets/access-v31.js')
 shell_js=read('assets/internal-shell-v31.js')
+operation_v330=read('assets/operational-evidence-v330.js')
 finance_js=read('assets/finance-workbench-v31.js')
 starter_js=read('assets/finance-starter-v31.js')
+finance_v329=read('assets/finance-demo-v329.js')
 worker=read('service-worker.js')
 architecture=read('documentacion/ARQUITECTURA_INTERNA_V31.md')
+version_map=read('documentacion/MAPA_VERSIONES_ACTIVAS.md')
 
 try:
     package=json.loads(package_text)
@@ -42,19 +45,24 @@ except Exception as exc:
     errors.append(f'package.json inválido: {exc}')
 
 checks={
-    'package declara 3.1.1':package.get('version')=='3.1.1',
+    'package declara release integral 3.1.1':package.get('version')=='3.1.1',
     'package conserva referencia a 3.1.0':package.get('releaseHistory',{}).get('previousStable',{}).get('version')=='3.1.0',
-    'README declara patch V3.1.1':readme.startswith('# El Errante V3.1') and 'Release integral: `3.1.1`' in readme and 'Panel de control' in readme,
-    'changelog abre con V3.1.1':'## [3.1.1]' in changelog and changelog.index('## [3.1.1]') < changelog.index('## [3.1.0]'),
-    'marcador fuente declara release 3.1.1':'release_version=3.1.1' in deploy and 'previous_release_version=3.1.0' in deploy,
+    'package describe módulos vigentes':'Operación V3.3.0' in package.get('description','') and 'Finanzas V3.2.9' in package.get('description',''),
+    'README declara release integral y matriz':readme.startswith('# El Errante V3.1.1') and 'Release integral: `3.1.1`' in readme and 'Módulo Operativo efectivo: **V3.3.0**' in readme and 'Módulo Financiero efectivo: **V3.2.9**' in readme,
+    'changelog conserva release 3.1.1':'## [3.1.1]' in changelog and changelog.index('## [3.1.1]') < changelog.index('## [3.1.0]'),
+    'changelog declara estado modular':'Estado modular vigente sobre release integral 3.1.1' in changelog and 'Operación V3.3.0' in changelog and 'Finanzas V3.2.0–V3.2.9' in changelog,
+    'marcador declara release 3.1.1':'release_version=3.1.1' in deploy and 'previous_release_version=3.1.0' in deploy,
     'marcador conserva runtime 2.8':'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-2' in deploy,
-    'marcador conserva arquitectura 3.1':'internal_architecture=v3.1-acceso-operacion-finanzas' in deploy and 'finance_workbench=v3.1.0' in deploy,
+    'marcador separa arquitectura y shell':'internal_architecture=v3.1-acceso-operacion-finanzas' in deploy and 'session_shell=v3.1.1' in deploy and 'control_engine=v3.0' in deploy,
+    'marcador declara módulos efectivos':'operation_module=v3.3.0' in deploy and 'finance_workbench_core=v3.1.0' in deploy and 'finance_module=v3.2.9' in deploy and 'finance_demo=v3.2.9' in deploy,
     'Pages genera release 3.1.1':'release_version=3.1.1' in pages and 'Publicar GitHub Pages V3.1.1' in pages,
-    'Pages verifica navegación V3.1.1':'Abrir Panel de control' in pages and 'data-v31-protected' in pages and 'control.html' in pages,
+    'Pages publica matriz modular':'operation_module=v3.3.0' in pages and 'finance_workbench_core=v3.1.0' in pages and 'finance_module=v3.2.9' in pages,
+    'Pages verifica módulos vigentes':'operational-evidence-v330.js' in pages and 'finance-demo-v329.js' in pages,
     'Pages ejecuta barrera release':'scripts/verificar_release_v31.py' in pages,
     'health espera release 3.1.1':'EXPECTED_RELEASE: 3.1.1' in health,
     'health espera arquitectura 3.1':'v3.1-acceso-operacion-finanzas' in health,
-    'health verifica control y finanzas':'Abrir Panel de control' in health and 'public-control.html' in health and 'public-finanzas.html' in health,
+    'health verifica matriz modular':'EXPECTED_OPERATION: v3.3.0' in health and 'EXPECTED_FINANCE: v3.2.9' in health and 'finance_workbench_core' in health,
+    'health verifica control operación y finanzas':'public-control.html' in health and 'public-operacion.html' in health and 'public-finanzas.html' in health,
     'auditoría ejecuta barrera release':'scripts/verificar_release_v31.py' in canonical,
     'regresión ejecuta barrera release':'scripts/verificar_release_v31.py' in functional,
     'portal acceso V3.1':'id="access-v31"' in access and 'assets/access-v31.js' in access,
@@ -63,11 +71,13 @@ checks={
     'control protegido':'data-v31-protected' in control and 'assets/internal-shell-v31.js' in control,
     'control conecta operación y finanzas':'href="operacion.html"' in control and 'href="finanzas.html"' in control,
     'operación protegida':'data-v31-protected' in operation and 'assets/internal-shell-v31.js' in operation,
-    'operación integra control y pedidos':'id="control-v30"' in operation and 'id="daily-ops-v21"' in operation and 'href="control.html"' in operation,
+    'operación integra motores heredados':all(token in operation for token in ('id="control-v30"','id="daily-ops-v21"','id="production-v22"','id="materials-v23"','id="measurement-v24"','id="procurement-v25"')),
+    'operación monta evidencia V3.3.0':'id="operational-evidence-v330"' in operation and 'assets/operational-evidence-v330.js' in operation and "const VERSION='3.3.0'" in operation_v330,
     'finanzas protegidas':'data-v31-protected' in finance and 'assets/internal-shell-v31.js' in finance,
     'finanzas accesible desde navegación':'href="control.html"' in finance and 'href="operacion.html"' in finance,
-    'finanzas monta workbench':'id="finance-workbench-v31"' in finance and 'assets/finance-workbench-v31.js' in finance,
+    'finanzas monta workbench base':'id="finance-workbench-v31"' in finance and 'assets/finance-workbench-v31.js' in finance,
     'finanzas monta starter seguro':'assets/finance-starter-v31.js' in finance and 'Crear modelo desde cero' in starter_js and 'LOCAL_STARTER_V31' in starter_js,
+    'finanzas alcanza profundidad 3.2.9':all(token in finance for token in ('assets/finance-depth-v32.js','assets/finance-ledger-v321.js','assets/finance-unit-economics-v322.js','assets/finance-cash-trends-v323.js','assets/finance-scenarios-v324.js','assets/finance-decisions-v325.js','assets/finance-procurement-v326.js','assets/finance-executive-v327.js','assets/finance-readiness-v328.js','assets/finance-demo-v329.js')) and "const VERSION='3.2.9'" in finance_v329,
     'finanzas no monta producción':'assets/production-v22.js' not in finance,
     'footer público prepara acceso':'ensureUserAccess' in host and "href='acceso.html'" in host,
     'login no contiene contraseña fija':'password="' not in access_js.lower() and 'service_role' not in access_js.lower(),
@@ -76,21 +86,22 @@ checks={
     'workbench sin red':all(token not in finance_js for token in ('fetch(','XMLHttpRequest','axios')),
     'starter sin red y sin costo privado':all(token not in starter_js.lower() for token in ('fetch(','xmlhttprequest','axios','service_role','postgres://','private_key')) and 'directCost:0' in starter_js,
     'service worker publica acceso':'./acceso.html' in worker and './assets/access-v31.js' in worker,
-    'service worker publica workbench':'./assets/internal-shell-v31.js' in worker and './assets/finance-workbench-v31.js' in worker and './assets/finance-starter-v31.js' in worker and './assets/internal-v31.css' in worker,
-    'documentación V3.1 vigente':'# Arquitectura interna V3.1' in architecture and 'Working Model' in architecture,
+    'service worker publica módulos actuales':'./assets/operational-evidence-v330.js' in worker and './assets/finance-demo-v329.js' in worker and './assets/internal-v31.css' in worker,
+    'mapa de versiones vigente':'# Mapa de versiones activas' in version_map and 'Release integral' in version_map and '**3.3.0**' in version_map and '**3.2.9**' in version_map,
+    'documentación arquitectura vigente':'# Arquitectura interna V3.1' in architecture and 'Working Model' in architecture and 'Operación V3.3.0' in architecture and 'Finanzas V3.2.9' in architecture,
 }
 
 for label,ok in checks.items():
     if not ok: errors.append(label)
 
-for name,content in [('access',access_js),('shell',shell_js),('finance',finance_js),('starter',starter_js)]:
+for name,content in [('access',access_js),('shell',shell_js),('operation-v330',operation_v330),('finance',finance_js),('starter',starter_js),('finance-v329',finance_v329)]:
     lower=content.lower()
     for forbidden in ('service_role','postgres://','private_key','supabase_service'):
         if forbidden in lower:
             errors.append(f'{name}: posible secreto {forbidden}')
 
-print('EL ERRANTE V3.1.1 — COHERENCIA DE RELEASE')
-print('='*47)
+print('EL ERRANTE V3.1.1 — COHERENCIA DE RELEASE Y MÓDULOS')
+print('='*58)
 print(f'Controles: {len(checks)}')
 print(f'Problemas: {len(errors)}')
 if errors:

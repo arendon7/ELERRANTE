@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Regresión integral V3.1.1
+    name: Regresión integral V3.1.1 · Operación V3.3.0 · Finanzas V3.2.9
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -89,7 +89,7 @@ jobs:
           config={'environment':'connected' if url and key else 'preview','backend':{'provider':'supabase','url':url,'publishableKey':key,'receiptBucket':'payment-receipts','shopperStorageKey':'ee-shopper-auth-v15','adminStorageKey':'ee-admin-auth-v15'}}
           Path('_site/assets/commerce-runtime-config.js').write_text('window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze('+json.dumps(config,ensure_ascii=False,separators=(',',':'))+');\n',encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nrelease_version=3.1.1\nprevious_release_version=3.1.0\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-2\nbrand_source=assets/brand-canon-v28.js\ncontent_source=v2.9-editorial\ninternal_architecture=v3.1-acceso-operacion-finanzas\nmfo_baseline=v3.0-schema-mfo-v3.3\nfinance_workbench=v3.1.0\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nrelease_version=3.1.1\nprevious_release_version=3.1.0\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-2\nbrand_source=assets/brand-canon-v28.js\ncontent_source=v2.9-editorial\ninternal_architecture=v3.1-acceso-operacion-finanzas\nsession_shell=v3.1.1\ncontrol_engine=v3.0\noperation_module=v3.3.0\nmfo_baseline=v3.0-schema-mfo-v3.3\nfinance_workbench_core=v3.1.0\nfinance_module=v3.2.9\nfinance_demo=v3.2.9\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         run: |
@@ -99,7 +99,12 @@ jobs:
           grep -q '^version=2.8.0$' _site/deploy-version.txt
           grep -q '^cache=el-errante-v2-8-brand-canon-2$' _site/deploy-version.txt
           grep -q '^internal_architecture=v3.1-acceso-operacion-finanzas$' _site/deploy-version.txt
-          grep -q '^finance_workbench=v3.1.0$' _site/deploy-version.txt
+          grep -q '^session_shell=v3.1.1$' _site/deploy-version.txt
+          grep -q '^control_engine=v3.0$' _site/deploy-version.txt
+          grep -q '^operation_module=v3.3.0$' _site/deploy-version.txt
+          grep -q '^finance_workbench_core=v3.1.0$' _site/deploy-version.txt
+          grep -q '^finance_module=v3.2.9$' _site/deploy-version.txt
+          grep -q '^finance_demo=v3.2.9$' _site/deploy-version.txt
           grep -q '^source_mode=materialized-no-base64-runtime$' _site/deploy-version.txt
           grep -q "^release_commit=${GITHUB_SHA}$" _site/deploy-version.txt
           grep -q '"mode": "materialized-no-base64-runtime"' _site/materialized-site-v28.json
@@ -136,17 +141,22 @@ jobs:
           grep -q 'href="control.html"' _site/operacion.html
           grep -q 'id="control-v30"' _site/operacion.html
           grep -q 'id="daily-ops-v21"' _site/operacion.html
+          grep -q 'id="operational-evidence-v330"' _site/operacion.html
+          grep -q 'assets/operational-evidence-v330.js' _site/operacion.html
           grep -q 'href="control.html"' _site/finanzas.html
           grep -q 'id="finance-workbench-v31"' _site/finanzas.html
           grep -q 'assets/finance-workbench-v31.js' _site/finanzas.html
           grep -q 'assets/finance-starter-v31.js' _site/finanzas.html
+          grep -q 'assets/finance-demo-v329.js' _site/finanzas.html
           ! grep -q 'assets/production-v22.js' _site/finanzas.html
           grep -q "importScripts('./assets/brand-canon-v28.js')" _site/service-worker.js
           grep -q './acceso.html' _site/service-worker.js
           grep -q './assets/access-v31.js' _site/service-worker.js
           grep -q './assets/internal-shell-v31.js' _site/service-worker.js
+          grep -q './assets/operational-evidence-v330.js' _site/service-worker.js
           grep -q './assets/finance-workbench-v31.js' _site/service-worker.js
           grep -q './assets/finance-starter-v31.js' _site/service-worker.js
+          grep -q './assets/finance-demo-v329.js' _site/service-worker.js
           grep -q './assets/internal-v31.css' _site/service-worker.js
           node --check _site/assets/generated/data-v28.js
           node --check _site/assets/generated/app-v28.js
@@ -157,13 +167,17 @@ jobs:
           node --check _site/assets/control-v30.js
           node --check _site/assets/access-v31.js
           node --check _site/assets/internal-shell-v31.js
+          node --check _site/assets/operational-evidence-v330.js
           node --check _site/assets/finance-workbench-v31.js
           node --check _site/assets/finance-starter-v31.js
+          node --check _site/assets/finance-demo-v329.js
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
           ! grep -qi 'service_role' _site/assets/access-v31.js
           ! grep -qi 'service_role' _site/assets/finance-workbench-v31.js
           ! grep -qi 'service_role' _site/assets/finance-starter-v31.js
+          ! grep -qi 'service_role' _site/assets/finance-demo-v329.js
+          ! grep -qi 'service_role' _site/assets/operational-evidence-v330.js
           test "$(find _site/assets/images/brand-final -maxdepth 1 -name '*.webp' | wc -l)" -ge 23
       - uses: actions/configure-pages@v5
         with:

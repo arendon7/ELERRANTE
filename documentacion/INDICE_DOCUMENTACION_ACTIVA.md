@@ -18,7 +18,7 @@ Cuando haya contradicción:
 |---|---|
 | `../README.md` | Vista general de release, módulos, seguridad, datos y validación. |
 | `MAPA_VERSIONES_ACTIVAS.md` | Matriz oficial de versiones y reglas de numeración. |
-| `ARQUITECTURA_INTERNA_V31.md` | Contrato vigente de acceso, Control, Operación y Finanzas. |
+| `ARQUITECTURA_INTERNA_V31.md` | Contrato vigente de acceso, tres contextos principales y herramientas auxiliares. |
 | `MAPA_DATOS_Y_FUENTES.md` | Fuentes efectivas, almacenes locales, datos privados y estado de backend. |
 | `ROADMAP_ACTIVO_V33.md` | Prioridades posteriores a Operación V3.3.0. |
 | `ACCESOS_DEMO.md` | Cómo entrar y usar los modos demo actuales sin credenciales fijas publicadas. |
@@ -47,6 +47,14 @@ Deben leerse como registro de evolución:
 - actas y cuestionarios de versiones anteriores cuya finalidad sea documentar una validación ya cerrada.
 
 Los archivos dentro de `archive/` son históricos por definición.
+
+## Superficies heredadas que no definen el mapa interno vigente
+
+- `admin.html` se conserva por compatibilidad con motores administrativos previos.
+- `activacion.html` conserva diagnóstico técnico de etapas anteriores.
+- `presentacion.html` es una presentación pública/demostrativa.
+
+El hecho de que estas páginas enlacen al Centro interno o aparezcan en verificaciones de compatibilidad **no las convierte en contextos principales del sistema V3.1.1**. El perímetro interno vigente se define en `ARQUITECTURA_INTERNA_V31.md`.
 
 ## Documentos que requieren especial cuidado
 

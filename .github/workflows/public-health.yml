@@ -18,9 +18,10 @@ env:
   EXPECTED_CONTROL: v3.0
   EXPECTED_OPERATION: v3.3.0
   EXPECTED_MASTER_DATA_CORE: v1.0.0
-  EXPECTED_MASTER_DATA: v1.2.0
+  EXPECTED_MASTER_DATA: v1.3.0
   EXPECTED_COST_PROPOSALS: v1.1.0
   EXPECTED_COST_MATERIALIZATION: v1.2.0
+  EXPECTED_COST_BRIDGE: v1.3.0
   EXPECTED_FINANCE_CORE: v3.1.0
   EXPECTED_FINANCE: v3.2.9
 
@@ -61,10 +62,11 @@ jobs:
             master_data="$(sed -n 's/^master_data_module=//p' deploy-version-observed.txt | tr -d '\r')"
             cost_proposals="$(sed -n 's/^master_cost_proposals=//p' deploy-version-observed.txt | tr -d '\r')"
             cost_materialization="$(sed -n 's/^master_cost_materialization=//p' deploy-version-observed.txt | tr -d '\r')"
+            cost_bridge="$(sed -n 's/^master_cost_bridge=//p' deploy-version-observed.txt | tr -d '\r')"
             finance_core="$(sed -n 's/^finance_workbench_core=//p' deploy-version-observed.txt | tr -d '\r')"
             finance="$(sed -n 's/^finance_module=//p' deploy-version-observed.txt | tr -d '\r')"
             finance_demo="$(sed -n 's/^finance_demo=//p' deploy-version-observed.txt | tr -d '\r')"
-            if [ "$sha" = "$EXPECTED_SHA" ] && [ "$release" = "$EXPECTED_RELEASE" ] && [ "$runtime" = "$EXPECTED_RUNTIME" ] && [ "$cache" = "$EXPECTED_CACHE" ] && [ "$source" = "main" ] && [ "$mode" = "materialized-no-base64-runtime" ] && [ "$architecture" = "$EXPECTED_ARCHITECTURE" ] && [ "$shell" = "$EXPECTED_SHELL" ] && [ "$control" = "$EXPECTED_CONTROL" ] && [ "$operation" = "$EXPECTED_OPERATION" ] && [ "$master_data_core" = "$EXPECTED_MASTER_DATA_CORE" ] && [ "$master_data" = "$EXPECTED_MASTER_DATA" ] && [ "$cost_proposals" = "$EXPECTED_COST_PROPOSALS" ] && [ "$cost_materialization" = "$EXPECTED_COST_MATERIALIZATION" ] && [ "$finance_core" = "$EXPECTED_FINANCE_CORE" ] && [ "$finance" = "$EXPECTED_FINANCE" ] && [ "$finance_demo" = "$EXPECTED_FINANCE" ]; then success=1; break; fi
+            if [ "$sha" = "$EXPECTED_SHA" ] && [ "$release" = "$EXPECTED_RELEASE" ] && [ "$runtime" = "$EXPECTED_RUNTIME" ] && [ "$cache" = "$EXPECTED_CACHE" ] && [ "$source" = "main" ] && [ "$mode" = "materialized-no-base64-runtime" ] && [ "$architecture" = "$EXPECTED_ARCHITECTURE" ] && [ "$shell" = "$EXPECTED_SHELL" ] && [ "$control" = "$EXPECTED_CONTROL" ] && [ "$operation" = "$EXPECTED_OPERATION" ] && [ "$master_data_core" = "$EXPECTED_MASTER_DATA_CORE" ] && [ "$master_data" = "$EXPECTED_MASTER_DATA" ] && [ "$cost_proposals" = "$EXPECTED_COST_PROPOSALS" ] && [ "$cost_materialization" = "$EXPECTED_COST_MATERIALIZATION" ] && [ "$cost_bridge" = "$EXPECTED_COST_BRIDGE" ] && [ "$finance_core" = "$EXPECTED_FINANCE_CORE" ] && [ "$finance" = "$EXPECTED_FINANCE" ] && [ "$finance_demo" = "$EXPECTED_FINANCE" ]; then success=1; break; fi
             sleep 5
           done
           test "$success" -eq 1
@@ -75,7 +77,7 @@ jobs:
             local url="$1" output="$2"
             curl --fail --silent --show-error --location --max-time 20 --retry 5 --retry-delay 2 --retry-all-errors -H 'Cache-Control: no-cache' "$url" > "$output"
           }
-          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js materials-v23.js master-data-v10.js master-cost-proposals-v11.js master-cost-proposals-v11.css master-cost-materialization-v12.js master-cost-materialization-v12.css internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js operational-evidence-v330.js finance-workbench-v31.js finance-starter-v31.js finance-demo-v329.js commerce-runtime-config.js; do
+          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js materials-v23.js master-data-v10.js master-cost-proposals-v11.js master-cost-proposals-v11.css master-cost-materialization-v12.js master-cost-materialization-v12.css master-cost-prospective-v13.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js operational-evidence-v330.js finance-workbench-v31.js finance-starter-v31.js finance-unit-economics-v322.js finance-demo-v329.js commerce-runtime-config.js; do
             fetch_public "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" "public-$asset"
           done
           for asset in data-v28.js app-v28.js preprod-v28.js; do
@@ -101,6 +103,8 @@ jobs:
           grep -q '· V2.8' public-admin.html
           grep -q 'assets/finance-v27.js' public-admin.html
           grep -q 'assets/procurement-v25.js' public-admin.html
+          grep -q 'assets/master-cost-materialization-v12.js?v=1.2.0' public-admin.html
+          grep -q 'assets/master-cost-prospective-v13.js?v=1.3.0' public-admin.html
 
           grep -q 'id="access-v31"' public-acceso.html
           grep -q 'assets/access-v31.js' public-acceso.html
@@ -128,15 +132,22 @@ jobs:
           grep -q 'id="procurement-v25"' public-operacion.html
           grep -q 'id="operational-evidence-v330"' public-operacion.html
           grep -q 'assets/operational-evidence-v330.js' public-operacion.html
+          grep -q 'assets/master-cost-materialization-v12.js?v=1.2.0' public-operacion.html
+          grep -q 'assets/master-cost-prospective-v13.js?v=1.3.0' public-operacion.html
           ! grep -q 'finance-workbench-v31.js' public-operacion.html
 
           grep -q "const VERSION='2.3.1'" public-materials-v23.js
           grep -q 'saveVisibleStock' public-materials-v23.js
+          grep -q 'standardProductCost(product)' public-materials-v23.js
+          grep -q 'Costo estándar prospectivo' public-materials-v23.js
+          grep -q "ee:v13:standard-changed" public-materials-v23.js
 
           grep -q 'Planificar, modificar, comparar y decidir.' public-finanzas.html
           grep -q 'profundidad V3.2.9' public-finanzas.html
           grep -q 'href="control.html"' public-finanzas.html
           grep -q 'id="finance-workbench-v31"' public-finanzas.html
+          grep -q 'assets/master-cost-materialization-v12.js?v=1.2.0' public-finanzas.html
+          grep -q 'assets/master-cost-prospective-v13.js?v=1.3.0' public-finanzas.html
           grep -q 'assets/finance-workbench-v31.js' public-finanzas.html
           grep -q 'assets/finance-starter-v31.js' public-finanzas.html
           grep -q 'assets/finance-demo-v329.js' public-finanzas.html
@@ -173,6 +184,18 @@ jobs:
           grep -q 'effectiveStandardCost' public-master-cost-materialization-v12.js
           grep -q 'effectiveProductCost' public-master-cost-materialization-v12.js
           grep -q 'Propuesta obsoleta' public-master-cost-materialization-v12.js
+          grep -q "const VERSION='1.3.0'" public-master-cost-prospective-v13.js
+          grep -q "MATERIALIZATION_KEY='ee_v12_cost_materialization_events'" public-master-cost-prospective-v13.js
+          grep -q 'CANONICAL_BASELINE' public-master-cost-prospective-v13.js
+          grep -q 'MATERIALIZED_STANDARD' public-master-cost-prospective-v13.js
+          grep -q 'SIMULATION' public-master-cost-prospective-v13.js
+          grep -q 'integrityUnchanged' public-master-cost-prospective-v13.js
+          ! grep -q 'localStorage.setItem' public-master-cost-prospective-v13.js
+
+          grep -q 'function standardMaterial(material)' public-finance-unit-economics-v322.js
+          grep -q 'Baseline canónico → estándar materializado → simulación' public-finance-unit-economics-v322.js
+          grep -q "ee:v13:standard-changed" public-finance-unit-economics-v322.js
+          grep -q 'estándar efectivo vigente de Datos maestros' public-finance-unit-economics-v322.js
 
           grep -q 'Validar con evidencia y dejar la decisión trazable.' public-actas.html
           grep -q 'data-v31-protected' public-actas.html
@@ -216,6 +239,8 @@ jobs:
           grep -q './assets/master-cost-materialization-v12.css' public-service-worker.js
           grep -q "endsWith('/assets/master-cost-materialization-v12.js')" public-service-worker.js
           grep -q "endsWith('/assets/master-cost-materialization-v12.css')" public-service-worker.js
+          grep -q './assets/master-cost-prospective-v13.js' public-service-worker.js
+          grep -q "endsWith('/assets/master-cost-prospective-v13.js')" public-service-worker.js
           grep -q './assets/operational-evidence-v330.js' public-service-worker.js
           grep -q './assets/finance-workbench-v31.js' public-service-worker.js
           grep -q './assets/finance-starter-v31.js' public-service-worker.js
@@ -229,9 +254,11 @@ jobs:
           ! grep -qi 'service_role' public-master-data-v10.js
           ! grep -qi 'service_role' public-master-cost-proposals-v11.js
           ! grep -qi 'service_role' public-master-cost-materialization-v12.js
+          ! grep -qi 'service_role' public-master-cost-prospective-v13.js
           ! grep -qi 'service_role' public-operational-evidence-v330.js
           ! grep -qi 'service_role' public-finance-workbench-v31.js
           ! grep -qi 'service_role' public-finance-starter-v31.js
+          ! grep -qi 'service_role' public-finance-unit-economics-v322.js
           ! grep -qi 'service_role' public-finance-demo-v329.js
           ! grep -qi 'service_role' public-materials-v23.js
           for script in public-*.js; do node --check "$script"; done

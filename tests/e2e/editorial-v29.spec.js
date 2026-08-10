@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 const v30Ids=['margherita-del-taller','la-errante','bosque','diavola-errante','cuatro-quesos-montana'];
-const forbiddenClosedClaims=['A 400 grados','400 °C','Trabajamos tomate San Marzano','Usamos tomate San Marzano','Trabajamos con biga y masa madre','Biga · Masa madre · Tiempo'];
+const forbiddenClosedClaims=['A 400 grados','todas nuestras pizzas se hornean a 400 °C','la temperatura exacta de cocción es 400 °C','Trabajamos tomate San Marzano','Usamos tomate San Marzano','Trabajamos con biga y masa madre','Biga · Masa madre · Tiempo'];
 
 test.describe('Editorial y autoridad V3.0 candidate', () => {
   test('inicio presenta obra, autor, método y carta por territorios', async ({ page }) => {
@@ -10,7 +10,9 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
     await expect(page.getByText('No queríamos imitar una pizza. Queríamos entender qué la hacía posible.')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Antes de estudiar pizza, aprendió a cocinar.' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Cinco pizzas. Cinco maneras de pensar.' })).toBeVisible();
-    await expect(page.getByText('En Casa nombra una línea clara para el cliente.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tres variables que dejaron de ser fondo.' })).toBeVisible();
+    await expect(page.getByText('hornos de alta temperatura capaces de acercarse a los 400 °C', { exact:false })).toBeVisible();
+    await expect(page.getByText('No congelamos una pizza terminada. Diseñamos una pizza para terminarse dos veces.')).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-ee-editorial-version', '3.0');
   });
 
@@ -37,9 +39,12 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
     await expect(page.locator('main')).not.toContainText('socios');
   });
 
-  test('método separa En Casa de Segundo Fuego', async ({ page }) => {
+  test('método separa En Casa de Segundo Fuego y explica el régimen térmico', async ({ page }) => {
     await page.goto('/metodo.html');
     await expect(page.getByRole('heading',{name:'La pizza es la parte visible de muchas decisiones invisibles.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Cerca de 400 °C, el orden de las cosas cambia.'})).toBeVisible();
+    await expect(page.getByText('No usamos esa cifra como un setpoint universal para todas las pizzas', { exact:false })).toBeVisible();
+    await expect(page.getByText('El fuego no corrige el proceso. Lo vuelve visible.')).toBeVisible();
     await expect(page.getByText('En Casa nombra la línea. Segundo Fuego explica la investigación detrás.')).toBeVisible();
     await expect(page.getByText('El primero puede impresionar. El cuarto empieza a decir la verdad.')).toBeVisible();
   });
@@ -73,10 +78,14 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
     expect(faqSnapshot).toContain('Segundo Fuego');
   });
 
-  test('En Casa mantiene claridad comercial y Segundo Fuego como segunda capa', async ({ page }) => {
+  test('En Casa mantiene claridad comercial y convierte Segundo Fuego en sistema tangible', async ({ page }) => {
     await page.goto('/en-casa.html');
     await expect(page.getByRole('heading',{name:'Nosotros hacemos el tiempo. Tú completas el fuego.'})).toBeVisible();
-    await expect(page.getByRole('heading',{name:'Diseñar sabiendo que la pizza todavía no ha terminado.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Tu horno no necesita comportarse como el nuestro.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'No congelamos una pizza terminada. Diseñamos una pizza para terminarse dos veces.'})).toBeVisible();
+    await expect(page.getByText('1 · Primer Fuego')).toBeVisible();
+    await expect(page.getByText('2 · Transición')).toBeVisible();
+    await expect(page.getByText('3 · Segundo Fuego')).toBeVisible();
     await expect(page.getByText('Segundo Fuego es el nombre que damos a la investigación detrás de En Casa.')).toBeVisible();
     await expect(page.getByText('La etiqueta tiene la última palabra.')).toBeVisible();
   });

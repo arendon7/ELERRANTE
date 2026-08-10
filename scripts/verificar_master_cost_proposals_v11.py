@@ -49,9 +49,12 @@ for marker in ('aprobar añade evento pero no aplica costo al maestro','rechazar
 require('./assets/master-cost-proposals-v11.js' in worker and './assets/master-cost-proposals-v11.css' in worker,'Service worker no precachea V1.1')
 require("endsWith('/assets/master-cost-proposals-v11.js')" in worker and "endsWith('/assets/master-cost-proposals-v11.css')" in worker,'Service worker no sirve fresco V1.1')
 require('master_data_governance_core=v1.0.0' in deploy,'Metadata no preserva core V1.0.0')
-require('master_data_module=v1.1.0' in deploy and 'master_cost_proposals=v1.1.0' in deploy,'Metadata no declara V1.1 efectivo')
-require('master_data_module=v1.1.0' in pages and 'master_cost_proposals=v1.1.0' in pages,'Pages no certifica V1.1')
-require('EXPECTED_MASTER_DATA: v1.1.0' in health and 'EXPECTED_COST_PROPOSALS: v1.1.0' in health,'Health-check no espera V1.1')
+require('master_cost_proposals=v1.1.0' in deploy,'Metadata no preserva propuestas V1.1.0')
+require(('master_data_module=v1.1.0' in deploy) or ('master_data_module=v1.2.0' in deploy),'Metadata no declara un agregado compatible con V1.1')
+require('master_cost_proposals=v1.1.0' in pages,'Pages no certifica propuestas V1.1')
+require(('master_data_module=v1.1.0' in pages) or ('master_data_module=v1.2.0' in pages),'Pages no certifica agregado compatible')
+require('EXPECTED_COST_PROPOSALS: v1.1.0' in health,'Health-check no preserva V1.1')
+require(('EXPECTED_MASTER_DATA: v1.1.0' in health) or ('EXPECTED_MASTER_DATA: v1.2.0' in health),'Health-check no acepta agregado compatible')
 for forbidden in ('service_role','postgres://','private_key','supabase_service'):
     require(forbidden not in module.lower(),f'Posible secreto en V1.1: {forbidden}')
 
@@ -64,5 +67,6 @@ if issues:
     sys.exit(1)
 print('RESULTADO: PASS')
 print('ledger=append_only_local')
-print('aprobacion=explicita_sin_aplicacion')
+print('aprobacion=explicita_sin_aplicacion_directa')
+print('compatibilidad_agregado=v1.1_o_superior')
 print('compras_bom_costos=sin_mutacion')

@@ -149,8 +149,19 @@ jobs:
           grep -q 'assets/finance-starter-v31.js' _site/finanzas.html
           grep -q 'assets/finance-demo-v329.js' _site/finanzas.html
           ! grep -q 'assets/production-v22.js' _site/finanzas.html
+          grep -q 'data-v31-protected' _site/studio.html
+          grep -q 'assets/internal-shell-v31.js' _site/studio.html
+          grep -q 'data-v31-protected' _site/actas.html
+          grep -q 'assets/internal-shell-v31.js' _site/actas.html
+          grep -q "const VERSION='3.1.1'" _site/assets/access-v31.js
+          grep -q "const VERSION='3.1.1'" _site/assets/internal-shell-v31.js
+          grep -q "'studio.html':new Set" _site/assets/access-v31.js
+          grep -q "'actas.html':new Set" _site/assets/access-v31.js
+          grep -q "'#evidencia'" _site/assets/access-v31.js
           grep -q "importScripts('./assets/brand-canon-v28.js')" _site/service-worker.js
           grep -q './acceso.html' _site/service-worker.js
+          grep -q './studio.html' _site/service-worker.js
+          grep -q './actas.html' _site/service-worker.js
           grep -q './assets/access-v31.js' _site/service-worker.js
           grep -q './assets/internal-shell-v31.js' _site/service-worker.js
           grep -q './assets/operational-evidence-v330.js' _site/service-worker.js

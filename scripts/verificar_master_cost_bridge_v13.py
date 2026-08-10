@@ -21,6 +21,9 @@ def ordered(text,*markers):
     positions=[text.find(marker) for marker in markers]
     return all(pos>=0 for pos in positions) and positions==sorted(positions)
 
+def aggregate_compatible(text,prefix):
+    return any(f'{prefix}v{version}' in text for version in ('1.3.0','1.4.0'))
+
 bridge=read('assets/master-cost-prospective-v13.js')
 materials=read('assets/materials-v23.js')
 finance=read('assets/finance-unit-economics-v322.js')
@@ -80,10 +83,10 @@ for marker in (
 
 require('./assets/master-cost-prospective-v13.js' in worker,'Service worker no precachea V1.3')
 require("endsWith('/assets/master-cost-prospective-v13.js')" in worker,'Service worker no sirve fresco V1.3')
-require('master_data_module=v1.3.0' in deploy and 'master_cost_bridge=v1.3.0' in deploy,'Metadata no declara V1.3')
-require('master_data_module=v1.3.0' in pages and 'master_cost_bridge=v1.3.0' in pages,'Pages no certifica V1.3')
+require(aggregate_compatible(deploy,'master_data_module=') and 'master_cost_bridge=v1.3.0' in deploy,'Metadata no preserva V1.3 dentro del agregado vigente')
+require(aggregate_compatible(pages,'master_data_module=') and 'master_cost_bridge=v1.3.0' in pages,'Pages no preserva V1.3 dentro del agregado vigente')
 require('verificar_master_cost_bridge_v13.py' in pages and 'verificar_master_cost_bridge_v13.py' in audit,'CI no ejecuta barrera V1.3')
-require('EXPECTED_MASTER_DATA: v1.3.0' in health and 'EXPECTED_COST_BRIDGE: v1.3.0' in health,'Health-check no espera V1.3')
+require(aggregate_compatible(health,'EXPECTED_MASTER_DATA: ') and 'EXPECTED_COST_BRIDGE: v1.3.0' in health,'Health-check no preserva V1.3 dentro del agregado vigente')
 
 for forbidden in ('service_role','postgres://','private_key','supabase_service'):
     require(forbidden not in bridge.lower(),f'Posible secreto en V1.3: {forbidden}')

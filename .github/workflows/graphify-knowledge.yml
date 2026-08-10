@@ -2,6 +2,8 @@ name: Graphify — memoria estructural ELERRANTE
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: ["main"]
   push:
     branches: ["main"]
 
@@ -9,12 +11,12 @@ permissions:
   contents: write
 
 concurrency:
-  group: "graphify-live-main"
+  group: "graphify-${{ github.event_name }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
   build-knowledge:
-    name: Construir y publicar grafo vivo
+    name: Construir y validar grafo
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -58,6 +60,7 @@ jobs:
           PY
 
       - name: Publicar snapshot fuera de main
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           LIVE_BRANCH: "knowledge/graphify-live"
         run: |

@@ -67,7 +67,7 @@ jobs:
             local url="$1" output="$2"
             curl --fail --silent --show-error --location --max-time 20 --retry 5 --retry-delay 2 --retry-all-errors -H 'Cache-Control: no-cache' "$url" > "$output"
           }
-          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js operational-evidence-v330.js finance-workbench-v31.js finance-starter-v31.js finance-demo-v329.js commerce-runtime-config.js; do
+          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js materials-v23.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js operational-evidence-v330.js finance-workbench-v31.js finance-starter-v31.js finance-demo-v329.js commerce-runtime-config.js; do
             fetch_public "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" "public-$asset"
           done
           for asset in data-v28.js app-v28.js preprod-v28.js; do
@@ -122,6 +122,9 @@ jobs:
           grep -q 'assets/operational-evidence-v330.js' public-operacion.html
           ! grep -q 'finance-workbench-v31.js' public-operacion.html
 
+          grep -q "const VERSION='2.3.1'" public-materials-v23.js
+          grep -q 'saveVisibleStock' public-materials-v23.js
+
           grep -q 'Planificar, modificar, comparar y decidir.' public-finanzas.html
           grep -q 'profundidad V3.2.9' public-finanzas.html
           grep -q 'href="control.html"' public-finanzas.html
@@ -171,6 +174,8 @@ jobs:
           grep -q './assets/finance-workbench-v31.js' public-service-worker.js
           grep -q './assets/finance-starter-v31.js' public-service-worker.js
           grep -q './assets/finance-demo-v329.js' public-service-worker.js
+          grep -q './assets/materials-v23.js' public-service-worker.js
+          grep -q "endsWith('/assets/materials-v23.js')" public-service-worker.js
           grep -q './assets/internal-v31.css' public-service-worker.js
 
           ! grep -qi 'service_role' public-commerce-runtime-config.js
@@ -179,6 +184,7 @@ jobs:
           ! grep -qi 'service_role' public-finance-workbench-v31.js
           ! grep -qi 'service_role' public-finance-starter-v31.js
           ! grep -qi 'service_role' public-finance-demo-v329.js
+          ! grep -qi 'service_role' public-materials-v23.js
           for script in public-*.js; do node --check "$script"; done
           python3 - <<'PY'
           import json

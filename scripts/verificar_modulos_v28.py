@@ -82,13 +82,15 @@ materials_data = require(
     'REC-MASA-BASE-V23', 'Agua adicional inferida', "stage:'Piloto'", 'monthly:370000'
 )
 materials = require(
-    'assets/materials-v23.js', 'Lo necesario para producir, sin saturar el panel.',
+    'assets/materials-v23.js', "const VERSION='2.3.1'", 'Lo necesario para producir, sin saturar el panel.',
     'Faltantes confirmados', 'Conteos pendientes', 'Actualizar conteo de materiales',
-    "dataset.materialsVersion='2.3.0'", 'explodeProduct'
+    'dataset.materialsVersion=VERSION', 'explodeProduct', 'saveVisibleStock', '{...current}', 'delete values[id]'
 )
 require('backend/supabase/schema-v23.sql', 'material_master', 'product_bom', 'material_inventory', 'save_material_inventory_v23', "values ('2.3'")
 if 'Sin conteo' not in materials or 'Cero' not in materials:
-    ERRORS.append('Materiales V2.3 no distingue inventario desconocido de cero confirmado')
+    ERRORS.append('Materiales V2.3.1 no distingue inventario desconocido de cero confirmado')
+if "raw==='')" not in materials or 'Number.isFinite(value)&&value>=0' not in materials:
+    ERRORS.append('Materiales V2.3.1 no conserva el contrato de borrado selectivo / conteo no negativo')
 
 measurement = require(
     'assets/measurement-v24.js', "measurementVersion='2.4.0'", 'Medir primero. Ajustar después.',
@@ -133,7 +135,7 @@ worker = require(
     'service-worker.js', "importScripts('./assets/brand-canon-v28.js')", 'const CACHE=BRAND.cache',
     'const GENERATED=', 'assets/generated/data-v28.js', 'Promise.allSettled',
     'assets/daily-ops-v21.js', 'assets/production-v22.js', 'assets/materials-v23.js',
-    'assets/measurement-v24.js', 'assets/procurement-v25.js', 'assets/finance-v27.js',
+    "endsWith('/assets/materials-v23.js')", 'assets/measurement-v24.js', 'assets/procurement-v25.js', 'assets/finance-v27.js',
     'backend/supabase/schema-v25.sql'
 )
 require('deploy-version.txt', 'version=2.8.0', f'cache={EXPECTED_CACHE}')
@@ -160,6 +162,7 @@ print('EL ERRANTE V2.8 — VERIFICACIÓN MODULAR')
 print('=' * 44)
 print(f'Archivos comprobados: {CHECKED}')
 print('Fuentes materializadas: 3')
+print(f'Motor Materiales: V2.3.1 · pack maestro: V2.3.0')
 print(f'Gastos fijos provisionales: ${sum(amounts):,} COP')
 print(f'Problemas: {len(ERRORS)}')
 if ERRORS:

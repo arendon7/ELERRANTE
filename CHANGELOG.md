@@ -15,6 +15,15 @@ Esta sección registra capas compatibles incorporadas después de la publicació
 - La demo operativa respalda y restaura también la bitácora V3.3.0.
 - Responsive móvil certificado sin overflow horizontal.
 
+### Materiales / BOM V2.3.1 — integridad de conteos
+
+- `materials-v23.js` deja de reemplazar todo `ee_v23_material_stock` al guardar el editor de la fecha.
+- Un conteo visible actualizado modifica únicamente su material y preserva conteos almacenados de materiales no requeridos ese día.
+- Dejar vacío un material visible elimina sólo ese conteo y vuelve a semántica `Sin conteo`.
+- El valor `0` permanece almacenado como inventario físico confirmado en cero.
+- El pack maestro `materials-data-v23.js` conserva schema V2.3.0: no cambian BOM, recetas, costos ni estados maestros.
+- Playwright cubre no-pérdida lateral, borrado selectivo y preservación explícita de cero.
+
 ### Finanzas V3.2.0–V3.2.9 — profundidad acumulativa
 
 El núcleo `finance-workbench-v31.js` permanece como contrato V3.1.0. Sobre él se cargan capas compatibles:

@@ -1,5 +1,6 @@
 (()=>{
   'use strict';
+  const VERSION='2.3.1';
   const DATA=window.EL_ERRANTE_MATERIALS_V23;
   if(!DATA)return;
   const ORDER_KEY='ee_v14_orders';
@@ -77,6 +78,20 @@
     return `<details class="ee-v23-details" id="ee-v23-stock"><summary>Actualizar conteo de materiales</summary><div class="ee-v23-editor"><p>Deja el campo vacío cuando no exista conteo. <strong>Cero</strong> significa inventario físico confirmado en cero.</p><div class="ee-v23-stock-grid">${rows.map(row=>`<label><span>${esc(row.material.name)} <small>(${esc(row.material.unit)})</small></span><input type="number" min="0" step="0.01" data-v23-stock="${esc(row.material.id)}" value="${row.available===null?'':esc(row.available)}" placeholder="Sin conteo"></label>`).join('')}</div><button type="button" class="ee-v23-button" id="ee-v23-save-stock">Guardar conteo</button></div></details>`;
   }
 
+  function saveVisibleStock(root){
+    const current=read(STOCK_KEY,{});
+    const values=current&&typeof current==='object'&&!Array.isArray(current)?{...current}:{};
+    root.querySelectorAll('[data-v23-stock]').forEach(input=>{
+      const id=input.dataset.v23Stock;
+      const raw=String(input.value??'').trim();
+      if(raw===''){delete values[id];return;}
+      const value=Number(raw);
+      if(Number.isFinite(value)&&value>=0)values[id]=value;
+    });
+    write(STOCK_KEY,values);
+    return values;
+  }
+
   function recipeExplorer(){
     const options=DATA.products.map(product=>`<option value="${esc(product.sku)}">${esc(product.name)}</option>`).join('');
     return `<details class="ee-v23-details"><summary>Consultar receta y costo provisional</summary><div class="ee-v23-recipe"><label><span>Producto</span><select id="ee-v23-recipe-select">${options}</select></label><div id="ee-v23-recipe-output"></div><div class="ee-v23-master-recipe"><h4>Masa base con poolish</h4><p>${esc(DATA.recipes[0].note)}</p></div></div></details>`;
@@ -104,12 +119,10 @@
     const p=plan();const rows=materialRows(p);
     const shortages=rows.filter(row=>row.status==='short').length;
     const unknown=rows.filter(row=>row.status==='pending').length;
-    target.innerHTML=`<section class="ee-v23-shell"><div class="ee-v23-heading"><div><p class="eyebrow">Materias primas e inventario inteligente · V2.3</p><h2>Lo necesario para producir, sin saturar el panel.</h2><p>La agenda se convierte en requerimientos de materiales y costos provisionales. Solo aparecen decisiones que requieren atención.</p></div><span class="ee-v23-mode">Modelo provisional</span></div><div class="ee-v23-notice"><strong>Lectura responsable del dato</strong><span>${esc(DATA.notice)}</span></div><div class="ee-v23-metrics"><article><small>Pedidos de la fecha</small><strong>${p.orders.length}</strong></article><article><small>Costo variable aprox.</small><strong>${money(p.estimatedCost)}</strong></article><article><small>Faltantes confirmados</small><strong>${shortages}</strong></article><article><small>Conteos pendientes</small><strong>${unknown}</strong></article></div><div class="ee-v23-grid"><section class="ee-v23-panel"><div class="ee-v23-panel-head"><div><p class="eyebrow">Qué producir</p><h3>Productos comprometidos · ${esc(p.date)}</h3></div></div>${productTable(p.products)}</section><section class="ee-v23-panel"><div class="ee-v23-panel-head"><div><p class="eyebrow">Qué hace falta</p><h3>Materiales y empaques</h3></div><span>${rows.length} requerimientos</span></div>${requirementTable(rows)}</section></div>${stockEditor(rows)}${recipeExplorer()}${p.unmatched?`<div class="ee-v23-warning"><strong>${p.unmatched} unidad(es) sin BOM reconocida</strong><span>Revisa el nombre o variante antes de usar este cálculo para comprar.</span></div>`:''}</section>`;
-    target.querySelector('#ee-v23-save-stock')?.addEventListener('click',()=>{
-      const values={};target.querySelectorAll('[data-v23-stock]').forEach(input=>{if(input.value!=='')values[input.dataset.v23Stock]=Number(input.value);});write(STOCK_KEY,values);shell();
-    });
+    target.innerHTML=`<section class="ee-v23-shell"><div class="ee-v23-heading"><div><p class="eyebrow">Materias primas e inventario inteligente · V${VERSION}</p><h2>Lo necesario para producir, sin saturar el panel.</h2><p>La agenda se convierte en requerimientos de materiales y costos provisionales. Solo aparecen decisiones que requieren atención.</p></div><span class="ee-v23-mode">Modelo provisional</span></div><div class="ee-v23-notice"><strong>Lectura responsable del dato</strong><span>${esc(DATA.notice)}</span></div><div class="ee-v23-metrics"><article><small>Pedidos de la fecha</small><strong>${p.orders.length}</strong></article><article><small>Costo variable aprox.</small><strong>${money(p.estimatedCost)}</strong></article><article><small>Faltantes confirmados</small><strong>${shortages}</strong></article><article><small>Conteos pendientes</small><strong>${unknown}</strong></article></div><div class="ee-v23-grid"><section class="ee-v23-panel"><div class="ee-v23-panel-head"><div><p class="eyebrow">Qué producir</p><h3>Productos comprometidos · ${esc(p.date)}</h3></div></div>${productTable(p.products)}</section><section class="ee-v23-panel"><div class="ee-v23-panel-head"><div><p class="eyebrow">Qué hace falta</p><h3>Materiales y empaques</h3></div><span>${rows.length} requerimientos</span></div>${requirementTable(rows)}</section></div>${stockEditor(rows)}${recipeExplorer()}${p.unmatched?`<div class="ee-v23-warning"><strong>${p.unmatched} unidad(es) sin BOM reconocida</strong><span>Revisa el nombre o variante antes de usar este cálculo para comprar.</span></div>`:''}</section>`;
+    target.querySelector('#ee-v23-save-stock')?.addEventListener('click',()=>{saveVisibleStock(target);shell();});
     const select=target.querySelector('#ee-v23-recipe-select');select?.addEventListener('change',()=>renderRecipe(select.value));if(select)renderRecipe(select.value);
-    document.documentElement.dataset.materialsVersion='2.3.0';
+    document.documentElement.dataset.materialsVersion=VERSION;
     wrapFinance();
   }
 

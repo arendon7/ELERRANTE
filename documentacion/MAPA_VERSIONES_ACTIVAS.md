@@ -20,6 +20,7 @@ Por tanto, no debe deducirse la versión integral a partir del número más alto
 | Shell y sesión interna | **3.1.1** | Guard local, navegación, retorno seguro, expiración y demo operativa reversible | Cubre Centro, Control, Operación, Finanzas, Datos maestros y Actas; no equivale a autorización servidor. |
 | Panel de control | **shell 3.1.1 / motor 3.0** | Priorización operativa | `control-v30.js` permanece como motor. |
 | Módulo Operativo | **3.3.0** | Ejecución + evidencia y cierre | Compone motores V2.1–V2.5, Control V3.0 y evidencia V3.3.0. |
+| Motor Materiales / BOM | **2.3.1** | Requerimientos, lectura de stock y conteos visibles | `materials-v23.js`; el pack maestro `materials-data-v23.js` conserva schema V2.3.0. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | Núcleo `finance-workbench-v31.js`. |
 | Módulo Financiero efectivo | **3.2.9** | Profundidad financiera acumulativa | Capas V3.2.0–V3.2.9 sobre el workbench base. |
 | Datos maestros | **shell 3.1.1 / motor oferta V0.9** | Gobierno de producto, SKU, fuentes y evidencia | Superficie auxiliar `studio.html`. |
@@ -49,12 +50,14 @@ Esta coherencia de shell no cambia la limitación esencial: GitHub Pages es est�
 
 - Agenda / pedidos: V2.1.
 - Producción: V2.2.
-- Materiales / BOM: V2.3.
+- Materiales / BOM: **motor V2.3.1 sobre pack de datos V2.3.0**.
 - Medición: V2.4.
 - Abastecimiento: V2.5.
 - Resumen de control: V3.0.
 - Shell / sesión: V3.1.1.
 - Evidencia y cierre: V3.3.0.
+
+El patch V2.3.1 corrige la persistencia de conteos: guardar materiales visibles actualiza o elimina únicamente esas claves y preserva conteos almacenados de materiales que no forman parte del requerimiento de la fecha. `0` sigue siendo un conteo físico confirmado; vacío sigue significando desconocido/sin conteo.
 
 V3.3.0 añade una bitácora append-only de evidencia operativa y controles de cierre. No reemplaza ni renumera los motores anteriores.
 

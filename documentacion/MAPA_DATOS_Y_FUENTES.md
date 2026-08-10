@@ -7,9 +7,10 @@ El Errante **no tiene una única fuente de datos universal**. La aplicación sep
 1. fuente canónica/publicable;
 2. datos maestros y contenido;
 3. hechos operativos locales;
-4. modelo financiero privado/local;
-5. datos sintéticos de demo;
-6. schemas/backend preparados pero todavía inactivos.
+4. decisiones/propuestas de gobierno;
+5. modelo financiero privado/local;
+6. datos sintéticos de demo;
+7. schemas/backend preparados pero todavía inactivos.
 
 La fuente correcta depende del tipo de dato. Un módulo no debe completar silenciosamente un dato faltante usando otra capa que tenga un significado distinto.
 
@@ -58,6 +59,7 @@ Incluye, según la capa:
 - fuentes y estados de evidencia;
 - responsable de revisión;
 - sensibilidad operativa;
+- propuestas de revisión del estándar;
 - atributos editoriales y comerciales.
 
 Superficie auxiliar: `studio.html`.
@@ -81,18 +83,45 @@ Este overlay guarda exclusivamente metadata de gobierno para materiales y provee
 - sensibilidad (`SIN_CLASIFICAR`, `BAJA`, `MEDIA`, `ALTA`, `CRITICA`);
 - nota y timestamp de actualización.
 
-Datos maestros V1.0.0 **lee** `ee_v24_material_purchases` para mostrar la última compra como evidencia observada, pero no la escribe. Tampoco modifica BOM, recetas, costo maestro/provisional ni productos. Una compra puede motivar una revisión futura del estándar, pero esa promoción requerirá un flujo explícito de aprobación que V1.0.0 no implementa.
+Datos maestros V1.0.0 **lee** `ee_v24_material_purchases` para mostrar la última compra como evidencia observada, pero no la escribe. Tampoco modifica BOM, recetas, costo maestro/provisional ni productos.
+
+### Propuestas de costo Datos maestros V1.1.0
+
+Clave local:
+
+`ee_v11_cost_proposal_events`
+
+Es un ledger append-only de decisiones sobre posibles revisiones de costo. Cada propuesta nace de una compra observada del mismo material y conserva snapshots de:
+
+- costo estándar/provisional vigente al momento de creación;
+- costo propuesto;
+- compra que sirve de evidencia (id, proveedor, fecha y costo unitario);
+- material/unidad;
+- actor, justificación y timestamp.
+
+Flujo:
+
+`CREATED → SUBMITTED → APPROVED / REJECTED`
+
+Estado derivado de una aprobación:
+
+`APPROVED_FOR_MATERIALIZATION`
+
+Ese estado **no convierte la propuesta en costo vigente**. Sólo documenta que fue aprobada para una materialización futura. V1.1.0 no expone función de aplicación, no escribe `ee_v24_material_purchases`, no modifica `assets/materials-data-v23.js`, no reescribe productos/BOM y no altera el costo estándar cargado en memoria.
+
+Aprobar o rechazar exige una razón explícita y agrega un evento nuevo; no se reescribe el evento original. Sólo puede existir una propuesta abierta por material para evitar decisiones paralelas contradictorias.
 
 ### Gobierno de oferta V0.9
 
-El expediente V0.9 continúa separado para producto/SKU, contenido, fuentes editoriales y gates de lanzamiento. Convive en Studio sin compartir persistencia con `ee_v10_master_governance`.
+El expediente V0.9 continúa separado para producto/SKU, contenido, fuentes editoriales y gates de lanzamiento. Convive en Studio sin compartir persistencia con `ee_v10_master_governance` ni `ee_v11_cost_proposal_events`.
 
 Reglas:
 
 - un dato maestro puede estar completo para demo y seguir `PENDIENTE` de validación gastronómica, sanitaria, financiera o jurídica;
 - modificar gobierno no debe reescribir hechos históricos ya capturados;
 - una compra observada no se convierte automáticamente en costo estándar;
-- estándar provisional, hecho observado y metadata de gobierno son capas diferentes.
+- una propuesta aprobada no equivale a estándar vigente;
+- estándar provisional, hecho observado, metadata de gobierno y decisión/propuesta son capas diferentes.
 
 ## 4. Hechos operativos locales
 
@@ -115,12 +144,24 @@ Mientras no exista persistencia multiusuario activa, los hechos operativos viven
 - orden de compra ≠ recepción;
 - compra ≠ COGS;
 - compra observada ≠ costo estándar vigente;
+- propuesta aprobada ≠ costo estándar vigente;
 - una corrección de evidencia no borra el evento anterior;
 - una fecha futura no admite evidencia como si fuera un hecho ocurrido;
 - Finanzas puede leer estos hechos, pero no debe reescribirlos;
 - Datos maestros puede leer compras como evidencia, pero no debe reescribirlas.
 
-## 5. Finanzas local y privada
+## 5. Decisiones/propuestas de gobierno
+
+Estas claves no son hechos operativos ni estándares materiales; documentan decisiones sobre esos datos.
+
+| Clave | Significado | Efecto sobre hechos/estándar |
+|---|---|---|
+| `ee_v10_master_governance` | Metadata de gobierno de materiales/proveedores | Ninguno; overlay separado. |
+| `ee_v11_cost_proposal_events` | Ledger de propuestas y decisiones de revisión de costo | Ninguno; aprobación no aplica costo. |
+
+Una futura materialización de una propuesta aprobada deberá ser otro proceso explícito, versionado y certificado. No debe implementarse como efecto lateral de la aprobación.
+
+## 6. Finanzas local y privada
 
 ### Baseline
 
@@ -158,7 +199,7 @@ El workbook MFO real y snapshots con cifras sensibles no pertenecen al repositor
 
 El exportador privado reconoce el perfil workbook v3.3 y produce un snapshot bajo contrato V3.0. Debe operarse desde almacenamiento privado (`private-data/` o equivalente no versionado).
 
-## 6. Plan vs. Real
+## 7. Plan vs. Real
 
 ### Plan
 
@@ -182,9 +223,9 @@ Fuente:
 
 ### COGS real
 
-Sólo puede usar costo histórico capturado en la línea del pedido (`unit_cost_snapshot` o equivalente). Si falta, el dato queda incompleto. No se sustituye por el costo maestro actual.
+Sólo puede usar costo histórico capturado en la línea del pedido (`unit_cost_snapshot` o equivalente). Si falta, el dato queda incompleto. No se sustituye por el costo maestro actual ni por una propuesta de costo aprobada pero no materializada.
 
-## 7. Datos sintéticos de demo
+## 8. Datos sintéticos de demo
 
 Los datos demo deben identificarse como sintéticos y nunca mezclarse silenciosamente con hechos reales.
 
@@ -206,7 +247,7 @@ Gestiona temporalmente baseline/modelo/historial y hechos financieros/operativos
 
 Las demos operativa y financiera no se apilan.
 
-## 8. Acceso y sesión local
+## 9. Acceso y sesión local
 
 | Clave | Almacenamiento | Función |
 |---|---|---|
@@ -215,7 +256,7 @@ Las demos operativa y financiera no se apilan.
 
 La shell V3.1.1 protege el flujo local de Centro, Control, Operación, Finanzas, Datos maestros y Actas, pero **no es autorización servidor**.
 
-## 9. SessionStorage de contexto
+## 10. SessionStorage de contexto
 
 Existen claves de UI/contexto —por ejemplo fecha operativa seleccionada o pestaña financiera— que ayudan a conservar navegación. No son la fuente autoritativa de un hecho de negocio.
 
@@ -225,7 +266,7 @@ Ejemplos:
 - `ee_v31_finance_tab`;
 - selectores de mes de capas financieras.
 
-## 10. Backend / Supabase
+## 11. Backend / Supabase
 
 El repositorio contiene schemas, RPC, guards y configuración preparada de iteraciones anteriores. Su presencia **no significa que Supabase esté activo**.
 
@@ -240,7 +281,7 @@ Estado vigente:
 
 La activación de backend deberá pasar por el gate definido en `ROADMAP_ACTIVO_V33.md`.
 
-## 11. Matriz de responsables
+## 12. Matriz de responsables
 
 | Área | Datos cuya calidad debe gobernar |
 |---|---|
@@ -253,7 +294,7 @@ La activación de backend deberá pasar por el gate definido en `ROADMAP_ACTIVO_
 | Jurídico | Identidad del vendedor, políticas, consentimientos y tratamiento de datos |
 | Tecnología | Contratos de datos, acceso, secretos, backups, sincronización y auditoría |
 
-## 12. Estados de calidad recomendados
+## 13. Estados de calidad recomendados
 
 La aplicación ya utiliza distintos términos por módulo. Conceptualmente deben converger en esta semántica:
 
@@ -266,7 +307,9 @@ La aplicación ya utiliza distintos términos por módulo. Conceptualmente deben
 
 Los estados `REVISADO` y `VALIDADO` de Datos maestros V1.0.0 describen **calidad del proceso de gobierno**, no sustituyen el estado de evidencia del dato subyacente.
 
-## 13. Regla de persistencia futura
+Los estados de V1.1.0 (`DRAFT`, `IN_REVIEW`, `APPROVED_FOR_MATERIALIZATION`, `REJECTED`) describen el estado de una **decisión propuesta**, no el estado de evidencia ni el valor maestro vigente.
+
+## 14. Regla de persistencia futura
 
 Cuando se active persistencia multiusuario, las claves locales no deben migrarse uno-a-uno sin diseño. Primero se debe definir:
 

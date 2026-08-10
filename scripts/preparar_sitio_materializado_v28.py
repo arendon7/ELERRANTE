@@ -50,7 +50,7 @@ def copy_surface(target: Path) -> None:
     for source in sorted(ROOT.glob('*.html')):
         shutil.copy2(source, target / source.name)
 
-    for name in ('service-worker.js','manifest.webmanifest','deploy-version.txt','demo-manifest.json','.nojekyll'):
+    for name in ('service-worker.js','manifest.webmanifest','deploy-version.txt','historical-cost-version.txt','demo-manifest.json','.nojekyll'):
         source = ROOT / name
         if source.exists():
             shutil.copy2(source, target / name)
@@ -100,6 +100,7 @@ def patch_html(target: Path) -> dict[str, int]:
 def verify_surface(target: Path, counters: dict[str, int]) -> None:
     required = [
         'index.html','tienda.html','admin.html','activacion.html','service-worker.js',
+        'deploy-version.txt','historical-cost-version.txt',
         'assets/brand-canon-v28.js','assets/generated/data-v28.js','assets/generated/app-v28.js',
         'assets/generated/preprod-v28.js','assets/generated/manifest-v28.json',
         'assets/data-finalize-v28.js','assets/app-contract-v28.js','assets/preprod-contract-v28.js',

@@ -9,12 +9,24 @@ Esta sesión local no convierte GitHub Pages en un backend seguro ni sustituye a
 ## Cómo entrar al sistema interno
 
 1. Abrir `acceso.html` o usar el enlace **Acceso usuarios** de la web pública.
-2. Si el navegador todavía no tiene una cuenta local, crear el primer usuario y una contraseña de mínimo 8 caracteres.
-3. La contraseña no se guarda como texto; el navegador conserva un derivado PBKDF2/SHA-256 con sal aleatoria.
-4. La sesión dura hasta ocho horas y se almacena en `sessionStorage`.
-5. Al cerrar sesión o expirar, las superficies protegidas vuelven a `acceso.html`.
+2. Si el navegador todavía no tiene un administrador local, puede crearse uno con una contraseña de mínimo 8 caracteres o cambiarse al modo **Ingresar con usuario de revisión**.
+3. Las cuentas de revisión funcionan en cualquier navegador compatible y no crean ni reemplazan la cuenta administrador local.
+4. Las contraseñas no se guardan como texto dentro de `localStorage`; la verificación usa PBKDF2/SHA-256. Las cuentas de revisión incorporadas usan únicamente derivados para la comprobación en cliente.
+5. La sesión dura hasta ocho horas y se almacena en `sessionStorage`.
+6. Al cerrar sesión o expirar, las superficies protegidas vuelven a `acceso.html`.
 
-**No existen usuarios ni contraseñas demo fijos que deban copiarse desde este repositorio.** Las credenciales se crean localmente en cada navegador.
+## Usuarios de revisión
+
+Estas credenciales existen exclusivamente para revisar la demo pública y no deben reutilizarse como credenciales reales:
+
+| Usuario | Contraseña | Rol mostrado |
+|---|---|---|
+| `juancho` | `juancho` | Revisor |
+| `lucho` | `lucho` | Revisor |
+
+En un navegador sin administrador local, primero debe pulsarse **Ingresar con usuario de revisión**. Si ya existe un administrador local, ambos usuarios de revisión pueden escribirse directamente en el formulario normal de ingreso.
+
+El rol `Revisor` identifica la sesión en la interfaz. Como GitHub Pages es estático y Supabase Auth/RLS está inactivo, no representa autorización de servidor. Cualquier cambio realizado durante una revisión permanece en el almacenamiento del navegador utilizado y no modifica datos reales centralizados.
 
 ## Rutas vigentes
 
@@ -85,13 +97,14 @@ La demo financiera V3.2.9:
 - catálogo, variantes, precios públicos y contenido editorial;
 - estructuras de recetas/BOM cuando estén aprobadas para publicación;
 - datos sintéticos explícitamente marcados como demo;
+- credenciales deliberadamente públicas de revisión que no protegen datos reales ni servicios conectados;
 - código, pruebas, documentación y schemas sin secretos;
 - `.env.example` sin valores reales;
 - imágenes y activos públicos aprobados.
 
 ## Datos que no deben subirse
 
-- contraseñas reales o credenciales reutilizables;
+- contraseñas reales o credenciales reutilizables fuera de la demo;
 - tokens de GitHub, Meta, WhatsApp, correo, pagos o analítica;
 - `service_role`, secretos OAuth, claves privadas o cadenas de conexión;
 - MFO real, snapshots financieros privados o costos sensibles;

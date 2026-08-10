@@ -23,7 +23,7 @@ function scheduleExpiry(s){
   const active=session();
   if(!active){redirectExpired();return;}
   scheduleExpiry(active);
- },Math.max(1,Math.min(remaining,2147483647));
+ },Math.max(1,Math.min(remaining,2147483647)));
 }
 function enforceSession(){
  const s=session();

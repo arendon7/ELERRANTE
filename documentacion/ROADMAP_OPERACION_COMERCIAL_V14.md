@@ -1,6 +1,6 @@
 # EL ERRANTE — Roadmap de operación comercial V1.4
 
-> **DOCUMENTO HISTÓRICO.** Este roadmap registra la dirección prevista en una etapa anterior y ya no debe utilizarse como backlog vigente. El estado actual y las prioridades posteriores a Operación V3.3.0 están en `ROADMAP_ACTIVO_V33.md`. La presencia de planes de Supabase aquí no implica que el backend esté activo.
+> **DOCUMENTO HISTÓRICO.** Este roadmap registra la dirección prevista y el estado declarado en una etapa anterior. Ya no debe utilizarse como backlog vigente. El estado actual y las prioridades posteriores a Operación V3.3.0 están en `ROADMAP_ACTIVO_V33.md`. Las referencias a Supabase o a estados de activación dentro de este documento son históricas y no significan que el backend esté activo hoy.
 
 ## Objetivo
 Convertir la web actual en una experiencia comercial usable, administrable y medible, conservando el repositorio `main` como fuente única de código y utilizando GitHub Pages como entorno público de revisión de cada iteración.
@@ -80,3 +80,94 @@ Cada iteración se integra a `main` únicamente después de:
 2. Revisión de seguridad y ausencia de secretos.
 3. Pruebas de regresión.
 4. Publicación correcta en Pages.
+5. Registro de cambios y pendientes reales.
+
+## Estado de avance — V1.5 / Iteración 2
+
+Implementado en código:
+
+- Configuración runtime sin credenciales privadas versionadas.
+- Sesiones separadas para comprador anónimo y administrador permanente.
+- Inicio de sesión administrativo mediante Supabase Auth.
+- Verificación de autorización contra `admin_users` y RLS.
+- Lectura sincronizada de pedidos, comprobantes, catálogo, inventario, costos y gastos fijos.
+- Comprobantes privados abiertos mediante enlaces firmados de corta duración.
+- Escritura remota de estados, catálogo, costos y datos públicos de transferencia.
+- Migración V1.5 con auditoría administrativa y disparadores `updated_at`.
+
+Pendiente externo de activación:
+
+- Crear o seleccionar el proyecto Supabase.
+- Ejecutar `schema-v14.sql` y `schema-v15.sql`.
+- Registrar `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` en GitHub.
+- Crear el usuario de Juan e incluir su UUID en `admin_users`.
+- Sustituir datos bancarios, precios, costos e inventarios demo por información real.
+
+## Estado de avance — V1.6 / Iteración 3
+
+Implementado en código:
+
+- Kardex básico de inventario con entradas, salidas, producción, compras, ajustes y mermas.
+- Descuento automático al iniciar preparación y reintegro al volver a un estado no operativo.
+- Ciclos idempotentes para impedir descuentos duplicados por pedido.
+- Umbral de inventario bajo por producto y alertas operativas.
+- Margen de contribución por producto y consolidado mensual.
+- Resultado operativo: ventas aprobadas menos costos variables y gastos fijos.
+- Ventas y unidades de punto de equilibrio estimadas.
+- Registro manual de movimientos en modo local y mediante RPC segura en Supabase.
+
+Los precios, costos, inventarios y gastos continúan siendo demostrativos hasta recibir la base real.
+
+
+## Iteración 4 — contenido y conversión V1.7
+
+- Voz gastronómica premium aplicada a inicio, tienda, historia, En Casa y En Movimiento.
+- Once fichas de producto reescritas con deseo, criterio técnico y claridad de uso.
+- Mensajes de conversión sustentados en masa, fermentación, fuego, balance y servicio.
+- Prohibición de superlativos o certificaciones no demostradas.
+
+
+## Iteración 5 — experiencia de compra V1.8
+
+- Checkout guiado en tres pasos: datos, entrega y pago.
+- Total persistente y acceso rápido al formulario en móvil.
+- Copia segura de cuenta y llave; comprobante con nombre y peso visibles.
+- Estados honestos para carrito vacío, solicitud recibida y coordinación posterior.
+- Señales de confianza en Tienda y compra informada en las once fichas.
+- Sin promesas de disponibilidad, entrega o devolución no sustentadas.
+
+
+## Iteración 6 — confianza comercial y cierre operativo V1.9
+
+- Consulta limitada de pedidos por referencia y correo.
+- Historial de estados y trazabilidad en Supabase.
+- Cobertura, tarifa, soporte y tiempo de respuesta configurables.
+- Enlace de seguimiento posterior al checkout.
+- Plantillas de actualización para WhatsApp desde Administración.
+
+
+## Iteración 7 — activación operativa V2.0
+
+- Centro privado de diagnóstico de conexión y migraciones.
+- Alta inicial restringida al SQL Editor y gobierno posterior mediante RPC administrativo.
+- Verificación de bucket privado, cobertura, soporte, transferencia, catálogo y gastos fijos.
+- Modo previo explícito: la web no simula conexión ni producción real.
+- Variables de GitHub separadas de credenciales privadas.
+
+
+## Iteración 8 — operación diaria V2.1
+
+- Mesa de pedidos por revisión, preparación, despacho y cierre.
+- Ficha completa de cliente, entrega, productos, pago e historial.
+- Transiciones guiadas y aprobación bloqueada sin comprobante.
+- Exportación CSV operativa sin dirección, teléfono, correo ni comprobante.
+- Respaldo y restauración validados para el modo local previo a Supabase.
+- RPC administrativa que sincroniza estado, comprobante, auditoría e inventario.
+
+
+## V2.2 — Producción y despacho
+- Agenda por fecha comprometida.
+- Consolidado de unidades por producto.
+- Checklist de producto, empaque, cantidad y coordinación.
+- Bloqueo de despacho incompleto en navegador y Supabase.
+- Lista imprimible y CSV operativo sin datos personales.

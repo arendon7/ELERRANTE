@@ -17,6 +17,9 @@ def require(condition,message):
     if not condition:
         issues.append(message)
 
+def aggregate_compatible(text,prefix):
+    return any(f'{prefix}v{version}' in text for version in ('1.2.0','1.3.0'))
+
 studio=read('studio.html')
 centro=read('centro-interno.html')
 module=read('assets/master-cost-materialization-v12.js')
@@ -54,9 +57,9 @@ for marker in ('materializa una aprobación como nueva revisión sin mutar fuent
     require(marker in test,f'Falta regresión V1.2: {marker}')
 require('./assets/master-cost-materialization-v12.js' in worker and './assets/master-cost-materialization-v12.css' in worker,'Service worker no precachea V1.2')
 require("endsWith('/assets/master-cost-materialization-v12.js')" in worker and "endsWith('/assets/master-cost-materialization-v12.css')" in worker,'Service worker no sirve fresco V1.2')
-require('master_data_module=v1.2.0' in deploy and 'master_cost_materialization=v1.2.0' in deploy,'Metadata no declara V1.2 efectivo')
-require('master_data_module=v1.2.0' in pages and 'master_cost_materialization=v1.2.0' in pages,'Pages no certifica V1.2')
-require('EXPECTED_MASTER_DATA: v1.2.0' in health and 'EXPECTED_COST_MATERIALIZATION: v1.2.0' in health,'Health-check no espera V1.2')
+require(aggregate_compatible(deploy,'master_data_module=') and 'master_cost_materialization=v1.2.0' in deploy,'Metadata no declara V1.2 dentro de un agregado compatible')
+require(aggregate_compatible(pages,'master_data_module=') and 'master_cost_materialization=v1.2.0' in pages,'Pages no certifica V1.2 dentro de un agregado compatible')
+require(aggregate_compatible(health,'EXPECTED_MASTER_DATA: ') and 'EXPECTED_COST_MATERIALIZATION: v1.2.0' in health,'Health-check no preserva V1.2 dentro del agregado vigente')
 require("grep -q 'Entrar a Finanzas' public-centro-interno.html" in health,'Health-check público debe conservar acceso a Finanzas')
 for forbidden in ('service_role','postgres://','private_key','supabase_service'):
     require(forbidden not in module.lower(),f'Posible secreto en V1.2: {forbidden}')
@@ -74,4 +77,5 @@ print('baseline=immutable')
 print('approval=required')
 print('stale_guard=enabled')
 print('navigation_guard=preserved')
+print('compatibilidad_agregado=v1.2_o_superior_certificado')
 print('effective_standard=versioned_overlay')

@@ -76,7 +76,7 @@ test.describe('Sistema interno V3.1.1',()=>{
 
   test('Operación reúne resumen, pedidos y cadena de ejecución sin finanzas',async({page})=>{
     await seedSession(page);await seedOperational(page);await page.goto('/operacion.html');
-    await expect(page.getByRole('heading',{name:'Del pedido al despacho, con cada decisión visible.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Del pedido al despacho, y del hecho al cierre.'})).toBeVisible();
     await expect(page.getByRole('link',{name:'Panel de control'}).first()).toHaveAttribute('href','control.html');
     await expect(page.locator('#control-v30')).toContainText('Unidades por producir');
     await expect(page.locator('#daily-ops-v21')).toContainText('Mesa de pedidos y continuidad local');

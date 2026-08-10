@@ -1,0 +1,8 @@
+inventory_valuation=v1.5.0
+physical_stock=operational_source
+standard_value=current_effective_standard
+observed_reference=latest_observed_receipt_proxy
+purchase_variance=historical_standard_only
+unknown_stock=explicit
+accounting_lot_valuation=not_claimed
+finance_mutation=forbidden

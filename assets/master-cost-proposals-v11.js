@@ -20,6 +20,7 @@
   function purchases(){const rows=readJSON(PURCHASES_KEY,[]);return Array.isArray(rows)?rows:[];}
   function events(){const rows=readJSON(EVENTS_KEY,[]);return Array.isArray(rows)?rows:[];}
   function material(id){return DATA?.materials?.find(item=>item.id===id)||null;}
+  function standardMaterial(id){return window.EL_ERRANTE_MASTER_COST_MATERIALIZATION_V12?.effectiveMaterial(id)||material(id);}
   function purchaseId(row){return String(row.id||row.purchaseId||row.purchase_id||'');}
   function purchaseMaterial(row){return String(row.materialId||row.material_id||'');}
   function purchaseCost(row){return Number(row.unitCost??row.unit_cost)||0;}
@@ -44,6 +45,8 @@
     if(!log.length)return null;
     const created=log.find(event=>event.type==='CREATED');
     const last=log[log.length-1];
+    let status=last.type==='CREATED'?'DRAFT':last.type==='SUBMITTED'?'IN_REVIEW':last.type==='APPROVED'?'APPROVED_FOR_MATERIALIZATION':'REJECTED';
+    if(last.type==='APPROVED'&&window.EL_ERRANTE_MASTER_COST_MATERIALIZATION_V12?.materializationForProposal(proposalId))status='MATERIALIZED';
     return {
       proposalId,
       materialId:created.materialId,
@@ -55,7 +58,7 @@
       rationale:created.rationale,
       createdAt:created.at,
       createdBy:created.actor,
-      status:last.type==='CREATED'?'DRAFT':last.type==='SUBMITTED'?'IN_REVIEW':last.type==='APPROVED'?'APPROVED_FOR_MATERIALIZATION':'REJECTED',
+      status,
       lastEvent:last,
       events:log
     };
@@ -67,7 +70,7 @@
   function openForMaterial(materialId){return proposals().find(item=>item.materialId===materialId&&!TERMINAL.has(item.lastEvent.type));}
   function createProposal(input={}){
     const materialId=String(input.materialId||'').trim();
-    const master=material(materialId);
+    const master=standardMaterial(materialId);
     if(!master)throw new Error('Material maestro inexistente');
     if(openForMaterial(materialId))throw new Error('Ya existe una propuesta abierta para este material');
     const proposedCost=Number(input.proposedCost);
@@ -106,7 +109,7 @@
   function latestObserved(materialId){return evidenceForMaterial(materialId)[0]||null;}
   function pctDelta(base,next){return base?((next-base)/base)*100:0;}
 
-  function statusLabel(status){return ({DRAFT:'Borrador',IN_REVIEW:'En revisión',APPROVED_FOR_MATERIALIZATION:'Aprobada para materialización',REJECTED:'Rechazada'})[status]||status;}
+  function statusLabel(status){return ({DRAFT:'Borrador',IN_REVIEW:'En revisión',APPROVED_FOR_MATERIALIZATION:'Aprobada para materialización',MATERIALIZED:'Materializada',REJECTED:'Rechazada'})[status]||status;}
   function statusClass(status){return status.toLowerCase().replaceAll('_','-');}
   function evidenceOptions(materialId){return evidenceForMaterial(materialId).map(row=>`<option value="${esc(purchaseId(row))}">${esc(purchaseDate(row))} · ${esc(purchaseSupplier(row)||'Sin proveedor')} · ${money(purchaseCost(row))}</option>`).join('');}
   function materialOptions(){return (DATA?.materials||[]).map(item=>`<option value="${esc(item.id)}">${esc(item.name)} · ${esc(item.id)}</option>`).join('');}
@@ -117,7 +120,7 @@
       const delta=pctDelta(row.standardCost,row.proposedCost);
       const timeline=row.events.map(event=>`<li><strong>${esc(event.type)}</strong><span>${esc(event.actor)} · ${esc(event.at.slice(0,16).replace('T',' '))}</span>${event.reason?`<small>${esc(event.reason)}</small>`:''}${event.note?`<small>${esc(event.note)}</small>`:''}</li>`).join('');
       const actions=row.status==='DRAFT'?`<button type="button" data-md-v11-submit="${esc(row.proposalId)}">Enviar a revisión</button>`:row.status==='IN_REVIEW'?`<button type="button" data-md-v11-approve="${esc(row.proposalId)}">Aprobar para materializar</button><button type="button" class="secondary" data-md-v11-reject="${esc(row.proposalId)}">Rechazar</button>`:'';
-      return `<article class="md-v11-card" data-md-v11-proposal="${esc(row.proposalId)}"><header><div><strong>${esc(row.materialName)}</strong><small>${esc(row.materialId)} · ${esc(row.proposalId)}</small></div><span class="md-v11-status ${statusClass(row.status)}">${esc(statusLabel(row.status))}</span></header><div class="md-v11-costs"><div><small>Estándar vigente</small><strong>${money(row.standardCost)}</strong></div><div><small>Propuesto</small><strong>${money(row.proposedCost)}</strong></div><div><small>Variación</small><strong>${delta>=0?'+':''}${delta.toFixed(1)}%</strong></div></div><p>${esc(row.rationale)}</p><div class="md-v11-evidence"><strong>Evidencia observada</strong><span>${esc(row.evidence.date)} · ${esc(row.evidence.supplier||'Sin proveedor')} · ${money(row.evidence.unitCost)}</span></div>${row.status==='APPROVED_FOR_MATERIALIZATION'?'<div class="md-v11-warning"><strong>No aplicada.</strong> La aprobación autoriza una materialización futura; el estándar vigente sigue intacto.</div>':''}<details><summary>Historial (${row.events.length})</summary><ol>${timeline}</ol></details>${actions?`<div class="md-v11-actions">${actions}</div>`:''}</article>`;
+      return `<article class="md-v11-card" data-md-v11-proposal="${esc(row.proposalId)}"><header><div><strong>${esc(row.materialName)}</strong><small>${esc(row.materialId)} · ${esc(row.proposalId)}</small></div><span class="md-v11-status ${statusClass(row.status)}">${esc(statusLabel(row.status))}</span></header><div class="md-v11-costs"><div><small>Estándar vigente al crear</small><strong>${money(row.standardCost)}</strong></div><div><small>Propuesto</small><strong>${money(row.proposedCost)}</strong></div><div><small>Variación</small><strong>${delta>=0?'+':''}${delta.toFixed(1)}%</strong></div></div><p>${esc(row.rationale)}</p><div class="md-v11-evidence"><strong>Evidencia observada</strong><span>${esc(row.evidence.date)} · ${esc(row.evidence.supplier||'Sin proveedor')} · ${money(row.evidence.unitCost)}</span></div>${row.status==='APPROVED_FOR_MATERIALIZATION'?'<div class="md-v11-warning"><strong>No aplicada.</strong> La aprobación autoriza una materialización futura; el estándar vigente sigue intacto.</div>':row.status==='MATERIALIZED'?'<div class="md-v11-warning"><strong>Materializada.</strong> V1.2 conserva la revisión efectiva y toda su trazabilidad.</div>':''}<details><summary>Historial (${row.events.length})</summary><ol>${timeline}</ol></details>${actions?`<div class="md-v11-actions">${actions}</div>`:''}</article>`;
     }).join('');
   }
   function render(){
@@ -147,5 +150,6 @@
 
   const API=Object.freeze({version:VERSION,eventsKey:EVENTS_KEY,events,proposals,proposalState,evidenceForMaterial,createProposal,submitProposal,decideProposal,integritySnapshot,integrityUnchanged});
   window.EL_ERRANTE_MASTER_COST_PROPOSALS_V11=API;
+  window.addEventListener('ee:v12:standard-materialized',render);
   if(target&&DATA&&MASTER)render();
 })();

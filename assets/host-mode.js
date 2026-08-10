@@ -43,7 +43,7 @@
     try{
       if('caches' in window){const keys=await caches.keys();await Promise.all(keys.filter(key=>key.startsWith('el-errante-')&&key!==BRAND.cache).map(key=>caches.delete(key)));}
       if('serviceWorker' in navigator){const registration=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});await registration.update();}
-      localStorage.setItem('ee_public_version','2.9.0-editorial');localStorage.setItem('ee_brand_canon',BRAND.version);localStorage.setItem('ee_public_cache',BRAND.cache);
+      localStorage.setItem('ee_public_version','3.0.0-editorial-authority-candidate');localStorage.setItem('ee_brand_canon',BRAND.version);localStorage.setItem('ee_public_cache',BRAND.cache);
     }catch(error){console.warn('No fue posible actualizar la caché canónica de El Errante.',error);}
   }
 
@@ -52,10 +52,17 @@
 
   function curatePublicNav(container,mobile=false){
     if(!container)return;
-    container.querySelectorAll('a').forEach(link=>{const href=hrefOf(link);if(INTERNAL_TARGETS.has(href)||LOW_PRIORITY_NAV.has(href)||href==='historia.html'||href==='equipo.html'||href==='producto.html'||href==='cuenta.html')link.remove();});
+    const obsolete=new Set(['nosotros.html','historia.html','equipo.html','producto.html','cuenta.html']);
+    container.querySelectorAll('a').forEach(link=>{const href=hrefOf(link);if(INTERNAL_TARGETS.has(href)||LOW_PRIORITY_NAV.has(href)||obsolete.has(href))link.remove();});
     const cls=mobile?'btn btn-outline':'';
-    add(container,'a[href="tienda.html"]','Tienda','tienda.html',null,cls);add(container,'a[href="en-casa.html"]','En casa','en-casa.html',null,cls);add(container,'a[href="nosotros.html"]','Nuestra cocina','nosotros.html','a[href="bitacora.html"]',cls);add(container,'a[href="bitacora.html"]','Bitácora','bitacora.html','a[href="en-movimiento.html"]',cls);add(container,'a[href="en-movimiento.html"]','Eventos','en-movimiento.html',null,cls);
-    const labels={'tienda.html':'Tienda','en-casa.html':'En casa','nosotros.html':'Nuestra cocina','bitacora.html':'Bitácora','en-movimiento.html':'Eventos'};container.querySelectorAll('a').forEach(link=>{const href=hrefOf(link);if(labels[href])link.textContent=labels[href];});
+    add(container,'a[href="tienda.html"]','Tienda','tienda.html',null,cls);
+    add(container,'a[href="en-casa.html"]','En Casa','en-casa.html',null,cls);
+    add(container,'a[href="metodo.html"]','Método','metodo.html','a[href="bitacora.html"]',cls);
+    add(container,'a[href="bitacora.html"]','Bitácora','bitacora.html','a[href="en-movimiento.html"]',cls);
+    add(container,'a[href="juan-david-ocampo.html"]','Juan David','juan-david-ocampo.html','a[href="en-movimiento.html"]',cls);
+    add(container,'a[href="en-movimiento.html"]','Eventos','en-movimiento.html',null,cls);
+    const labels={'tienda.html':'Tienda','en-casa.html':'En Casa','metodo.html':'Método','bitacora.html':'Bitácora','juan-david-ocampo.html':'Juan David','en-movimiento.html':'Eventos'};
+    container.querySelectorAll('a').forEach(link=>{const href=hrefOf(link);if(labels[href])link.textContent=labels[href];});
   }
 
   function ensureUserAccess(){
@@ -69,16 +76,22 @@
     document.querySelectorAll('#site-header a[href="en-movimiento.html#cotizar"]').forEach(link=>{link.textContent='Preparar evento';});
     document.querySelectorAll('#site-footer a[href="en-movimiento.html#eventos"]').forEach(link=>{link.href='en-movimiento.html#formatos';link.textContent='Formatos';});
     document.querySelectorAll('#site-footer a[href="en-movimiento.html#talleres"]').forEach(link=>{link.href='en-movimiento.html#formatos';});document.querySelectorAll('#site-footer a[href="en-movimiento.html#mesa"]').forEach(link=>link.remove());
-    document.querySelectorAll('#site-footer p').forEach(paragraph=>{const text=(paragraph.textContent||'').trim();if(text.includes('[Razón social')||text.includes('Datos comerciales, sanitarios y operativos demostrativos'))paragraph.remove();else if(text==='Una masa propia, productos para cocinar en casa y una pizzería capaz de ponerse en movimiento.')paragraph.textContent='Aprendida viajando. Hecha desde Colombia. Masa, fuego y territorio en una cocina que sigue buscando.';});
+    document.querySelectorAll('#site-footer p').forEach(paragraph=>{const text=(paragraph.textContent||'').trim();if(text.includes('[Razón social')||text.includes('Datos comerciales, sanitarios y operativos demostrativos'))paragraph.remove();else if(text==='Una masa propia, productos para cocinar en casa y una pizzería capaz de ponerse en movimiento.'||text==='Aprendida viajando. Hecha desde Colombia. Masa, fuego y territorio en una cocina que sigue buscando.')paragraph.textContent='Masa · Fuego · Territorio. Una cocina construida desde Colombia y una búsqueda que sigue abierta.';});
+    document.querySelectorAll('.visual-note').forEach(note=>{if((note.textContent||'').includes('El retrato autoral definitivo'))note.textContent='La técnica tiene que desaparecer dentro del placer.';});
     ensureUserAccess();
   }
 
   function removeInternalPublicLinks(){document.querySelectorAll('#site-footer a, main a[data-internal-only]').forEach(link=>{if(INTERNAL_TARGETS.has(hrefOf(link)))link.remove();});}
-  function markActive(page){const target={inicio:'index.html',tienda:'tienda.html',casa:'en-casa.html',nosotros:'nosotros.html',bitacora:'bitacora.html',movimiento:'en-movimiento.html'}[page];if(target)document.querySelectorAll(`a[href="${target}"]`).forEach(link=>link.classList.add('active'));if(page==='historia'||page==='equipo')document.querySelectorAll('a[href="nosotros.html"]').forEach(link=>link.classList.add('active'));}
+  function markActive(page){
+    const target={inicio:'index.html',tienda:'tienda.html',casa:'en-casa.html',nosotros:'metodo.html',metodo:'metodo.html',bitacora:'bitacora.html',juan:'juan-david-ocampo.html',movimiento:'en-movimiento.html'}[page];
+    if(target)document.querySelectorAll(`a[href="${target}"]`).forEach(link=>link.classList.add('active'));
+    if(page==='historia')document.querySelectorAll('a[href="metodo.html"]').forEach(link=>link.classList.add('active'));
+    if(page==='equipo')document.querySelectorAll('a[href="juan-david-ocampo.html"]').forEach(link=>link.classList.add('active'));
+  }
 
   function enhance(){
     const page=document.body?.dataset?.page||'';const isInternal=INTERNAL_PAGES.has(page);recover();observe();
-    document.documentElement.dataset.eeVisualSystem='brand-canon-v28';document.documentElement.dataset.eeVisualQuality='brand-final-hq';document.documentElement.dataset.eeVersion=BRAND.version;document.documentElement.dataset.eeMode=isInternal?'team-demo':'public';document.documentElement.dataset.eePublicCache='brand-canon-v28';
+    document.documentElement.dataset.eeVisualSystem='brand-canon-v28';document.documentElement.dataset.eeVisualQuality='brand-final-hq';document.documentElement.dataset.eeVersion=BRAND.version;document.documentElement.dataset.eeRelease='3.0.0-editorial-authority-candidate';document.documentElement.dataset.eeMode=isInternal?'team-demo':'public';document.documentElement.dataset.eePublicCache='brand-canon-v28';
     if(hosted&&!isInternal){document.querySelectorAll('.local-runtime-badge,[data-internal-only],.internal-only').forEach(element=>element.remove());document.querySelectorAll('.demo-badge').forEach(element=>{const text=(element.textContent||'').toLowerCase();if(text.includes('gold master')||text.includes('demo')||text.includes('sin internet')||text.includes('biblioteca editorial completa'))element.remove();});}
     if(isInternal){document.querySelectorAll('a[href="equipo.html"]:not([data-public-target])').forEach(link=>{link.href='centro-interno.html';if((link.textContent||'').trim().toLowerCase()==='equipo')link.textContent='Centro interno';});}
     else{curatePublicNav(document.querySelector('.main-nav'));curatePublicNav(document.querySelector('.mobile-drawer .drawer-list'),true);curatePublicChrome();removeInternalPublicLinks();markActive(page);}

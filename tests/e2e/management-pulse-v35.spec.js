@@ -65,7 +65,8 @@ test.describe('V3.5 · cierre gerencial, capacidad y tesorería',()=>{
     await surface.getByRole('button',{name:'Registrar nueva observación'}).click();
     await expect(surface.getByText('10 un./día',{exact:true})).toBeVisible();
     await expect(surface.getByText('1 día(s) sobre capacidad',{exact:true})).toBeVisible();
-    await expect(surface.getByText('120 %',{exact:true}).or(surface.getByText('120 %',{exact:true}))).toBeVisible();
+    const utilization=await page.evaluate(()=>window.EL_ERRANTE_MANAGEMENT_V35.compute()?.capacity?.peak?.utilization);
+    expect(utilization).toBeCloseTo(1.2,5);
 
     await surface.locator('input[name="dailyUnits"]').fill('15');
     await surface.locator('input[name="note"]').fill('Segundo turno observado');

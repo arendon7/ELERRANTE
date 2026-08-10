@@ -31,3 +31,11 @@ private-data/
 # Editor
 .vscode/
 .idea/
+
+# Graphify / Obsidian
+# El grafo vivo se publica en la rama regenerable knowledge/graphify-live,
+# nunca como contenido canónico de main.
+graphify-out/
+knowledge/90_GRAPHIFY_AUTO/
+.obsidian/
+knowledge/.obsidian/

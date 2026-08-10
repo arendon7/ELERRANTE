@@ -18,7 +18,7 @@ def require(condition,message):
         issues.append(message)
 
 def aggregate_compatible(text,prefix):
-    return any(f'{prefix}v{version}' in text for version in ('1.1.0','1.2.0','1.3.0'))
+    return any(f'{prefix}v{version}' in text for version in ('1.1.0','1.2.0','1.3.0','1.4.0'))
 
 studio=read('studio.html')
 module=read('assets/master-cost-proposals-v11.js')

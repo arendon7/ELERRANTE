@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='3.1.0';
+const VERSION='3.1.1';
 const SESSION_KEY='ee_v31_session';
 let expiryTimer=null;
 function read(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY));}catch(_){return null;}}
@@ -23,7 +23,7 @@ function scheduleExpiry(s){
   const active=session();
   if(!active){redirectExpired();return;}
   scheduleExpiry(active);
- },Math.max(1,Math.min(remaining,2147483647)));
+ },Math.max(1,Math.min(remaining,2147483647));
 }
 function enforceSession(){
  const s=session();

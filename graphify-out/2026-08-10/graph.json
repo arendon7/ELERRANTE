@@ -14926,10 +14926,9 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "community": 131,
-      "norm_label": "refresh_graphify_knowledge.sh",
       "id": "scripts_refresh_graphify_knowledge",
-      "community_name": "refresh_graphify_knowledge.sh"
+      "community": 131,
+      "norm_label": "refresh_graphify_knowledge.sh"
     },
     {
       "label": "refresh_graphify_knowledge.sh script",
@@ -14941,10 +14940,9 @@
         "kind": "bash_entrypoint"
       },
       "_origin": "ast",
-      "community": 131,
-      "norm_label": "refresh_graphify_knowledge.sh script",
       "id": "scripts_refresh_graphify_knowledge_sh__entry",
-      "community_name": "refresh_graphify_knowledge.sh"
+      "community": 131,
+      "norm_label": "refresh_graphify_knowledge.sh script"
     }
   ],
   "links": [
@@ -43167,9 +43165,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "scripts_refresh_graphify_knowledge",
-      "target": "scripts_refresh_graphify_knowledge_sh__entry"
+      "target": "scripts_refresh_graphify_knowledge_sh__entry",
+      "confidence_score": 1.0
     }
   ],
   "hyperedges": [],

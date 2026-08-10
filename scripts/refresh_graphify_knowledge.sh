@@ -6,8 +6,6 @@ GRAPHIFY_VERSION="${GRAPHIFY_VERSION:-0.9.26}"
 cd "$ROOT"
 
 if command -v uvx >/dev/null 2>&1; then
-  # Incluimos el extra SQL porque ELERRANTE contiene migraciones/esquemas que
-  # deben formar parte del mapa estructural.
   GRAPHIFY=(uvx --from "graphifyy[sql]==${GRAPHIFY_VERSION}" graphify)
 elif command -v graphify >/dev/null 2>&1; then
   GRAPHIFY=(graphify)
@@ -18,16 +16,14 @@ else
 fi
 
 echo "==> Graphify ${GRAPHIFY_VERSION}: extracción estructural local"
-# Sin --out: Graphify usa su ruta canónica <repo>/graphify-out/. Pasar
-# --out graphify-out crea un graphify-out/graphify-out en v0.9.26.
 "${GRAPHIFY[@]}" extract . --code-only
 
 test -s graphify-out/graph.json
 
-# El headless extract deja el grafo y el análisis; cluster-only materializa el
-# reporte humano y etiquetas sin volver a extraer el corpus.
 echo "==> Generando reporte arquitectónico"
-"${GRAPHIFY[@]}" cluster-only graphify-out --no-viz
+# cluster-only recibe la raíz del corpus; Graphify resuelve desde allí
+# <root>/graphify-out/graph.json.
+"${GRAPHIFY[@]}" cluster-only . --no-viz
 
 test -s graphify-out/GRAPH_REPORT.md
 

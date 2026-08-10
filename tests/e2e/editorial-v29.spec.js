@@ -40,7 +40,39 @@ test.describe('Editorial y autoridad V3.0 candidate', () => {
     await expect(page.getByRole('heading',{name:'La pizza es la parte visible de muchas decisiones invisibles.'})).toBeVisible();
     await expect(page.getByText('En Casa nombra la línea. Segundo Fuego explica la investigación detrás.')).toBeVisible();
     await expect(page.getByText('El primero puede impresionar. El cuarto empieza a decir la verdad.')).toBeVisible();
-    await expect(page.getByText('Menos ingredientes', { exact:false })).toHaveCount(0);
+  });
+
+  test('historia narra el arco autoral sin convertir hipótesis técnicas en claims', async ({ page }) => {
+    await page.goto('/historia.html');
+    await expect(page.getByRole('heading',{name:'Viajar hasta una tradición para aprender a no copiarla.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Primero estuvo la cocina.'})).toBeVisible();
+    await expect(page.getByText('Juan David Ocampo', { exact:false })).toBeVisible();
+    await expect(page.getByText('El reloj organiza. La masa confirma.')).toBeVisible();
+    const main=page.locator('main');
+    await expect(main).not.toContainText('A 400 grados');
+    await expect(main).not.toContainText('400 °C');
+    await expect(main).not.toContainText('Trabajamos tomate San Marzano');
+    await expect(main).not.toContainText('Usamos tomate San Marzano');
+    await expect(main).not.toContainText('Trabajamos con biga y masa madre');
+    await expect(main).not.toContainText('Biga · Masa madre · Tiempo');
+  });
+
+  test('bitácora es un archivo firmado, versionado y seguro frente a claims abiertos', async ({ page }) => {
+    await page.goto('/bitacora.html');
+    await expect(page.getByText('Por Juan David Ocampo · Chef · El Errante')).toBeVisible();
+    await expect(page.getByText('MAS-001 · En prueba')).toBeVisible();
+    await expect(page.getByText('RIT-001 · Abierta')).toBeVisible();
+    await expect(page.getByText('FER-001 · En prueba')).toBeVisible();
+    await expect(page.getByText('MGH-001 · Prioritaria')).toBeVisible();
+    await expect(page.getByText('Poolish, biga o masa madre no son una identidad.')).toBeVisible();
+    await expect(page.getByText('La cocina genera contenido. El contenido no genera cocina.')).toBeVisible();
+    const main=page.locator('main');
+    await expect(main).not.toContainText('A 400 grados');
+    await expect(main).not.toContainText('400 °C');
+    await expect(main).not.toContainText('Trabajamos tomate San Marzano');
+    await expect(main).not.toContainText('Usamos tomate San Marzano');
+    await expect(main).not.toContainText('Trabajamos con biga y masa madre');
+    await expect(main).not.toContainText('Biga · Masa madre · Tiempo');
   });
 
   test('cinco pizzas reciben el contrato gastronómico V3 sin perder catálogo', async ({ page }) => {

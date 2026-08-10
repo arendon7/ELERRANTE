@@ -36,7 +36,7 @@
   }
   function integrityUnchanged(before){
     return before.purchasesText===localStorage.getItem(PURCHASES_KEY)
-      && before.materials===JSON.stringify(DATA?.materials?.map(item=>({id:item.id,cost:item.cost,status:item.status,itemConfidence:item.confidence}))||[]).replaceAll('itemConfidence','confidence')
+      && before.materials===JSON.stringify(DATA?.materials?.map(item=>({id:item.id,cost:item.cost,status:item.status,confidence:item.confidence}))||[])
       && before.products===JSON.stringify(DATA?.products||[]);
   }
   function append(event){const before=integritySnapshot();const log=events();log.push(Object.freeze({...event}));writeEvents(log);if(!integrityUnchanged(before))throw new Error('La propuesta alteró hechos o estándar');return event;}

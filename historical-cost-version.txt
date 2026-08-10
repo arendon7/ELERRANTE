@@ -1,0 +1,6 @@
+EL ERRANTE HISTORICAL COST LAYER
+historical_cost_snapshots=v1.4.0
+historical_cost_policy=as-of-materialization-ledger
+legacy_backfill=forbidden
+unknown_cost=explicit
+historical_margin=current-standard-substitution-forbidden

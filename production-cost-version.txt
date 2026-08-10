@@ -1,0 +1,8 @@
+production_cost=v1.6.0
+consumption_ledger=ee_v16_batch_consumption_events
+source=measurement_v24_plus_explicit_batch_consumption
+historical_standard=as_of_v14
+purchase_lot_attribution=forbidden_without_evidence
+finance_mutation=forbidden
+unknown_cost=explicit
+corrections=append_only

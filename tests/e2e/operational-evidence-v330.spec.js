@@ -25,7 +25,9 @@ async function seed(page,{preexistingEvidence=[]}={}){
 async function openEvidence(page){
   await page.goto('/operacion.html#evidencia');
   await expect(page.locator('html')).toHaveAttribute('data-operational-evidence-version','3.3.0');
-  await expect(page.getByRole('heading',{name:'Cerrar el día sin borrar la historia.'})).toBeVisible();
+  await expect(page.locator('#evidencia')).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Hechos trazables antes de cerrar.'})).toBeVisible();
+  await expect(page.locator('#operational-evidence-v330')).toBeVisible();
 }
 
 test.describe('Evidencia operativa V3.3.0',()=>{

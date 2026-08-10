@@ -2,7 +2,7 @@
 
 **Masa · Fuego · Territorio**
 
-Webapp pública e interna de El Errante. La release integral vigente es **V3.1.1**, construida sobre el canon técnico/materializado V2.8 y la línea pública/editorial V2.9. Dentro de esa distribución, los módulos internos han seguido evolucionando de forma compatible: **Operación está en V3.3.0** y **Finanzas en V3.2.9**.
+Webapp pública e interna de El Errante. La release integral vigente es **V3.1.1**, construida sobre el canon técnico/materializado V2.8 y la línea pública/editorial V2.9. Dentro de esa distribución, los motores base conservan sus contratos históricos —**Operación V3.3.0** y **Finanzas V3.2.9**— mientras las superficies internas han evolucionado mediante overlays compatibles: horizonte V3.4, cierre gerencial/capacidad V3.5 y cierre diario/continuidad V3.6.
 
 La numeración de módulo no sustituye automáticamente la versión integral. El mapa completo y las reglas de versionado están en `documentacion/MAPA_VERSIONES_ACTIVAS.md`.
 
@@ -15,10 +15,11 @@ La numeración de módulo no sustituye automáticamente la versión integral. El
 - Línea pública/editorial: V2.9.
 - Arquitectura interna: V3.1.
 - Shell y sesión interna: V3.1.1.
-- Panel de control: shell V3.1.1 sobre motor Control V3.0.
-- Módulo Operativo efectivo: **V3.3.0**.
+- Panel de control: shell V3.1.1 sobre motor Control V3.0; superficie efectiva con overlays V3.4–V3.6.
+- Módulo Operativo efectivo: **V3.3.0**. Este marcador identifica el motor/base contractual; `operacion.html` presenta la superficie efectiva V3.6 mediante overlays compatibles V3.4–V3.6.
 - Workbench Financiero base: V3.1.0.
-- Módulo Financiero efectivo: **V3.2.9**.
+- Módulo Financiero efectivo: **V3.2.9**. Este marcador identifica la profundidad base histórica; `finanzas.html` incorpora además V3.4 y V3.5 sin sustituir ese núcleo.
+- Cierre diario y continuidad: V3.6.0, ledger local `ee_v36_daily_close_events`.
 - MFO privado de referencia: workbook profile v3.3, snapshot schema V3.0.
 - Catálogo público: 11 productos y 14 variantes.
 - Persistencia actual de las superficies internas: navegador (`localStorage` / `sessionStorage`).
@@ -38,9 +39,9 @@ Acceso usuarios
 Usuario + contraseña
    ↓
 Centro interno
-   ├── Panel de control
-   ├── Operación V3.3.0
-   ├── Finanzas V3.2.9
+   ├── Panel de control · motor V3.0 + overlays V3.4–V3.6
+   ├── Operación · base V3.3.0 + superficie V3.6
+   ├── Finanzas · base V3.2.9 + overlays V3.4–V3.5
    ├── Datos maestros · auxiliar
    └── Actas · auxiliar
 ```
@@ -57,37 +58,41 @@ La sesión local:
 - revalida expiración en pestañas que permanecen abiertas;
 - preserva únicamente destinos internos permitidos mediante `?next=`;
 - permite volver de forma segura a Control, Operación, Finanzas, Datos maestros o Actas;
-- conserva deep links operativos permitidos, incluido `operacion.html#evidencia`;
+- conserva deep links operativos permitidos, incluidos `operacion.html#evidencia` y `operacion.html#cierre-diario`;
 - se limpia al cerrar sesión.
 
 Esta capa protege la experiencia local, pero GitHub Pages continúa siendo un host estático. No sustituye autorización servidor. La seguridad multiusuario real corresponde a una futura fase Supabase Auth + RLS.
 
-## Panel de control
+## Panel de control · superficie V3.6
 
-`control.html` es la vista ejecutiva operativa. Resume pedidos comprometidos, alistamiento, BOM, inventario conocido/desconocido, faltantes y compras abiertas antes de entrar al flujo completo.
+`control.html` es la vista ejecutiva operativa. Conserva el motor Control V3.0 y agrega overlays de sólo lectura/coordination:
 
-- Shell / sesión: V3.1.1.
-- Motor de control: V3.0.
+- horizonte operativo V3.4;
+- capacidad observada V3.5;
+- estado de cierre y continuidad V3.6.
 
-El Panel no calcula margen, resultado ni caja. Su responsabilidad es priorizar la operación.
+Resume pedidos comprometidos, alistamiento, BOM, inventario conocido/desconocido, faltantes, compras abiertas, carga/capacidad y estado del cierre diario. El Panel no calcula margen, resultado ni caja y **no expone el formulario de cierre**; enlaza a Operación cuando hace falta actuar.
 
-## Operación V3.3.0
+## Operación · base V3.3.0, superficie V3.6
 
-`operacion.html` es la superficie operativa única. Compone motores previamente certificados y añade una capa transversal de evidencia:
+`operacion.html` es la superficie operativa única. Compone motores previamente certificados y overlays que no duplican sus stores:
 
 1. Resumen y prioridades — Control V3.0.
 2. Pedidos y continuidad — Agenda V2.1.
 3. Producción y alistamiento — Producción V2.2.
-4. Materiales / BOM — V2.3.
+4. Materiales / BOM — motor V2.3.1 sobre pack V2.3.0.
 5. Inventario, lotes, rendimiento y merma — Medición V2.4.
 6. Compras y recepción — Abastecimiento V2.5.
-7. **Evidencia y cierre — V3.3.0.**
+7. Evidencia/readiness — V3.3.0.
+8. Horizonte operativo de siete días — V3.4.0.
+9. Capacidad observada y versionada — V3.5.0.
+10. **Cierre diario y continuidad — V3.6.0.**
 
-### Evidencia y cierre V3.3.0
+### Evidencia V3.3.0
 
 La capa V3.3.0 consolida hechos existentes sin duplicarlos y añade la bitácora local `ee_v330_operational_evidence`.
 
-Controla cinco frentes de cierre:
+Controla cinco frentes de evidencia:
 
 - producción / lote;
 - rendimiento y merma;
@@ -104,11 +109,25 @@ Principios:
 - registrar evidencia no modifica pedidos, stock, recetas, BOM, compras ni Finanzas;
 - los hechos operativos pueden ser leídos por Finanzas, pero Finanzas no los reescribe.
 
-La demo operativa V3.1.1 respalda y restaura también esta bitácora. Los datos sintéticos no sobreviven a la salida de la demo.
+### Cierre diario y continuidad V3.6
 
-## Finanzas V3.2.9
+V3.6 consume la evidencia V3.3, el horizonte V3.4 y la capacidad V3.5 para responder:
 
-`finanzas.html` mantiene como núcleo el **Financial Workbench V3.1** y carga capas acumulativas hasta V3.2.9.
+1. ¿Qué pasó hoy?
+2. ¿Qué quedó pendiente?
+3. ¿Puedo cerrar la jornada con confianza?
+
+El ledger `ee_v36_daily_close_events` es append-only. Un cierre con controles bloqueantes exige justificación; una corrección crea un evento nuevo con `supersedes`; si los hechos cambian después del cierre, el fingerprint deja de coincidir y la jornada pasa a **Cierre requiere revisión**.
+
+Los pendientes sólo se arrastran al día siguiente cuando continúan realmente abiertos. V3.6 permite imprimir un resumen y exportar JSON local, pero cerrar la jornada **no modifica pedidos, stock, BOM, compras, mediciones, costos ni Finanzas**.
+
+El contrato completo está en `documentacion/CIERRE_DIARIO_V36.md`.
+
+La demo operativa V3.1.1 respalda y restaura los stores locales cubiertos por su contrato. Los datos sintéticos no deben interpretarse como operación real.
+
+## Finanzas · base V3.2.9, overlays V3.4–V3.5
+
+`finanzas.html` mantiene como núcleo el **Financial Workbench V3.1** y carga capas acumulativas V3.2.0–V3.2.9, más los overlays compatibles de contexto operativo y cierre gerencial.
 
 ### Capas activas
 
@@ -123,8 +142,11 @@ La demo operativa V3.1.1 respalda y restaura también esta bitácora. Los datos 
 - V3.2.7 — resumen ejecutivo.
 - V3.2.8 — readiness / calidad del dato.
 - V3.2.9 — demo financiera aislada y reversible.
+- V3.4.0 — puente de compromisos operativos de siete días.
+- V3.5.0 — cierre gerencial, tesorería corta y señal de capacidad.
+- V1.4/V1.5 — costo histórico e inventario valorizado como capas de hechos económicos.
 
-La profundidad efectiva vigente del módulo es **V3.2.9**. El archivo `finance-workbench-v31.js` conserva su nombre porque sigue siendo el núcleo contractual sobre el que se montan las capas posteriores.
+El archivo `finance-workbench-v31.js` conserva su nombre porque sigue siendo el núcleo contractual sobre el que se montan las capas posteriores. Pedidos futuros son contexto comercial-operativo: no se convierten automáticamente en ingreso, caja ni COGS.
 
 ### Dos formas de empezar
 
@@ -199,7 +221,7 @@ El mapa de fuentes distingue explícitamente materialización pública, datos ma
 
 ## Marcador de despliegue
 
-`deploy-version.txt` distingue explícitamente las líneas de versión:
+`deploy-version.txt` distingue explícitamente las líneas de versión base:
 
 ```text
 release_version=3.1.1
@@ -213,7 +235,7 @@ finance_module=v3.2.9
 mfo_baseline=v3.0-schema-mfo-v3.3
 ```
 
-No debe utilizarse un único número para inferir todas las capas.
+Los overlays V3.4–V3.6 se certifican mediante sus activos, pruebas y health-checks específicos; no se debe utilizar un único número para inferir todas las capas.
 
 ## Validación vigente
 
@@ -229,7 +251,7 @@ scripts/preparar_sitio_materializado_v28.py
 tests/e2e/
 ```
 
-La integración a `main` requiere auditoría canónica, validación/materialización, Playwright desktop+móvil y health-check real de GitHub Pages sobre el mismo SHA.
+La integración a `main` requiere auditoría canónica, validación/materialización, Playwright desktop+móvil, Graphify y health-check real de GitHub Pages sobre el mismo SHA. V3.6 añade `.github/workflows/public-health-v36.yml`.
 
 ## Seguridad y datos
 
@@ -237,6 +259,7 @@ La integración a `main` requiere auditoría canónica, validación/materializac
 - No existen credenciales demo fijas como contrato vigente; el primer usuario se crea localmente por navegador.
 - El login local no se presenta como seguridad servidor.
 - MFO, escenario y decisión son plan; no sobrescriben hechos operativos.
+- El cierre V3.6 no sobrescribe hechos ni crea datos financieros.
 - El starter financiero no inventa costos privados.
 - La autenticación multiusuario, roles, persistencia compartida y auditoría servidor quedan para una fase posterior con Auth + RLS.
 
@@ -249,6 +272,7 @@ Empieza por el índice de documentación activa:
 - `documentacion/ARQUITECTURA_INTERNA_V31.md`
 - `documentacion/MAPA_DATOS_Y_FUENTES.md`
 - `documentacion/ROADMAP_ACTIVO_V33.md`
+- `documentacion/CIERRE_DIARIO_V36.md`
 - `documentacion/ACCESOS_DEMO.md`
 - `documentacion/MFO_SNAPSHOT_V30.md`
 - `documentacion/CANON_MARCA_CONTENIDO_V28.md`

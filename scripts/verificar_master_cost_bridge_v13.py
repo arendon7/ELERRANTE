@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Barrera de integridad para el puente prospectivo Datos maestros V1.3."""
 from pathlib import Path
+import subprocess
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -104,3 +105,11 @@ print('operation=prospective_effective_bom')
 print('finance=effective_standard_plus_simulation')
 print('historical_facts=no_mutation')
 print('bridge=read_only')
+
+v14=ROOT/'scripts/verificar_historical_cost_snapshots_v14.py'
+if not v14.is_file():
+    print('Falta scripts/verificar_historical_cost_snapshots_v14.py')
+    sys.exit(1)
+result=subprocess.run([sys.executable,str(v14)],cwd=ROOT)
+if result.returncode:
+    sys.exit(result.returncode)

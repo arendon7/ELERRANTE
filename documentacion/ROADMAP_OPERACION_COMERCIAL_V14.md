@@ -1,5 +1,7 @@
 # EL ERRANTE — Roadmap de operación comercial V1.4
 
+> **DOCUMENTO HISTÓRICO.** Este roadmap registra la dirección prevista y el estado declarado en una etapa anterior. Ya no debe utilizarse como backlog vigente. El estado actual y las prioridades posteriores a Operación V3.3.0 están en `ROADMAP_ACTIVO_V33.md`. Las referencias a Supabase o a estados de activación dentro de este documento son históricas y no significan que el backend esté activo hoy.
+
 ## Objetivo
 Convertir la web actual en una experiencia comercial usable, administrable y medible, conservando el repositorio `main` como fuente única de código y utilizando GitHub Pages como entorno público de revisión de cada iteración.
 

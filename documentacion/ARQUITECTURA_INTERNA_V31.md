@@ -2,7 +2,7 @@
 
 ## 1. Alcance
 
-La arquitectura interna V3.1 sigue siendo el contrato estructural vigente de El Errante: acceso, selección de contexto y separación de responsabilidades entre **Panel de control**, **Operación** y **Finanzas**.
+La arquitectura interna V3.1 sigue siendo el contrato estructural vigente de El Errante: acceso, selección de contexto y separación de responsabilidades entre **Panel de control**, **Operación** y **Finanzas**, con **Datos maestros** y **Actas** como herramientas auxiliares de gobierno dentro del mismo perímetro local.
 
 La release integral publicada continúa siendo V3.1.1. Sobre ella, los módulos han avanzado de forma compatible:
 
@@ -12,7 +12,7 @@ La release integral publicada continúa siendo V3.1.1. Sobre ella, los módulos 
 - Finanzas efectiva: V3.2.9;
 - runtime/materialización: V2.8.0.
 
-La matriz completa está en `documentacion/MAPA_VERSIONES_ACTIVAS.md`.
+La matriz completa está en `MAPA_VERSIONES_ACTIVAS.md`.
 
 ## 2. Flujo de acceso
 
@@ -26,7 +26,9 @@ Sesión local V3.1.1
 Centro interno
    ├── Panel de control
    ├── Operación V3.3.0
-   └── Finanzas V3.2.9
+   ├── Finanzas V3.2.9
+   ├── Datos maestros · auxiliar
+   └── Actas · auxiliar
 ```
 
 ### Sesión local V3.1.1
@@ -40,6 +42,19 @@ Mientras Supabase permanezca inactivo, el navegador configura y conserva el acce
 - sesión en `sessionStorage` con vencimiento de ocho horas.
 
 La shell V3.1.1 revalida la expiración en pestañas abiertas, en foco, `pageshow` y cambios de visibilidad. El retorno a una sección interna se limita a destinos permitidos mediante `?next=`.
+
+Destinos permitidos:
+
+- Centro interno;
+- Panel de control;
+- Operación y hashes internos expresamente permitidos, incluido `#evidencia`;
+- Finanzas;
+- Datos maestros;
+- Actas.
+
+Un destino externo o no reconocido no se conserva.
+
+Las cuentas/sesiones locales creadas durante V3.1.0 permanecen compatibles: la metadata V3.1.1 no invalida el formato de cuenta ni el contrato de sesión.
 
 ### Límite de seguridad
 
@@ -119,6 +134,33 @@ El núcleo sigue siendo `finance-workbench-v31.js`, pero la profundidad efectiva
 - `finance-demo-v329.js` — V3.2.9.
 
 Estas capas amplían el workbench sin cambiar el contrato fundamental de separación entre plan y hechos.
+
+### 3.4 Datos maestros
+
+Pregunta principal: **¿qué sabemos de cada entidad y qué fuente lo respalda?**
+
+`studio.html` es una superficie auxiliar, protegida por la misma shell local V3.1.1. Gobierna:
+
+- producto y SKU;
+- contenido y atributos maestros;
+- fuentes;
+- estado de evidencia;
+- gobierno de oferta.
+
+No registra pedidos, producción ni hechos financieros.
+
+### 3.5 Actas
+
+Pregunta principal: **¿qué se validó, con qué evidencia y bajo qué condiciones?**
+
+`actas.html` comparte la shell V3.1.1 y conserva el motor de actas/oferta V0.9 como capa modular histórica aún utilizada.
+
+Una acta local:
+
+- documenta participantes, evidencia, condiciones y decisiones;
+- no constituye firma electrónica por sí sola;
+- no equivale a aprobación sanitaria, jurídica o comercial externa;
+- no reemplaza hechos de Operación ni Finanzas.
 
 ## 4. Baseline + Working Model
 
@@ -227,6 +269,7 @@ Este marcador evita tratar la versión modular más alta como versión global de
 
 Las páginas internas y los assets críticos de sesión, Finanzas y evidencia operativa usan política fresca/network-first cuando corresponde. El service worker debe conservar explícitamente:
 
+- páginas de Centro, Control, Operación, Finanzas, Datos maestros y Actas;
 - shell V3.1.1;
 - demo interna V3.1.1;
 - configuración comercial efectiva;
@@ -245,7 +288,7 @@ Barreras principales:
 - Playwright desktop y móvil;
 - health-check público sobre el SHA desplegado.
 
-La barrera de release debe comprobar no sólo `release_version=3.1.1`, sino también la matriz modular vigente.
+Las barreras deben comprobar tanto la matriz modular como el perímetro completo de la shell local: Centro, Control, Operación, Finanzas, Datos maestros y Actas.
 
 ## 11. Próxima fase estructural
 

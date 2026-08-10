@@ -16,15 +16,32 @@ Por tanto, no debe deducirse la versión integral a partir del número más alto
 | Runtime / materialización | **2.8.0** | Fuente materializada, cache y superficie ejecutable | No se renombra mientras el contrato técnico siga siendo el mismo. |
 | Canon de marca y activos | **2.8** | Identidad, imágenes, aliases y materialización | `assets/brand-canon-v28.js`. |
 | Línea pública/editorial | **2.9** | Narrativa y recorrido público | Compatible con el runtime V2.8. |
-| Arquitectura interna | **3.1** | Separación Control / Operación / Finanzas | Contrato estructural vigente. |
-| Shell y sesión interna | **3.1.1** | Guard local, navegación, retorno seguro, expiración y demo operativa reversible | No equivale a autorización servidor. |
+| Arquitectura interna | **3.1** | Tres contextos principales + herramientas auxiliares | Control / Operación / Finanzas; Studio y Actas como gobierno. |
+| Shell y sesión interna | **3.1.1** | Guard local, navegación, retorno seguro, expiración y demo operativa reversible | Cubre Centro, Control, Operación, Finanzas, Datos maestros y Actas; no equivale a autorización servidor. |
 | Panel de control | **shell 3.1.1 / motor 3.0** | Priorización operativa | `control-v30.js` permanece como motor. |
 | Módulo Operativo | **3.3.0** | Ejecución + evidencia y cierre | Compone motores V2.1–V2.5, Control V3.0 y evidencia V3.3.0. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | Núcleo `finance-workbench-v31.js`. |
 | Módulo Financiero efectivo | **3.2.9** | Profundidad financiera acumulativa | Capas V3.2.0–V3.2.9 sobre el workbench base. |
+| Datos maestros | **shell 3.1.1 / motor oferta V0.9** | Gobierno de producto, SKU, fuentes y evidencia | Superficie auxiliar `studio.html`. |
+| Actas | **shell 3.1.1 / motores oferta V0.9** | Trazabilidad de sesiones, evidencia y decisiones | Superficie auxiliar `actas.html`. |
 | Demo financiera | **3.2.9** | Escenario sintético local y reversible | No contiene cifras privadas reales. |
 | Snapshot MFO | **schema 3.0 / workbook profile v3.3** | Perfil de importación del MFO privado | El XLSX real permanece fuera del repositorio. |
 | Supabase | **preparado, inactivo** | Futuro Auth, RLS y persistencia multiusuario | No se declara backend activo en esta release. |
+
+## Perímetro de shell V3.1.1
+
+Comparten la misma barrera local de sesión:
+
+- `centro-interno.html`;
+- `control.html`;
+- `operacion.html`;
+- `finanzas.html`;
+- `studio.html`;
+- `actas.html`.
+
+El retorno seguro mediante `?next=` sólo admite esos destinos y hashes operativos expresamente permitidos, incluido `operacion.html#evidencia`.
+
+Esta coherencia de shell no cambia la limitación esencial: GitHub Pages es estático y la sesión local no es autorización servidor.
 
 ## Composición del módulo Operativo V3.3.0
 
@@ -72,6 +89,8 @@ El marcador de despliegue debe declarar por separado:
 - `finance_module=v3.2.9`
 - `mfo_baseline=v3.0-schema-mfo-v3.3`
 
+`internal_architecture` conserva su identificador histórico de tres contextos principales; la shell V3.1.1 también cubre las herramientas auxiliares Studio/Actas.
+
 Esto evita usar un solo número para contratos que evolucionan a ritmos distintos.
 
 ## Cuándo subir la release integral
@@ -84,7 +103,7 @@ La release integral sólo debe cambiar cuando el conjunto publicado requiera un 
 - cambio del runtime o de la superficie materializada;
 - nuevo contrato transversal que afecte simultáneamente publicación, validadores y experiencia general.
 
-Una mejora aislada y compatible de Operación o Finanzas puede conservar `release_version=3.1.1` y avanzar únicamente su versión modular.
+Una mejora aislada y compatible de Operación, Finanzas o una superficie auxiliar puede conservar `release_version=3.1.1` mientras no cambie el contrato transversal.
 
 ## Invariantes de numeración
 
@@ -94,3 +113,4 @@ Una mejora aislada y compatible de Operación o Finanzas puede conservar `releas
 4. No presentar el guard local V3.1.1 como seguridad backend.
 5. No declarar Supabase activo mientras Auth, RLS y persistencia compartida no estén realmente habilitados y certificados.
 6. Toda nueva capa modular debe conservar una prueba que demuestre que no rompe los contratos inferiores que reutiliza.
+7. Las herramientas auxiliares deben compartir la shell interna si aparecen dentro del mapa de navegación protegido.

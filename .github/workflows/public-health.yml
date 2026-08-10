@@ -125,7 +125,7 @@ jobs:
           grep -q 'assets/business-pulse-v34.css?v=3.4.0' public-control.html
           grep -q 'assets/business-pulse-v34.js?v=3.4.0' public-control.html
 
-          grep -q 'Del pedido al despacho, con cada decisión visible.' public-operacion.html
+          grep -q 'Del pedido al despacho, y del hecho al cierre.' public-operacion.html
           grep -q 'href="control.html"' public-operacion.html
           grep -q 'id="control-v30"' public-operacion.html
           grep -q 'id="daily-ops-v21"' public-operacion.html

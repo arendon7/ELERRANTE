@@ -20,10 +20,10 @@ Por tanto, no debe deducirse la versión integral a partir del número más alto
 | Shell y sesión interna | **3.1.1** | Guard local, navegación, retorno seguro, expiración y demo operativa reversible | Cubre Centro, Control, Operación, Finanzas, Datos maestros y Actas; no equivale a autorización servidor. |
 | Panel de control | **shell 3.1.1 / motor 3.0** | Priorización operativa | `control-v30.js` permanece como motor. |
 | Módulo Operativo | **3.3.0** | Ejecución + evidencia y cierre | Compone motores V2.1–V2.5, Control V3.0 y evidencia V3.3.0. |
-| Motor Materiales / BOM | **2.3.1** | Requerimientos, lectura de stock y conteos visibles | `materials-v23.js`; el pack maestro `materials-data-v23.js` conserva schema V2.3.0. |
+| Motor Materiales / BOM | **2.3.1** + puente V1.3 | Requerimientos, lectura de stock, conteos y valoración prospectiva | `materials-v23.js`; cantidades siguen V2.3.1 sobre pack de datos V2.3.0 y costos prospectivos usan el estándar efectivo V1.3. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | Núcleo `finance-workbench-v31.js`. |
-| Módulo Financiero efectivo | **3.2.9** | Profundidad financiera acumulativa | Capas V3.2.0–V3.2.9 sobre el workbench base. |
-| Datos maestros | **shell 3.1.1 / core V1.0.0 / propuestas V1.1.0 / materialización V1.2.0 / oferta V0.9** | Gobierno de materiales, proveedores, costos, producto, SKU, fuentes y evidencia | V1.2 convierte una aprobación V1.1 en revisión prospectiva trazable sin reescribir baseline ni hechos históricos. |
+| Módulo Financiero efectivo | **3.2.9** + puente V1.3 | Profundidad financiera acumulativa | Economía unitaria V3.2.2 usa estándar efectivo V1.3 como base de simulación. |
+| Datos maestros | **shell 3.1.1 / core V1.0.0 / propuestas V1.1.0 / materialización V1.2.0 / puente V1.3.0 / oferta V0.9** | Gobierno y consumo controlado de materiales, proveedores y costos | V1.3 lleva el estándar efectivo a cálculos prospectivos de Operación y Finanzas sin reescribir hechos. |
 | Actas | **shell 3.1.1 / motores oferta V0.9** | Trazabilidad de sesiones, evidencia y decisiones | Superficie auxiliar `actas.html`. |
 | Demo financiera | **3.2.9** | Escenario sintético local y reversible | No contiene cifras privadas reales. |
 | Snapshot MFO | **schema 3.0 / workbook profile v3.3** | Perfil de importación del MFO privado | El XLSX real permanece fuera del repositorio. |
@@ -44,13 +44,14 @@ El retorno seguro mediante `?next=` sólo admite esos destinos y hashes operativ
 
 Esta coherencia de shell no cambia la limitación esencial: GitHub Pages es estático y la sesión local no es autorización servidor.
 
-## Datos maestros V1.0.0 + V1.1.0 + V1.2.0
+## Datos maestros V1.0.0 + V1.1.0 + V1.2.0 + V1.3.0
 
-`studio.html` contiene ahora cuatro capas distintas y compatibles:
+El gobierno y consumo de costos se compone de capas compatibles:
 
 - **Core de gobierno de materiales/proveedores V1.0.0**: lee el pack `materials-data-v23.js` y las compras observadas `ee_v24_material_purchases`, pero persiste exclusivamente metadata de gobierno en `ee_v10_master_governance`.
 - **Propuestas de costo V1.1.0**: toma una compra observada del mismo material como evidencia y registra un ledger local append-only en `ee_v11_cost_proposal_events`.
 - **Materialización controlada V1.2.0**: convierte una propuesta aprobada en una nueva revisión del estándar efectivo mediante `ee_v12_cost_materialization_events`, sin editar el baseline canónico ni reescribir hechos.
+- **Puente prospectivo V1.3.0**: resuelve `baseline → estándar materializado → simulación financiera` y alimenta Operación/Finanzas mediante una capa de solo lectura.
 - **Gobierno de oferta V0.9**: conserva expediente de producto/SKU, contenido, fuentes y gates de lanzamiento.
 
 V1.0.0 permite registrar por material o proveedor responsable, fuente específica, fecha de revisión, calidad, sensibilidad operativa y nota. La última compra observada se presenta como evidencia separada; no se promueve automáticamente a costo estándar/provisional, no modifica BOM y no reescribe el historial de compras.
@@ -67,13 +68,15 @@ V1.2.0 añade el paso explícito **`MATERIALIZED`** en un ledger separado. Cada 
 
 La materialización usa control optimista de concurrencia: si el estándar vigente ya no coincide con el snapshot contra el que nació la propuesta, la aprobación se considera obsoleta y se bloquea. Una misma propuesta tampoco puede materializarse dos veces. Después de una materialización, una propuesta nueva debe capturar como `standardCost` la revisión efectiva vigente y no el baseline original.
 
+V1.3.0 no crea una tercera copia del estándar. `master-cost-prospective-v13.js` deriva una vista de solo lectura sobre V1.2 y la entrega a los consumidores. Operación usa esa vista para valorizar BOM, agenda y receta futura; Finanzas la usa como base de economía unitaria y permite superponer un override de simulación local. Restablecer una simulación devuelve el costo al estándar efectivo vigente, no al baseline anterior. Ningún cálculo V1.3 modifica el ledger V1.2, pedidos, compras, stock ni la fuente canónica.
+
 ## Composición del módulo Operativo V3.3.0
 
 `operacion.html` conserva y compone motores previamente certificados:
 
 - Agenda / pedidos: V2.1.
 - Producción: V2.2.
-- Materiales / BOM: **motor V2.3.1 sobre pack de datos V2.3.0**.
+- Materiales / BOM: **motor V2.3.1 sobre pack de datos V2.3.0 + valoración prospectiva V1.3**.
 - Medición: V2.4.
 - Abastecimiento: V2.5.
 - Resumen de control: V3.0.
@@ -81,6 +84,8 @@ La materialización usa control optimista de concurrencia: si el estándar vigen
 - Evidencia y cierre: V3.3.0.
 
 El patch V2.3.1 corrige la persistencia de conteos: guardar materiales visibles actualiza o elimina únicamente esas claves y preserva conteos almacenados de materiales que no forman parte del requerimiento de la fecha. `0` sigue siendo un conteo físico confirmado; vacío sigue significando desconocido/sin conteo.
+
+V1.3 cambia únicamente la valoración prospectiva: las cantidades de BOM, el stock y los hechos operativos conservan sus contratos. Una nueva revisión de costo puede modificar el costo esperado de producir mañana sin cambiar un pedido ni un conteo ya registrados.
 
 V3.3.0 añade una bitácora append-only de evidencia operativa y controles de cierre. No reemplaza ni renumera los motores anteriores.
 
@@ -90,7 +95,7 @@ V3.3.0 añade una bitácora append-only de evidencia operativa y controles de ci
 
 - V3.2.0 — profundidad financiera.
 - V3.2.1 — ledger / movimientos trazables.
-- V3.2.2 — economía unitaria.
+- V3.2.2 — economía unitaria, ahora con estándar efectivo V1.3 como base.
 - V3.2.3 — caja y tendencias.
 - V3.2.4 — escenarios.
 - V3.2.5 — decisiones.
@@ -99,7 +104,7 @@ V3.3.0 añade una bitácora append-only de evidencia operativa y controles de ci
 - V3.2.8 — readiness / calidad del dato.
 - V3.2.9 — demo financiera aislada y reversible.
 
-El número **3.2.9** describe la profundidad efectiva del módulo financiero, no una nueva release integral.
+El número **3.2.9** describe la profundidad efectiva del módulo financiero, no una nueva release integral. V1.3 es una dependencia transversal de datos y no renumera el módulo financiero.
 
 ## Qué identifica `deploy-version.txt`
 
@@ -112,9 +117,10 @@ El marcador de despliegue debe declarar por separado:
 - `control_engine=v3.0`
 - `operation_module=v3.3.0`
 - `master_data_governance_core=v1.0.0`
-- `master_data_module=v1.2.0`
+- `master_data_module=v1.3.0`
 - `master_cost_proposals=v1.1.0`
 - `master_cost_materialization=v1.2.0`
+- `master_cost_bridge=v1.3.0`
 - `finance_workbench_core=v3.1.0`
 - `finance_module=v3.2.9`
 - `mfo_baseline=v3.0-schema-mfo-v3.3`
@@ -149,4 +155,6 @@ Una mejora aislada y compatible de Operación, Finanzas o una superficie auxilia
 10. El ledger de propuestas debe conservar la historia por eventos; las decisiones posteriores no deben borrar ni reescribir eventos anteriores.
 11. El ledger V1.2 no puede reescribir baseline, compras, propuestas, BOM, productos ni hechos históricos.
 12. Una propuesta obsoleta respecto del estándar vigente debe bloquearse y volver al flujo de propuesta en vez de sobrescribir una revisión posterior.
-13. Los cálculos prospectivos podrán consumir el estándar efectivo V1.2; los hechos históricos deben conservar sus snapshots y no recalcularse retroactivamente.
+13. Los cálculos prospectivos de Operación y Finanzas deben consumir el estándar efectivo V1.3; los hechos históricos no se recalculan retroactivamente.
+14. Una simulación financiera puede sobrescribir temporalmente el estándar sólo dentro de Finanzas; nunca puede convertirse en dato maestro por efecto lateral.
+15. El puente V1.3 es de solo lectura y no puede escribir en el ledger de materialización ni en hechos operativos.

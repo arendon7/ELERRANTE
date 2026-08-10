@@ -1,10 +1,16 @@
 # Roadmap operativo posterior a Datos maestros V1.2
 
+## Estado de la secuencia
+
+- **V1.2 — certificada en main**: materialización controlada y versionada del estándar.
+- **V1.3 — candidato actual**: puente prospectivo hacia Operación y Finanzas.
+- **Siguiente frente al certificar V1.3: V1.4** — snapshots de costo en hechos.
+
 ## V1.2 — materialización controlada
 
 Objetivo: convertir una propuesta aprobada en una revisión efectiva y trazable del costo estándar sin mutar baseline ni hechos históricos.
 
-Estado objetivo: resolver estándar efectivo por material y producto mediante ledger append-only.
+Resultado: estándar efectivo por material y producto reconstruible mediante ledger append-only, con bloqueo de doble aplicación y de propuestas obsoletas.
 
 ## V1.3 — puente prospectivo Operación / Finanzas
 
@@ -17,7 +23,11 @@ Alcance:
 - costo estándar esperado por producto;
 - margen planificado con origen del costo visible;
 - Finanzas mantiene sus overrides como simulación por encima del estándar, nunca como dato maestro;
-- ningún pedido, compra o movimiento histórico se recalcula retroactivamente.
+- restablecer una simulación vuelve al estándar vigente, no al baseline original;
+- Operación no consume simulaciones financieras;
+- ningún pedido, compra, conteo o movimiento histórico se recalcula retroactivamente.
+
+Criterio de cierre: audit, validación/publicación, Playwright desktop/móvil y health-check público verdes sobre el SHA fusionado en `main`.
 
 ## V1.4 — snapshots de costo en hechos
 
@@ -25,9 +35,11 @@ Objetivo: asegurar que cada hecho económico relevante preserve el costo que reg
 
 Alcance:
 
-- snapshot de costo estándar/evidencia en órdenes y movimientos relevantes;
+- definir qué eventos necesitan snapshot de costo y en qué momento se congela;
+- snapshot de estándar, origen y revisión en órdenes/movimientos relevantes;
 - diferenciación entre costo estándar, acordado, observado e histórico;
-- reconstrucción de margen histórico sin depender del estándar vigente de hoy.
+- reconstrucción de margen histórico sin depender del estándar vigente de hoy;
+- migración compatible para hechos existentes sin inventar datos que nunca fueron observados.
 
 ## V1.5 — inventario valorizado y variaciones
 
@@ -69,4 +81,4 @@ Alcance:
 
 Cada nueva capa debe separar explícitamente:
 
-`hecho observado ≠ estándar vigente ≠ simulación ≠ decisión propuesta ≠ decisión aprobada ≠ revisión materializada`
+`hecho observado ≠ baseline ≠ estándar vigente ≠ simulación ≠ decisión propuesta ≠ decisión aprobada ≠ revisión materializada ≠ costo histórico`

@@ -99,7 +99,11 @@ test.describe('Datos maestros V1.1 · propuestas de costo',()=>{
 
   test('la UI crea el borrador y muestra que aprobar no equivale a aplicar',async({page})=>{
     await openStudio(page);
+    const createPanel=page.locator('details.md-v11-create');
+    await createPanel.locator('summary').click();
+    await expect(createPanel).toHaveAttribute('open','');
     const form=page.locator('#md-v11-form');
+    await expect(form).toBeVisible();
     await form.getByLabel('Material').selectOption('MP-HFS');
     await form.getByLabel('Compra observada').selectOption('COM-1');
     await form.getByLabel('Costo propuesto por unidad').fill('3.4');

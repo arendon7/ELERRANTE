@@ -32,6 +32,7 @@ acts=read('actas.html')
 host=read('assets/host-mode.js')
 access_js=read('assets/access-v31.js')
 shell_js=read('assets/internal-shell-v31.js')
+materials_js=read('assets/materials-v23.js')
 operation_v330=read('assets/operational-evidence-v330.js')
 finance_js=read('assets/finance-workbench-v31.js')
 starter_js=read('assets/finance-starter-v31.js')
@@ -53,6 +54,7 @@ checks={
     'README declara release integral y matriz':readme.startswith('# El Errante V3.1.1') and 'Release integral: `3.1.1`' in readme and 'Módulo Operativo efectivo: **V3.3.0**' in readme and 'Módulo Financiero efectivo: **V3.2.9**' in readme,
     'changelog conserva release 3.1.1':'## [3.1.1]' in changelog and changelog.index('## [3.1.1]') < changelog.index('## [3.1.0]'),
     'changelog declara estado modular':'Estado modular vigente sobre release integral 3.1.1' in changelog and 'Operación V3.3.0' in changelog and 'Finanzas V3.2.0–V3.2.9' in changelog,
+    'changelog registra Materiales V2.3.1':'Materiales / BOM V2.3.1' in changelog and 'no requeridos ese día' in changelog,
     'marcador declara release 3.1.1':'release_version=3.1.1' in deploy and 'previous_release_version=3.1.0' in deploy,
     'marcador conserva runtime 2.8':'version=2.8.0' in deploy and 'cache=el-errante-v2-8-brand-canon-2' in deploy,
     'marcador separa arquitectura y shell':'internal_architecture=v3.1-acceso-operacion-finanzas' in deploy and 'session_shell=v3.1.1' in deploy and 'control_engine=v3.0' in deploy,
@@ -65,6 +67,7 @@ checks={
     'health espera release 3.1.1':'EXPECTED_RELEASE: 3.1.1' in health,
     'health espera arquitectura 3.1':'v3.1-acceso-operacion-finanzas' in health,
     'health verifica matriz modular':'EXPECTED_OPERATION: v3.3.0' in health and 'EXPECTED_FINANCE: v3.2.9' in health and 'finance_workbench_core' in health,
+    'health verifica Materiales V2.3.1':'materials-v23.js' in health and "const VERSION='2.3.1'" in health,
     'health verifica perímetro principal':'public-control.html' in health and 'public-operacion.html' in health and 'public-finanzas.html' in health,
     'health verifica perímetro auxiliar':'public-studio.html' in health and 'public-actas.html' in health and "grep -q 'data-v31-protected' public-studio.html" in health and "grep -q 'data-v31-protected' public-actas.html" in health,
     'auditoría ejecuta barrera release':'scripts/verificar_release_v31.py' in canonical,
@@ -81,6 +84,10 @@ checks={
     'control conecta operación y finanzas':'href="operacion.html"' in control and 'href="finanzas.html"' in control,
     'operación protegida':'data-v31-protected' in operation and 'assets/internal-shell-v31.js' in operation,
     'operación integra motores heredados':all(token in operation for token in ('id="control-v30"','id="daily-ops-v21"','id="production-v22"','id="materials-v23"','id="measurement-v24"','id="procurement-v25"')),
+    'motor Materiales declara V2.3.1':"const VERSION='2.3.1'" in materials_js and 'saveVisibleStock' in materials_js,
+    'motor Materiales preserva stock no visible':'{...current}' in materials_js and 'delete values[id]' in materials_js,
+    'service worker sirve fresco Materiales':'./assets/materials-v23.js' in worker and "endsWith('/assets/materials-v23.js')" in worker,
+    'mapa registra Materiales V2.3.1':'Motor Materiales / BOM' in version_map and '**2.3.1**' in version_map and 'pack de datos V2.3.0' in version_map,
     'operación monta evidencia V3.3.0':'id="operational-evidence-v330"' in operation and 'assets/operational-evidence-v330.js' in operation and "const VERSION='3.3.0'" in operation_v330,
     'finanzas protegidas':'data-v31-protected' in finance and 'assets/internal-shell-v31.js' in finance,
     'finanzas accesible desde navegación':'href="control.html"' in finance and 'href="operacion.html"' in finance,
@@ -105,7 +112,7 @@ checks={
 for label,ok in checks.items():
     if not ok: errors.append(label)
 
-for name,content in [('access',access_js),('shell',shell_js),('operation-v330',operation_v330),('finance',finance_js),('starter',starter_js),('finance-v329',finance_v329)]:
+for name,content in [('access',access_js),('shell',shell_js),('materials',materials_js),('operation-v330',operation_v330),('finance',finance_js),('starter',starter_js),('finance-v329',finance_v329)]:
     lower=content.lower()
     for forbidden in ('service_role','postgres://','private_key','supabase_service'):
         if forbidden in lower:

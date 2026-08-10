@@ -40,10 +40,12 @@ Usuario + contraseña
 Centro interno
    ├── Panel de control
    ├── Operación V3.3.0
-   └── Finanzas V3.2.9
+   ├── Finanzas V3.2.9
+   ├── Datos maestros · auxiliar
+   └── Actas · auxiliar
 ```
 
-El Centro interno es el punto normal de entrada después del login. Control, Operación y Finanzas comparten shell y sesión, pero conservan responsabilidades separadas.
+El Centro interno es el punto normal de entrada después del login. Control, Operación y Finanzas son los tres contextos principales; Datos maestros y Actas son herramientas auxiliares de gobierno. **Todas esas superficies del mapa interno comparten la shell/sesión local V3.1.1.**
 
 ### Acceso local V3.1.1
 
@@ -54,7 +56,8 @@ La sesión local:
 - expira después de ocho horas;
 - revalida expiración en pestañas que permanecen abiertas;
 - preserva únicamente destinos internos permitidos mediante `?next=`;
-- permite volver de forma segura a la sección interna solicitada;
+- permite volver de forma segura a Control, Operación, Finanzas, Datos maestros o Actas;
+- conserva deep links operativos permitidos, incluido `operacion.html#evidencia`;
 - se limpia al cerrar sesión.
 
 Esta capa protege la experiencia local, pero GitHub Pages continúa siendo un host estático. No sustituye autorización servidor. La seguridad multiusuario real corresponde a una futura fase Supabase Auth + RLS.
@@ -154,6 +157,15 @@ El working model permite editar plan de ventas, unidades, precio, costo directo,
 
 La demo financiera genera únicamente cifras sintéticas locales. No publica costos reales y se bloquea mientras esté activa la demo operativa. Al salir, restaura el estado local anterior.
 
+## Datos maestros y Actas
+
+`studio.html` y `actas.html` son superficies auxiliares dentro del mismo perímetro local V3.1.1.
+
+- **Datos maestros:** producto, SKU, contenido, fuente, estado de evidencia y gobierno de oferta.
+- **Actas:** sesiones, evidencia, condiciones y decisiones de validación.
+
+No constituyen nuevos flujos de ejecución ni reemplazan Operación/Finanzas. Las actas locales tampoco equivalen a firma electrónica, autorización regulatoria o auditoría servidor.
+
 ## MFO v3.3
 
 El exportador privado `scripts/exportar_mfo_v30.py` reconoce las nueve hojas del workbook validado:
@@ -182,6 +194,8 @@ scripts/preparar_sitio_materializado_v28.py
 ```
 
 Estos nombres se mantienen porque corresponden al runtime/canon técnico V2.8. La superficie publicable excluye Base64, chunks, loaders heredados e históricos archivados.
+
+El mapa de fuentes distingue explícitamente materialización pública, datos maestros, hechos operativos, Finanzas, demos y backend preparado: `documentacion/MAPA_DATOS_Y_FUENTES.md`.
 
 ## Marcador de despliegue
 
@@ -220,6 +234,7 @@ La integración a `main` requiere auditoría canónica, validación/materializac
 ## Seguridad y datos
 
 - Nunca versionar XLSX financieros, snapshots reales, contraseñas, `service_role`, tokens, cadenas de conexión o datos personales reales.
+- No existen credenciales demo fijas como contrato vigente; el primer usuario se crea localmente por navegador.
 - El login local no se presenta como seguridad servidor.
 - MFO, escenario y decisión son plan; no sobrescriben hechos operativos.
 - El starter financiero no inventa costos privados.
@@ -227,10 +242,15 @@ La integración a `main` requiere auditoría canónica, validación/materializac
 
 ## Documentación principal
 
+Empieza por el índice de documentación activa:
+
+- `documentacion/INDICE_DOCUMENTACION_ACTIVA.md`
 - `documentacion/MAPA_VERSIONES_ACTIVAS.md`
 - `documentacion/ARQUITECTURA_INTERNA_V31.md`
+- `documentacion/MAPA_DATOS_Y_FUENTES.md`
+- `documentacion/ROADMAP_ACTIVO_V33.md`
+- `documentacion/ACCESOS_DEMO.md`
 - `documentacion/MFO_SNAPSHOT_V30.md`
 - `documentacion/CANON_MARCA_CONTENIDO_V28.md`
-- `documentacion/FINANZAS_OPERATIVAS_V27.md`
-- `documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md`
-- `documentacion/MAPA_DATOS_Y_FUENTES.md`
+
+`documentacion/ROADMAP_OPERACION_COMERCIAL_V14.md` se conserva como **histórico**, no como backlog vigente.

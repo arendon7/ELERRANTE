@@ -23,24 +23,25 @@
   function enhance(){
     const root=document.querySelector('#dynamic-product');
     const p=currentProduct();
-    if(!root||!p||root.dataset.v30Ready==='true'||!root.children.length)return false;
+    if(!root||!p)return false;
+    const h1=root.querySelector('h1');
+    const legacyStory=root.querySelector('[data-v29-product-story]');
+    if(!h1||!legacyStory)return false;
+    if(root.dataset.v30Ready==='true'&&root.querySelector('[data-v30-block="identity"]')&&root.querySelector('[data-v30-territory]'))return true;
+    root.querySelectorAll('[data-v30-block],[data-v30-territory],[data-v30-promise]').forEach(node=>node.remove());
+    h1.insertAdjacentHTML('beforebegin',`<p class="v30-kicker" data-v30-territory>${esc(p.territory)}</p>`);
+    h1.insertAdjacentHTML('afterend',`<p class="lead" data-v30-promise>${esc(p.sensory_promise)}</p>`);
+    root.insertAdjacentHTML('beforeend',sectionHTML(p));
     root.dataset.v30Ready='true';
     document.body.classList.add('ee-v30-product');
-    const h1=root.querySelector('h1');
-    if(h1&&!root.querySelector('[data-v30-territory]')){
-      h1.insertAdjacentHTML('beforebegin',`<p class="v30-kicker" data-v30-territory>${esc(p.territory)}</p>`);
-      h1.insertAdjacentHTML('afterend',`<p class="lead" data-v30-promise>${esc(p.sensory_promise)}</p>`);
-    }
-    root.insertAdjacentHTML('beforeend',sectionHTML(p));
-    document.title=`${p.name||h1?.textContent||'Producto'} · El Errante`;
+    document.title=`${p.name||h1.textContent||'Producto'} · El Errante`;
     return true;
   }
-  if(!enhance()){
-    const root=document.querySelector('#dynamic-product');
-    if(root){
-      const observer=new MutationObserver(()=>{if(enhance())observer.disconnect();});
-      observer.observe(root,{childList:true,subtree:true});
-      setTimeout(()=>observer.disconnect(),8000);
-    }
+  const root=document.querySelector('#dynamic-product');
+  if(root){
+    enhance();
+    const observer=new MutationObserver(()=>enhance());
+    observer.observe(root,{childList:true,subtree:true});
+    setTimeout(()=>{enhance();observer.disconnect();},10000);
   }
 })();

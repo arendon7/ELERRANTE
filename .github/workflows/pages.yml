@@ -89,7 +89,7 @@ jobs:
           config={'environment':'connected' if url and key else 'preview','backend':{'provider':'supabase','url':url,'publishableKey':key,'receiptBucket':'payment-receipts','shopperStorageKey':'ee-shopper-auth-v15','adminStorageKey':'ee-admin-auth-v15'}}
           Path('_site/assets/commerce-runtime-config.js').write_text('window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze('+json.dumps(config,ensure_ascii=False,separators=(',',':'))+');\n',encoding='utf-8')
           PY
-          printf 'EL ERRANTE PUBLIC RELEASE\nrelease_version=3.1.1\nprevious_release_version=3.1.0\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-2\nbrand_source=assets/brand-canon-v28.js\ncontent_source=v2.9-editorial\ninternal_architecture=v3.1-acceso-operacion-finanzas\nsession_shell=v3.1.1\ncontrol_engine=v3.0\noperation_module=v3.3.0\nmfo_baseline=v3.0-schema-mfo-v3.3\nfinance_workbench_core=v3.1.0\nfinance_module=v3.2.9\nfinance_demo=v3.2.9\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
+          printf 'EL ERRANTE PUBLIC RELEASE\nrelease_version=3.1.1\nprevious_release_version=3.1.0\nversion=2.8.0\ndeploy_source=main\nrelease_commit=%s\ncache=el-errante-v2-8-brand-canon-2\nbrand_source=assets/brand-canon-v28.js\ncontent_source=v2.9-editorial\ninternal_architecture=v3.1-acceso-operacion-finanzas\nsession_shell=v3.1.1\ncontrol_engine=v3.0\noperation_module=v3.3.0\nmaster_data_module=v1.0.0\nmfo_baseline=v3.0-schema-mfo-v3.3\nfinance_workbench_core=v3.1.0\nfinance_module=v3.2.9\nfinance_demo=v3.2.9\nsource_mode=materialized-no-base64-runtime\nupdated=%s\n' "$GITHUB_SHA" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > _site/deploy-version.txt
           touch _site/.nojekyll
       - name: Verificar artefacto publicable
         run: |
@@ -102,6 +102,7 @@ jobs:
           grep -q '^session_shell=v3.1.1$' _site/deploy-version.txt
           grep -q '^control_engine=v3.0$' _site/deploy-version.txt
           grep -q '^operation_module=v3.3.0$' _site/deploy-version.txt
+          grep -q '^master_data_module=v1.0.0$' _site/deploy-version.txt
           grep -q '^finance_workbench_core=v3.1.0$' _site/deploy-version.txt
           grep -q '^finance_module=v3.2.9$' _site/deploy-version.txt
           grep -q '^finance_demo=v3.2.9$' _site/deploy-version.txt
@@ -151,6 +152,9 @@ jobs:
           ! grep -q 'assets/production-v22.js' _site/finanzas.html
           grep -q 'data-v31-protected' _site/studio.html
           grep -q 'assets/internal-shell-v31.js' _site/studio.html
+          grep -q 'id="master-data-v10"' _site/studio.html
+          grep -q 'assets/master-data-v10.js?v=1.0.0' _site/studio.html
+          grep -q 'assets/materials-data-v23.js' _site/studio.html
           grep -q 'data-v31-protected' _site/actas.html
           grep -q 'assets/internal-shell-v31.js' _site/actas.html
           grep -q "const VERSION='3.1.1'" _site/assets/access-v31.js
@@ -158,6 +162,9 @@ jobs:
           grep -q "'studio.html':new Set" _site/assets/access-v31.js
           grep -q "'actas.html':new Set" _site/assets/access-v31.js
           grep -q "'#evidencia'" _site/assets/access-v31.js
+          grep -q "const VERSION='1.0.0'" _site/assets/master-data-v10.js
+          grep -q 'ee_v10_master_governance' _site/assets/master-data-v10.js
+          grep -q 'ee_v24_material_purchases' _site/assets/master-data-v10.js
           grep -q "importScripts('./assets/brand-canon-v28.js')" _site/service-worker.js
           grep -q './acceso.html' _site/service-worker.js
           grep -q './studio.html' _site/service-worker.js
@@ -179,12 +186,14 @@ jobs:
           node --check _site/assets/access-v31.js
           node --check _site/assets/internal-shell-v31.js
           node --check _site/assets/operational-evidence-v330.js
+          node --check _site/assets/master-data-v10.js
           node --check _site/assets/finance-workbench-v31.js
           node --check _site/assets/finance-starter-v31.js
           node --check _site/assets/finance-demo-v329.js
           node --check _site/service-worker.js
           ! grep -qi 'service_role' _site/assets/commerce-runtime-config.js
           ! grep -qi 'service_role' _site/assets/access-v31.js
+          ! grep -qi 'service_role' _site/assets/master-data-v10.js
           ! grep -qi 'service_role' _site/assets/finance-workbench-v31.js
           ! grep -qi 'service_role' _site/assets/finance-starter-v31.js
           ! grep -qi 'service_role' _site/assets/finance-demo-v329.js

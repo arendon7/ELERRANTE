@@ -164,9 +164,13 @@ test.describe('V3.7.1 · ensayo operativo integral previo al piloto real',()=>{
     await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v323_cash_counts')||'[]').length)).toBe(1);
 
     await page.goto('/piloto-operativo.html');
+    await expect(page.locator('#v37-reconciliation .v37-metrics')).toBeVisible();
     await page.locator('#v37-checkpoint-note').fill('Operación, abastecimiento, cierre y caja registrados por UI.');
+    const checkpointButton=page.locator('#v37-checkpoint');
+    await checkpointButton.scrollIntoViewIfNeeded();
+    await expect(checkpointButton).toBeVisible();
     const checkpointDownload=page.waitForEvent('download');
-    await page.locator('#v37-checkpoint').click();
+    await checkpointButton.click();
     await checkpointDownload;
     await page.locator('#v37-refresh').click();
     await expect(page.locator('#v37-reconciliation').getByText('EVIDENCE_COMPLETE',{exact:true})).toBeVisible();

@@ -149,7 +149,7 @@ jobs:
           grep -q "ee:v13:standard-changed" public-materials-v23.js
 
           grep -q 'Planificar, modificar, comparar y decidir.' public-finanzas.html
-          grep -q 'profundidad V3.4 preservada' public-finanzas.html
+          grep -q 'profundidad V3.5 preservada' public-finanzas.html
           grep -q 'href="control.html"' public-finanzas.html
           grep -q 'id="finance-operational-pulse-v34"' public-finanzas.html
           grep -q 'id="finance-workbench-v31"' public-finanzas.html

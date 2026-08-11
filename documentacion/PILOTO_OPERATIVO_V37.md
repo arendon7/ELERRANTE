@@ -38,7 +38,7 @@ El botón de inicio genera primero un respaldo integral y luego agrega un evento
 ## Respaldo integral privado
 
 Formato: `el-errante-pilot-backup`  
-Versión: `3.7.1`
+Versión generada actualmente: `3.7.1`
 
 Incluye sólo datasets de negocio explícitamente permitidos por `DATASETS` en `assets/pilot-operations-v37.js`:
 
@@ -58,7 +58,9 @@ No incluye cuenta local, sesión, marcadores de demo, credenciales, `service_rol
 
 ## Restauración
 
-La restauración valida formato, versión y SHA-256 antes de cambiar cualquier dato. Genera un respaldo `pre-restore`, reemplaza únicamente datasets permitidos, no restaura cuenta/sesión/demo y agrega un evento `RESTORE` al ledger V3.7 actual.
+La restauración valida formato, versión y SHA-256 antes de cambiar cualquier dato. V3.7.1 genera backups `3.7.1`, pero acepta restaurar backups íntegros `3.7.0` ya emitidos por la versión publicada anterior; el checksum se valida usando la versión original del paquete. Esto evita invalidar respaldos legítimos creados antes del patch.
+
+Cada restauración genera un respaldo `pre-restore`, reemplaza únicamente datasets permitidos, no restaura cuenta/sesión/demo y agrega un evento `RESTORE` al ledger V3.7 actual, incluyendo la versión del backup restaurado.
 
 ## Checkpoints
 
@@ -132,9 +134,10 @@ Para integrar V3.7.1 y su ensayo previo:
 2. Playwright desktop + móvil = PASS, incluido `tests/e2e/pilot-operations-v37.spec.js`;
 3. `tests/e2e/pilot-rehearsal-v371.spec.js` = PASS en escritorio usando las superficies reales del flujo;
 4. la regresión específica prueba que `receivedDate` de V2.5 cuenta como compra/recepción del periodo;
-5. auditoría canónica = PASS;
-6. validación/materialización = PASS;
-7. Pages = publicado;
-8. health-check público V3.7.1 = PASS;
-9. Graphify = actualizado;
-10. no quedan PR redundantes del ciclo.
+5. la regresión valida que un backup íntegro V3.7.0 sigue siendo aceptado por V3.7.1;
+6. auditoría canónica = PASS;
+7. validación/materialización = PASS;
+8. Pages = publicado;
+9. health-check público V3.7.1 = PASS;
+10. Graphify = actualizado;
+11. no quedan PR redundantes del ciclo.

@@ -87,10 +87,12 @@ V3.7.2 añade únicamente el adaptador `pilot-order-intake-v372` para que un ped
 - exige precio y costo histórico positivos por línea;
 - guarda `unit_cost_snapshot` junto al costo unitario;
 - inicia el pedido sólo en `pending_payment` o `payment_review`;
+- exige comprobante local para `payment_review` y permite anexarlo después a un pedido pendiente;
+- conserva el guard de aprobación V2.1: V3.7.2 no aprueba pagos, sólo aporta el soporte compatible `receiptDataUrl`;
 - identifica el origen como `pilot-local-intake-v372`;
-- no adjunta comprobantes, no activa Supabase y no cambia el formato de backup V3.7.1.
+- no activa Supabase y no cambia el formato de backup V3.7.1.
 
-Una restauración es la única acción del motor V3.7.1 que puede reemplazar datasets origen, siempre mediante acción explícita, checksum válido, backup `pre-restore` y evento `RESTORE`. El ledger V3.7 actual no se restaura ni se sobrescribe. V3.7.2 sí agrega pedidos nuevos porque ése es precisamente su contrato de entrada controlada.
+Una restauración es la única acción del motor V3.7.1 que puede reemplazar datasets origen, siempre mediante acción explícita, checksum válido, backup `pre-restore` y evento `RESTORE`. El ledger V3.7 actual no se restaura ni se sobrescribe. V3.7.2 sí agrega pedidos nuevos y puede anexar soporte de pago porque ése es precisamente su contrato de entrada controlada.
 
 ## Contrato del cierre V3.6
 
@@ -148,3 +150,4 @@ Los health-checks específicos certifican overlays y herramientas posteriores po
 14. V3.7.1 sólo reemplaza datasets origen durante una restauración explícita y validada.
 15. Backups y datos reales del piloto nunca se versionan en el repositorio público.
 16. V3.7.2 no puede activar checkout público ni backend compartido.
+17. V3.7.2 no puede saltarse la revisión de pago: `payment_review` exige comprobante y la transición a `approved` sigue perteneciendo a Operación V2.1.

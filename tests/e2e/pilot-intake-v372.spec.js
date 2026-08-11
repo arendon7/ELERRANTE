@@ -6,6 +6,7 @@ function today(){return new Date().toLocaleDateString('en-CA',{timeZone:'America
 
 async function seedSession(page,{unitCost=18000}={}){
   await page.addInitScript(({unitCost})=>{
+    if(sessionStorage.getItem('ee_v372_intake_seeded')==='1')return;
     const now=new Date();
     sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'pilot-v372',displayName:'Piloto V3.7.2',role:'Administrador',issuedAt:now.toISOString(),expiresAt:new Date(now.getTime()+8*3600000).toISOString()}));
     localStorage.removeItem('ee_v37_pilot_events');
@@ -13,6 +14,7 @@ async function seedSession(page,{unitCost=18000}={}){
     localStorage.removeItem('ee_v329_finance_demo');
     localStorage.removeItem('ee_v14_orders');
     localStorage.setItem('ee_v14_products',JSON.stringify({'la-errante':{price:45000,unitCost,inventory:12,active:true}}));
+    sessionStorage.setItem('ee_v372_intake_seeded','1');
   },{unitCost});
 }
 

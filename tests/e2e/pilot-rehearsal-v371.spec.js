@@ -95,6 +95,10 @@ test.describe('V3.7.1 · ensayo operativo integral previo al piloto real',()=>{
 
     const production=page.locator('#production-v22');
     let card=production.locator('[data-v22-order="PILOT-V371-ORDER"]');
+    await expect(card.getByRole('button',{name:'Iniciar preparación'})).toBeEnabled();
+    await acceptClick(page,card.getByRole('button',{name:'Iniciar preparación'}));
+    await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v14_orders')||'[]')[0]?.status)).toBe('preparing');
+    card=production.locator('[data-v22-order="PILOT-V371-ORDER"]');
     for(const label of ['Producto listo','Empaque y etiqueta','Cantidad verificada','Entrega coordinada'])await card.getByLabel(label).check();
     await card.getByPlaceholder('Lote, empaque, novedad o coordinación').fill('Ensayo V3.7.1 · alistamiento verificado');
     await card.getByRole('button',{name:'Guardar alistamiento'}).click();
@@ -116,7 +120,7 @@ test.describe('V3.7.1 · ensayo operativo integral previo al piloto real',()=>{
     const suggestion=procurement.locator('[data-v25-suggestion="MP-HFS"]');
     await expect(suggestion).toBeVisible();
     await suggestion.getByRole('button',{name:'Crear borrador'}).click();
-    let orderForm=procurement.locator('#ee-v25-order-form');
+    const orderForm=procurement.locator('#ee-v25-order-form');
     await orderForm.locator('input[name="supplier"]').fill('Proveedor ensayo V3.7.1');
     await orderForm.locator('input[name="unitCost"]').fill('3');
     await orderForm.locator('input[name="externalReference"]').fill('COT-V371');

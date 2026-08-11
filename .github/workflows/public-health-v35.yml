@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   health-v35:
-    name: GitHub Pages preserva cierre gerencial V3.5
+    name: GitHub Pages preserva V3.5 y mesa financiera V3.5.1
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -47,7 +47,7 @@ jobs:
           done
           test "$success" -eq 1
 
-      - name: Verificar assets V3.5 preservados en superficies V3.6
+      - name: Verificar V3.5 preservada y mesa V3.5.1 publicada
         run: |
           set -euo pipefail
           fetch_public() {
@@ -59,6 +59,8 @@ jobs:
 
           fetch_public "$PUBLIC_BASE/assets/management-pulse-v35.js?verify=$EXPECTED_SHA" public-management-pulse-v35.js
           fetch_public "$PUBLIC_BASE/assets/management-pulse-v35.css?verify=$EXPECTED_SHA" public-management-pulse-v35.css
+          fetch_public "$PUBLIC_BASE/assets/finance-usability-v351.js?verify=$EXPECTED_SHA" public-finance-usability-v351.js
+          fetch_public "$PUBLIC_BASE/assets/finance-usability-v351.css?verify=$EXPECTED_SHA" public-finance-usability-v351.css
           fetch_public "$PUBLIC_BASE/control.html?verify=$EXPECTED_SHA" public-control.html
           fetch_public "$PUBLIC_BASE/operacion.html?verify=$EXPECTED_SHA" public-operacion.html
           fetch_public "$PUBLIC_BASE/finanzas.html?verify=$EXPECTED_SHA" public-finanzas.html
@@ -69,6 +71,15 @@ jobs:
           grep -q 'function treasuryState' public-management-pulse-v35.js
           grep -q 'function closeReadiness' public-management-pulse-v35.js
           grep -q '.v35-shell' public-management-pulse-v35.css
+
+          grep -q "const VERSION='3.5.1'" public-finance-usability-v351.js
+          grep -q "WORKING_KEY='ee_v31_finance_working_model'" public-finance-usability-v351.js
+          grep -q "MOVES_KEY='ee_v27_finance_movements'" public-finance-usability-v351.js
+          grep -q 'applyCorrection' public-finance-usability-v351.js
+          grep -q 'recordCashCount' public-finance-usability-v351.js
+          grep -q '.v351-shell' public-finance-usability-v351.css
+          ! grep -qi 'service_role' public-finance-usability-v351.js
+          node --check public-finance-usability-v351.js
 
           grep -q 'Panel de control · V3.6' public-control.html
           grep -q 'id="management-pulse-v35"' public-control.html
@@ -84,11 +95,14 @@ jobs:
           grep -q 'assets/management-pulse-v35.js?v=3.5.0' public-operacion.html
           ! grep -q 'finance-workbench-v31.js' public-operacion.html
 
-          grep -q 'Módulo Financiero · V3.5' public-finanzas.html
-          grep -q 'profundidad V3.4 preservada' public-finanzas.html
+          grep -q 'Módulo Financiero · V3.5.1' public-finanzas.html
+          grep -q 'mesa clara + profundidad V3.5 preservada' public-finanzas.html
+          grep -q 'id="finance-usability-v351"' public-finanzas.html
           grep -q 'id="finance-management-v35"' public-finanzas.html
           grep -q 'assets/management-pulse-v35.css?v=3.5.0' public-finanzas.html
           grep -q 'assets/management-pulse-v35.js?v=3.5.0' public-finanzas.html
+          grep -q 'assets/finance-usability-v351.css?v=3.5.1' public-finanzas.html
+          grep -q 'assets/finance-usability-v351.js?v=3.5.1' public-finanzas.html
           grep -q 'assets/finance-workbench-v31.js' public-finanzas.html
 
           grep -q 'Un pedido próximo no se suma a caja sin evidencia de cobro' public-finanzas.html

@@ -59,17 +59,30 @@ jobs:
           fetch_public "$PUBLIC_BASE/assets/pilot-operations-v37.css?verify=$EXPECTED_SHA" public-pilot-v37.css
           fetch_public "$PUBLIC_BASE/assets/pilot-order-intake-v372.js?verify=$EXPECTED_SHA" public-intake-v372.js
           fetch_public "$PUBLIC_BASE/assets/pilot-order-intake-v372.css?verify=$EXPECTED_SHA" public-intake-v372.css
+          fetch_public "$PUBLIC_BASE/assets/generated/data-v28.js?verify=$EXPECTED_SHA" public-data-v28.js
+          fetch_public "$PUBLIC_BASE/assets/data-finalize-v28.js?verify=$EXPECTED_SHA" public-data-finalize-v28.js
           fetch_public "$PUBLIC_BASE/centro-interno.html?verify=$EXPECTED_SHA" public-center.html
 
           grep -q 'id="pilot-operations-v37"' public-pilot-v37.html
           grep -q 'data-v31-protected' public-pilot-v37.html
-          grep -q 'assets/data.js' public-pilot-v37.html
+          grep -q 'assets/brand-canon-v28.js' public-pilot-v37.html
+          grep -q 'assets/generated/data-v28.js' public-pilot-v37.html
+          grep -q 'assets/products-v6.js' public-pilot-v37.html
+          grep -q 'assets/data-finalize-v28.js' public-pilot-v37.html
           grep -q 'assets/pilot-operations-v37.js?v=3.7.1' public-pilot-v37.html
           grep -q 'assets/pilot-operations-v37.css?v=3.7.0' public-pilot-v37.html
           grep -q 'assets/pilot-order-intake-v372.js?v=3.7.2' public-pilot-v37.html
           grep -q 'assets/pilot-order-intake-v372.css?v=3.7.2' public-pilot-v37.html
+          ! grep -q 'assets/data.js' public-pilot-v37.html
           ! grep -q 'finance-workbench-v31.js' public-pilot-v37.html
           ! grep -q 'daily-close-v36.js' public-pilot-v37.html
+
+          grep -q 'window.EE_DATA=' public-data-v28.js
+          grep -q '"products":\[' public-data-v28.js
+          grep -q 'La fuente materializada no expuso EE_DATA' public-data-finalize-v28.js
+          grep -q "dataset.eeSourceMode='materialized'" public-data-finalize-v28.js
+          node --check public-data-v28.js
+          node --check public-data-finalize-v28.js
 
           grep -q "const VERSION='3.7.1'" public-pilot-v37.js
           grep -q "BACKUP_VERSIONS=new Set(\['3.7.0',VERSION\])" public-pilot-v37.js

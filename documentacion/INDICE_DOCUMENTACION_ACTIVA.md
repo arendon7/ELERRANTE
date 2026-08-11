@@ -22,6 +22,7 @@ Cuando haya contradicción:
 | `MAPA_DATOS_Y_FUENTES.md` | Fuentes efectivas, almacenes locales, datos privados y estado de backend. |
 | `ROADMAP_ACTIVO_V33.md` | Roadmap activo actualizado hasta Cierre Diario V3.6 y gate del piloto local. |
 | `CIERRE_DIARIO_V36.md` | Contrato funcional del cierre diario, continuidad, append-only y correcciones V3.6. |
+| `PILOTO_OPERATIVO_V37.md` | Contrato del piloto real controlado, backup integral, reconciliación y gate Supabase V3.7. |
 | `ACCESOS_DEMO.md` | Entrada y modos demo sin credenciales fijas publicadas. |
 | `CANON_MARCA_CONTENIDO_V28.md` | Canon activo de marca, aliases e imágenes. |
 | `MFO_SNAPSHOT_V30.md` | Contrato del snapshot financiero privado cuando se utilice. |
@@ -56,7 +57,7 @@ Los archivos dentro de `archive/` son históricos por definición.
 - `activacion.html` conserva diagnóstico técnico de etapas anteriores.
 - `presentacion.html` es una presentación pública/demostrativa.
 
-El hecho de que estas páginas aparezcan en verificaciones de compatibilidad **no las convierte en contextos principales**. El perímetro interno se define en `ARQUITECTURA_INTERNA_V31.md`; las capacidades posteriores V3.3–V3.6 son overlays compatibles sobre ese perímetro.
+El hecho de que estas páginas aparezcan en verificaciones de compatibilidad **no las convierte en contextos principales**. El perímetro interno se define en `ARQUITECTURA_INTERNA_V31.md`; las capacidades posteriores V3.3–V3.7 son overlays o herramientas auxiliares compatibles sobre ese perímetro.
 
 ## Documentos que requieren especial cuidado
 
@@ -79,6 +80,10 @@ Nunca asumir que cifras presentes en documentos históricos o demos son valores 
 ### Cierres V3.6
 
 El ledger `ee_v36_daily_close_events` existe en el navegador del usuario. Los documentos del repo describen su contrato, pero **no contienen cierres reales**.
+
+### Piloto V3.7
+
+El ledger `ee_v37_pilot_events` y los backups V3.7 viven localmente. Los respaldos pueden contener información privada y deben conservarse fuera del repositorio público. V3.7 no activa Supabase ni convierte el guard local en autorización servidor.
 
 ### Credenciales demo históricas
 

@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   health-v37:
-    name: GitHub Pages publica piloto operativo V3.7.1
+    name: GitHub Pages publica piloto operativo V3.7.2
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -44,7 +44,7 @@ jobs:
           done
           test "$success" -eq 1
 
-      - name: Verificar superficie V3.7.1
+      - name: Verificar superficie V3.7.2
         run: |
           set -euo pipefail
           fetch_public() {
@@ -57,12 +57,17 @@ jobs:
           fetch_public "$PUBLIC_BASE/piloto-operativo.html?verify=$EXPECTED_SHA" public-pilot-v37.html
           fetch_public "$PUBLIC_BASE/assets/pilot-operations-v37.js?verify=$EXPECTED_SHA" public-pilot-v37.js
           fetch_public "$PUBLIC_BASE/assets/pilot-operations-v37.css?verify=$EXPECTED_SHA" public-pilot-v37.css
+          fetch_public "$PUBLIC_BASE/assets/pilot-order-intake-v372.js?verify=$EXPECTED_SHA" public-intake-v372.js
+          fetch_public "$PUBLIC_BASE/assets/pilot-order-intake-v372.css?verify=$EXPECTED_SHA" public-intake-v372.css
           fetch_public "$PUBLIC_BASE/centro-interno.html?verify=$EXPECTED_SHA" public-center.html
 
           grep -q 'id="pilot-operations-v37"' public-pilot-v37.html
           grep -q 'data-v31-protected' public-pilot-v37.html
+          grep -q 'assets/data.js' public-pilot-v37.html
           grep -q 'assets/pilot-operations-v37.js?v=3.7.1' public-pilot-v37.html
           grep -q 'assets/pilot-operations-v37.css?v=3.7.0' public-pilot-v37.html
+          grep -q 'assets/pilot-order-intake-v372.js?v=3.7.2' public-pilot-v37.html
+          grep -q 'assets/pilot-order-intake-v372.css?v=3.7.2' public-pilot-v37.html
           ! grep -q 'finance-workbench-v31.js' public-pilot-v37.html
           ! grep -q 'daily-close-v36.js' public-pilot-v37.html
 
@@ -80,5 +85,19 @@ jobs:
           ! grep -q "'ee_v31_local_account'" public-pilot-v37.js
           node --check public-pilot-v37.js
 
+          grep -q "const VERSION='3.7.2'" public-intake-v372.js
+          grep -q "ORDER_KEY='ee_v14_orders'" public-intake-v372.js
+          grep -q "source:'pilot-local-intake-v372'" public-intake-v372.js
+          grep -q 'unit_cost_snapshot:x.unitCost' public-intake-v372.js
+          grep -q "status==='payment_review'&&!receiptFile" public-intake-v372.js
+          grep -q "receiptDataUrl:receipt?.dataUrl||''" public-intake-v372.js
+          grep -q "order.status='payment_review'" public-intake-v372.js
+          grep -q "canvas.toDataURL('image/jpeg',0.72)" public-intake-v372.js
+          ! grep -qi 'service_role' public-intake-v372.js
+          ! grep -q 'createClient(' public-intake-v372.js
+          node --check public-intake-v372.js
+
           grep -q '.v37-shell' public-pilot-v37.css
+          grep -q '.v372-panel' public-intake-v372.css
+          grep -q '.v372-payment-box' public-intake-v372.css
           grep -q 'href="piloto-operativo.html"' public-center.html

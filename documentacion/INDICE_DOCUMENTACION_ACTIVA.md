@@ -23,6 +23,7 @@ Cuando haya contradicción:
 | `ROADMAP_ACTIVO_V33.md` | Roadmap activo actualizado hasta Cierre Diario V3.6 y gate del piloto local. |
 | `CIERRE_DIARIO_V36.md` | Contrato funcional del cierre diario, continuidad, append-only y correcciones V3.6. |
 | `PILOTO_OPERATIVO_V37.md` | Contrato del piloto real controlado, backup integral, reconciliación y gate Supabase V3.7. |
+| `PILOTO_INTAKE_V372.md` | Captura interna local de pedidos reales para el piloto sin activar checkout público ni backend. |
 | `ACCESOS_DEMO.md` | Entrada y modos demo sin credenciales fijas publicadas. |
 | `CANON_MARCA_CONTENIDO_V28.md` | Canon activo de marca, aliases e imágenes. |
 | `MFO_SNAPSHOT_V30.md` | Contrato del snapshot financiero privado cuando se utilice. |
@@ -81,9 +82,11 @@ Nunca asumir que cifras presentes en documentos históricos o demos son valores 
 
 El ledger `ee_v36_daily_close_events` existe en el navegador del usuario. Los documentos del repo describen su contrato, pero **no contienen cierres reales**.
 
-### Piloto V3.7
+### Piloto V3.7 / V3.7.2
 
 El ledger `ee_v37_pilot_events` y los backups V3.7 viven localmente. Los respaldos pueden contener información privada y deben conservarse fuera del repositorio público. V3.7 no activa Supabase ni convierte el guard local en autorización servidor.
+
+V3.7.2 añade una entrada interna local de pedidos para el piloto. Los clientes registrados allí siguen siendo datos privados del navegador y de sus backups; nunca deben versionarse en GitHub.
 
 ### Credenciales demo históricas
 

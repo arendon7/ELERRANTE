@@ -8,9 +8,7 @@ El piloto debe probar una cadena de hechos completa:
 
 `pedido → producción → inventario → compra/recepción → cierre diario → caja → reconciliación`
 
-V3.7 no duplica esos formularios. Añade una superficie auxiliar para controlar el experimento, respaldar los datos locales y hacer visibles las brechas que determinen el siguiente paso técnico.
-
-El runtime vigente del piloto es **3.7.1**. El patch V3.7.1 conserva la arquitectura V3.7 y corrige la reconciliación de recepciones V2.5 para reconocer `receivedDate` / `received_date` como fecha efectiva de compra/recepción.
+La superficie efectiva vigente es **V3.7.2**. El motor de backup, ledger y reconciliación permanece en **3.7.1**; V3.7.2 añade únicamente una entrada interna local para que un pedido real recibido fuera del checkout pueda nacer desde UI sin activar Supabase.
 
 ## Contrato del piloto
 
@@ -18,10 +16,12 @@ El runtime vigente del piloto es **3.7.1**. El patch V3.7.1 conserva la arquitec
 2. Datos reales y privados permanecen fuera del repositorio público.
 3. Las demos operativa V3.1.1 y financiera V3.2.9 deben estar desactivadas.
 4. Supabase permanece inactivo.
-5. El piloto no reescribe pedidos, producción, compras, inventario, cierres ni Finanzas salvo cuando el usuario ejecuta explícitamente una restauración de respaldo.
-6. Los eventos propios de V3.7 son append-only en `ee_v37_pilot_events`.
-7. Una restauración nunca reemplaza el ledger V3.7 actual; registra un evento `RESTORE` nuevo.
-8. Cuenta local, sesión, marcadores de demo y secretos/backend quedan fuera del respaldo V3.7.
+5. V3.7.1 no reescribe pedidos, producción, compras, inventario, cierres ni Finanzas salvo cuando el usuario ejecuta explícitamente una restauración de respaldo.
+6. V3.7.2 puede **crear pedidos nuevos** en `ee_v14_orders` y anexar su comprobante local mediante la entrada interna; no modifica el checkout público.
+7. La aprobación de pago sigue perteneciendo a Operación V2.1 y conserva la exigencia de soporte.
+8. Los eventos propios de V3.7 son append-only en `ee_v37_pilot_events`.
+9. Una restauración nunca reemplaza el ledger V3.7 actual; registra un evento `RESTORE` nuevo.
+10. Cuenta local, sesión, marcadores de demo y secretos/backend quedan fuera del respaldo V3.7.
 
 ## Preflight
 
@@ -35,10 +35,34 @@ Antes de iniciar se confirma:
 
 El botón de inicio genera primero un respaldo integral y luego agrega un evento `START` con periodo, actor local, timestamp, controles confirmados y checksum SHA-256 del respaldo.
 
+## Captura interna local de pedidos V3.7.2
+
+El checkout público sigue bloqueado correctamente mientras no exista un backend capaz de recibir datos personales y sincronizar pedidos fuera del dispositivo.
+
+Para que ese bloqueo no impida el piloto, `piloto-operativo.html` carga `pilot-order-intake-v372` como adaptador interno. Se usa únicamente cuando un pedido llega por WhatsApp, teléfono o coordinación directa.
+
+La entrada V3.7.2:
+
+- toma el catálogo canónico y overrides locales;
+- reutiliza `ee_v14_orders`;
+- exige producto, cantidad, precio y costo histórico positivos por línea;
+- guarda `unitCost` y `unit_cost_snapshot`;
+- permite iniciar en `pending_payment` o `payment_review`;
+- exige comprobante cuando el estado inicial es `payment_review`;
+- permite anexar posteriormente el comprobante de un pedido pendiente y moverlo a `payment_review`;
+- conserva fecha operativa, cliente, logística, flete y referencia de pago local;
+- marca `source = pilot-local-intake-v372`;
+- no aprueba pagos por sí misma;
+- no activa checkout público, Supabase, Auth, RLS ni storage remoto.
+
+El comprobante se guarda como `receiptDataUrl`, compatible con el guard existente de Operación V2.1. Sólo se aceptan JPG/PNG/WEBP; la imagen se reduce localmente antes de persistirla para limitar presión sobre `localStorage`. No se envía a ningún servicio remoto.
+
+Después de que Operación aprueba el pago, preparación, despacho, producción, inventario, abastecimiento, cierre y caja continúan en sus módulos existentes.
+
 ## Respaldo integral privado
 
 Formato: `el-errante-pilot-backup`  
-Versión generada actualmente: `3.7.1`
+Versión generada por el motor vigente: `3.7.1`
 
 Incluye sólo datasets de negocio explícitamente permitidos por `DATASETS` en `assets/pilot-operations-v37.js`:
 
@@ -54,13 +78,17 @@ Incluye sólo datasets de negocio explícitamente permitidos por `DATASETS` en `
 
 El paquete agrega manifiesto, snapshot del ledger V3.7 y checksum SHA-256. Debe guardarse en almacenamiento privado.
 
+Como `ee_v14_orders` forma parte del backup, los comprobantes locales anexados al pedido también forman parte del respaldo privado. No deben subirse al repositorio ni compartirse salvo necesidad expresa de soporte.
+
 No incluye cuenta local, sesión, marcadores de demo, credenciales, `service_role` ni secretos de Supabase.
 
 ## Restauración
 
-La restauración valida formato, versión y SHA-256 antes de cambiar cualquier dato. V3.7.1 genera backups `3.7.1`, pero acepta restaurar backups íntegros `3.7.0` ya emitidos por la versión publicada anterior; el checksum se valida usando la versión original del paquete. Esto evita invalidar respaldos legítimos creados antes del patch.
+La restauración valida formato, versión y SHA-256 antes de cambiar cualquier dato. V3.7.1 genera backups `3.7.1`, pero acepta restaurar backups íntegros `3.7.0` ya emitidos por la versión publicada anterior; el checksum se valida usando la versión original del paquete.
 
 Cada restauración genera un respaldo `pre-restore`, reemplaza únicamente datasets permitidos, no restaura cuenta/sesión/demo y agrega un evento `RESTORE` al ledger V3.7 actual, incluyendo la versión del backup restaurado.
+
+V3.7.2 no cambia el formato de backup ni invalida respaldos anteriores.
 
 ## Checkpoints
 
@@ -91,30 +119,21 @@ Gate calculado: `BLOCKED`, `NEEDS_REVIEW` o `EVIDENCE_COMPLETE`.
 
 `EVIDENCE_COMPLETE` no significa auditoría, cierre contable, declaración fiscal ni exactitud económica absoluta; sólo indica que los controles automáticos V3.7 no detectan una brecha pendiente.
 
-## Ensayo integral previo V3.7.1
+## Ensayo integral previo
 
-Antes de introducir datos reales se ejecuta `tests/e2e/pilot-rehearsal-v371.spec.js` como prueba de jornada completa.
+`tests/e2e/pilot-rehearsal-v371.spec.js` conserva el ensayo integral V3.7.1 que recorre inventario, producción, compra, evidencia, cierre, caja, checkpoint y reconciliación sobre una entrada determinística controlada.
 
-El ensayo usa únicamente dos entradas controladas que hoy no pueden nacer desde una superficie pública real porque el backend sigue deliberadamente inactivo:
+V3.7.2 añade `tests/e2e/pilot-intake-v372.spec.js`, que certifica la frontera de entrada que antes obligaba al ensayo a sembrar el pedido inicial:
 
-- un pedido inicial aprobado con fecha y costo histórico capturado;
-- un baseline financiero privado mínimo para habilitar la observación de caja.
+- el pedido puede nacer desde una superficie interna legítima;
+- queda en `ee_v14_orders`;
+- el snapshot histórico de costo se conserva;
+- una línea con costo cero/desconocido no puede guardarse;
+- `payment_review` exige un comprobante real local;
+- un pedido `pending_payment` puede recibir el comprobante después y pasar a revisión;
+- el soporte guardado habilita `Aprobar pago` en Operación V2.1 y la transición alcanza `approved`.
 
-A partir de esas entradas, la prueba recorre las superficies reales de usuario y exige que funcionen de manera integrada:
-
-1. inicio del piloto y respaldo desde `piloto-operativo.html`;
-2. conteo físico desde Materiales;
-3. transición `Pago aprobado → En preparación`, alistamiento 4/4 y despacho desde Producción;
-4. lote, rendimiento y merma desde Medición;
-5. borrador, aprobación, emisión y recepción desde Abastecimiento;
-6. evidencias de inventario, recepción y tiempo desde Evidencia V3.3;
-7. cierre limpio desde Cierre diario V3.6;
-8. conteo observado desde Finanzas V3.2.3;
-9. checkpoint, reconciliación y cierre desde V3.7.
-
-El ensayo sólo se considera exitoso cuando la reconciliación final tiene `blockers=0`, `reviews=0`, contabiliza la recepción V2.5 del periodo y termina con `exitGate=EVIDENCE_COMPLETE`; además, el ledger debe terminar exactamente en `START → CHECKPOINT → END`.
-
-Este ensayo no sustituye el piloto real. Su función es separar defectos de integración de los hallazgos propios del uso real, para que el siguiente ciclo no confunda errores técnicos con necesidades de negocio.
+El ensayo integral V3.7.1 se mantiene estable como regresión histórica y el test V3.7.2 certifica específicamente la nueva frontera de entrada. Juntos separan defectos de integración de hallazgos propios del uso real.
 
 ## Cierre del piloto
 
@@ -124,20 +143,24 @@ Cerrar exige una nota mínima, genera respaldo final, calcula reconciliación y 
 
 El piloto debe responder, con evidencia, cuáles datos necesitan realmente persistencia compartida, identidad real, permisos por rol, RLS, idempotencia, auditoría servidor, storage privado, concurrencia y reconciliación multiusuario.
 
-Supabase sólo se propone después de revisar el informe del piloto. V3.7 no activa backend.
+Supabase sólo se propone después de revisar el informe del piloto. V3.7.2 no activa backend.
 
 ## Certificación
 
-Para integrar V3.7.1 y su ensayo previo:
+Para integrar la superficie efectiva V3.7.2:
 
 1. `scripts/verificar_piloto_v37.py` = PASS;
-2. Playwright desktop + móvil = PASS, incluido `tests/e2e/pilot-operations-v37.spec.js`;
-3. `tests/e2e/pilot-rehearsal-v371.spec.js` = PASS en escritorio usando las superficies reales del flujo;
-4. la regresión específica prueba que `receivedDate` de V2.5 cuenta como compra/recepción del periodo;
-5. la regresión valida que un backup íntegro V3.7.0 sigue siendo aceptado por V3.7.1;
-6. auditoría canónica = PASS;
-7. validación/materialización = PASS;
-8. Pages = publicado;
-9. health-check público V3.7.1 = PASS;
-10. Graphify = actualizado;
-11. no quedan PR redundantes del ciclo.
+2. Playwright desktop + móvil = PASS;
+3. `tests/e2e/pilot-operations-v37.spec.js` = PASS;
+4. `tests/e2e/pilot-rehearsal-v371.spec.js` = PASS;
+5. `tests/e2e/pilot-intake-v372.spec.js` = PASS;
+6. la captura V3.7.2 conserva costo histórico y bloquea costo cero;
+7. la captura conserva el guard de comprobante y demuestra `payment_review → approved` desde Operación;
+8. la regresión V3.7.1 prueba que `receivedDate` de V2.5 cuenta como compra/recepción del periodo;
+9. la regresión valida que un backup íntegro V3.7.0 sigue siendo aceptado por V3.7.1;
+10. auditoría canónica = PASS;
+11. validación/materialización = PASS;
+12. Pages = publicado;
+13. health-check público V3.7.2 = PASS;
+14. Graphify = actualizado;
+15. no quedan PR redundantes del ciclo.

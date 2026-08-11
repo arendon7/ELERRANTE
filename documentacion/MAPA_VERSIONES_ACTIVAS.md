@@ -25,10 +25,10 @@ No debe deducirse la versión integral a partir del número más alto visible en
 | Horizonte operativo | **3.4.0** | Próximos siete días, BOM, faltantes y compras | `business-pulse-v34.js`. |
 | Cierre gerencial / capacidad | **3.5.0** | Capacidad observada y puente gerencial/tesorería | `management-pulse-v35.js`. |
 | Cierre diario / continuidad | **3.6.0** | Cola accionable, cierre append-only y arrastre inteligente | `daily-close-v36.js`. |
-| Piloto operativo controlado | **3.7.1** | Backup integral, checkpoints y reconciliación local | Patch: reconoce `receivedDate` / `received_date` y restaura backups válidos 3.7.0. |
+| Piloto operativo controlado | **3.7.2** | Backup/reconciliación local + entrada interna de pedidos | Motor de backup V3.7.1; intake local protegido V3.7.2. |
 | Superficie Control efectiva | **V3.6** | Control V3.0 + overlays V3.4/V3.5/V3.6 | No escribe Finanzas ni hechos operativos. |
 | Superficie Operación efectiva | **V3.6** | V2.1–V2.5 + V3.0 + V3.3–V3.6 | Cierre diario coordina hechos existentes. |
-| Superficie Piloto efectiva | **V3.7.1** | Control del experimento real local | Lee fuentes vigentes y escribe sólo su ledger propio salvo restauración explícita. |
+| Superficie Piloto efectiva | **V3.7.2** | Control del experimento real local + captura de entrada | Reutiliza `ee_v14_orders`; no activa checkout público ni backend. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | `finance-workbench-v31.js`. |
 | Módulo Financiero base | **3.2.9** | Profundidad financiera acumulativa | Motor base preservado para compatibilidad. |
 | Profundidad financiera | **3.2.0–3.2.9** | Ledger, economía unitaria, caja, escenarios, decisiones y readiness | Capas acumulativas. |
@@ -61,7 +61,7 @@ No debe deducirse la versión integral a partir del número más alto visible en
 
 El Módulo Operativo base sigue siendo **3.3.0**; V3.4–V3.6 son overlays compatibles que amplían lectura y coordinación sin reemplazar stores de ejecución.
 
-## Piloto operativo V3.7 / patch V3.7.1
+## Piloto operativo V3.7 / patches V3.7.1–V3.7.2
 
 `piloto-operativo.html` es una herramienta auxiliar, no un cuarto contexto principal ni un dashboard nuevo.
 
@@ -80,7 +80,19 @@ V3.7.1:
 - calcula `BLOCKED`, `NEEDS_REVIEW` o `EVIDENCE_COMPLETE`;
 - mantiene Supabase inactivo.
 
-Una restauración es la única acción V3.7 que puede reemplazar datasets origen, siempre mediante acción explícita, checksum válido, backup `pre-restore` y evento `RESTORE`. El ledger V3.7 actual no se restaura ni se sobrescribe.
+V3.7.2 añade únicamente el adaptador `pilot-order-intake-v372` para que un pedido recibido por WhatsApp, teléfono o coordinación directa pueda registrarse en el navegador del piloto mientras el checkout público sigue correctamente bloqueado. La entrada:
+
+- reutiliza `ee_v14_orders`;
+- toma productos del catálogo canónico y sus overrides locales;
+- exige precio y costo histórico positivos por línea;
+- guarda `unit_cost_snapshot` junto al costo unitario;
+- inicia el pedido sólo en `pending_payment` o `payment_review`;
+- exige comprobante local para `payment_review` y permite anexarlo después a un pedido pendiente;
+- conserva el guard de aprobación V2.1: V3.7.2 no aprueba pagos, sólo aporta el soporte compatible `receiptDataUrl`;
+- identifica el origen como `pilot-local-intake-v372`;
+- no activa Supabase y no cambia el formato de backup V3.7.1.
+
+Una restauración es la única acción del motor V3.7.1 que puede reemplazar datasets origen, siempre mediante acción explícita, checksum válido, backup `pre-restore` y evento `RESTORE`. El ledger V3.7 actual no se restaura ni se sobrescribe. V3.7.2 sí agrega pedidos nuevos y puede anexar soporte de pago porque ése es precisamente su contrato de entrada controlada.
 
 ## Contrato del cierre V3.6
 
@@ -134,6 +146,8 @@ Los health-checks específicos certifican overlays y herramientas posteriores po
 10. V3.6 no puede modificar pedidos, stock, BOM, compras, mediciones, costos o Finanzas al cerrar una jornada.
 11. Una corrección V3.6 conserva el cierre anterior mediante `supersedes`.
 12. Un cierre desactualizado por nuevos hechos debe señalar revisión.
-13. V3.7 no duplica formularios de Operación o Finanzas.
-14. V3.7 sólo reemplaza datasets origen durante una restauración explícita y validada.
-15. Backups reales del piloto nunca se versionan en el repositorio público.
+13. V3.7.2 sólo agrega la entrada interna de pedidos necesaria para el piloto; no duplica formularios de producción, compras, cierre o Finanzas.
+14. V3.7.1 sólo reemplaza datasets origen durante una restauración explícita y validada.
+15. Backups y datos reales del piloto nunca se versionan en el repositorio público.
+16. V3.7.2 no puede activar checkout público ni backend compartido.
+17. V3.7.2 no puede saltarse la revisión de pago: `payment_review` exige comprobante y la transición a `approved` sigue perteneciendo a Operación V2.1.

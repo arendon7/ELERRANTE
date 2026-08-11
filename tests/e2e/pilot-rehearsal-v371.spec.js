@@ -80,6 +80,7 @@ async function recordEvidenceUi(page,{kind,status='OBSERVADO',reference,supportR
 
 test.describe('V3.7.1 · ensayo operativo integral previo al piloto real',()=>{
   test('recorre por UI inventario, producción, compra, evidencia, cierre, caja y reconciliación',async({page},testInfo)=>{
+    test.setTimeout(30000);
     test.skip(testInfo.project.name.toLowerCase().includes('mobile'),'El ensayo integral corre en escritorio; cada módulo conserva su contrato móvil independiente.');
     const {date,month}=dateParts();
     await seedControlledEntry(page);

@@ -38,8 +38,8 @@
     return `<div class="v372-line" data-v372-line>
       <label>Producto<select name="productId" data-v372-product>${productOptions()}</select></label>
       <label>Cantidad<input name="quantity" type="number" min="1" step="1" value="1"></label>
-      <label>Precio unitario<input name="unitPrice" type="number" min="1" step="100" value="0"></label>
-      <label>Costo histórico unitario<input name="unitCost" type="number" min="1" step="100" value="0"></label>
+      <label>Precio unitario<input name="unitPrice" type="number" min="0" step="1" value="0"></label>
+      <label>Costo histórico unitario<input name="unitCost" type="number" min="0" step="1" value="0"></label>
       <div class="v372-line-total"><small>Total línea</small><strong data-v372-line-total>${money(0)}</strong></div>
       ${index?'<button type="button" class="v372-remove" data-v372-remove>Quitar</button>':''}
     </div>`;
@@ -61,7 +61,7 @@
           <label>Ciudad<input name="city" value="Medellín" required></label>
           <label>Barrio / sector<input name="neighborhood"></label>
           <label class="v372-span-2">Dirección o punto de entrega<input name="address"></label>
-          <label>Flete / entrega<input name="deliveryFee" type="number" min="0" step="1000" value="0"></label>
+          <label>Flete / entrega<input name="deliveryFee" type="number" min="0" step="1" value="0"></label>
           <label>Referencia pago<input name="paymentReference" autocomplete="off"></label>
           <label class="v372-span-2">Nota operativa<textarea name="notes" placeholder="Canal de entrada, horario, pago, coordinación u observación"></textarea></label>
         </div>
@@ -152,7 +152,7 @@
     form.addEventListener('change',event=>{const line=event.target.closest('[data-v372-line]');if(line)updateLine(line,event.target.matches('[data-v372-product]'));if(event.target.name==='deliveryFee')updateTotal();});
     form.addEventListener('input',event=>{const line=event.target.closest('[data-v372-line]');if(line)updateLine(line,false);if(event.target.name==='deliveryFee')updateTotal();});
     form.addEventListener('click',event=>{const button=event.target.closest('[data-v372-remove]');if(!button)return;button.closest('[data-v372-line]')?.remove();updateTotal();});
-    form.addEventListener('submit',event=>{event.preventDefault();try{const order=createOrder(form);message(`Pedido ${order.id} registrado localmente por ${money(order.total)}. Ahora revisa/aprueba el pago y continúa en Operación.`);form.reset();form.requestedDate.value=today();form.city.value='Medellín';document.querySelector('#v372-lines').innerHTML=lineTemplate();updateTotal();}catch(error){message(error.message,true)}});
+    form.addEventListener('submit',event=>{event.preventDefault();try{const order=createOrder(form);message(`Pedido ${order.id} registrado localmente por ${money(order.total)}. Ahora revisa/aprueba el pago y continúa en Operación.`);form.reset();const dateField=form.elements.namedItem('requestedDate'),cityField=form.elements.namedItem('city');if(dateField)dateField.value=today();if(cityField)cityField.value='Medellín';document.querySelector('#v372-lines').innerHTML=lineTemplate();updateTotal();}catch(error){message(error.message,true)}});
   }
 
   function mount(){

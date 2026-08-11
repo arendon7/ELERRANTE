@@ -47,7 +47,7 @@ jobs:
           done
           test "$success" -eq 1
 
-      - name: Verificar assets V3.5 preservados en superficies V3.6
+      - name: Verificar V3.5 preservado y mesa financiera V3.5.1 publicada
         run: |
           set -euo pipefail
           fetch_public() {
@@ -59,6 +59,8 @@ jobs:
 
           fetch_public "$PUBLIC_BASE/assets/management-pulse-v35.js?verify=$EXPECTED_SHA" public-management-pulse-v35.js
           fetch_public "$PUBLIC_BASE/assets/management-pulse-v35.css?verify=$EXPECTED_SHA" public-management-pulse-v35.css
+          fetch_public "$PUBLIC_BASE/assets/finance-usability-v351.js?verify=$EXPECTED_SHA" public-finance-usability-v351.js
+          fetch_public "$PUBLIC_BASE/assets/finance-usability-v351.css?verify=$EXPECTED_SHA" public-finance-usability-v351.css
           fetch_public "$PUBLIC_BASE/control.html?verify=$EXPECTED_SHA" public-control.html
           fetch_public "$PUBLIC_BASE/operacion.html?verify=$EXPECTED_SHA" public-operacion.html
           fetch_public "$PUBLIC_BASE/finanzas.html?verify=$EXPECTED_SHA" public-finanzas.html
@@ -84,8 +86,13 @@ jobs:
           grep -q 'assets/management-pulse-v35.js?v=3.5.0' public-operacion.html
           ! grep -q 'finance-workbench-v31.js' public-operacion.html
 
-          grep -q 'Módulo Financiero · V3.5' public-finanzas.html
-          grep -q 'profundidad V3.4 preservada' public-finanzas.html
+          grep -q 'Módulo Financiero · V3.5.1' public-finanzas.html
+          grep -q 'profundidad V3.5 preservada' public-finanzas.html
+          grep -q 'id="finance-usability-v351"' public-finanzas.html
+          grep -q 'assets/finance-usability-v351.css?v=3.5.1' public-finanzas.html
+          grep -q 'assets/finance-usability-v351.js?v=3.5.1' public-finanzas.html
+          grep -q "const VERSION='3.5.1'" public-finance-usability-v351.js
+          grep -q '.v351-shell' public-finance-usability-v351.css
           grep -q 'id="finance-management-v35"' public-finanzas.html
           grep -q 'assets/management-pulse-v35.css?v=3.5.0' public-finanzas.html
           grep -q 'assets/management-pulse-v35.js?v=3.5.0' public-finanzas.html

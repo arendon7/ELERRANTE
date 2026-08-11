@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   health-v37:
-    name: GitHub Pages publica piloto operativo V3.7
+    name: GitHub Pages publica piloto operativo V3.7.1
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -44,7 +44,7 @@ jobs:
           done
           test "$success" -eq 1
 
-      - name: Verificar superficie V3.7
+      - name: Verificar superficie V3.7.1
         run: |
           set -euo pipefail
           fetch_public() {
@@ -61,16 +61,17 @@ jobs:
 
           grep -q 'id="pilot-operations-v37"' public-pilot-v37.html
           grep -q 'data-v31-protected' public-pilot-v37.html
-          grep -q 'assets/pilot-operations-v37.js?v=3.7.0' public-pilot-v37.html
+          grep -q 'assets/pilot-operations-v37.js?v=3.7.1' public-pilot-v37.html
           grep -q 'assets/pilot-operations-v37.css?v=3.7.0' public-pilot-v37.html
           ! grep -q 'finance-workbench-v31.js' public-pilot-v37.html
           ! grep -q 'daily-close-v36.js' public-pilot-v37.html
 
-          grep -q "const VERSION='3.7.0'" public-pilot-v37.js
+          grep -q "const VERSION='3.7.1'" public-pilot-v37.js
           grep -q "EVENT_KEY='ee_v37_pilot_events'" public-pilot-v37.js
           grep -q 'Piloto operativo controlado · V3.7' public-pilot-v37.js
           grep -q "format:'el-errante-pilot-backup'" public-pilot-v37.js
           grep -q "algorithm:'SHA-256'" public-pilot-v37.js
+          grep -q "'receivedDate','received_date'" public-pilot-v37.js
           grep -q 'function reconciliation' public-pilot-v37.js
           grep -q 'function restoreBackup' public-pilot-v37.js
           ! grep -qi 'service_role' public-pilot-v37.js

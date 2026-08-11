@@ -59,7 +59,7 @@ jobs:
           fetch_public "$PUBLIC_BASE/assets/pilot-operations-v37.css?verify=$EXPECTED_SHA" public-pilot-v37.css
           fetch_public "$PUBLIC_BASE/centro-interno.html?verify=$EXPECTED_SHA" public-center.html
 
-          grep -q 'Piloto operativo controlado · V3.7' public-pilot-v37.html
+          grep -q 'id="pilot-operations-v37"' public-pilot-v37.html
           grep -q 'data-v31-protected' public-pilot-v37.html
           grep -q 'assets/pilot-operations-v37.js?v=3.7.0' public-pilot-v37.html
           grep -q 'assets/pilot-operations-v37.css?v=3.7.0' public-pilot-v37.html
@@ -68,6 +68,7 @@ jobs:
 
           grep -q "const VERSION='3.7.0'" public-pilot-v37.js
           grep -q "EVENT_KEY='ee_v37_pilot_events'" public-pilot-v37.js
+          grep -q 'Piloto operativo controlado · V3.7' public-pilot-v37.js
           grep -q "format:'el-errante-pilot-backup'" public-pilot-v37.js
           grep -q "algorithm:'SHA-256'" public-pilot-v37.js
           grep -q 'function reconciliation' public-pilot-v37.js

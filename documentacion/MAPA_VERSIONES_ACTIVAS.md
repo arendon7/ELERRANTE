@@ -25,13 +25,13 @@ No debe deducirse la versión integral a partir del número más alto visible en
 | Horizonte operativo | **3.4.0** | Próximos siete días, BOM, faltantes y compras | `business-pulse-v34.js`. |
 | Cierre gerencial / capacidad | **3.5.0** | Capacidad observada y puente gerencial/tesorería | `management-pulse-v35.js`. |
 | Cierre diario / continuidad | **3.6.0** | Cola accionable, cierre append-only y arrastre inteligente | `daily-close-v36.js`. |
-| Piloto operativo controlado | **3.7.1** | Backup integral, checkpoints y reconciliación local | Patch: reconoce `receivedDate` / `received_date` de recepciones V2.5. |
+| Piloto operativo controlado | **3.7.1** | Backup integral, checkpoints y reconciliación local | Patch: reconoce `receivedDate` / `received_date` y restaura backups válidos 3.7.0. |
 | Superficie Control efectiva | **V3.6** | Control V3.0 + overlays V3.4/V3.5/V3.6 | No escribe Finanzas ni hechos operativos. |
 | Superficie Operación efectiva | **V3.6** | V2.1–V2.5 + V3.0 + V3.3–V3.6 | Cierre diario coordina hechos existentes. |
 | Superficie Piloto efectiva | **V3.7.1** | Control del experimento real local | Lee fuentes vigentes y escribe sólo su ledger propio salvo restauración explícita. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | `finance-workbench-v31.js`. |
 | Módulo Financiero base | **3.2.9** | Profundidad financiera acumulativa | Motor base preservado para compatibilidad. |
-| Profundidad financiera | **3.2.0–V3.2.9** | Ledger, economía unitaria, caja, escenarios, decisiones y readiness | Capas acumulativas. |
+| Profundidad financiera | **3.2.0–3.2.9** | Ledger, economía unitaria, caja, escenarios, decisiones y readiness | Capas acumulativas. |
 | Puente financiero operativo | **3.4.0** | Contexto de compromisos operativos | No convierte pedido en ingreso/caja. |
 | Cierre gerencial financiero | **3.5.0** | Cierre mensual, tesorería corta y capacidad | Preserva profundidad V3.4. |
 | Inventario valorizado | **V1.5.0** | Valorización y variaciones sobre costo histórico | Consume V1.4. |
@@ -70,6 +70,7 @@ V3.7.1:
 - exige demos desactivadas para iniciar un piloto real;
 - usa un único navegador/dispositivo controlado;
 - genera backups privados `el-errante-pilot-backup` con SHA-256;
+- genera nuevos backups en 3.7.1 y conserva restauración de backups íntegros 3.7.0;
 - incluye sólo datasets de negocio allowlisted;
 - excluye cuenta local, sesión y secretos;
 - escribe su historia append-only en `ee_v37_pilot_events`;

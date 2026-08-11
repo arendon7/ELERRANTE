@@ -24,6 +24,7 @@ env:
   EXPECTED_COST_BRIDGE: v1.3.0
   EXPECTED_FINANCE_CORE: v3.1.0
   EXPECTED_FINANCE: v3.2.9
+  EXPECTED_FINANCE_USABILITY: v3.5.1
 
 concurrency:
   group: "public-health-${{ github.event.workflow_run.head_sha }}"
@@ -77,7 +78,7 @@ jobs:
             local url="$1" output="$2"
             curl --fail --silent --show-error --location --max-time 20 --retry 5 --retry-delay 2 --retry-all-errors -H 'Cache-Control: no-cache' "$url" > "$output"
           }
-          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js materials-v23.js master-data-v10.js master-cost-proposals-v11.js master-cost-proposals-v11.css master-cost-materialization-v12.js master-cost-materialization-v12.css master-cost-prospective-v13.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js operational-evidence-v330.js finance-workbench-v31.js finance-starter-v31.js finance-unit-economics-v322.js finance-demo-v329.js business-pulse-v34.js business-pulse-v34.css commerce-runtime-config.js; do
+          for asset in brand-canon-v28.js data-finalize-v28.js app-contract-v28.js preprod-contract-v28.js host-mode.js finance-v27.js procurement-v25.js control-v30.js mfo-v30.js materials-v23.js master-data-v10.js master-cost-proposals-v11.js master-cost-proposals-v11.css master-cost-materialization-v12.js master-cost-materialization-v12.css master-cost-prospective-v13.js internal-v30.css internal-v31.css access-v31.js internal-shell-v31.js operational-evidence-v330.js finance-workbench-v31.js finance-starter-v31.js finance-unit-economics-v322.js finance-demo-v329.js business-pulse-v34.js business-pulse-v34.css finance-usability-v351.js finance-usability-v351.css commerce-runtime-config.js; do
             fetch_public "$PUBLIC_BASE/assets/$asset?verify=$EXPECTED_SHA" "public-$asset"
           done
           for asset in data-v28.js app-v28.js preprod-v28.js; do
@@ -149,7 +150,10 @@ jobs:
           grep -q "ee:v13:standard-changed" public-materials-v23.js
 
           grep -q 'Planificar, modificar, comparar y decidir.' public-finanzas.html
-          grep -q 'profundidad V3.4 preservada' public-finanzas.html
+          grep -q 'V3.5.1 · mesa clara + profundidad V3.5 preservada' public-finanzas.html
+          grep -q 'id="finance-usability-v351"' public-finanzas.html
+          grep -q 'assets/finance-usability-v351.css?v=3.5.1' public-finanzas.html
+          grep -q 'assets/finance-usability-v351.js?v=3.5.1' public-finanzas.html
           grep -q 'href="control.html"' public-finanzas.html
           grep -q 'id="finance-operational-pulse-v34"' public-finanzas.html
           grep -q 'id="finance-workbench-v31"' public-finanzas.html
@@ -231,6 +235,9 @@ jobs:
           grep -q "const VERSION='3.2.9'" public-finance-demo-v329.js
           grep -q "const VERSION='3.4.0'" public-business-pulse-v34.js
           grep -q 'const DAYS=7' public-business-pulse-v34.js
+          grep -q "const VERSION='3.5.1'" public-finance-usability-v351.js
+          grep -q 'ee_v31_finance_working_model' public-finance-usability-v351.js
+          grep -q 'applyCorrection' public-finance-usability-v351.js
 
           grep -q "importScripts('./assets/brand-canon-v28.js')" public-service-worker.js
           grep -q './acceso.html' public-service-worker.js
@@ -272,6 +279,7 @@ jobs:
           ! grep -qi 'service_role' public-finance-unit-economics-v322.js
           ! grep -qi 'service_role' public-finance-demo-v329.js
           ! grep -qi 'service_role' public-business-pulse-v34.js
+          ! grep -qi 'service_role' public-finance-usability-v351.js
           ! grep -qi 'service_role' public-materials-v23.js
           for script in public-*.js; do node --check "$script"; done
           python3 - <<'PY'

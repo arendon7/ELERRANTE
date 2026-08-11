@@ -172,7 +172,6 @@ test.describe('V3.7.1 · ensayo operativo integral previo al piloto real',()=>{
     const checkpointDownload=page.waitForEvent('download');
     await checkpointButton.click();
     await checkpointDownload;
-    await page.locator('#v37-refresh').click();
     await expect(page.locator('#v37-reconciliation').getByText('EVIDENCE_COMPLETE',{exact:true})).toBeVisible();
 
     const report=await page.evaluate(()=>window.EL_ERRANTE_PILOT_V37.reconciliation());

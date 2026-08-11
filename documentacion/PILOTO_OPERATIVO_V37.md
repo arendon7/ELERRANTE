@@ -85,6 +85,31 @@ Gate calculado: `BLOCKED`, `NEEDS_REVIEW` o `EVIDENCE_COMPLETE`.
 
 `EVIDENCE_COMPLETE` no significa auditoría, cierre contable, declaración fiscal ni exactitud económica absoluta; sólo indica que los controles automáticos V3.7 no detectan una brecha pendiente.
 
+## Ensayo integral previo V3.7.1
+
+Antes de introducir datos reales se ejecuta `tests/e2e/pilot-rehearsal-v371.spec.js` como prueba de jornada completa.
+
+El ensayo usa únicamente dos entradas controladas que hoy no pueden nacer desde una superficie pública real porque el backend sigue deliberadamente inactivo:
+
+- un pedido inicial aprobado con fecha y costo histórico capturado;
+- un baseline financiero privado mínimo para habilitar la observación de caja.
+
+A partir de esas entradas, la prueba recorre las superficies reales de usuario y exige que funcionen de manera integrada:
+
+1. inicio del piloto y respaldo desde `piloto-operativo.html`;
+2. conteo físico desde Materiales;
+3. alistamiento y despacho desde Producción;
+4. lote, rendimiento y merma desde Medición;
+5. borrador, aprobación, emisión y recepción desde Abastecimiento;
+6. evidencias de inventario, recepción y tiempo desde Evidencia V3.3;
+7. cierre limpio desde Cierre diario V3.6;
+8. conteo observado desde Finanzas V3.2.3;
+9. checkpoint, reconciliación y cierre desde V3.7.
+
+El ensayo sólo se considera exitoso cuando la reconciliación final tiene `blockers=0`, `reviews=0` y `exitGate=EVIDENCE_COMPLETE`, y el ledger termina exactamente en `START → CHECKPOINT → END`.
+
+Este ensayo no sustituye el piloto real. Su función es separar defectos de integración de los hallazgos propios del uso real, para que el siguiente ciclo no confunda errores técnicos con necesidades de negocio.
+
 ## Cierre del piloto
 
 Cerrar exige una nota mínima, genera respaldo final, calcula reconciliación y agrega un evento `END` con periodo, nota, checksum final, resumen y hallazgos.
@@ -97,13 +122,14 @@ Supabase sólo se propone después de revisar el informe del piloto. V3.7 no act
 
 ## Certificación
 
-Para integrar V3.7:
+Para integrar V3.7 y su ensayo previo:
 
 1. `scripts/verificar_piloto_v37.py` = PASS;
 2. Playwright desktop + móvil = PASS, incluido `tests/e2e/pilot-operations-v37.spec.js`;
-3. auditoría canónica = PASS;
-4. validación/materialización = PASS;
-5. Pages = publicado;
-6. health-check público V3.7 = PASS;
-7. Graphify = actualizado;
-8. no quedan PR redundantes del ciclo.
+3. `tests/e2e/pilot-rehearsal-v371.spec.js` = PASS en escritorio usando las superficies reales del flujo;
+4. auditoría canónica = PASS;
+5. validación/materialización = PASS;
+6. Pages = publicado;
+7. health-check público V3.7 = PASS;
+8. Graphify = actualizado;
+9. no quedan PR redundantes del ciclo.

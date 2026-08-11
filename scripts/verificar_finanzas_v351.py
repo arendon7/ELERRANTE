@@ -10,6 +10,7 @@ checks={
     'root_v351':'id="finance-usability-v351"' in html,
     'css_v351':'assets/finance-usability-v351.css?v=3.5.1' in html,
     'js_v351':'assets/finance-usability-v351.js?v=3.5.1' in html,
+    'canonical_heading':'Planificar, modificar, comparar y decidir.' in html,
     'version':"const VERSION='3.5.1'" in js,
     'working_model':"WORKING_KEY='ee_v31_finance_working_model'" in js,
     'ledger':"MOVES_KEY='ee_v27_finance_movements'" in js,
@@ -24,7 +25,7 @@ checks={
     'no_backend':'createClient' not in js and 'service_role' not in js and 'SUPABASE' not in js,
     'workbench_reachable':'#finance-workbench-v31{display:none' not in css.replace(' ',''),
     'e2e_traceability':"reversalOf===created.id" in test and "corrects===created.id" in test,
-    'e2e_mobile':'overflow' in test and "Modelo avanzado" in test,
+    'e2e_mobile':'geometry.right' in test and 'geometry.viewport' in test and "Modelo avanzado" in test,
 }
 failed=[name for name,ok in checks.items() if not ok]
 if failed:

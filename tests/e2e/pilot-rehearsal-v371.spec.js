@@ -155,8 +155,9 @@ test.describe('V3.7.1 · ensayo operativo integral previo al piloto real',()=>{
     await page.goto('/finanzas.html');
     await expect(page.locator('html')).toHaveAttribute('data-finance-cash-version','3.2.3');
     await page.locator('[data-v323-cash="1"]').click();
-    await page.locator('#v323-month').selectOption(month);
+    await expect(page.locator('#v323-month')).toHaveValue(month);
     const cashForm=page.locator('#v323-count-form');
+    await expect(cashForm).toBeVisible();
     await cashForm.locator('[name="amount"]').fill('2050000');
     await cashForm.locator('[name="note"]').fill('Caja física observada en ensayo V3.7.1');
     await cashForm.getByRole('button',{name:'Registrar observación',exact:true}).click();

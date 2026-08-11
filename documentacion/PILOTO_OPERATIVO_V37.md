@@ -10,6 +10,8 @@ El piloto debe probar una cadena de hechos completa:
 
 V3.7 no duplica esos formularios. Añade una superficie auxiliar para controlar el experimento, respaldar los datos locales y hacer visibles las brechas que determinen el siguiente paso técnico.
 
+El runtime vigente del piloto es **3.7.1**. El patch V3.7.1 conserva la arquitectura V3.7 y corrige la reconciliación de recepciones V2.5 para reconocer `receivedDate` / `received_date` como fecha efectiva de compra/recepción.
+
 ## Contrato del piloto
 
 1. Un único navegador/dispositivo controlado.
@@ -36,7 +38,7 @@ El botón de inicio genera primero un respaldo integral y luego agrega un evento
 ## Respaldo integral privado
 
 Formato: `el-errante-pilot-backup`  
-Versión: `3.7.0`
+Versión generada actualmente: `3.7.1`
 
 Incluye sólo datasets de negocio explícitamente permitidos por `DATASETS` en `assets/pilot-operations-v37.js`:
 
@@ -56,7 +58,9 @@ No incluye cuenta local, sesión, marcadores de demo, credenciales, `service_rol
 
 ## Restauración
 
-La restauración valida formato, versión y SHA-256 antes de cambiar cualquier dato. Genera un respaldo `pre-restore`, reemplaza únicamente datasets permitidos, no restaura cuenta/sesión/demo y agrega un evento `RESTORE` al ledger V3.7 actual.
+La restauración valida formato, versión y SHA-256 antes de cambiar cualquier dato. V3.7.1 genera backups `3.7.1`, pero acepta restaurar backups íntegros `3.7.0` ya emitidos por la versión publicada anterior; el checksum se valida usando la versión original del paquete. Esto evita invalidar respaldos legítimos creados antes del patch.
+
+Cada restauración genera un respaldo `pre-restore`, reemplaza únicamente datasets permitidos, no restaura cuenta/sesión/demo y agrega un evento `RESTORE` al ledger V3.7 actual, incluyendo la versión del backup restaurado.
 
 ## Checkpoints
 
@@ -75,6 +79,8 @@ V3.7 no intenta hacer contabilidad automática. Lee las fuentes vigentes y seña
 - cierres con excepciones;
 - pedidos entregados/despachados sin conteo de caja en el periodo.
 
+Para compras/recepciones, V3.7.1 reconoce de forma compatible `purchaseDate`, `purchase_date`, `receivedDate`, `received_date`, `receivedAt`, `date` y `createdAt`. Esto alinea el reconciliador con los hechos que realmente produce Abastecimiento V2.5.
+
 Niveles:
 
 - `BLOCKER`: invalida el piloto como evidencia real;
@@ -84,6 +90,31 @@ Niveles:
 Gate calculado: `BLOCKED`, `NEEDS_REVIEW` o `EVIDENCE_COMPLETE`.
 
 `EVIDENCE_COMPLETE` no significa auditoría, cierre contable, declaración fiscal ni exactitud económica absoluta; sólo indica que los controles automáticos V3.7 no detectan una brecha pendiente.
+
+## Ensayo integral previo V3.7.1
+
+Antes de introducir datos reales se ejecuta `tests/e2e/pilot-rehearsal-v371.spec.js` como prueba de jornada completa.
+
+El ensayo usa únicamente dos entradas controladas que hoy no pueden nacer desde una superficie pública real porque el backend sigue deliberadamente inactivo:
+
+- un pedido inicial aprobado con fecha y costo histórico capturado;
+- un baseline financiero privado mínimo para habilitar la observación de caja.
+
+A partir de esas entradas, la prueba recorre las superficies reales de usuario y exige que funcionen de manera integrada:
+
+1. inicio del piloto y respaldo desde `piloto-operativo.html`;
+2. conteo físico desde Materiales;
+3. transición `Pago aprobado → En preparación`, alistamiento 4/4 y despacho desde Producción;
+4. lote, rendimiento y merma desde Medición;
+5. borrador, aprobación, emisión y recepción desde Abastecimiento;
+6. evidencias de inventario, recepción y tiempo desde Evidencia V3.3;
+7. cierre limpio desde Cierre diario V3.6;
+8. conteo observado desde Finanzas V3.2.3;
+9. checkpoint, reconciliación y cierre desde V3.7.
+
+El ensayo sólo se considera exitoso cuando la reconciliación final tiene `blockers=0`, `reviews=0`, contabiliza la recepción V2.5 del periodo y termina con `exitGate=EVIDENCE_COMPLETE`; además, el ledger debe terminar exactamente en `START → CHECKPOINT → END`.
+
+Este ensayo no sustituye el piloto real. Su función es separar defectos de integración de los hallazgos propios del uso real, para que el siguiente ciclo no confunda errores técnicos con necesidades de negocio.
 
 ## Cierre del piloto
 
@@ -97,13 +128,16 @@ Supabase sólo se propone después de revisar el informe del piloto. V3.7 no act
 
 ## Certificación
 
-Para integrar V3.7:
+Para integrar V3.7.1 y su ensayo previo:
 
 1. `scripts/verificar_piloto_v37.py` = PASS;
 2. Playwright desktop + móvil = PASS, incluido `tests/e2e/pilot-operations-v37.spec.js`;
-3. auditoría canónica = PASS;
-4. validación/materialización = PASS;
-5. Pages = publicado;
-6. health-check público V3.7 = PASS;
-7. Graphify = actualizado;
-8. no quedan PR redundantes del ciclo.
+3. `tests/e2e/pilot-rehearsal-v371.spec.js` = PASS en escritorio usando las superficies reales del flujo;
+4. la regresión específica prueba que `receivedDate` de V2.5 cuenta como compra/recepción del periodo;
+5. la regresión valida que un backup íntegro V3.7.0 sigue siendo aceptado por V3.7.1;
+6. auditoría canónica = PASS;
+7. validación/materialización = PASS;
+8. Pages = publicado;
+9. health-check público V3.7.1 = PASS;
+10. Graphify = actualizado;
+11. no quedan PR redundantes del ciclo.

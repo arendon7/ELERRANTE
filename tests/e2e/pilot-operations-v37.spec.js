@@ -16,7 +16,7 @@ const allAttestations={singleDevice:true,catalogValidated:true,inventoryCounted:
 test.describe('V3.7 · piloto operativo controlado',()=>{
   test('superficie protegida y separada de dashboards',async({page})=>{
     await internalSession(page);await page.goto('/piloto-operativo.html');await reset(page);await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-pilot-version','3.7.0');
+    await expect(page.locator('html')).toHaveAttribute('data-pilot-version','3.7.1');
     await expect(page.getByText('Piloto operativo controlado · V3.7')).toBeVisible();
     await expect(page.getByText('Gate Supabase sigue cerrado.')).toBeVisible();
     await expect(page.locator('script[src*="finance-workbench"]')).toHaveCount(0);
@@ -60,12 +60,33 @@ test.describe('V3.7 · piloto operativo controlado',()=>{
       return window.EL_ERRANTE_PILOT_V37.buildBackup({label:'test'});
     });
     expect(payload.format).toBe('el-errante-pilot-backup');
+    expect(payload.version).toBe('3.7.1');
     expect(payload.checksum.algorithm).toBe('SHA-256');
     expect(payload.data.ee_v24_production_measurements).toHaveLength(1);
     expect(payload.data.ee_v24_material_purchases).toHaveLength(1);
     expect(payload.data.ee_v330_operational_evidence).toHaveLength(1);
     expect(payload.data.ee_v323_cash_counts).toHaveLength(1);
     expect(Object.keys(payload.data)).not.toContain('ee_v31_local_account');
+  });
+
+  test('valida backups íntegros V3.7.0 sin invalidarlos por el patch',async({page})=>{
+    await internalSession(page);await page.goto('/piloto-operativo.html');await reset(page);
+    const result=await page.evaluate(async()=>{
+      const stable=v=>{
+        if(Array.isArray(v))return`[${v.map(stable)}]`;
+        if(v&&typeof v==='object')return`{${Object.keys(v).sort().map(k=>`${JSON.stringify(k)}:${stable(v[k])}`)}}`;
+        return JSON.stringify(v);
+      };
+      const data={ee_v14_orders:[{id:'OLD-370',status:'approved'}]};
+      const pilotLedgerSnapshot=[];
+      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(stable({version:'3.7.0',data,pilotLedgerSnapshot})));
+      const checksum=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');
+      const payload={format:'el-errante-pilot-backup',version:'3.7.0',data,pilotLedgerSnapshot,checksum:{algorithm:'SHA-256',value:checksum}};
+      const validated=await window.EL_ERRANTE_PILOT_V37.validateBackup(payload);
+      return {version:validated.version,accepted:[...window.EL_ERRANTE_PILOT_V37.BACKUP_VERSIONS]};
+    });
+    expect(result.version).toBe('3.7.0');
+    expect(result.accepted).toEqual(['3.7.0','3.7.1']);
   });
 
   test('reconciliación detecta costo faltante y día sin cierre',async({page})=>{
@@ -78,6 +99,19 @@ test.describe('V3.7 · piloto operativo controlado',()=>{
     expect(report.summary.exitGate).toBe('NEEDS_REVIEW');
     expect(report.issues.map(row=>row.code)).toContain('MISSING_COST_SNAPSHOT');
     expect(report.issues.map(row=>row.code)).toContain('MISSING_DAILY_CLOSE');
+  });
+
+  test('reconciliación cuenta recepciones V2.5 fechadas con receivedDate',async({page})=>{
+    await internalSession(page);await page.goto('/piloto-operativo.html');await reset(page);
+    const report=await page.evaluate(async({date,att})=>{
+      localStorage.setItem('ee_v24_material_purchases',JSON.stringify([{id:'PUR-1',materialId:'MP-HFS',receivedDate:date,quantity:20,totalCost:60000,invoiceReference:'FAC-1'}]));
+      localStorage.setItem('ee_v36_daily_close_events',JSON.stringify([{id:'C-PUR-1',date,status:'CLOSED',createdAt:`${date}T23:00:00-05:00`}]))
+      await window.EL_ERRANTE_PILOT_V37.beginPilot({start:date,end:date,attestations:att,downloadBackup:false});
+      return window.EL_ERRANTE_PILOT_V37.reconciliation();
+    },{date:today(),att:allAttestations});
+    expect(report.summary.purchases).toBe(1);
+    expect(report.summary.activityDays).toBe(1);
+    expect(report.summary.missingCloseDays).toBe(0);
   });
 
   test('móvil mantiene la superficie dentro del viewport',async({page},testInfo)=>{

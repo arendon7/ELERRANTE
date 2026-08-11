@@ -89,10 +89,15 @@ jobs:
           grep -q "ORDER_KEY='ee_v14_orders'" public-intake-v372.js
           grep -q "source:'pilot-local-intake-v372'" public-intake-v372.js
           grep -q 'unit_cost_snapshot:x.unitCost' public-intake-v372.js
+          grep -q "status==='payment_review'&&!receiptFile" public-intake-v372.js
+          grep -q "receiptDataUrl:receipt?.dataUrl||''" public-intake-v372.js
+          grep -q "order.status='payment_review'" public-intake-v372.js
+          grep -q "canvas.toDataURL('image/jpeg',0.72)" public-intake-v372.js
           ! grep -qi 'service_role' public-intake-v372.js
           ! grep -q 'createClient(' public-intake-v372.js
           node --check public-intake-v372.js
 
           grep -q '.v37-shell' public-pilot-v37.css
           grep -q '.v372-panel' public-intake-v372.css
+          grep -q '.v372-payment-box' public-intake-v372.css
           grep -q 'href="piloto-operativo.html"' public-center.html

@@ -67,11 +67,13 @@ jobs:
           ! grep -q 'daily-close-v36.js' public-pilot-v37.html
 
           grep -q "const VERSION='3.7.1'" public-pilot-v37.js
+          grep -q "BACKUP_VERSIONS=new Set(\['3.7.0',VERSION\])" public-pilot-v37.js
           grep -q "EVENT_KEY='ee_v37_pilot_events'" public-pilot-v37.js
           grep -q 'Piloto operativo controlado · V3.7' public-pilot-v37.js
           grep -q "format:'el-errante-pilot-backup'" public-pilot-v37.js
           grep -q "algorithm:'SHA-256'" public-pilot-v37.js
           grep -q "'receivedDate','received_date'" public-pilot-v37.js
+          grep -q 'backupVersion:p.version' public-pilot-v37.js
           grep -q 'function reconciliation' public-pilot-v37.js
           grep -q 'function restoreBackup' public-pilot-v37.js
           ! grep -qi 'service_role' public-pilot-v37.js

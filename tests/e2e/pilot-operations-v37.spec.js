@@ -69,6 +69,26 @@ test.describe('V3.7 · piloto operativo controlado',()=>{
     expect(Object.keys(payload.data)).not.toContain('ee_v31_local_account');
   });
 
+  test('valida backups íntegros V3.7.0 sin invalidarlos por el patch',async({page})=>{
+    await internalSession(page);await page.goto('/piloto-operativo.html');await reset(page);
+    const result=await page.evaluate(async()=>{
+      const stable=v=>{
+        if(Array.isArray(v))return`[${v.map(stable)}]`;
+        if(v&&typeof v==='object')return`{${Object.keys(v).sort().map(k=>`${JSON.stringify(k)}:${stable(v[k])}`)}}`;
+        return JSON.stringify(v);
+      };
+      const data={ee_v14_orders:[{id:'OLD-370',status:'approved'}]};
+      const pilotLedgerSnapshot=[];
+      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(stable({version:'3.7.0',data,pilotLedgerSnapshot})));
+      const checksum=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');
+      const payload={format:'el-errante-pilot-backup',version:'3.7.0',data,pilotLedgerSnapshot,checksum:{algorithm:'SHA-256',value:checksum}};
+      const validated=await window.EL_ERRANTE_PILOT_V37.validateBackup(payload);
+      return {version:validated.version,accepted:[...window.EL_ERRANTE_PILOT_V37.BACKUP_VERSIONS]};
+    });
+    expect(result.version).toBe('3.7.0');
+    expect(result.accepted).toEqual(['3.7.0','3.7.1']);
+  });
+
   test('reconciliación detecta costo faltante y día sin cierre',async({page})=>{
     await internalSession(page);await page.goto('/piloto-operativo.html');await reset(page);
     const report=await page.evaluate(async({date,att})=>{

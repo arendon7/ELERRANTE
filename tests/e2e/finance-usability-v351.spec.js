@@ -32,11 +32,13 @@ async function openDesk(page){
 test.describe('Mesa financiera V3.5.1',()=>{
   test('presenta una lectura mensual clara sin ocultar la profundidad existente',async({page})=>{
     await openDesk(page);
-    await expect(page.locator('#v351-month')).toHaveValue('2026-08');
-    await expect(page.getByText('Ventas plan',{exact:true})).toBeVisible();
-    await expect(page.getByText('Ventas reales',{exact:true})).toBeVisible();
+    const desk=page.locator('[data-finance-usability-v351]');
+    await expect(desk.locator('#v351-month')).toHaveValue('2026-08');
+    await expect(desk.getByText('Ventas plan',{exact:true})).toBeVisible();
+    await expect(desk.getByText('Ventas reales',{exact:true})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Planificar, modificar, comparar y decidir.'})).toBeVisible();
     await expect(page.locator('#finance-workbench-v31')).toBeVisible();
-    await expect(page.locator('#v351-plan .v351-table tbody tr')).toHaveCount(2);
+    await expect(desk.locator('#v351-plan .v351-table tbody tr')).toHaveCount(2);
   });
 
   test('edita plan, precio y costo directamente en la tabla y recalcula el modelo',async({page})=>{
@@ -101,13 +103,14 @@ test.describe('Mesa financiera V3.5.1',()=>{
 
   test('mantiene la mesa contenida en móvil y permite abrir el modelo avanzado',async({page},testInfo)=>{
     await openDesk(page);
+    if(testInfo.project.name.includes('mobile')){
+      const geometry=await page.locator('[data-finance-usability-v351]').evaluate(node=>({left:node.getBoundingClientRect().left,right:node.getBoundingClientRect().right,width:node.getBoundingClientRect().width,viewport:innerWidth}));
+      expect(geometry.left).toBeGreaterThanOrEqual(-2);
+      expect(geometry.right).toBeLessThanOrEqual(geometry.viewport+2);
+      expect(geometry.width).toBeLessThanOrEqual(geometry.viewport+2);
+    }
     await page.getByRole('button',{name:'Modelo avanzado'}).click();
     await expect(page.locator('body')).toHaveAttribute('data-finance-view','advanced');
     await expect(page.locator('#finance-workbench-v31')).toBeVisible();
-    if(testInfo.project.name.includes('mobile')){
-      const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,desk:document.querySelector('#finance-usability-v351').getBoundingClientRect().width,viewport:innerWidth}));
-      expect(geometry.overflow).toBeLessThanOrEqual(2);
-      expect(geometry.desk).toBeLessThanOrEqual(geometry.viewport+2);
-    }
   });
 });

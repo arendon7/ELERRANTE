@@ -2,6 +2,7 @@
 'use strict';
 const VERSION='3.1.1';
 const UX_VERSION='3.8.0';
+const EFFICIENCY_VERSION='3.9.0';
 const SESSION_KEY='ee_v31_session';
 let expiryTimer=null;
 function read(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY));}catch(_){return null;}}
@@ -49,6 +50,24 @@ function ensureUxScript(){
  });
 }
 function rollbackUxStyle(){document.querySelector('link[data-internal-ux-v38]')?.remove();document.documentElement.removeAttribute('data-internal-ux-version');}
+function ensureEfficiencyStyle(){
+ const existing=document.querySelector('link[data-internal-ux-v39]');
+ if(existing)return Promise.resolve(existing);
+ return new Promise(resolve=>{
+  const link=document.createElement('link');link.rel='stylesheet';link.href=`assets/internal-ux-v39.css?v=${EFFICIENCY_VERSION}`;link.dataset.internalUxV39=EFFICIENCY_VERSION;
+  link.addEventListener('load',()=>resolve(link),{once:true});link.addEventListener('error',()=>resolve(link),{once:true});document.head.appendChild(link);
+ });
+}
+function ensureEfficiencyScript(){
+ if(window.EL_ERRANTE_INTERNAL_UX_V39)return Promise.resolve(window.EL_ERRANTE_INTERNAL_UX_V39);
+ const existing=document.querySelector('script[data-internal-ux-v39]');
+ if(existing)return new Promise(resolve=>existing.addEventListener('load',()=>resolve(window.EL_ERRANTE_INTERNAL_UX_V39||null),{once:true}));
+ return new Promise(resolve=>{
+  const script=document.createElement('script');script.src=`assets/internal-ux-v39.js?v=${EFFICIENCY_VERSION}`;script.dataset.internalUxV39=EFFICIENCY_VERSION;script.async=false;
+  script.addEventListener('load',()=>resolve(window.EL_ERRANTE_INTERNAL_UX_V39||null),{once:true});script.addEventListener('error',()=>resolve(null),{once:true});document.body.appendChild(script);
+ });
+}
+function rollbackEfficiencyStyle(){document.querySelector('link[data-internal-ux-v39]')?.remove();document.documentElement.removeAttribute('data-internal-efficiency-version');}
 async function boot(){
  const body=document.body;if(!body)return;
  const s=enforceSession();
@@ -68,9 +87,12 @@ async function boot(){
  window.addEventListener('focus',enforceSession);
  window.addEventListener('pageshow',enforceSession);
  const ux=await ensureUxScript();
- if(!ux)rollbackUxStyle();
+ if(!ux){rollbackUxStyle();return;}
+ await ensureEfficiencyStyle();
+ const efficiency=await ensureEfficiencyScript();
+ if(!efficiency)rollbackEfficiencyStyle();
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-window.EL_ERRANTE_INTERNAL_V31={version:VERSION,uxVersion:UX_VERSION,session,signOut,requestedTarget,accessUrl,enforceSession,ensureUxStyle,ensureUxScript,rollbackUxStyle};
+window.EL_ERRANTE_INTERNAL_V31={version:VERSION,uxVersion:UX_VERSION,efficiencyVersion:EFFICIENCY_VERSION,session,signOut,requestedTarget,accessUrl,enforceSession,ensureUxStyle,ensureUxScript,rollbackUxStyle,ensureEfficiencyStyle,ensureEfficiencyScript,rollbackEfficiencyStyle};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>void boot(),{once:true});else void boot();
 })();

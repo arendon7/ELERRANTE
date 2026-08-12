@@ -1,0 +1,74 @@
+name: Verificar publicación V4.0
+
+on:
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+
+concurrency:
+  group: "public-health-v40-${{ github.event.workflow_run.head_sha }}"
+  cancel-in-progress: true
+
+jobs:
+  health-v40:
+    name: GitHub Pages publica formularios operativos V4.0
+    if: github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Definir expectativa
+        run: |
+          echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
+
+      - name: Exigir despliegue fuente exitoso
+        run: test "$SOURCE_CONCLUSION" = "success"
+
+      - name: Esperar SHA publicado
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 \
+              -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-v40.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-version-v40.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ]; then success=1; break; fi
+            sleep 5
+          done
+          test "$success" -eq 1
+
+      - name: Verificar Operación y assets V4.0
+        run: |
+          set -euo pipefail
+          fetch_public() {
+            local url="$1" output="$2"
+            curl --fail --silent --show-error --location --max-time 20 \
+              --retry 5 --retry-delay 2 --retry-all-errors \
+              -H 'Cache-Control: no-cache' "$url" > "$output"
+          }
+
+          fetch_public "$PUBLIC_BASE/operacion.html?verify=$EXPECTED_SHA" public-operation-v40.html
+          fetch_public "$PUBLIC_BASE/assets/operational-forms-v40.js?verify=$EXPECTED_SHA" public-forms-v40.js
+          fetch_public "$PUBLIC_BASE/assets/operational-forms-v40.css?verify=$EXPECTED_SHA" public-forms-v40.css
+
+          grep -q 'operational-forms-v40.css?v=4.0.0' public-operation-v40.html
+          grep -q 'operational-forms-v40.js?v=4.0.0' public-operation-v40.html
+          grep -q "const VERSION='4.0.0'" public-forms-v40.js
+          grep -q 'operationalFormsVersion' public-forms-v40.js
+          grep -q 'data-v40-enhanced' public-forms-v40.js
+          grep -q 'v40Submitting' public-forms-v40.js
+          grep -q 'MutationObserver' public-forms-v40.js
+          ! grep -q 'localStorage.setItem' public-forms-v40.js
+          ! grep -q 'sessionStorage.setItem' public-forms-v40.js
+          node --check public-forms-v40.js
+
+          grep -q '.v40-form-guide' public-forms-v40.css
+          grep -q '.v40-form-preview' public-forms-v40.css
+          grep -q 'prefers-reduced-motion:reduce' public-forms-v40.css

@@ -1,6 +1,7 @@
 :root{--v38-focus:#8f4b35;--v38-focus-ring:rgba(143,75,53,.22);--v38-surface:#fffdf8;--v38-surface-soft:#f8f4ed;--v38-nav:#1d1b19;--v38-shadow:0 16px 44px rgba(34,29,24,.07);--v38-ease:cubic-bezier(.22,1,.36,1);--v38-mobile-bar-h:58px}
-html.admin-html{scroll-padding-top:92px}
+html.admin-html{scroll-padding-top:92px;scroll-behavior:smooth}
 body.admin-body{font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .v30-main{width:100%;max-width:1680px;margin-inline:auto;box-sizing:border-box}
 .v30-side{border-right:1px solid rgba(255,255,255,.07)}
 .v30-nav{align-content:start}.v30-nav a{min-height:44px;box-sizing:border-box;display:flex;align-items:center;gap:9px;line-height:1.2;transition:background-color .18s ease,color .18s ease,transform .18s var(--v38-ease)}

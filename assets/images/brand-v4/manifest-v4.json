@@ -1,0 +1,138 @@
+{
+  "version": "4.0.0-working",
+  "status": "working-not-published",
+  "reviewed_at": "2026-08-12",
+  "brand_master": {
+    "status": "awaiting-approved-binary",
+    "expected": "walking pizzaiolo tossing dough; black-dominant; restrained aged-gold details; ivory; serif EL ERRANTE; PIZZA CONTEMPORÁNEA; EST. 2019",
+    "rule": "Never redraw or approximate the approved master from legacy assets."
+  },
+  "source_inventory": "../brand-final/manifest-hq-v13.json",
+  "audit_note": "The accessible HQ V13 bank predates the approved V4 identity. Newer generated V4 images were not found in the repository or accessible ELERRANTE_WEB_HQ_V13 Drive bank during this audit. Legacy assets remain available only according to the status below.",
+  "duplicate_groups": [
+    {
+      "sha256": "b7c6daecd8ac68e572926cf360a1b3425a6bcca2ab4b541c5cc1ef280e7f02d4",
+      "files": ["home-hero.webp", "evento-operacion.webp", "evento-servicio.webp"],
+      "decision": "Do not use as three separate narrative moments."
+    }
+  ],
+  "assets": [
+    {
+      "file": "home-hero.webp",
+      "status": "REFERENCE",
+      "primary_role": "legacy-movement-concept",
+      "truth_note": "Concept scene, not documentary evidence of a real unit/event.",
+      "v4_note": "Strong lighting and hospitality atmosphere, but dominated by legacy terracotta E branding and generic Tuscan/Italian scenery."
+    },
+    {
+      "file": "home-hero-mobile.webp",
+      "status": "REFERENCE",
+      "primary_role": "legacy-movement-concept-mobile",
+      "truth_note": "Concept scene, not documentary evidence.",
+      "v4_note": "Mobile crop inherits the same legacy identity and scene problem."
+    },
+    {
+      "file": "home-masa-fuego.webp",
+      "status": "CANDIDATE",
+      "primary_role": "process-dough",
+      "truth_note": "Editorial process image; not proof of exact batch or formulation.",
+      "v4_note": "Hands, dough and fire are useful; legacy branding on apron/bag prevents direct V4 publication without a new source or truthful crop."
+    },
+    {
+      "file": "home-fermentacion.webp",
+      "status": "CANDIDATE",
+      "primary_role": "process-dough",
+      "truth_note": "Editorial dough image; not proof of exact fermentation state or timing.",
+      "v4_note": "Strong tactile dough image; legacy E props must not remain dominant in final V4 use."
+    },
+    {
+      "file": "home-ingredientes.webp",
+      "status": "CANDIDATE",
+      "primary_role": "matter",
+      "truth_note": "Contextual ingredients, not exact composition proof for a specific pizza.",
+      "v4_note": "Good natural material/color and easiest legacy mark to remove through replacement/crop."
+    },
+    {
+      "file": "home-compartir.webp",
+      "status": "CANDIDATE",
+      "primary_role": "ritual",
+      "truth_note": "Editorial consumption scene.",
+      "v4_note": "Strong human ritual and pizza focus; legacy E packaging/napkin visible. Best legacy candidate for a controlled crop while awaiting V4 replacement."
+    },
+    {
+      "file": "home-en-casa.webp",
+      "status": "REFERENCE",
+      "primary_role": "legacy-en-casa-concept",
+      "truth_note": "Packaging concept, not approved V4 commercial packshot.",
+      "v4_note": "Composition is useful as direction, but almost every object carries the obsolete identity."
+    },
+    {
+      "file": "home-despensa.webp",
+      "status": "REFERENCE",
+      "primary_role": "legacy-pantry-concept",
+      "truth_note": "Packaging concept, not approved V4 commercial packshot.",
+      "v4_note": "Good still-life logic, but extensive obsolete labels/branding make direct use unsuitable."
+    },
+    {
+      "file": "evento-hero.webp",
+      "status": "REFERENCE",
+      "primary_role": "legacy-movement-event",
+      "truth_note": "Concept visualization; do not claim documentary event evidence.",
+      "v4_note": "Atmosphere useful; vehicle and signage are built around obsolete identity."
+    },
+    {
+      "file": "evento-noche.webp",
+      "status": "REFERENCE",
+      "primary_role": "legacy-movement-service",
+      "truth_note": "Concept visualization; do not claim documentary event evidence.",
+      "v4_note": "Useful night/service reference but obsolete identity remains central."
+    },
+    {
+      "file": "evento-operacion.webp",
+      "status": "REJECTED",
+      "primary_role": "duplicate",
+      "truth_note": "Byte-identical to home-hero.webp.",
+      "v4_note": "Cannot serve as a distinct operation image."
+    },
+    {
+      "file": "producto-margherita.webp",
+      "status": "CANDIDATE",
+      "primary_role": "product-hero",
+      "product": "margherita-del-taller",
+      "truth_note": "Editorial product image; current operational product truth still prevails.",
+      "v4_note": "Pizza is visually strong; obsolete E appears on props. Use only in controlled working-branch crop until replaced."
+    },
+    {
+      "file": "producto-la-errante.webp",
+      "status": "CANDIDATE",
+      "primary_role": "product-hero",
+      "product": "la-errante",
+      "truth_note": "Editorial product image; packaging/label is not V4 master artwork.",
+      "v4_note": "Strong action/finishing gesture; obsolete bottle/box identity prevents final direct publication."
+    },
+    {
+      "file": "producto-bosque.webp",
+      "status": "CANDIDATE",
+      "primary_role": "product-hero",
+      "product": "bosque",
+      "truth_note": "Editorial product image; ingredients shown do not establish exact formula.",
+      "v4_note": "Strong pizza photography; obsolete props require replacement/crop."
+    },
+    {
+      "file": "producto-diavola.webp",
+      "status": "CANDIDATE",
+      "primary_role": "product-hero",
+      "product": "diavola-errante",
+      "truth_note": "Editorial product image; current formulation prevails.",
+      "v4_note": "Strong product focus; legacy E prop remains visible."
+    },
+    {
+      "file": "producto-cuatro-quesos.webp",
+      "status": "CANDIDATE",
+      "primary_role": "product-hero",
+      "product": "cuatro-quesos-montana",
+      "truth_note": "Editorial product image; current formulation prevails.",
+      "v4_note": "Excellent food texture; obsolete E box/napkin visible outside the product crop."
+    }
+  ]
+}

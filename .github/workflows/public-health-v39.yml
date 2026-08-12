@@ -1,0 +1,84 @@
+name: Verificar publicación V3.9
+
+on:
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+
+concurrency:
+  group: "public-health-v39-${{ github.event.workflow_run.head_sha }}"
+  cancel-in-progress: true
+
+jobs:
+  health-v39:
+    name: GitHub Pages publica UX de eficiencia V3.9
+    if: github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Definir expectativa
+        run: |
+          echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
+
+      - name: Exigir despliegue fuente exitoso
+        run: test "$SOURCE_CONCLUSION" = "success"
+
+      - name: Esperar SHA publicado
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 \
+              -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-v39.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-version-v39.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ]; then success=1; break; fi
+            sleep 5
+          done
+          test "$success" -eq 1
+
+      - name: Verificar shell y assets UX V3.9
+        run: |
+          set -euo pipefail
+          fetch_public() {
+            local url="$1" output="$2"
+            curl --fail --silent --show-error --location --max-time 20 \
+              --retry 5 --retry-delay 2 --retry-all-errors \
+              -H 'Cache-Control: no-cache' "$url" > "$output"
+          }
+
+          fetch_public "$PUBLIC_BASE/centro-interno.html?verify=$EXPECTED_SHA" public-center-v39.html
+          fetch_public "$PUBLIC_BASE/assets/internal-shell-v31.js?verify=$EXPECTED_SHA" public-shell-v39.js
+          fetch_public "$PUBLIC_BASE/assets/internal-ux-v39.js?verify=$EXPECTED_SHA" public-ux-v39.js
+          fetch_public "$PUBLIC_BASE/assets/internal-ux-v39.css?verify=$EXPECTED_SHA" public-ux-v39.css
+
+          grep -q 'assets/internal-shell-v31.js' public-center-v39.html
+          grep -q "const VERSION='3.1.1'" public-shell-v39.js
+          grep -q "const UX_VERSION='3.8.0'" public-shell-v39.js
+          grep -q "const EFFICIENCY_VERSION='3.9.0'" public-shell-v39.js
+          grep -q 'ensureEfficiencyStyle' public-shell-v39.js
+          grep -q 'ensureEfficiencyScript' public-shell-v39.js
+          grep -q 'rollbackEfficiencyStyle' public-shell-v39.js
+          grep -q 'internal-ux-v39.css' public-shell-v39.js
+          grep -q 'internal-ux-v39.js' public-shell-v39.js
+          node --check public-shell-v39.js
+
+          grep -q "const VERSION='3.9.0'" public-ux-v39.js
+          grep -q "HISTORY_KEY='ee_v39_navigation_history'" public-ux-v39.js
+          grep -q 'internalEfficiencyVersion' public-ux-v39.js
+          grep -q 'aria-modal="true"' public-ux-v39.js
+          grep -q 'shell.inert=true' public-ux-v39.js
+          grep -q "e.key==='Escape'" public-ux-v39.js
+          grep -q "e.key.toLowerCase()==='k'" public-ux-v39.js
+          node --check public-ux-v39.js
+
+          grep -q '.v39-command-layer' public-ux-v39.css
+          grep -q '.v39-resume' public-ux-v39.css
+          grep -q 'prefers-reduced-motion:reduce' public-ux-v39.css

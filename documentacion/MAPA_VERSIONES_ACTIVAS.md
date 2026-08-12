@@ -28,9 +28,10 @@ No debe deducirse la versión integral a partir del número más alto visible en
 | Piloto: motor | **3.7.1** | Backup, ledger, restauración y reconciliación | Conserva backups íntegros V3.7.0. |
 | Piloto: intake | **3.7.2** | Entrada interna local de pedidos y comprobantes | No modifica checkout público. |
 | Piloto: salida | **3.7.3** | Aprendizaje, clasificación y gate de persistencia | No activa backend. |
+| Piloto: jornada | **3.7.4** | Guía diaria, observaciones y checkpoint | Lee stores propietarios; no duplica hechos. |
 | Superficie Control efectiva | **V3.6** | Control V3.0 + overlays V3.4/V3.5/V3.6 | No escribe Finanzas ni hechos operativos. |
 | Superficie Operación efectiva | **V3.6** | V2.1–V2.5 + V3.0 + V3.3–V3.6 | Cierre diario coordina hechos existentes. |
-| Superficie Piloto efectiva | **V3.7.3** | Prueba real local + entrada V3.7.2 + salida V3.7.3 | Reutiliza motores existentes; Supabase inactivo. |
+| Superficie Piloto efectiva | **V3.7.4** | Motor V3.7.1 + intake V3.7.2 + salida V3.7.3 + jornada V3.7.4 | Supabase inactivo. |
 | Workbench Financiero base | **3.1.0** | Baseline + working model | `finance-workbench-v31.js`. |
 | Módulo Financiero base | **3.2.9** | Profundidad financiera acumulativa | Motor base preservado. |
 | Profundidad financiera | **3.2.0–3.2.9** | Ledger, economía unitaria, caja, escenarios, decisiones y readiness | Capas acumulativas. |
@@ -53,7 +54,7 @@ No debe deducirse la versión integral a partir del número más alto visible en
 
 El Módulo Operativo base sigue siendo **3.3.0**; V3.4–V3.6 son overlays compatibles que amplían lectura y coordinación sin reemplazar stores de ejecución.
 
-## Piloto operativo V3.7.1–V3.7.3
+## Piloto operativo V3.7.1–V3.7.4
 
 `piloto-operativo.html` es una herramienta auxiliar, no un cuarto contexto principal ni un dashboard nuevo.
 
@@ -83,9 +84,20 @@ El Módulo Operativo base sigue siendo **3.3.0**; V3.4–V3.6 son overlays compa
 - una revisión posterior usa `supersedes` y conserva la anterior;
 - exige piloto cerrado y reconciliación `EVIDENCE_COMPLETE` para una conclusión final;
 - puede concluir `LOCAL_MODEL_SUFFICIENT` o `BACKEND_DESIGN_CANDIDATE`;
-- `BACKEND_DESIGN_CANDIDATE` autoriza **diseño técnico**, nunca activación automática de Supabase.
+- `BACKEND_DESIGN_CANDIDATE` autoriza diseño técnico, nunca activación automática de Supabase.
 
-Una restauración sigue siendo la única acción del motor V3.7.1 que puede reemplazar datasets origen. V3.7.2 sí agrega pedidos/comprobantes por su contrato de entrada. V3.7.3 sólo agrega revisiones de aprendizaje y no modifica hechos operativos.
+### V3.7.4 — jornada del piloto
+
+- lee pedidos, mediciones, compras, cierres, caja y checkpoints sin cargar los motores propietarios en la página piloto;
+- deriva `PILOT_INACTIVE`, `OUTSIDE_PERIOD`, `NO_ACTIVITY`, `IN_PROGRESS`, `READY_FOR_CHECKPOINT` y `DAY_COMPLETE`;
+- enlaza al módulo propietario cuando falta resolver un hecho;
+- guarda observaciones en `ee_v374_pilot_daily_observations` de forma append-only con `supersedes`;
+- clasifica fricción de flujo, datos, permisos, usabilidad, rendimiento u otra;
+- delega el checkpoint al motor V3.7.1;
+- interpreta timestamps en `America/Bogota`;
+- no modifica el schema de backup V3.7.1 y permite exportación local `el-errante-pilot-day`.
+
+Una restauración sigue siendo la única acción del motor V3.7.1 que puede reemplazar datasets origen. V3.7.2 agrega pedidos/comprobantes por su contrato de entrada. V3.7.3 agrega revisiones de salida. V3.7.4 sólo agrega observaciones de aprendizaje y dispara checkpoints existentes.
 
 ## Contrato del cierre V3.6
 
@@ -130,5 +142,7 @@ Los marcadores históricos de `deploy-version.txt` se conservan mientras describ
 12. V3.7.1 sólo reemplaza datasets origen durante una restauración explícita y validada.
 13. V3.7.2 sólo agrega la entrada interna necesaria para el piloto y no salta la revisión de pago.
 14. V3.7.3 no modifica hechos operativos; sólo registra aprendizaje append-only.
-15. `BACKEND_DESIGN_CANDIDATE` no equivale a backend activo.
-16. Backups, clientes, comprobantes, costos y demás datos reales del piloto nunca se versionan en el repositorio público.
+15. V3.7.4 no duplica hechos fuente ni cambia silenciosamente el backup V3.7.1.
+16. Un checkpoint V3.7.4 sigue siendo un evento V3.7.1 y un respaldo privado.
+17. `BACKEND_DESIGN_CANDIDATE` no equivale a backend activo.
+18. Backups, exportaciones, clientes, comprobantes, costos y demás datos reales del piloto nunca se versionan en el repositorio público.

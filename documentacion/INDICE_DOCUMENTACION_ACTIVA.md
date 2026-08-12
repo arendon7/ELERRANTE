@@ -20,11 +20,12 @@ Cuando haya contradicción:
 | `MAPA_VERSIONES_ACTIVAS.md` | Matriz oficial de versiones, overlays y reglas de numeración. |
 | `ARQUITECTURA_INTERNA_V31.md` | Contrato de acceso, tres contextos principales y herramientas auxiliares. |
 | `MAPA_DATOS_Y_FUENTES.md` | Fuentes efectivas, almacenes locales, datos privados y estado de backend. |
-| `ROADMAP_ACTIVO_V33.md` | Roadmap activo actualizado hasta Cierre Diario V3.6 y gate del piloto local. |
+| `ROADMAP_ACTIVO_V33.md` | Roadmap activo hasta Cierre Diario V3.6 y gate del piloto local. |
 | `CIERRE_DIARIO_V36.md` | Contrato funcional del cierre diario, continuidad, append-only y correcciones V3.6. |
-| `PILOTO_OPERATIVO_V37.md` | Contrato integral del piloto real controlado, backup, reconciliación y salida V3.7.3. |
-| `PILOTO_INTAKE_V372.md` | Captura interna local de pedidos reales para el piloto sin activar checkout público ni backend. |
-| `PILOTO_SALIDA_V373.md` | Revisión append-only del aprendizaje y gate explícito entre modelo local y diseño de persistencia compartida. |
+| `PILOTO_OPERATIVO_V37.md` | Contrato integral del piloto real controlado, jornada V3.7.4, backup, reconciliación y salida. |
+| `PILOTO_INTAKE_V372.md` | Captura interna local de pedidos reales sin activar checkout público ni backend. |
+| `PILOTO_SALIDA_V373.md` | Revisión append-only del aprendizaje y gate entre modelo local y diseño de persistencia compartida. |
+| `PILOTO_JORNADA_V374.md` | Guía diaria del piloto sobre hechos existentes, observaciones append-only y checkpoint privado. |
 | `FINANZAS_USABILIDAD_V351.md` | Mesa financiera clara V3.5.1 sobre los motores financieros vigentes. |
 | `ACCESOS_DEMO.md` | Entrada y modos demo sin credenciales fijas publicadas. |
 | `CANON_MARCA_CONTENIDO_V28.md` | Canon activo de marca, aliases e imágenes. |
@@ -60,7 +61,7 @@ Los archivos dentro de `archive/` son históricos por definición.
 - `activacion.html` conserva diagnóstico técnico de etapas anteriores.
 - `presentacion.html` es una presentación pública/demostrativa.
 
-El hecho de que estas páginas aparezcan en verificaciones de compatibilidad **no las convierte en contextos principales**. El perímetro interno se define en `ARQUITECTURA_INTERNA_V31.md`; las capacidades posteriores V3.3–V3.7 son overlays o herramientas auxiliares compatibles sobre ese perímetro.
+El perímetro interno se define en `ARQUITECTURA_INTERNA_V31.md`; las capacidades V3.3–V3.7 son overlays o herramientas auxiliares compatibles sobre ese perímetro.
 
 ## Documentos que requieren especial cuidado
 
@@ -85,13 +86,15 @@ Nunca asumir que cifras presentes en documentos históricos o demos son valores 
 
 El ledger `ee_v36_daily_close_events` existe en el navegador del usuario. Los documentos del repo describen su contrato, pero **no contienen cierres reales**.
 
-### Piloto V3.7 / V3.7.3
+### Piloto V3.7 / V3.7.4
 
-El ledger `ee_v37_pilot_events`, las revisiones `ee_v373_pilot_exit_reviews` y los backups V3.7 viven localmente. Los respaldos pueden contener información privada y deben conservarse fuera del repositorio público. V3.7 no activa Supabase ni convierte el guard local en autorización servidor.
+El ledger `ee_v37_pilot_events`, las revisiones `ee_v373_pilot_exit_reviews`, las observaciones `ee_v374_pilot_daily_observations` y los backups/exportaciones V3.7 viven localmente. Los datos reales deben conservarse fuera del repositorio público.
 
-V3.7.2 añade una entrada interna local de pedidos para el piloto. Los clientes registrados allí siguen siendo datos privados del navegador y de sus backups; nunca deben versionarse en GitHub.
+V3.7.2 añade una entrada interna local de pedidos. Los clientes registrados allí siguen siendo datos privados del navegador y de sus backups.
 
-V3.7.3 clasifica datos, permisos y uso real para decidir entre continuar localmente o pasar a diseño de backend. Sus revisiones son append-only y tampoco activan servicios remotos.
+V3.7.3 clasifica datos, permisos y uso real para decidir entre continuar localmente o pasar a diseño de backend.
+
+V3.7.4 lee los stores propietarios para orientar la jornada y registrar fricción/aprendizaje. No duplica pedidos, producción, compras, cierres o caja, y no cambia silenciosamente el schema de backup V3.7.1.
 
 ### Credenciales demo históricas
 

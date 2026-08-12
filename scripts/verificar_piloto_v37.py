@@ -8,13 +8,17 @@ required=[
     'assets/pilot-operations-v37.css',
     'assets/pilot-order-intake-v372.js',
     'assets/pilot-order-intake-v372.css',
+    'assets/pilot-daily-v374.js',
+    'assets/pilot-daily-v374.css',
     'assets/pilot-exit-v373.js',
     'assets/pilot-exit-v373.css',
     'documentacion/PILOTO_OPERATIVO_V37.md',
     'documentacion/PILOTO_SALIDA_V373.md',
+    'documentacion/PILOTO_JORNADA_V374.md',
     'tests/e2e/pilot-operations-v37.spec.js',
     'tests/e2e/pilot-intake-v372.spec.js',
     'tests/e2e/pilot-exit-v373.spec.js',
+    'tests/e2e/pilot-daily-v374.spec.js',
 ]
 missing=[path for path in required if not (ROOT/path).is_file()]
 if missing: raise SystemExit(f'V3.7 incompleto: {missing}')
@@ -24,6 +28,8 @@ js=(ROOT/'assets/pilot-operations-v37.js').read_text(encoding='utf-8')
 css=(ROOT/'assets/pilot-operations-v37.css').read_text(encoding='utf-8')
 intake=(ROOT/'assets/pilot-order-intake-v372.js').read_text(encoding='utf-8')
 intake_css=(ROOT/'assets/pilot-order-intake-v372.css').read_text(encoding='utf-8')
+daily=(ROOT/'assets/pilot-daily-v374.js').read_text(encoding='utf-8')
+daily_css=(ROOT/'assets/pilot-daily-v374.css').read_text(encoding='utf-8')
 exit_js=(ROOT/'assets/pilot-exit-v373.js').read_text(encoding='utf-8')
 exit_css=(ROOT/'assets/pilot-exit-v373.css').read_text(encoding='utf-8')
 center=(ROOT/'centro-interno.html').read_text(encoding='utf-8')
@@ -37,6 +43,8 @@ require(html,'assets/pilot-operations-v37.js?v=3.7.1','JS V3.7.1')
 require(html,'assets/pilot-operations-v37.css?v=3.7.0','CSS V3.7')
 require(html,'assets/pilot-order-intake-v372.js?v=3.7.2','intake V3.7.2')
 require(html,'assets/pilot-order-intake-v372.css?v=3.7.2','CSS intake V3.7.2')
+require(html,'assets/pilot-daily-v374.js?v=3.7.4','jornada V3.7.4')
+require(html,'assets/pilot-daily-v374.css?v=3.7.4','CSS jornada V3.7.4')
 require(html,'assets/pilot-exit-v373.js?v=3.7.3','salida V3.7.3')
 require(html,'assets/pilot-exit-v373.css?v=3.7.3','CSS salida V3.7.3')
 require(js,"const VERSION='3.7.1'",'versión patch V3.7.1')
@@ -64,6 +72,20 @@ require(intake,"receiptDataUrl:receipt?.dataUrl||''",'comprobante local compatib
 require(intake,"order.status='payment_review'",'pago posterior pasa a revisión')
 require(intake,"RECEIPT_TYPES=new Set(['image/jpeg','image/png','image/webp'])",'tipos de comprobante permitidos')
 require(intake,"canvas.toDataURL('image/jpeg',0.72)",'reducción local de comprobante')
+require(daily,"const VERSION='3.7.4'",'versión jornada V3.7.4')
+require(daily,"OBS_KEY='ee_v374_pilot_daily_observations'",'ledger diario propio')
+require(daily,"const FRICTION=['workflow','data','permissions','usability','performance','other']",'clasificación de fricción')
+require(daily,"const start=pilotState.period?.start,end=pilotState.period?.end",'periodo anidado del motor V3.7.1')
+require(daily,"code='READY_FOR_CHECKPOINT'",'estado listo para checkpoint')
+require(daily,"code='DAY_COMPLETE'",'estado jornada completa')
+require(daily,"code='IN_PROGRESS'",'estado jornada en curso')
+require(daily,"supersedes:previous?.id||null",'observaciones append-only')
+require(daily,"timeZone:'America/Bogota'",'fecha operativa Bogotá')
+require(daily,"pilot().checkpoint",'checkpoint delegado a motor V3.7.1')
+require(daily,"format:'el-errante-pilot-day'",'exportación privada de jornada')
+require(daily,"No duplica hechos.",'contrato de no duplicación')
+require(daily_css,'.v374-panel','estilos jornada aislados')
+require(daily_css,'.v374-summary','estado diario visible')
 require(exit_js,"const VERSION='3.7.3'",'versión salida V3.7.3')
 require(exit_js,"REVIEW_KEY='ee_v373_pilot_exit_reviews'",'ledger de revisiones de salida')
 require(exit_js,'supersedes:previous?.id||null','historia append-only de revisiones')
@@ -79,21 +101,28 @@ require(intake_css,'.v372-payment-box','estilos de pago posterior')
 require(center,'href="piloto-operativo.html"','entrada desde Centro interno')
 require(css,'.v37-shell','estilos V3.7')
 
-for source_name,source in [('piloto',js),('intake',intake),('salida',exit_js)]:
+if 'daily-close-v36.js' in html or 'finance-cash-trends-v323.js' in html:
+    raise SystemExit('V3.7.4 debe leer stores y enlazar módulos, no cargar motores propietarios en la superficie piloto')
+if "ee_v374_pilot_daily_observations" in js:
+    raise SystemExit('V3.7.4 no debe cambiar silenciosamente el schema de backup V3.7.1')
+
+for source_name,source in [('piloto',js),('intake',intake),('jornada',daily),('salida',exit_js)]:
     for forbidden in ('service_role','supabase.auth','createClient('):
         if forbidden.lower() in source.lower(): raise SystemExit(f'V3.7 activa o expone backend prohibido en {source_name}: {forbidden}')
 for forbidden in ("'ee_v31_local_account'", "'ee_v31_session'"):
     if forbidden in js: raise SystemExit(f'V3.7 no debe respaldar credenciales/sesión: {forbidden}')
-if any('localStorage.clear' in source for source in (js,intake,exit_js)): raise SystemExit('V3.7 no puede limpiar todo localStorage')
+if any('localStorage.clear' in source for source in (js,intake,daily,exit_js)): raise SystemExit('V3.7 no puede limpiar todo localStorage')
 
-print('PILOTO OPERATIVO V3.7.3: PASS')
+print('PILOTO OPERATIVO V3.7.4: PASS')
 print('- backend/Supabase: inactivo')
 print('- checkout público: no modificado')
 print('- captura interna local V3.7.2: presente')
+print('- jornada V3.7.4: guía diaria sobre hechos existentes')
+print('- observaciones V3.7.4: append-only con supersedes')
+print('- fecha operativa: America/Bogota')
 print('- snapshot de costo y comprobante local: preservados')
-print('- backup integral privado V3.7.1: contrato presente')
+print('- backup integral privado V3.7.1: contrato presente y schema no alterado')
 print('- ledger piloto append-only: presente')
 print('- reconciliación y gate operativo: presentes')
 print('- salida V3.7.3: persistencia, roles y uso real clasificados')
-print('- revisiones V3.7.3: append-only con supersedes')
 print('- gate de backend: sólo diseño candidato, nunca activación')

@@ -1,6 +1,7 @@
 (()=>{
 'use strict';
 const VERSION='3.1.1';
+const UX_VERSION='3.8.0';
 const SESSION_KEY='ee_v31_session';
 let expiryTimer=null;
 function read(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY));}catch(_){return null;}}
@@ -30,10 +31,29 @@ function enforceSession(){
  if(!s){redirectExpired();return null;}
  scheduleExpiry(s);return s;
 }
-function boot(){
+function ensureUxStyle(){
+ const existing=document.querySelector('link[data-internal-ux-v38]');
+ if(existing)return Promise.resolve(existing);
+ return new Promise(resolve=>{
+  const link=document.createElement('link');link.rel='stylesheet';link.href=`assets/internal-ux-v38.css?v=${UX_VERSION}`;link.dataset.internalUxV38=UX_VERSION;
+  link.addEventListener('load',()=>resolve(link),{once:true});link.addEventListener('error',()=>resolve(link),{once:true});document.head.appendChild(link);
+ });
+}
+function ensureUxScript(){
+ if(window.EL_ERRANTE_INTERNAL_UX_V38)return Promise.resolve(window.EL_ERRANTE_INTERNAL_UX_V38);
+ const existing=document.querySelector('script[data-internal-ux-v38]');
+ if(existing)return new Promise(resolve=>existing.addEventListener('load',()=>resolve(window.EL_ERRANTE_INTERNAL_UX_V38||null),{once:true}));
+ return new Promise(resolve=>{
+  const script=document.createElement('script');script.src=`assets/internal-ux-v38.js?v=${UX_VERSION}`;script.dataset.internalUxV38=UX_VERSION;script.async=false;
+  script.addEventListener('load',()=>resolve(window.EL_ERRANTE_INTERNAL_UX_V38||null),{once:true});script.addEventListener('error',()=>resolve(null),{once:true});document.body.appendChild(script);
+ });
+}
+function rollbackUxStyle(){document.querySelector('link[data-internal-ux-v38]')?.remove();document.documentElement.removeAttribute('data-internal-ux-version');}
+async function boot(){
  const body=document.body;if(!body)return;
  const s=enforceSession();
  if(!s)return;
+ await ensureUxStyle();
  body.dataset.v31Authenticated='true';document.documentElement.dataset.internalVersion=VERSION;
  document.querySelectorAll('[data-v31-user]').forEach(node=>node.textContent=s.displayName||s.username||'Usuario');
  document.querySelectorAll('[data-v31-role]').forEach(node=>node.textContent=s.role||'Usuario');
@@ -47,8 +67,10 @@ function boot(){
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')enforceSession();});
  window.addEventListener('focus',enforceSession);
  window.addEventListener('pageshow',enforceSession);
+ const ux=await ensureUxScript();
+ if(!ux)rollbackUxStyle();
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-window.EL_ERRANTE_INTERNAL_V31={version:VERSION,session,signOut,requestedTarget,accessUrl,enforceSession};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+window.EL_ERRANTE_INTERNAL_V31={version:VERSION,uxVersion:UX_VERSION,session,signOut,requestedTarget,accessUrl,enforceSession,ensureUxStyle,ensureUxScript,rollbackUxStyle};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>void boot(),{once:true});else void boot();
 })();

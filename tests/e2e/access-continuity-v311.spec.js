@@ -8,7 +8,9 @@ async function createLocalAccess(page,username='juan',password='ClaveSegura123')
 }
 
 async function expectLocation(page,pathname,hash=''){
-  await expect.poll(()=>page.evaluate(()=>({pathname:location.pathname,hash:location.hash}))).toEqual({pathname,hash});
+  const target=`${pathname}${hash}`;
+  const escaped=target.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  await expect(page).toHaveURL(new RegExp(`${escaped}$`));
 }
 
 test.describe('Continuidad de acceso interno V3.1.1',()=>{

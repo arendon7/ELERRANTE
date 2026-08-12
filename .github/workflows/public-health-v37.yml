@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   health-v37:
-    name: GitHub Pages publica piloto operativo V3.7.3
+    name: GitHub Pages publica piloto operativo V3.7.4
     if: github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -44,7 +44,7 @@ jobs:
           done
           test "$success" -eq 1
 
-      - name: Verificar superficie V3.7.3
+      - name: Verificar superficie V3.7.4
         run: |
           set -euo pipefail
           fetch_public() {
@@ -59,6 +59,8 @@ jobs:
           fetch_public "$PUBLIC_BASE/assets/pilot-operations-v37.css?verify=$EXPECTED_SHA" public-pilot-v37.css
           fetch_public "$PUBLIC_BASE/assets/pilot-order-intake-v372.js?verify=$EXPECTED_SHA" public-intake-v372.js
           fetch_public "$PUBLIC_BASE/assets/pilot-order-intake-v372.css?verify=$EXPECTED_SHA" public-intake-v372.css
+          fetch_public "$PUBLIC_BASE/assets/pilot-daily-v374.js?verify=$EXPECTED_SHA" public-daily-v374.js
+          fetch_public "$PUBLIC_BASE/assets/pilot-daily-v374.css?verify=$EXPECTED_SHA" public-daily-v374.css
           fetch_public "$PUBLIC_BASE/assets/pilot-exit-v373.js?verify=$EXPECTED_SHA" public-exit-v373.js
           fetch_public "$PUBLIC_BASE/assets/pilot-exit-v373.css?verify=$EXPECTED_SHA" public-exit-v373.css
           fetch_public "$PUBLIC_BASE/assets/generated/data-v28.js?verify=$EXPECTED_SHA" public-data-v28.js
@@ -75,11 +77,14 @@ jobs:
           grep -q 'assets/pilot-operations-v37.css?v=3.7.0' public-pilot-v37.html
           grep -q 'assets/pilot-order-intake-v372.js?v=3.7.2' public-pilot-v37.html
           grep -q 'assets/pilot-order-intake-v372.css?v=3.7.2' public-pilot-v37.html
+          grep -q 'assets/pilot-daily-v374.js?v=3.7.4' public-pilot-v37.html
+          grep -q 'assets/pilot-daily-v374.css?v=3.7.4' public-pilot-v37.html
           grep -q 'assets/pilot-exit-v373.js?v=3.7.3' public-pilot-v37.html
           grep -q 'assets/pilot-exit-v373.css?v=3.7.3' public-pilot-v37.html
           ! grep -q 'assets/data.js' public-pilot-v37.html
           ! grep -q 'finance-workbench-v31.js' public-pilot-v37.html
           ! grep -q 'daily-close-v36.js' public-pilot-v37.html
+          ! grep -q 'finance-cash-trends-v323.js' public-pilot-v37.html
 
           grep -q 'window.EE_DATA=' public-data-v28.js
           grep -q '"products":\[' public-data-v28.js
@@ -100,6 +105,7 @@ jobs:
           grep -q 'function restoreBackup' public-pilot-v37.js
           ! grep -qi 'service_role' public-pilot-v37.js
           ! grep -q "'ee_v31_local_account'" public-pilot-v37.js
+          ! grep -q 'ee_v374_pilot_daily_observations' public-pilot-v37.js
           node --check public-pilot-v37.js
 
           grep -q "const VERSION='3.7.2'" public-intake-v372.js
@@ -113,6 +119,19 @@ jobs:
           ! grep -qi 'service_role' public-intake-v372.js
           ! grep -q 'createClient(' public-intake-v372.js
           node --check public-intake-v372.js
+
+          grep -q "const VERSION='3.7.4'" public-daily-v374.js
+          grep -q "OBS_KEY='ee_v374_pilot_daily_observations'" public-daily-v374.js
+          grep -q "code='READY_FOR_CHECKPOINT'" public-daily-v374.js
+          grep -q "code='DAY_COMPLETE'" public-daily-v374.js
+          grep -q 'supersedes:previous?.id||null' public-daily-v374.js
+          grep -q "timeZone:'America/Bogota'" public-daily-v374.js
+          grep -q 'pilot().checkpoint' public-daily-v374.js
+          grep -q "format:'el-errante-pilot-day'" public-daily-v374.js
+          grep -q 'No duplica hechos.' public-daily-v374.js
+          ! grep -qi 'service_role' public-daily-v374.js
+          ! grep -q 'createClient(' public-daily-v374.js
+          node --check public-daily-v374.js
 
           grep -q "const VERSION='3.7.3'" public-exit-v373.js
           grep -q "REVIEW_KEY='ee_v373_pilot_exit_reviews'" public-exit-v373.js
@@ -128,6 +147,8 @@ jobs:
           grep -q '.v37-shell' public-pilot-v37.css
           grep -q '.v372-panel' public-intake-v372.css
           grep -q '.v372-payment-box' public-intake-v372.css
+          grep -q '.v374-panel' public-daily-v374.css
+          grep -q '.v374-summary' public-daily-v374.css
           grep -q '.v373-panel' public-exit-v373.css
           grep -q '.v373-columns' public-exit-v373.css
           grep -q 'href="piloto-operativo.html"' public-center.html

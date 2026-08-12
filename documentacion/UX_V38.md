@@ -40,8 +40,8 @@ No se introduce una nueva librería UI ni dependencia de runtime.
 - objetivos táctiles mínimos en navegación y acciones comunes;
 - mensajes comunes con `role="status"`, `aria-live="polite"` y `aria-atomic="true"`;
 - tablas horizontales convertidas en regiones enfocables sin modificar la semántica de la tabla interna;
-- scroll suave sólo cuando el usuario no solicita reducción de movimiento;
-- soporte explícito de `prefers-reduced-motion`.
+- desplazamiento programático determinista: no se aplica `scroll-behavior:smooth` global a superficies operativas;
+- motion de interfaz breve y soporte explícito de `prefers-reduced-motion`.
 
 ### Jerarquía y densidad
 

@@ -19,20 +19,21 @@
   const uid=()=>`PILOT-DAY-${Date.now().toString(36)}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}`;
   const pilot=()=>window.EL_ERRANTE_PILOT_V37;
   const isoDate=value=>String(value||'').slice(0,10);
+  const bogotaDate=value=>{const raw=String(value||'');if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;const parsed=new Date(raw);return Number.isNaN(parsed.getTime())?isoDate(raw):parsed.toLocaleDateString('en-CA',{timeZone:'America/Bogota'});};
 
   function eventDate(value){
     const direct=value?.date||value?.requestedDate||value?.purchaseDate||value?.purchase_date||value?.receivedDate||value?.received_date||value?.operationalDate||value?.createdAt||'';
-    return isoDate(direct);
+    return bogotaDate(direct);
   }
-  function orderDate(order){return isoDate(order?.delivery?.requestedDate||order?.requestedDate||order?.operationalDate||order?.createdAt||'');}
+  function orderDate(order){return bogotaDate(order?.delivery?.requestedDate||order?.requestedDate||order?.operationalDate||order?.createdAt||'');}
   function activeRows(rows){
     const list=arr(rows),superseded=new Set(list.map(row=>row?.supersedes).filter(Boolean));
     return list.filter(row=>row?.id&&!superseded.has(row.id));
   }
   function activeClose(date){
-    return activeRows(read(CLOSE_KEY,[])).filter(row=>isoDate(row.date)===date).sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')))[0]||null;
+    return activeRows(read(CLOSE_KEY,[])).filter(row=>bogotaDate(row.date)===date).sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')))[0]||null;
   }
-  function countsForDate(date){return arr(read(CASH_KEY,[])).filter(row=>isoDate(row.date)===date);}
+  function countsForDate(date){return arr(read(CASH_KEY,[])).filter(row=>bogotaDate(row.date)===date);}
   function observations(){return arr(read(OBS_KEY,[]));}
   function observationsForDate(date){return observations().filter(row=>row.date===date);}
   function latestObservation(date){
@@ -61,7 +62,7 @@
     const delivered=orders.filter(order=>['delivered','dispatched'].includes(String(order.status||'')));
     const hasActivity=Boolean(orders.length||measurements.length||purchases.length);
     const pilotEvents=arr(engine.events?.()||[]);
-    const checkpoints=pilotEvents.filter(event=>event.kind==='CHECKPOINT'&&isoDate(event.createdAt)===date);
+    const checkpoints=pilotEvents.filter(event=>event.kind==='CHECKPOINT'&&bogotaDate(event.createdAt)===date);
     const observation=latestObservation(date);
     const issues=[];
     if(period==='IN_PERIOD'){

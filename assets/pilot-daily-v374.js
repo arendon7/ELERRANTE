@@ -43,7 +43,8 @@
 
   function periodState(date,pilotState){
     if(!pilotState||pilotState.status!=='ACTIVE')return 'PILOT_INACTIVE';
-    if(!pilotState.start||!pilotState.end||date<pilotState.start||date>pilotState.end)return 'OUTSIDE_PERIOD';
+    const start=pilotState.period?.start,end=pilotState.period?.end;
+    if(!start||!end||date<start||date>end)return 'OUTSIDE_PERIOD';
     return 'IN_PERIOD';
   }
 

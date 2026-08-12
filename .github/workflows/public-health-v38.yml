@@ -1,0 +1,84 @@
+name: Verificar publicación V3.8
+
+on:
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+
+concurrency:
+  group: "public-health-v38-${{ github.event.workflow_run.head_sha }}"
+  cancel-in-progress: true
+
+jobs:
+  health-v38:
+    name: GitHub Pages publica UX transversal V3.8
+    if: github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Definir expectativa
+        run: |
+          echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
+
+      - name: Exigir despliegue fuente exitoso
+        run: test "$SOURCE_CONCLUSION" = "success"
+
+      - name: Esperar SHA publicado
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 \
+              -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-v38.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-version-v38.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ]; then success=1; break; fi
+            sleep 5
+          done
+          test "$success" -eq 1
+
+      - name: Verificar shell y assets UX V3.8
+        run: |
+          set -euo pipefail
+          fetch_public() {
+            local url="$1" output="$2"
+            curl --fail --silent --show-error --location --max-time 20 \
+              --retry 5 --retry-delay 2 --retry-all-errors \
+              -H 'Cache-Control: no-cache' "$url" > "$output"
+          }
+
+          fetch_public "$PUBLIC_BASE/centro-interno.html?verify=$EXPECTED_SHA" public-center-v38.html
+          fetch_public "$PUBLIC_BASE/assets/internal-shell-v31.js?verify=$EXPECTED_SHA" public-shell-v38.js
+          fetch_public "$PUBLIC_BASE/assets/internal-ux-v38.js?verify=$EXPECTED_SHA" public-ux-v38.js
+          fetch_public "$PUBLIC_BASE/assets/internal-ux-v38.css?verify=$EXPECTED_SHA" public-ux-v38.css
+
+          grep -q 'assets/internal-shell-v31.js' public-center-v38.html
+          grep -q "const VERSION='3.1.1'" public-shell-v38.js
+          grep -q "const UX_VERSION='3.8.0'" public-shell-v38.js
+          grep -q 'ensureUxStyle' public-shell-v38.js
+          grep -q 'ensureUxScript' public-shell-v38.js
+          grep -q 'internal-ux-v38.css' public-shell-v38.js
+          grep -q 'internal-ux-v38.js' public-shell-v38.js
+          node --check public-shell-v38.js
+
+          grep -q "const VERSION='3.8.0'" public-ux-v38.js
+          grep -q "dataset.internalUxVersion=VERSION" public-ux-v38.js
+          grep -q "setAttribute('aria-modal','true')" public-ux-v38.js
+          grep -q 'main.inert=true' public-ux-v38.js
+          grep -q "setAttribute('aria-live','polite')" public-ux-v38.js
+          grep -q "setAttribute('role','region')" public-ux-v38.js
+          grep -q "e.key==='Escape'" public-ux-v38.js
+          node --check public-ux-v38.js
+
+          grep -q '.v38-mobile-bar' public-ux-v38.css
+          grep -q ':focus-visible' public-ux-v38.css
+          grep -q 'prefers-reduced-motion:reduce' public-ux-v38.css
+          grep -q '.v38-scroll-region' public-ux-v38.css
+          grep -q 'min-height:44px' public-ux-v38.css

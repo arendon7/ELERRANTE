@@ -62,7 +62,7 @@ jobs:
           grep -q 'operational-forms-v40.js?v=4.0.0' public-operation-v40.html
           grep -q "const VERSION='4.0.0'" public-forms-v40.js
           grep -q 'operationalFormsVersion' public-forms-v40.js
-          grep -q 'data-v40-enhanced' public-forms-v40.js
+          grep -q 'v40Enhanced' public-forms-v40.js
           grep -q 'v40Submitting' public-forms-v40.js
           grep -q 'MutationObserver' public-forms-v40.js
           ! grep -q 'localStorage.setItem' public-forms-v40.js

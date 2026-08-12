@@ -75,6 +75,7 @@ require(intake,"canvas.toDataURL('image/jpeg',0.72)",'reducción local de compro
 require(daily,"const VERSION='3.7.4'",'versión jornada V3.7.4')
 require(daily,"OBS_KEY='ee_v374_pilot_daily_observations'",'ledger diario propio')
 require(daily,"const FRICTION=['workflow','data','permissions','usability','performance','other']",'clasificación de fricción')
+require(daily,"const start=pilotState.period?.start,end=pilotState.period?.end",'periodo anidado del motor V3.7.1')
 require(daily,"code='READY_FOR_CHECKPOINT'",'estado listo para checkpoint')
 require(daily,"code='DAY_COMPLETE'",'estado jornada completa')
 require(daily,"code='IN_PROGRESS'",'estado jornada en curso')

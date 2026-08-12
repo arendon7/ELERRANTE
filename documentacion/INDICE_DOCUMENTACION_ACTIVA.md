@@ -22,8 +22,10 @@ Cuando haya contradicción:
 | `MAPA_DATOS_Y_FUENTES.md` | Fuentes efectivas, almacenes locales, datos privados y estado de backend. |
 | `ROADMAP_ACTIVO_V33.md` | Roadmap activo actualizado hasta Cierre Diario V3.6 y gate del piloto local. |
 | `CIERRE_DIARIO_V36.md` | Contrato funcional del cierre diario, continuidad, append-only y correcciones V3.6. |
-| `PILOTO_OPERATIVO_V37.md` | Contrato del piloto real controlado, backup integral, reconciliación y gate Supabase V3.7. |
+| `PILOTO_OPERATIVO_V37.md` | Contrato integral del piloto real controlado, backup, reconciliación y salida V3.7.3. |
 | `PILOTO_INTAKE_V372.md` | Captura interna local de pedidos reales para el piloto sin activar checkout público ni backend. |
+| `PILOTO_SALIDA_V373.md` | Revisión append-only del aprendizaje y gate explícito entre modelo local y diseño de persistencia compartida. |
+| `FINANZAS_USABILIDAD_V351.md` | Mesa financiera clara V3.5.1 sobre los motores financieros vigentes. |
 | `ACCESOS_DEMO.md` | Entrada y modos demo sin credenciales fijas publicadas. |
 | `CANON_MARCA_CONTENIDO_V28.md` | Canon activo de marca, aliases e imágenes. |
 | `MFO_SNAPSHOT_V30.md` | Contrato del snapshot financiero privado cuando se utilice. |
@@ -72,7 +74,8 @@ Schemas, RPC y código preparado de etapas anteriores **no implican backend acti
 
 - Supabase preparado;
 - Auth/RLS/persistencia compartida no declarados activos;
-- superficies internas efectivas operan localmente hasta una activación certificada.
+- superficies internas efectivas operan localmente hasta una activación certificada;
+- V3.7.3 puede declarar `BACKEND_DESIGN_CANDIDATE`, pero ese estado sólo autoriza diseño técnico, no activación.
 
 ### Datos financieros y operativos
 
@@ -82,11 +85,13 @@ Nunca asumir que cifras presentes en documentos históricos o demos son valores 
 
 El ledger `ee_v36_daily_close_events` existe en el navegador del usuario. Los documentos del repo describen su contrato, pero **no contienen cierres reales**.
 
-### Piloto V3.7 / V3.7.2
+### Piloto V3.7 / V3.7.3
 
-El ledger `ee_v37_pilot_events` y los backups V3.7 viven localmente. Los respaldos pueden contener información privada y deben conservarse fuera del repositorio público. V3.7 no activa Supabase ni convierte el guard local en autorización servidor.
+El ledger `ee_v37_pilot_events`, las revisiones `ee_v373_pilot_exit_reviews` y los backups V3.7 viven localmente. Los respaldos pueden contener información privada y deben conservarse fuera del repositorio público. V3.7 no activa Supabase ni convierte el guard local en autorización servidor.
 
 V3.7.2 añade una entrada interna local de pedidos para el piloto. Los clientes registrados allí siguen siendo datos privados del navegador y de sus backups; nunca deben versionarse en GitHub.
+
+V3.7.3 clasifica datos, permisos y uso real para decidir entre continuar localmente o pasar a diseño de backend. Sus revisiones son append-only y tampoco activan servicios remotos.
 
 ### Credenciales demo históricas
 

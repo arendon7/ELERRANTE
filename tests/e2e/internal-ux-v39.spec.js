@@ -18,14 +18,15 @@ test.describe('UX de eficiencia V3.9',()=>{
     await expect(page.locator('html')).toHaveAttribute('data-internal-version','3.1.1');
     await expect(page.locator('html')).toHaveAttribute('data-internal-ux-version','3.8.0');
     await expect(page.locator('html')).toHaveAttribute('data-internal-efficiency-version','3.9.0');
-    await expect(page.locator('.v39-command-trigger').first()).toBeVisible();
+    await expect(page.locator('.v39-command-trigger')).toHaveCount(2);
     await expect(page.locator('.v39-resume')).toBeVisible();
   });
 
-  test('el launcher es modal, enfoca búsqueda, encuentra por intención y restaura foco con Escape',async({page})=>{
+  test('el launcher es modal, enfoca búsqueda, encuentra por intención y restaura foco con Escape',async({page},testInfo)=>{
     await page.goto('/centro-interno.html');
     await waitForV39(page);
-    const trigger=page.locator('.v31-session-actions .v39-command-trigger');
+    const mobile=testInfo.project.name.includes('mobile');
+    const trigger=mobile?page.locator('.v38-mobile-bar .v39-command-trigger'):page.locator('.v31-session-actions .v39-command-trigger');
     await trigger.click();
     const layer=page.locator('.v39-command-layer');
     const dialog=page.locator('.v39-command');
@@ -36,7 +37,7 @@ test.describe('UX de eficiencia V3.9',()=>{
     await expect(page.locator('.v30-shell')).toHaveAttribute('inert','');
     await expect(input).toBeFocused();
     await input.fill('caja');
-    await expect(page.locator('.v39-command-item strong')).toContainText(['Finanzas']);
+    await expect(page.locator('.v39-command-item').filter({hasText:'Finanzas'}).first()).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(layer).toBeHidden();
     await expect(page.locator('.v30-shell')).not.toHaveAttribute('inert','');

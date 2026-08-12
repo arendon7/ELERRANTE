@@ -1,0 +1,1 @@
+The V4 branch uses self-contained project adaptations of the selected external design skills. Upstream CLI commands remain documented only for future refresh/comparison; do not overwrite the project adaptations without review.

@@ -6,9 +6,9 @@ V3.7 prepara a El Errante para usar durante un periodo corto los flujos ya const
 
 El piloto debe probar una cadena de hechos completa:
 
-`pedido → producción → inventario → compra/recepción → cierre diario → caja → reconciliación`
+`pedido → producción → inventario → compra/recepción → cierre diario → caja → reconciliación → aprendizaje`
 
-La superficie efectiva vigente es **V3.7.2**. El motor de backup, ledger y reconciliación permanece en **3.7.1**; V3.7.2 añade únicamente una entrada interna local para que un pedido real recibido fuera del checkout pueda nacer desde UI sin activar Supabase.
+La superficie efectiva vigente es **V3.7.3**. El motor de backup, ledger y reconciliación permanece en **V3.7.1**; V3.7.2 aporta la entrada interna local de pedidos y V3.7.3 registra el aprendizaje de salida para decidir, con evidencia, si el modelo local sigue siendo suficiente o si corresponde diseñar persistencia compartida e identidad real.
 
 ## Contrato del piloto
 
@@ -21,7 +21,8 @@ La superficie efectiva vigente es **V3.7.2**. El motor de backup, ledger y recon
 7. La aprobación de pago sigue perteneciendo a Operación V2.1 y conserva la exigencia de soporte.
 8. Los eventos propios de V3.7 son append-only en `ee_v37_pilot_events`.
 9. Una restauración nunca reemplaza el ledger V3.7 actual; registra un evento `RESTORE` nuevo.
-10. Cuenta local, sesión, marcadores de demo y secretos/backend quedan fuera del respaldo V3.7.
+10. V3.7.3 guarda revisiones de salida append-only en `ee_v373_pilot_exit_reviews`; una revisión nueva referencia la anterior mediante `supersedes`.
+11. Cuenta local, sesión, marcadores de demo y secretos/backend quedan fuera del respaldo V3.7.
 
 ## Preflight
 
@@ -88,7 +89,7 @@ La restauración valida formato, versión y SHA-256 antes de cambiar cualquier d
 
 Cada restauración genera un respaldo `pre-restore`, reemplaza únicamente datasets permitidos, no restaura cuenta/sesión/demo y agrega un evento `RESTORE` al ledger V3.7 actual, incluyendo la versión del backup restaurado.
 
-V3.7.2 no cambia el formato de backup ni invalida respaldos anteriores.
+V3.7.2 y V3.7.3 no cambian el formato de backup ni invalidan respaldos anteriores.
 
 ## Checkpoints
 
@@ -119,48 +120,69 @@ Gate calculado: `BLOCKED`, `NEEDS_REVIEW` o `EVIDENCE_COMPLETE`.
 
 `EVIDENCE_COMPLETE` no significa auditoría, cierre contable, declaración fiscal ni exactitud económica absoluta; sólo indica que los controles automáticos V3.7 no detectan una brecha pendiente.
 
+## Salida y aprendizaje V3.7.3
+
+Una vez cerrado el piloto, `pilot-exit-v373` obliga a convertir la experiencia real en clasificaciones explícitas sobre:
+
+- qué datos pueden seguir locales y cuáles necesitan persistencia compartida;
+- qué acciones pueden seguir bajo control local y cuáles necesitan identidad/rol real;
+- qué superficies se usaron diariamente, ocasionalmente, con fricción o no se usaron.
+
+La revisión no modifica hechos operativos. Cada snapshot queda en `ee_v373_pilot_exit_reviews` y conserva historia mediante `supersedes`.
+
+El gate de persistencia sólo puede llegar a una conclusión final cuando el piloto está cerrado, la reconciliación es `EVIDENCE_COMPLETE`, la revisión corresponde a la reconciliación vigente y no quedan clasificaciones por decidir.
+
+Resultados finales posibles:
+
+- `LOCAL_MODEL_SUFFICIENT`: el piloto no demuestra todavía necesidad de backend compartido;
+- `BACKEND_DESIGN_CANDIDATE`: el piloto sí demuestra que debe diseñarse la siguiente arquitectura.
+
+El segundo estado **no activa Supabase**. Autoriza únicamente pasar al diseño técnico de Auth, RLS, storage privado, migración, auditoría servidor, concurrencia e idempotencia.
+
 ## Ensayo integral previo
 
 `tests/e2e/pilot-rehearsal-v371.spec.js` conserva el ensayo integral V3.7.1 que recorre inventario, producción, compra, evidencia, cierre, caja, checkpoint y reconciliación sobre una entrada determinística controlada.
 
-V3.7.2 añade `tests/e2e/pilot-intake-v372.spec.js`, que certifica la frontera de entrada que antes obligaba al ensayo a sembrar el pedido inicial:
+`tests/e2e/pilot-intake-v372.spec.js` certifica la frontera de entrada real y `tests/e2e/pilot-exit-v373.spec.js` certifica la frontera de salida y decisión.
+
+El conjunto verifica que:
 
 - el pedido puede nacer desde una superficie interna legítima;
-- queda en `ee_v14_orders`;
-- el snapshot histórico de costo se conserva;
-- una línea con costo cero/desconocido no puede guardarse;
-- `payment_review` exige un comprobante real local;
-- un pedido `pending_payment` puede recibir el comprobante después y pasar a revisión;
-- el soporte guardado habilita `Aprobar pago` en Operación V2.1 y la transición alcanza `approved`.
-
-El ensayo integral V3.7.1 se mantiene estable como regresión histórica y el test V3.7.2 certifica específicamente la nueva frontera de entrada. Juntos separan defectos de integración de hallazgos propios del uso real.
+- queda en `ee_v14_orders` y conserva snapshot histórico de costo;
+- `payment_review` exige comprobante y la aprobación sigue en Operación V2.1;
+- la cadena de hechos puede reconciliarse;
+- un piloto cerrado sin revisión no puede declarar decisión de arquitectura;
+- brechas de reconciliación bloquean la candidatura;
+- las revisiones de salida son append-only;
+- una revisión completa puede concluir modelo local suficiente o candidato a diseño de backend sin activarlo.
 
 ## Cierre del piloto
 
-Cerrar exige una nota mínima, genera respaldo final, calcula reconciliación y agrega un evento `END` con periodo, nota, checksum final, resumen y hallazgos.
+Cerrar exige una nota mínima, genera respaldo final, calcula reconciliación y agrega un evento `END` con periodo, nota, checksum final, resumen y hallazgos. El cierre operativo precede a la revisión V3.7.3.
 
 ## Gate Supabase posterior
 
 El piloto debe responder, con evidencia, cuáles datos necesitan realmente persistencia compartida, identidad real, permisos por rol, RLS, idempotencia, auditoría servidor, storage privado, concurrencia y reconciliación multiusuario.
 
-Supabase sólo se propone después de revisar el informe del piloto. V3.7.2 no activa backend.
+Supabase sólo se diseña después de obtener el gate V3.7.3 correspondiente. V3.7.3 no activa backend.
 
 ## Certificación
 
-Para integrar la superficie efectiva V3.7.2:
+Para integrar la superficie efectiva V3.7.3:
 
 1. `scripts/verificar_piloto_v37.py` = PASS;
 2. Playwright desktop + móvil = PASS;
 3. `tests/e2e/pilot-operations-v37.spec.js` = PASS;
 4. `tests/e2e/pilot-rehearsal-v371.spec.js` = PASS;
 5. `tests/e2e/pilot-intake-v372.spec.js` = PASS;
-6. la captura V3.7.2 conserva costo histórico y bloquea costo cero;
-7. la captura conserva el guard de comprobante y demuestra `payment_review → approved` desde Operación;
-8. la regresión V3.7.1 prueba que `receivedDate` de V2.5 cuenta como compra/recepción del periodo;
-9. la regresión valida que un backup íntegro V3.7.0 sigue siendo aceptado por V3.7.1;
+6. `tests/e2e/pilot-exit-v373.spec.js` = PASS;
+7. costo histórico, comprobante y guard V2.1 permanecen intactos;
+8. backups V3.7.0 siguen siendo aceptados por V3.7.1;
+9. las revisiones V3.7.3 son append-only y `EVIDENCE_GAPS` impide declarar candidato;
 10. auditoría canónica = PASS;
 11. validación/materialización = PASS;
 12. Pages = publicado;
-13. health-check público V3.7.2 = PASS;
+13. health-check público V3.7.3 = PASS;
 14. Graphify = actualizado;
-15. no quedan PR redundantes del ciclo.
+15. Supabase continúa inactivo;
+16. no quedan PR redundantes del ciclo.

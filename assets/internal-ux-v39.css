@@ -1,5 +1,6 @@
 :root{--v39-ink:#1d1b19;--v39-muted:#6f6861;--v39-border:rgba(35,31,27,.13);--v39-surface:#fffdf8;--v39-surface-soft:#f5efe6;--v39-accent:#8f4b35;--v39-shadow:0 28px 80px rgba(28,24,20,.20);--v39-ease:cubic-bezier(.22,1,.36,1)}
 body.v39-command-open{overflow:hidden}
+.v30-side{box-sizing:border-box;overflow-y:auto;overscroll-behavior-y:contain}
 .v39-command-trigger{appearance:none;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:inherit;border-radius:10px;min-height:38px;padding:7px 9px;display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:.78rem;cursor:pointer;transition:background-color .16s ease,border-color .16s ease,transform .16s var(--v39-ease)}
 .v39-command-trigger:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22)}
 .v39-command-trigger:active{transform:translateY(1px)}

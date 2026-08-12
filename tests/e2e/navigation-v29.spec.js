@@ -7,7 +7,7 @@ function isLocalNavigable(href){
   try{const url=new URL(href,'http://127.0.0.1:4173/');return url.origin==='http://127.0.0.1:4173';}catch(_){return false;}
 }
 
-test.describe('Navegación pública V3 truth + Home V4',()=>{
+test.describe('Navegación pública V3 truth + V4',()=>{
   for(const path of publicPages){
     test(`${path} no expone CTAs locales rotos`,async({page,request})=>{
       await page.goto(path,{waitUntil:'domcontentloaded'});
@@ -32,11 +32,15 @@ test.describe('Navegación pública V3 truth + Home V4',()=>{
     for(const href of ['nosotros.html','equipo.html','producto.html','cuenta.html','admin.html','control.html','operacion.html','studio.html','centro-interno.html'])await expect(nav.locator(`a[href^="${href}"]`)).toHaveCount(0);
   });
 
-  test('la PWA incluye las rutas y assets editoriales V3 + Home V4',async({request})=>{
+  test('la PWA incluye rutas editoriales y todas las capas V4 activas',async({request})=>{
     const response=await request.get('/service-worker.js');
     expect(response.ok()).toBeTruthy();
     const source=await response.text();
-    for(const token of ['./metodo.html','./juan-david-ocampo.html','./assets/editorial-v30.css','./assets/products-v30.js','./assets/product-v30.js','./assets/brand-v4-home.css','./assets/brand-v4-home.js']) expect(source).toContain(token);
+    for(const token of [
+      './metodo.html','./juan-david-ocampo.html','./assets/editorial-v30.css','./assets/products-v30.js','./assets/product-v30.js',
+      './assets/brand-v4-home.css','./assets/brand-v4-home.js',
+      './assets/brand-v4-public.css','./assets/brand-v4-public.js','./assets/brand-v4-product.css','./assets/brand-v4-events.css'
+    ]) expect(source).toContain(token);
   });
 
   test('la cabecera y el pie V4 no anuncian funciones que todavía no existen',async({page})=>{
@@ -52,7 +56,7 @@ test.describe('Navegación pública V3 truth + Home V4',()=>{
   test('todos los botones públicos describen una acción real',async({page})=>{
     for(const path of publicPages){
       await page.goto(path,{waitUntil:'domcontentloaded'});
-      const empty=await page.locator('a.btn, a.text-link, a.intent-card, a.v4-button, a.v4-text-link').evaluateAll(nodes=>nodes.filter(node=>!(node.textContent||'').trim()||!node.getAttribute('href')).map(node=>node.outerHTML));
+      const empty=await page.locator('a.btn, a.text-link, a.intent-card, a.v4-button, a.v4-text-link, a.v4p-btn, a.v4p-link').evaluateAll(nodes=>nodes.filter(node=>!(node.textContent||'').trim()||!node.getAttribute('href')).map(node=>node.outerHTML));
       expect(empty,`CTA sin texto o destino en ${path}`).toEqual([]);
     }
   });

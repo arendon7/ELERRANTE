@@ -72,8 +72,8 @@ jobs:
 
           grep -q "const VERSION='3.9.0'" public-ux-v39.js
           grep -q "HISTORY_KEY='ee_v39_navigation_history'" public-ux-v39.js
-          grep -q 'data-internal-efficiency-version' public-ux-v39.js || grep -q 'internalEfficiencyVersion' public-ux-v39.js
-          grep -q "setAttribute('aria-modal','true')" public-ux-v39.js
+          grep -q 'internalEfficiencyVersion' public-ux-v39.js
+          grep -q 'aria-modal="true"' public-ux-v39.js
           grep -q 'shell.inert=true' public-ux-v39.js
           grep -q "e.key==='Escape'" public-ux-v39.js
           grep -q "e.key.toLowerCase()==='k'" public-ux-v39.js

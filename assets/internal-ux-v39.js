@@ -14,6 +14,16 @@ const PAGE_LABELS={
  'piloto-operativo.html':'Piloto operativo',
  'index.html':'Web pública'
 };
+const PAGE_KEYWORDS={
+ 'centro-interno.html':'inicio módulos sistema',
+ 'control.html':'prioridad alertas faltantes pedidos compras control día',
+ 'operacion.html':'pedidos producción materiales inventario compras despacho medición operación',
+ 'finanzas.html':'finanzas margen caja costos plan real escenarios abastecimiento presupuesto',
+ 'studio.html':'datos maestros catálogo sku precio evidencia producto recetas bom',
+ 'actas.html':'actas validación trazabilidad decisiones evidencia sesión puertas',
+ 'piloto-operativo.html':'piloto backup checkpoint reconciliación observaciones jornada continuidad',
+ 'index.html':'web pública cliente catálogo exterior'
+};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let layer=null,dialog=null,input=null,results=null,previousFocus=null,activeIndex=-1,currentItems=[];
 function pageName(){return location.pathname.split('/').pop()||'centro-interno.html'}
@@ -40,7 +50,7 @@ function currentVisit(){
 }
 function recordCurrent(){const item=currentVisit();if(!item)return;const next=[item,...readHistory().filter(old=>old.href!==item.href)];writeHistory(next)}
 function navItems(){
- const items=[];const seen=new Set();const add=(href,label,group='Módulo',keywords='')=>{const safe=validHref(href);if(!safe||seen.has(safe))return;seen.add(safe);items.push({href:safe,label:String(label||safe).trim(),group,keywords:normalize(`${label} ${group} ${keywords}`)})};
+ const items=[];const seen=new Set();const add=(href,label,group='Módulo',keywords='')=>{const safe=validHref(href);if(!safe||seen.has(safe))return;seen.add(safe);const base=safe.split('#')[0];items.push({href:safe,label:String(label||safe).trim(),group,keywords:normalize(`${label} ${group} ${keywords} ${PAGE_KEYWORDS[base]||''}`)})};
  readHistory().forEach(item=>add(item.href,item.label,'Reciente','continuar historial'));
  $$('.v30-nav a').forEach(a=>add(a.getAttribute('href'),a.textContent,'Módulo','navegación principal'));
  $$('.v31-workspace-nav a[href^="#"]').forEach(a=>add(`${pageName()}${a.getAttribute('href')}`,a.textContent,'En esta pantalla','sección ancla'));

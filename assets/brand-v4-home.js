@@ -4,6 +4,9 @@
   const header=document.querySelector('.v4-header');
   const toggle=document.querySelector('.v4-menu-toggle');
   const nav=document.querySelector('.v4-nav');
+  const headerAction=document.querySelector('.v4-header-action');
+
+  if(headerAction)headerAction.style.position='relative';
 
   if(header&&toggle&&nav){
     const close=()=>{

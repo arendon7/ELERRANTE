@@ -3,28 +3,32 @@ const { test, expect } = require('@playwright/test');
 const v30Ids=['margherita-del-taller','la-errante','bosque','diavola-errante','cuatro-quesos-montana'];
 const forbiddenClosedClaims=['A 400 grados','todas nuestras pizzas se hornean a 400 °C','la temperatura exacta de cocción es 400 °C','Trabajamos tomate San Marzano','Usamos tomate San Marzano','Trabajamos con biga y masa madre','Biga · Masa madre · Tiempo'];
 
-test.describe('Editorial y autoridad V3.0 candidate', () => {
-  test('inicio presenta obra, autor, método y carta por territorios', async ({ page }) => {
+test.describe('Editorial V3 truth + Home V4 brand candidate', () => {
+  test('inicio V4 prioriza deseo, producto, movimiento y luego profundidad', async ({ page }) => {
     await page.goto('/index.html');
-    await expect(page.getByRole('heading', { name: 'Una tradición aprendida viajando. Una cocina construida desde aquí.' })).toBeVisible();
-    await expect(page.getByText('No queríamos imitar una pizza. Queríamos entender qué la hacía posible.')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Antes de estudiar pizza, aprendió a cocinar.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Cinco pizzas. Cinco maneras de pensar.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Tres variables que dejaron de ser fondo.' })).toBeVisible();
-    await expect(page.getByText('hornos de alta temperatura capaces de acercarse a los 400 °C', { exact:false })).toBeVisible();
-    await expect(page.getByText('No congelamos una pizza terminada. Diseñamos una pizza para terminarse dos veces.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Pizza contemporánea. En movimiento.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Aprendida viajando. Interpretada desde aquí.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Cinco pizzas. Cinco decisiones.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Nosotros hacemos el tiempo. Tú completas el fuego.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'El lugar cambia. La cocina no.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Antes de una receta, una pregunta.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'La técnica sólo importa si termina en ganas de otro bocado.' })).toBeVisible();
+    await expect(page.getByText('Italia fue escuela. Colombia es el lugar desde donde seguimos construyendo.')).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-ee-editorial-version', '3.0');
   });
 
-  test('navegación pública prioriza método y autoría y no expone equipo genérico', async ({ page }) => {
+  test('navegación V4 prioriza comercio, método, autoría y movimiento sin equipo genérico', async ({ page }) => {
     await page.goto('/index.html');
-    const nav=page.locator('.main-nav');
+    const nav=page.locator('.v4-nav');
+    await expect(nav.locator('a[href="tienda.html"]')).toHaveAttribute('href','tienda.html');
     await expect(nav.locator('a[href="metodo.html"]')).toHaveAttribute('href','metodo.html');
     await expect(nav.locator('a[href="juan-david-ocampo.html"]')).toHaveAttribute('href','juan-david-ocampo.html');
     await expect(nav.locator('a[href="en-casa.html"]')).toHaveAttribute('href','en-casa.html');
     await expect(nav.locator('a[href="bitacora.html"]')).toHaveAttribute('href','bitacora.html');
+    await expect(nav.locator('a[href="en-movimiento.html"]')).toHaveAttribute('href','en-movimiento.html');
     await expect(nav.locator('a[href="equipo.html"]')).toHaveCount(0);
     await expect(nav.locator('a[href="nosotros.html"]')).toHaveCount(0);
+    await expect(page.locator('#site-header')).not.toBeVisible();
   });
 
   test('página de Juan David funciona como perfil de autor y no como página de socios', async ({ page }) => {

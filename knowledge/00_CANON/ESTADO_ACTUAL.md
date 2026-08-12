@@ -1,58 +1,81 @@
 # ELERRANTE — Estado canónico
 
-Última verificación humana: 2026-08-10.
+Última verificación humana: 2026-08-11.
 
 ## Fuente canónica
 
 - Repositorio: `arendon7/ELERRANTE`.
 - Rama productiva: `main`.
-- SHA actual de `main` al cerrar esta verificación: `a5f7bb84cc1a61364c831ee0252dfc523c3dcf48`.
-- Último merge funcional: PR #109 — Inventario valorizado V1.5, base funcional `074d1c8d68d80b4a4b88df28065652c080a6848e`.
-- Último merge de infraestructura/memoria: PR #113 — Graphify + Obsidian.
-- PR #113 no modifica la aplicación; preserva Control V3.2, Finanzas V3.3, Inventario valorizado V1.5 y los accesos de revisión certificados.
+- **No se fija aquí un SHA “actual” permanente**: antes de retomar trabajo debe consultarse el head real de `main`.
+- SHA de referencia inmediatamente anterior al ciclo V3.7.3: `39fbb5637e560e8fadbda6fff426747d1fc48cdf`.
+- Ese SHA ya incorporaba Finanzas V3.5.1 y la certificación pública posterior de sus health-checks.
+- La superficie de piloto vigente al integrar este documento pasa a V3.7.3: motor V3.7.1 + intake V3.7.2 + salida/aprendizaje V3.7.3.
 
-## Certificación observada sobre el `main` actual
+## Estado funcional vigente
 
-- Inventario valorizado V1.5: `success`.
-- Costo histórico V1.4: `success`.
-- Publicación real / health-check: `success`.
-- No existen workflows fallidos ni en ejecución sobre `a5f7bb84…` al cerrar esta verificación.
-- Para cualquier decisión futura de release, GitHub Actions sigue siendo la autoridad dinámica.
+- Control: V3.0 + horizonte V3.4 + capacidad V3.5 + continuidad V3.6.
+- Operación: motores V2.1–V2.5 + evidencia V3.3 + horizonte V3.4 + capacidad V3.5 + cierre diario V3.6.
+- Finanzas: workbench V3.1 + profundidad V3.2.x + costos V1.4/V1.5 + puente V3.4 + cierre gerencial V3.5 + mesa clara V3.5.1.
+- Piloto operativo: backup/reconciliación V3.7.1 + captura interna V3.7.2 + revisión de salida V3.7.3.
+- Supabase: preparado, **inactivo**.
+- Persistencia interna efectiva: navegador local controlado.
+- GitHub Pages: revisión y demostración; nunca depósito de datos privados del piloto.
 
-## Accesos de revisión certificados
+## Gate del piloto V3.7.3
 
-- `juancho / juancho` — rol visual `Revisor`.
-- `lucho / lucho` — rol visual `Revisor`.
-- El administrador local permanece independiente y no es reemplazado por las cuentas de revisión.
+El piloto debe probar la cadena:
+
+`pedido → producción → inventario → compra/recepción → cierre diario → caja → reconciliación → aprendizaje`
+
+V3.7.3 registra revisiones append-only en `ee_v373_pilot_exit_reviews` y clasifica:
+
+- datos que pueden seguir locales o necesitan persistencia compartida;
+- acciones que pueden seguir locales o requieren identidad/rol real;
+- superficies usadas diariamente, ocasionalmente, con fricción o no usadas.
+
+Una conclusión final exige piloto cerrado + reconciliación `EVIDENCE_COMPLETE` + revisión vigente + clasificaciones completas.
+
+Resultados finales:
+
+- `LOCAL_MODEL_SUFFICIENT`;
+- `BACKEND_DESIGN_CANDIDATE`.
+
+`BACKEND_DESIGN_CANDIDATE` permite diseñar la siguiente arquitectura; **no activa Supabase**.
+
+## Certificación
+
+Una iteración sólo se considera cerrada cuando, sobre el mismo SHA productivo:
+
+1. auditoría canónica = PASS;
+2. validación/materialización = PASS;
+3. Playwright desktop+móvil = PASS;
+4. Pages = publicado;
+5. health-check público aplicable = PASS;
+6. documentación activa = coherente;
+7. Graphify = regenerado desde ese `main`;
+8. no quedan PR redundantes del ciclo.
+
+GitHub Actions es la autoridad dinámica para el estado de certificación.
 
 ## Memoria de ingeniería
 
-Graphify + Obsidian quedó integrado y regenerado sobre el `main` actual:
+Graphify + Obsidian permanece integrado con esta separación:
 
-- snapshot vivo: `bf4cd2d47a4018b8e3ec4a8f3526a96dc864ebee`;
-- construido desde `a5f7bb84`;
-- 1.357 nodos;
-- 2.452 relaciones;
-- 154 comunidades;
-- SQL incluido mediante el parser correspondiente;
-- 97 % de relaciones extraídas, 3 % inferidas y 0 % ambiguas en el reporte.
+- GitHub `main`: qué existe realmente;
+- `knowledge/graphify-live`: memoria estructural regenerable;
+- `knowledge/` en `main`: decisiones humanas, contratos y handoff;
+- ChatGPT: orquestación, análisis e implementación.
 
-La arquitectura adoptada evita introducir commits generados en `main`: el workflow publica la memoria estructural en la rama regenerable `knowledge/graphify-live`. La memoria humana permanece en `main`.
+La rama `knowledge/graphify-live` debe mostrar en `GRAPH_REPORT.md` el mismo commit base que el `main` consultado. Las relaciones `INFERRED` nunca sustituyen la verificación del código fuente.
 
 ## Regla de continuidad
 
-Cuando una conversación se agote o se abra un chat nuevo, no reconstruir ELERRANTE solo desde conversaciones anteriores. Usar este orden:
+Cuando una conversación se agote o se abra un chat nuevo:
 
-1. confirmar el SHA actual de `main` y leer este estado canónico;
-2. consultar `knowledge/graphify-live` y comprobar que `GRAPH_REPORT.md` fue construido desde ese `main`;
-3. revisar únicamente los archivos fuente y tests concretos afectados por la tarea;
-4. consultar PRs/historial solo cuando sea necesario explicar una decisión previa.
+1. consultar el SHA actual de `main`;
+2. leer este estado canónico;
+3. comprobar que `knowledge/graphify-live` fue construido desde ese `main`;
+4. revisar sólo los archivos fuente y tests afectados;
+5. consultar PRs/historial únicamente si hace falta explicar una decisión previa.
 
-Las relaciones `INFERRED` de Graphify nunca sustituyen la verificación del código fuente.
-
-## Capas
-
-- GitHub `main`: qué existe realmente.
-- Graphify: cómo se relaciona técnicamente.
-- Obsidian / `knowledge/`: por qué existe, qué decidimos y qué aprendimos.
-- ChatGPT: orquestación, análisis e implementación.
+No reconstruir ELERRANTE sólo desde conversaciones antiguas cuando el repositorio contiene un estado más reciente.

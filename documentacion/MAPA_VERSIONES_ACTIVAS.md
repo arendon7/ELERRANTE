@@ -19,7 +19,7 @@ No debe deducirse la versión integral a partir del número más alto visible en
 | Arquitectura interna | **3.1** | Control / Operación / Finanzas + herramientas auxiliares | Studio, Actas y Piloto permanecen auxiliares. |
 | Shell y sesión | **3.1.1** | Guard local, navegación y expiración | No equivale a autorización servidor. |
 | Motor Control | **3.0** | Priorización operativa base | `control-v30.js`. |
-| Motor Materiales / BOM | **2.3.1** | Requerimientos, stock visible y valoración prospectiva | `materials-v23.js`. |
+| Motor Materiales / BOM | **2.3.1** | Requerimientos, stock visible y valoración prospectiva | Motor `materials-v23.js` sobre pack de datos V2.3.0. |
 | Módulo Operativo base | **3.3.0** | Ejecución + evidencia | Motor/base operativo persistente. |
 | Evidencia operativa | **3.3.0** | Readiness y ledger de evidencia | `operational-evidence-v330.js`. |
 | Horizonte operativo | **3.4.0** | Próximos siete días, BOM, faltantes y compras | `business-pulse-v34.js`. |

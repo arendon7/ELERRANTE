@@ -7,7 +7,8 @@ function note(container,text,kind='info'){
   if(!container)return;
   let el=container.querySelector('[data-v3741-readiness-note]');
   if(!el){el=document.createElement('p');el.dataset.v3741ReadinessNote='';el.className='v3741-readiness-note';container.append(el)}
-  el.dataset.kind=kind;el.textContent=text;
+  if(el.dataset.kind!==kind)el.dataset.kind=kind;
+  if(el.textContent!==text)el.textContent=text;
 }
 function apply(){
   const root=qs('#pilot-operations-v37');if(!root)return;

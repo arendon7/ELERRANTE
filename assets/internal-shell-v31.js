@@ -48,6 +48,7 @@ function ensureUxScript(){
   script.addEventListener('load',()=>resolve(window.EL_ERRANTE_INTERNAL_UX_V38||null),{once:true});script.addEventListener('error',()=>resolve(null),{once:true});document.body.appendChild(script);
  });
 }
+function rollbackUxStyle(){document.querySelector('link[data-internal-ux-v38]')?.remove();document.documentElement.removeAttribute('data-internal-ux-version');}
 async function boot(){
  const body=document.body;if(!body)return;
  const s=enforceSession();
@@ -66,9 +67,10 @@ async function boot(){
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')enforceSession();});
  window.addEventListener('focus',enforceSession);
  window.addEventListener('pageshow',enforceSession);
- await ensureUxScript();
+ const ux=await ensureUxScript();
+ if(!ux)rollbackUxStyle();
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-window.EL_ERRANTE_INTERNAL_V31={version:VERSION,uxVersion:UX_VERSION,session,signOut,requestedTarget,accessUrl,enforceSession,ensureUxStyle,ensureUxScript};
+window.EL_ERRANTE_INTERNAL_V31={version:VERSION,uxVersion:UX_VERSION,session,signOut,requestedTarget,accessUrl,enforceSession,ensureUxStyle,ensureUxScript,rollbackUxStyle};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>void boot(),{once:true});else void boot();
 })();

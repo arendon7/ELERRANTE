@@ -14,9 +14,10 @@ test.describe('Home V4 brand and UX gates', () => {
 
   test('conserva rutas comerciales principales en el primer viewport', async ({ page }) => {
     await page.goto('/index.html');
-    await expect(page.getByRole('link',{name:'Ver las pizzas'})).toHaveAttribute('href','tienda.html?category=en-casa');
-    await expect(page.getByRole('link',{name:'Cotizar un evento'}).first()).toHaveAttribute('href','en-movimiento.html#cotizar');
-    await expect(page.getByRole('link',{name:/Carrito/})).toHaveAttribute('href','checkout.html');
+    const hero=page.locator('.v4-hero');
+    await expect(hero.getByRole('link',{name:'Ver las pizzas'})).toHaveAttribute('href','tienda.html?category=en-casa');
+    await expect(hero.getByRole('link',{name:'Cotizar un evento'})).toHaveAttribute('href','en-movimiento.html#cotizar');
+    await expect(page.locator('.v4-header').getByRole('link',{name:/Carrito/})).toHaveAttribute('href','checkout.html');
   });
 
   test('móvil tiene navegación usable y no desborda horizontalmente', async ({ page }) => {

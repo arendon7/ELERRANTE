@@ -15,6 +15,12 @@
     ['en-movimiento.html','En Movimiento']
   ];
 
+  const ensureAssetLayer=()=>{
+    if(document.querySelector('link[href="assets/brand-v4-assets.css"]'))return;
+    const link=document.createElement('link');link.rel='stylesheet';link.href='assets/brand-v4-assets.css';document.head.appendChild(link);
+  };
+  ensureAssetLayer();
+
   const isCurrent=href=>{
     if(href==='tienda.html')return path==='tienda.html'||path==='producto.html';
     return path===href;
@@ -38,9 +44,9 @@
       headerHost.innerHTML=`
         <header class="v4-public-header${page==='producto'?' is-solid':''}" data-open="false">
           <div class="v4-public-header-inner">
-            <a class="v4-public-brand" href="index.html" aria-label="El Errante, inicio" data-master-status="awaiting-approved-binary">
-              <strong>EL ERRANTE</strong>
-              <small>Pizza contemporánea · Est. 2019</small>
+            <a class="v4-public-brand" href="index.html" aria-label="El Errante, inicio">
+              <img class="v4-public-brand-mark" src="assets/images/brand-v4/pizzaiolo-mark-v4.webp" alt="" width="44" height="44">
+              <span class="v4-public-brand-copy"><strong>EL ERRANTE</strong><small>Pizza contemporánea · Est. 2019</small></span>
             </a>
             <nav class="main-nav v4-public-nav" aria-label="Navegación principal">${navMarkup()}</nav>
             <a class="v4-public-cart" href="checkout.html">Carrito <span class="cart-count" aria-label="Productos en el carrito">0</span></a>
@@ -54,7 +60,7 @@
       footerHost.innerHTML=`
         <footer class="v4-public-footer">
           <div class="v4-public-footer-inner">
-            <div class="v4-public-footer-brand"><strong>EL ERRANTE</strong><small>Pizza contemporánea · Est. 2019</small></div>
+            <div class="v4-public-footer-brand"><img class="v4-public-footer-brand-mark" src="assets/images/brand-v4/pizzaiolo-mark-v4.webp" alt="" width="52" height="52"><span class="v4-public-footer-brand-copy"><strong>EL ERRANTE</strong><small>Pizza contemporánea · Est. 2019</small></span></div>
             <nav class="v4-public-footer-nav" aria-label="Navegación secundaria">
               <a href="tienda.html">Tienda</a><a href="en-casa.html">En Casa</a><a href="metodo.html">Método</a><a href="bitacora.html">Bitácora</a><a href="en-movimiento.html">Eventos</a><a href="ayuda.html">Ayuda</a><a class="v4-public-footer-access" href="acceso.html">Acceso usuarios</a>
             </nav>

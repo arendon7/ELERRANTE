@@ -10,7 +10,8 @@ test.describe('V4 utility public system',()=>{
     await expect(page.getByRole('heading',{name:'Primero resolvamos lo que pueda resolverse con información clara.'})).toBeVisible();
     await expect(page.locator('#faq-list')).toBeVisible();
     await expect(page.locator('#ee-v29-help-form')).toBeVisible();
-    await expect(page.getByText('Este botón prepara un borrador local; no envía una solicitud.')).toBeVisible();
+    await expect(page.getByText('este formulario no envía información a El Errante',{exact:false})).toBeVisible();
+    await expect(page.locator('#ee-v29-help-status')).not.toHaveClass(/show/);
   });
 
   test('Cobertura conserva consulta y tabla sin prometer entrega',async({page})=>{
@@ -40,7 +41,8 @@ test.describe('V4 utility public system',()=>{
     await page.goto('/cuenta.html');
     await expect(page.locator('body')).toHaveAttribute('data-v4-utility','true');
     await expect(page.getByRole('heading',{name:'Seguimiento real cuando exista una fuente real.'})).toBeVisible();
-    await expect(page.getByText('El backend comercial no está conectado.')).toBeVisible();
+    await expect(page.getByText('Seguimiento online todavía no activado',{exact:true})).toBeVisible();
+    await expect(page.locator('#account-content')).toHaveAttribute('data-v29-commerce-guard','true');
   });
 
   test('Recetas y herramientas mantienen contenido dinámico bajo V4',async({page})=>{

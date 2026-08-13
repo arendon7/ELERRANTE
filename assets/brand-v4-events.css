@@ -17,7 +17,10 @@ body[data-v4-public="true"][data-page="movimiento"] .field textarea{border:0;bor
 body[data-v4-public="true"][data-page="movimiento"] .field textarea{min-height:150px;resize:vertical}
 body[data-v4-public="true"][data-page="movimiento"] .field input:focus,
 body[data-v4-public="true"][data-page="movimiento"] .field select:focus,
-body[data-v4-public="true"][data-page="movimiento"] .field textarea:focus{outline:0;border-color:var(--v4-gold-deep)}
+body[data-v4-public="true"][data-page="movimiento"] .field textarea:focus{border-color:var(--v4-gold-deep)}
+body[data-v4-public="true"][data-page="movimiento"] .field input:focus-visible,
+body[data-v4-public="true"][data-page="movimiento"] .field select:focus-visible,
+body[data-v4-public="true"][data-page="movimiento"] .field textarea:focus-visible{outline:2px solid var(--v4-gold-deep);outline-offset:4px}
 body[data-v4-public="true"][data-page="movimiento"] .form-card .btn{border-radius:999px;box-shadow:none;font-family:var(--v4-sans);font-size:.72rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase}
 body[data-v4-public="true"][data-page="movimiento"] .form-card .btn-primary,
 body[data-v4-public="true"][data-page="movimiento"] .form-card .btn-dark{background:var(--v4-carbon);color:var(--v4-ivory)}

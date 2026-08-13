@@ -39,7 +39,7 @@ test.describe('Navegación pública V3 truth + V4',()=>{
     for(const token of [
       './metodo.html','./juan-david-ocampo.html','./assets/editorial-v30.css','./assets/products-v30.js','./assets/product-v30.js',
       './assets/brand-v4-home.css','./assets/brand-v4-home.js',
-      './assets/brand-v4-public.css','./assets/brand-v4-public.js','./assets/brand-v4-product.css','./assets/brand-v4-events.css'
+      './assets/brand-v4-public.css','./assets/brand-v4-public.js','./assets/brand-v4-product.css','./assets/brand-v4-events.css','./assets/brand-v4-editorial.css'
     ]) expect(source).toContain(token);
   });
 

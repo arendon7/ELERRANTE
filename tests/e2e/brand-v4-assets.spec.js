@@ -14,6 +14,12 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.locator('#site-header img[src*="logo-mark"]')).toHaveCount(0);
   });
 
+  test('Home reutiliza únicamente los masters V4 aprobados para Segundo Fuego y En Movimiento',async({page})=>{
+    await page.goto('/index.html');
+    await expect(page.locator('.v4-fire-media img')).toHaveAttribute('src','assets/images/brand-v4/segundo-fuego-v4.webp');
+    await expect(page.locator('.v4-movement-main img')).toHaveAttribute('src','assets/images/brand-v4/eventos-v4.webp');
+  });
+
   test('Historia promueve la escena V4 sin reemplazar su copy canónico',async({page})=>{
     await page.goto('/historia.html');
     await expect(page.getByRole('heading',{name:'Viajar hasta una tradición para aprender a no copiarla.'})).toBeVisible();

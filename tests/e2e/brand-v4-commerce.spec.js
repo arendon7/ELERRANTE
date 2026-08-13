@@ -9,7 +9,8 @@ test.describe('V4 comercio y hospitalidad',()=>{
     await expect(page.locator('body')).toHaveAttribute('data-v4-public','true');
     await expect(page.getByRole('heading',{name:'Entra al proceso donde quieras.'})).toBeVisible();
     await expect(page.locator('.v4-public-header')).toBeVisible();
-    await expect(page.locator('.v4-public-brand')).toHaveAttribute('data-master-status','awaiting-approved-binary');
+    await expect(page.locator('.v4-public-brand-mark')).toHaveAttribute('src','assets/images/brand-v4/pizzaiolo-mark-v4.webp');
+    await expect(page.locator('.v4-public-brand')).not.toHaveAttribute('data-master-status','awaiting-approved-binary');
     await expect(page.locator('#product-grid')).toBeVisible();
     await expect.poll(()=>page.locator('#product-grid > *').count()).toBe(11);
     await expect(page.locator('.section-terracotta')).toHaveCount(0);
@@ -59,7 +60,8 @@ test.describe('V4 comercio y hospitalidad',()=>{
       test.skip(!testInfo.project.name.includes('mobile'),'Gate móvil');
       await page.goto(path);
       await expect(page.locator('.v4-public-header')).toBeVisible();
-      await expect(page.locator('#site-header img')).toHaveCount(0);
+      await expect(page.locator('.v4-public-brand-mark')).toBeVisible();
+      await expect(page.locator('#site-header img[src*="logo-mark"]')).toHaveCount(0);
       const toggle=page.locator('.v4-public-menu-toggle');
       await expect(toggle).toBeVisible();
       await toggle.click();

@@ -1,0 +1,168 @@
+/* EL ERRANTE · V4 utility system
+   Help, coverage, checkout, legal, account and editorial support utilities.
+   Functional clarity outranks theatrical art direction on these surfaces. */
+
+body[data-v4-public="true"][data-v4-utility="true"]{
+  background:var(--v4-ivory);
+  color:var(--v4-ink);
+}
+
+/* Utility pages use a stable solid header instead of overlay navigation. */
+body[data-v4-utility="true"] #site-header{background:var(--v4-carbon)}
+body[data-v4-utility="true"] .v4-public-header{
+  position:relative;
+  background:var(--v4-carbon);
+  border-bottom:1px solid rgba(241,235,221,.14);
+}
+
+/* Legacy hero becomes a quiet V4 information hero. */
+body[data-v4-utility="true"] .hero{
+  position:relative;
+  min-height:min(64svh,650px);
+  display:flex;
+  align-items:flex-end;
+  overflow:hidden;
+  background:var(--v4-carbon);
+  color:var(--v4-ivory);
+  isolation:isolate;
+}
+body[data-v4-utility="true"] .hero.hero-mini{min-height:min(58svh,590px)}
+body[data-v4-utility="true"] .hero-media{position:absolute;inset:0;z-index:-3}
+body[data-v4-utility="true"] .hero-media img{
+  width:100%;height:100%;object-fit:cover;
+  filter:saturate(.66) contrast(1.04) brightness(.56);
+}
+body[data-v4-utility="true"] .hero::before{
+  content:"";position:absolute;inset:0;z-index:-2;
+  background:linear-gradient(90deg,rgba(10,10,9,.94) 0%,rgba(10,10,9,.72) 50%,rgba(10,10,9,.26) 84%),linear-gradient(0deg,rgba(10,10,9,.9),transparent 62%);
+}
+body[data-v4-utility="true"] .hero-content{
+  width:min(1280px,calc(100% - 48px));
+  margin:auto;
+  padding:78px 0 64px;
+}
+body[data-v4-utility="true"] .hero h1{
+  margin:0;max-width:1000px;
+  color:var(--v4-ivory);
+  font-family:var(--v4-serif);
+  font-size:clamp(3.25rem,6.3vw,6.8rem);
+  font-weight:500;line-height:.96;letter-spacing:-.04em;text-transform:none;
+}
+body[data-v4-utility="true"] .hero .lead{max-width:720px;color:rgba(241,235,221,.72);font-size:clamp(1.02rem,1.45vw,1.25rem)}
+
+/* Shared legacy typography translated to V4 tokens. */
+body[data-v4-utility="true"] .eyebrow{
+  margin:0 0 17px!important;
+  color:var(--v4-gold)!important;
+  font-family:var(--v4-sans);font-size:.67rem;font-weight:800;line-height:1;
+  letter-spacing:.17em;text-transform:uppercase;
+}
+body[data-v4-utility="true"] h1,
+body[data-v4-utility="true"] h2,
+body[data-v4-utility="true"] h3,
+body[data-v4-utility="true"] h4{
+  font-family:var(--v4-serif);font-weight:500;text-transform:none;letter-spacing:-.03em;
+}
+body[data-v4-utility="true"] .section{padding:clamp(72px,8vw,118px) 0;background:var(--v4-ivory);color:var(--v4-ink)}
+body[data-v4-utility="true"] .section-paper{background:var(--v4-paper)}
+body[data-v4-utility="true"] .section-dark,
+body[data-v4-utility="true"] .section-terracotta{background:var(--v4-carbon);color:var(--v4-ivory)}
+body[data-v4-utility="true"] .section-dark p,
+body[data-v4-utility="true"] .section-terracotta p{color:rgba(241,235,221,.64)}
+body[data-v4-utility="true"] .section-head{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(260px,.65fr);gap:clamp(36px,7vw,90px);align-items:end;margin-bottom:44px}
+body[data-v4-utility="true"] .section-head h2,
+body[data-v4-utility="true"] .split h2{font-size:clamp(2.5rem,4.4vw,4.9rem);line-height:.98;margin-top:0}
+body[data-v4-utility="true"] .section-head>p{color:var(--v4-muted);margin:0;max-width:560px}
+body[data-v4-utility="true"] .lead{font-size:clamp(1.02rem,1.4vw,1.23rem);line-height:1.58}
+body[data-v4-utility="true"] .muted{color:var(--v4-muted)}
+
+/* Buttons remain unmistakably functional. */
+body[data-v4-utility="true"] .btn{
+  min-height:44px;padding:10px 16px;border-radius:999px;box-shadow:none;
+  font-family:var(--v4-sans);font-size:.7rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase;
+}
+body[data-v4-utility="true"] .btn-primary,
+body[data-v4-utility="true"] .btn-dark{background:var(--v4-carbon);border-color:var(--v4-carbon);color:var(--v4-ivory)}
+body[data-v4-utility="true"] .hero .btn-primary{background:var(--v4-gold);border-color:var(--v4-gold);color:var(--v4-carbon)}
+body[data-v4-utility="true"] .hero .btn-light{background:transparent;border-color:rgba(241,235,221,.34);color:var(--v4-ivory)}
+body[data-v4-utility="true"] .btn-outline{background:transparent;border-color:currentColor}
+body[data-v4-utility="true"] .text-link{font-size:.71rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+body[data-v4-utility="true"] .text-link::after{color:var(--v4-gold-deep)}
+
+/* Bounded information objects may use boxes, but no decorative card chrome. */
+body[data-v4-utility="true"] .feature-card,
+body[data-v4-utility="true"] .intent-card,
+body[data-v4-utility="true"] .article-card,
+body[data-v4-utility="true"] .recipe-card,
+body[data-v4-utility="true"] .data-note,
+body[data-v4-utility="true"] .checkout-summary,
+body[data-v4-utility="true"] .form-card{
+  border:1px solid var(--v4-line);border-radius:0;background:var(--v4-ivory);box-shadow:none;
+}
+body[data-v4-utility="true"] .section-dark .feature-card,
+body[data-v4-utility="true"] .section-dark .intent-card{background:var(--v4-ivory);color:var(--v4-ink)}
+body[data-v4-utility="true"] .feature-card h3,
+body[data-v4-utility="true"] .intent-card h3,
+body[data-v4-utility="true"] .article-card h3,
+body[data-v4-utility="true"] .recipe-card h3{font-size:clamp(1.45rem,2vw,2rem);line-height:1.05}
+body[data-v4-utility="true"] .pill{border:1px solid var(--v4-line);border-radius:999px;background:transparent;color:var(--v4-muted);font-size:.64rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase}
+
+/* Forms: precise, calm and accessible. */
+body[data-v4-utility="true"] .form-card{padding:clamp(24px,4vw,42px)}
+body[data-v4-utility="true"] .field label{font-size:.67rem;font-weight:800;letter-spacing:.075em;text-transform:uppercase;color:var(--v4-muted)}
+body[data-v4-utility="true"] .field input,
+body[data-v4-utility="true"] .field select,
+body[data-v4-utility="true"] .field textarea{
+  width:100%;border:1px solid rgba(23,22,17,.22);border-radius:0;background:rgba(255,255,255,.18);
+  color:var(--v4-ink);font-family:var(--v4-sans);padding:12px 13px;
+}
+body[data-v4-utility="true"] .field textarea{resize:vertical;min-height:140px}
+body[data-v4-utility="true"] .field input:focus,
+body[data-v4-utility="true"] .field select:focus,
+body[data-v4-utility="true"] .field textarea:focus{border-color:var(--v4-gold-deep)}
+body[data-v4-utility="true"] .form-status{border-radius:0;background:var(--v4-paper);border:1px solid var(--v4-line)}
+body[data-v4-utility="true"] .data-note{padding:18px 20px;background:var(--v4-paper);color:var(--v4-muted)}
+
+/* FAQ becomes an editorial index rather than floating cards. */
+body[data-v4-utility="true"] .faq-list{border-top:1px solid var(--v4-line)}
+body[data-v4-utility="true"] .faq-item{border:0;border-bottom:1px solid var(--v4-line);border-radius:0;background:transparent;box-shadow:none}
+body[data-v4-utility="true"] .faq-question{padding:20px 0;background:transparent;color:var(--v4-ink);font-family:var(--v4-serif);font-size:clamp(1.3rem,2vw,1.75rem);font-weight:500;text-align:left}
+body[data-v4-utility="true"] .faq-answer{padding:0 0 22px;color:var(--v4-muted);max-width:850px}
+
+/* Coverage table uses typographic hierarchy, not dashboard styling. */
+body[data-v4-utility="true"] .coverage-table{border-top:1px solid var(--v4-line)}
+body[data-v4-utility="true"] .coverage-row{border:0;border-bottom:1px solid var(--v4-line);border-radius:0;background:transparent;box-shadow:none}
+body[data-v4-utility="true"] .coverage-row.head{background:var(--v4-carbon);color:var(--v4-ivory);font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+
+/* Checkout: purchase truth stays more prominent than atmosphere. */
+body[data-v4-utility="true"][data-page="checkout-v29"] main>.section{padding-top:72px}
+body[data-v4-utility="true"] .checkout-layout{gap:18px;align-items:start}
+body[data-v4-utility="true"] .checkout-summary{padding:26px;position:sticky;top:22px}
+body[data-v4-utility="true"] .summary-row{border-color:var(--v4-line)}
+body[data-v4-utility="true"] #checkout-v29-status h3{font-size:clamp(1.8rem,2.6vw,2.7rem)}
+
+/* Legal / long-form content. */
+body[data-v4-utility="true"] main .legal-copy,
+body[data-v4-utility="true"] main .article-body,
+body[data-v4-utility="true"] main .recipe-body{max-width:860px}
+body[data-v4-utility="true"] main .legal-copy p,
+body[data-v4-utility="true"] main .article-body p,
+body[data-v4-utility="true"] main .recipe-body p{color:var(--v4-muted);line-height:1.7}
+
+@media(max-width:900px){
+  body[data-v4-utility="true"] .section-head{grid-template-columns:1fr;gap:18px}
+  body[data-v4-utility="true"] .checkout-summary{position:static}
+}
+@media(max-width:720px){
+  body[data-v4-utility="true"] .hero-content{width:calc(100% - 30px);padding:62px 0 44px}
+  body[data-v4-utility="true"] .hero h1{font-size:clamp(3rem,14vw,4.8rem)}
+  body[data-v4-utility="true"] .section{padding:64px 0}
+  body[data-v4-utility="true"] .section-head h2,
+  body[data-v4-utility="true"] .split h2{font-size:clamp(2.5rem,12vw,4rem)}
+  body[data-v4-utility="true"] .btn{width:100%}
+  body[data-v4-utility="true"] .coverage-row{font-size:.84rem}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body[data-v4-utility="true"] *{scroll-behavior:auto!important}
+}

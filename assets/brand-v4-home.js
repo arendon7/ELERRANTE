@@ -20,6 +20,18 @@
     }
   }
 
+  const promoteHomeImage=(selector,src,alt)=>{
+    const image=document.querySelector(selector);
+    if(!image)return;
+    image.src=src;
+    if(alt!==undefined)image.alt=alt;
+    image.removeAttribute('width');
+    image.removeAttribute('height');
+    image.decoding='async';
+  };
+  promoteHomeImage('.v4-fire-media img','assets/images/brand-v4/segundo-fuego-v4.webp','Segundo Fuego de El Errante');
+  promoteHomeImage('.v4-movement-main img','assets/images/brand-v4/eventos-v4.webp','El Errante En Movimiento');
+
   const header=document.querySelector('.v4-header');
   const toggle=document.querySelector('.v4-menu-toggle');
   const nav=document.querySelector('.v4-nav');

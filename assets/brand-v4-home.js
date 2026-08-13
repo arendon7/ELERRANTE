@@ -1,6 +1,25 @@
 (()=>{
   'use strict';
 
+  const ensureAssetLayer=()=>{
+    if(document.querySelector('link[href="assets/brand-v4-assets.css"]'))return;
+    const link=document.createElement('link');link.rel='stylesheet';link.href='assets/brand-v4-assets.css';document.head.appendChild(link);
+  };
+  ensureAssetLayer();
+
+  const brand=document.querySelector('.v4-brand-fallback');
+  if(brand){
+    brand.removeAttribute('data-master-status');
+    brand.classList.add('v4-home-brand');
+    if(!brand.querySelector('.v4-home-brand-mark')){
+      const mark=document.createElement('img');
+      mark.className='v4-home-brand-mark';
+      mark.src='assets/images/brand-v4/pizzaiolo-mark-v4.webp';
+      mark.alt='';mark.width=44;mark.height=44;mark.decoding='async';
+      brand.prepend(mark);
+    }
+  }
+
   const header=document.querySelector('.v4-header');
   const toggle=document.querySelector('.v4-menu-toggle');
   const nav=document.querySelector('.v4-nav');

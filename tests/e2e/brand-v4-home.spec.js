@@ -1,14 +1,15 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Home V4 brand and UX gates', () => {
-  test('usa la identidad textual V4 mientras el master binario sigue pendiente', async ({ page }) => {
+  test('usa la identidad V4 con isotipo aprobado y wordmark vivo', async ({ page }) => {
     await page.goto('/index.html');
     const brand=page.locator('.v4-brand-fallback');
     await expect(brand).toBeVisible();
-    await expect(brand).toHaveAttribute('data-master-status','awaiting-approved-binary');
+    await expect(brand).not.toHaveAttribute('data-master-status','awaiting-approved-binary');
+    await expect(brand.locator('.v4-home-brand-mark')).toHaveAttribute('src','assets/images/brand-v4/pizzaiolo-mark-v4.webp');
     await expect(brand).toContainText('EL ERRANTE');
     await expect(brand).toContainText('Pizza contemporánea · Est. 2019');
-    await expect(page.locator('.v4-header img')).toHaveCount(0);
+    await expect(page.locator('.v4-header img[src*="logo-mark"]')).toHaveCount(0);
     await expect(page.locator('#site-header')).not.toBeVisible();
   });
 

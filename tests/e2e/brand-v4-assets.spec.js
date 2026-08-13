@@ -3,8 +3,8 @@ const { test, expect } = require('@playwright/test');
 async function backgroundOf(locator,pseudo){return locator.evaluate((node,p)=>getComputedStyle(node,p||null).backgroundImage,pseudo||null);}
 
 test.describe('V4 promoted brand assets',()=>{
-  test('el shell público usa el pizzaiolo V4 con wordmark vivo',async({page})=>{
-    await page.goto('/index.html');
+  test('el shell público compartido usa el pizzaiolo V4 con wordmark vivo',async({page})=>{
+    await page.goto('/tienda.html');
     const brand=page.locator('.v4-public-brand');
     await expect(brand).toBeVisible();
     await expect(brand.locator('.v4-public-brand-mark')).toHaveAttribute('src','assets/images/brand-v4/pizzaiolo-mark-v4.webp');
@@ -27,7 +27,7 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.getByRole('heading',{name:'La información importante debe estar clara antes de pedir un dato, un pago o una decisión.'})).toBeVisible();
     const note=page.locator('main .data-note').first();
     expect(await backgroundOf(note,'::after')).toContain('assets/images/brand-v4/confianza-v4.webp');
-    await expect(page.getByText('El backend comercial y los canales centrales de soporte/cotización siguen sin estar conectados',{exact:false})).toBeVisible();
+    await expect(note).toContainText('El backend comercial y los canales centrales de soporte/cotización siguen sin estar conectados');
   });
 
   test('En Casa usa Segundo Fuego sin tocar instrucciones ni productos',async({page})=>{

@@ -36,12 +36,15 @@ test.describe('Home V4 brand and UX gates', () => {
     expect(widths.scroll).toBeLessThanOrEqual(widths.client+1);
   });
 
-  test('media principal declara dimensiones y el contenido inferior usa lazy loading', async ({ page }) => {
+  test('media principal carga el master V4 con prioridad alta y el contenido inferior usa lazy loading', async ({ page }) => {
     await page.goto('/index.html');
     const hero=page.locator('.v4-hero-media img');
-    await expect(hero).toHaveAttribute('width','1122');
-    await expect(hero).toHaveAttribute('height','1402');
+    await expect(hero).toHaveAttribute('src','assets/images/brand-v4/generated-01-20/01-home-hero-v4.webp');
     await expect(hero).toHaveAttribute('fetchpriority','high');
+    const intrinsic=await hero.evaluate(image=>({width:image.naturalWidth,height:image.naturalHeight,complete:image.complete}));
+    expect(intrinsic.complete).toBe(true);
+    expect(intrinsic.width).toBeGreaterThan(0);
+    expect(intrinsic.height).toBeGreaterThan(0);
     const lazyImages=page.locator('main img[loading="lazy"]');
     expect(await lazyImages.count()).toBeGreaterThanOrEqual(8);
   });

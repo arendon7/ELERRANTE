@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 async function backgroundOf(locator,pseudo){return locator.evaluate((node,p)=>getComputedStyle(node,p||null).backgroundImage,pseudo||null);}
+const GENERATED='assets/images/brand-v4/generated-01-20/';
 
 test.describe('V4 promoted brand assets',()=>{
   test('el shell público compartido usa el pizzaiolo V4 con wordmark vivo',async({page})=>{
@@ -14,10 +15,46 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.locator('#site-header img[src*="logo-mark"]')).toHaveCount(0);
   });
 
-  test('Home reutiliza únicamente los masters V4 aprobados para Segundo Fuego y En Movimiento',async({page})=>{
+  test('Home promueve el banco individual 01-08 y conserva masters superiores ya aprobados',async({page})=>{
     await page.goto('/index.html');
+    await expect(page.locator('.v4-hero-media img')).toHaveAttribute('src',GENERATED+'01-home-hero-v4.webp');
+    await expect(page.locator('.v4-manifesto-media img')).toHaveAttribute('src',GENERATED+'08-proceso-v4.webp');
+    await expect(page.locator('.v4-menu-feature-media img')).toHaveAttribute('src',GENERATED+'03-la-errante-v4.webp');
+    await expect(page.locator('.v4-menu-item[href*="margherita-del-taller"] img')).toHaveAttribute('src',GENERATED+'02-margherita-v4.webp');
+    await expect(page.locator('.v4-menu-item[href*="bosque"] img')).toHaveAttribute('src',GENERATED+'04-bosque-v4.webp');
+    await expect(page.locator('.v4-menu-item[href*="diavola-errante"] img')).toHaveAttribute('src',GENERATED+'05-diavola-v4.webp');
+    await expect(page.locator('.v4-menu-item[href*="cuatro-quesos-montana"] img')).toHaveAttribute('src',GENERATED+'06-cuatro-quesos-v4.webp');
+    await expect(page.locator('.v4-pantry-media img')).toHaveAttribute('src',GENERATED+'07-despensa-v4.webp');
     await expect(page.locator('.v4-fire-media img')).toHaveAttribute('src','assets/images/brand-v4/segundo-fuego-v4.webp');
     await expect(page.locator('.v4-movement-main img')).toHaveAttribute('src','assets/images/brand-v4/eventos-v4.webp');
+  });
+
+  test('Tienda, Método y Bitácora usan sus heroes generados V4',async({page})=>{
+    await page.goto('/tienda.html');
+    await expect(page.locator('.v4p-hero-media img')).toHaveAttribute('src',GENERATED+'11-tienda-hero-v4.webp');
+    await page.goto('/metodo.html');
+    await expect(page.locator('.v4ed-hero-media img')).toHaveAttribute('src',GENERATED+'12-metodo-hero-v4.webp');
+    await page.goto('/bitacora.html');
+    await expect(page.locator('.v4ed-hero-media img')).toHaveAttribute('src',GENERATED+'13-bitacora-hero-v4.webp');
+  });
+
+  test('Ayuda, Cobertura y Seguimiento usan piezas V4 sin alterar su verdad funcional',async({page})=>{
+    await page.goto('/ayuda.html');
+    await expect(page.locator('.hero-media img')).toHaveAttribute('src',GENERATED+'16-ayuda-v4.webp');
+    await expect(page.getByText('no envía información a El Errante',{exact:false})).toBeVisible();
+    await page.goto('/cobertura.html');
+    await expect(page.locator('.hero-media img')).toHaveAttribute('src',GENERATED+'17-cobertura-v4.webp');
+    await page.goto('/cuenta.html');
+    await expect(page.locator('.v4-generated-tracking img')).toHaveAttribute('src',GENERATED+'19-seguimiento-v4.webp');
+    await expect(page.getByText('Seguimiento online todavía no activado',{exact:false})).toBeVisible();
+  });
+
+  test('la ficha de La Errante usa el nuevo hero de producto sin tocar la lógica comercial',async({page})=>{
+    await page.goto('/producto.html?id=la-errante');
+    const primary=page.locator('#dynamic-product .v305-frame-primary img, #dynamic-product .product-gallery img').first();
+    await expect(primary).toBeVisible();
+    await expect(primary).toHaveAttribute('src',GENERATED+'03-la-errante-v4.webp');
+    await expect(page.locator('.product-buy')).toBeVisible();
   });
 
   test('Historia promueve la escena V4 sin reemplazar su copy canónico',async({page})=>{

@@ -1,89 +1,79 @@
-name: Importar assets V4 01-20
+name: Import V4 Assets 01-20
 
 on:
   push:
     branches:
       - feature/v4-utility-system-v2
     paths:
-      - .github/workflows/import-v4-assets-01-20.yml
+      - '.github/workflows/import-v4-assets-01-20.yml'
 
 permissions:
   contents: write
 
 jobs:
-  import-assets:
-    if: github.event.head_commit.message == 'chore(v4): stage automated asset import'
+  import_assets:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout rama V4
+      - name: Checkout V4 branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
           fetch-depth: 0
 
-      - name: Descargar paquete aprobado
+      - name: Download approved asset package
         shell: bash
         run: |
-          set -euo pipefail
-          curl -L --fail --retry 3 --retry-delay 2 \
-            'https://drive.google.com/uc?export=download&id=1gEKN9d0ASMj5QkCBna7xBnQMoiP3rdmI' \
-            -o /tmp/ELERRANTE_V4_ASSETS_01_20.zip
-          unzip -t /tmp/ELERRANTE_V4_ASSETS_01_20.zip >/dev/null
+          set -euxo pipefail
+          curl -L --fail --retry 3 --retry-delay 2 'https://drive.google.com/uc?export=download&id=1gEKN9d0ASMj5QkCBna7xBnQMoiP3rdmI' -o /tmp/assets.zip
+          unzip -t /tmp/assets.zip >/dev/null
+          unzip -o /tmp/assets.zip 'assets/images/brand-v4/generated-01-20/*.webp' -d .
 
-      - name: Extraer únicamente los 20 WebP individuales
+      - name: Verify approved files
         shell: bash
         run: |
-          set -euo pipefail
-          unzip -o /tmp/ELERRANTE_V4_ASSETS_01_20.zip \
-            'assets/images/brand-v4/generated-01-20/*.webp' \
-            -d .
-          test "$(find assets/images/brand-v4/generated-01-20 -maxdepth 1 -type f -name '*.webp' | wc -l | tr -d ' ')" = '20'
-
-      - name: Verificar integridad contra manifiesto
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
+          set -euxo pipefail
+          python3 - <<'PY'
           import hashlib, json
           from pathlib import Path
-
           root = Path('assets/images/brand-v4/generated-01-20')
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assets = manifest['assets']
-          assert len(assets) == 20, f'Esperaba 20 assets, encontré {len(assets)}'
+          if len(assets) != 20:
+              raise SystemExit(f'Expected 20 assets, found {len(assets)}')
+          files = sorted(root.glob('*.webp'))
+          if len(files) != 20:
+              raise SystemExit(f'Expected 20 WebP files, found {len(files)}')
           for item in assets:
               path = root / item['file']
               if not path.is_file():
-                  raise SystemExit(f'Falta {path}')
+                  raise SystemExit(f'Missing {path}')
               digest = hashlib.sha256(path.read_bytes()).hexdigest()
               if digest != item['sha256']:
-                  raise SystemExit(f'SHA256 inválido para {path.name}: {digest}')
+                  raise SystemExit(f'SHA256 mismatch for {path.name}: {digest}')
               if path.stat().st_size < 50000:
-                  raise SystemExit(f'Archivo sospechosamente pequeño: {path.name} ({path.stat().st_size} bytes)')
-          print('Integridad V4 01-20 OK')
+                  raise SystemExit(f'Suspiciously small file: {path.name} ({path.stat().st_size} bytes)')
+          rejected = {
+              'a_clean_product_branding_portfolio_collage_a_grid.png',
+              'a_large_composite_grid_image_10_thumbnails_in_a_2.png',
+              'a_clean_high_resolution_flat_presentation_image.png',
+              'a_wide_gallery_brand_guideline_style_collage_image.png',
+          }
+          present = {p.name for p in root.iterdir() if p.is_file()}
+          bad = rejected & present
+          if bad:
+              raise SystemExit(f'Rejected collages found: {sorted(bad)}')
+          print('V4 assets 01-20 integrity OK')
           PY
 
-      - name: Confirmar que los collages rechazados no entraron
+      - name: Commit approved binaries
         shell: bash
         run: |
-          set -euo pipefail
-          ! find assets/images/brand-v4/generated-01-20 -type f \( \
-            -name 'a_clean_product_branding_portfolio_collage_a_grid.png' -o \
-            -name 'a_large_composite_grid_image_10_thumbnails_in_a_2.png' -o \
-            -name 'a_clean_high_resolution_flat_presentation_image.png' -o \
-            -name 'a_wide_gallery_brand_guideline_style_collage_image.png' \
-          \) | grep -q .
-
-      - name: Commit binario en la rama V4
-        shell: bash
-        run: |
-          set -euo pipefail
+          set -euxo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/images/brand-v4/generated-01-20/*.webp
           if git diff --cached --quiet; then
-            echo 'Los assets ya estaban presentes; no hay cambios.'
+            echo 'Assets already present.'
             exit 0
           fi
           git commit -m 'feat(v4): import approved generated assets 01-20'
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push origin HEAD:feature/v4-utility-system-v2

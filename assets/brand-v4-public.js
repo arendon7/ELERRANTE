@@ -32,13 +32,13 @@
     return true;
   };
 
+  /* Only assets that passed visual QA are eligible for public promotion. */
   const productAssetMap={
     'margherita-del-taller':'02-margherita-v4.webp',
     'la-errante':'03-la-errante-v4.webp',
     'bosque':'04-bosque-v4.webp',
     'diavola-errante':'05-diavola-v4.webp',
     'cuatro-quesos-montana':'06-cuatro-quesos-v4.webp',
-    'crea-la-tuya':'14-crea-la-tuya-v4.webp',
     'combo-primera-ruta':'15-combo-primera-ruta-v4.webp',
     'primera-ruta':'15-combo-primera-ruta-v4.webp'
   };
@@ -70,16 +70,6 @@
     }
   }
 
-  function insertTrackingVisual(){
-    if(path!=='cuenta.html'||document.querySelector('.v4-generated-tracking'))return;
-    const anchor=document.querySelector('main .section:first-of-type .lead');
-    if(!anchor)return;
-    const figure=document.createElement('figure');
-    figure.className='v4-promoted-visual v4-generated-tracking';
-    figure.innerHTML=`<img src="${generated}19-seguimiento-v4.webp" alt="Preparación y seguimiento de un pedido El Errante" loading="eager" decoding="async">`;
-    anchor.insertAdjacentElement('afterend',figure);
-  }
-
   function promotePageAssets(){
     if(path==='tienda.html'){
       setImage(document.querySelector('.v4p-hero-media img'),generated+'11-tienda-hero-v4.webp','');
@@ -97,15 +87,12 @@
       setImage(document.querySelector('.v4ed-hero-media img'),generated+'13-bitacora-hero-v4.webp','');
       document.documentElement.dataset.eeV4GeneratedJournal='true';
     }
-    if(path==='ayuda.html'){
-      setImage(document.querySelector('.hero-media img'),generated+'16-ayuda-v4.webp','Centro de ayuda El Errante');
-      document.documentElement.dataset.eeV4GeneratedHelp='true';
-    }
+    /* 16-ayuda-v4.webp failed visual QA because it contains baked-in UI/copy; keep the clean existing help hero until regenerated. */
     if(path==='cobertura.html'){
       setImage(document.querySelector('.hero-media img'),generated+'17-cobertura-v4.webp','Cobertura y rutas de entrega El Errante');
       document.documentElement.dataset.eeV4GeneratedCoverage='true';
     }
-    insertTrackingVisual();
+    /* 19-seguimiento-v4.webp failed brand QA because it contains an incorrect descriptor; it must never be injected into Cuenta. */
     promoteProductDetail();
   }
 

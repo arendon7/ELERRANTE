@@ -20,6 +20,7 @@
     }
   }
 
+  const generated='assets/images/brand-v4/generated-01-20/';
   const promoteHomeImage=(selector,src,alt)=>{
     const image=document.querySelector(selector);
     if(!image)return;
@@ -29,8 +30,22 @@
     image.removeAttribute('height');
     image.decoding='async';
   };
+
+  /* V4 generated bank 01–20: only user-approved individual outputs are promoted. */
+  promoteHomeImage('.v4-hero-media img',generated+'01-home-hero-v4.webp','');
+  promoteHomeImage('.v4-manifesto-media img',generated+'08-proceso-v4.webp','Trabajo de masa y fuego en El Errante');
+  promoteHomeImage('.v4-menu-feature-media img',generated+'03-la-errante-v4.webp','La Errante');
+  promoteHomeImage('.v4-menu-item[href*="margherita-del-taller"] img',generated+'02-margherita-v4.webp','');
+  promoteHomeImage('.v4-menu-item[href*="bosque"] img',generated+'04-bosque-v4.webp','');
+  promoteHomeImage('.v4-menu-item[href*="diavola-errante"] img',generated+'05-diavola-v4.webp','');
+  promoteHomeImage('.v4-menu-item[href*="cuatro-quesos-montana"] img',generated+'06-cuatro-quesos-v4.webp','');
+  promoteHomeImage('.v4-pantry-media img',generated+'07-despensa-v4.webp','Despensa El Errante');
+
+  /* Existing V4 masters remain stronger than the generated alternatives for these slots. */
   promoteHomeImage('.v4-fire-media img','assets/images/brand-v4/segundo-fuego-v4.webp','Segundo Fuego de El Errante');
   promoteHomeImage('.v4-movement-main img','assets/images/brand-v4/eventos-v4.webp','El Errante En Movimiento');
+
+  document.documentElement.dataset.eeV4GeneratedHome='01-08-promoted';
 
   const header=document.querySelector('.v4-header');
   const toggle=document.querySelector('.v4-menu-toggle');

@@ -6,6 +6,7 @@
 
   const path=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const page=body.dataset.page||'';
+  const generated='assets/images/brand-v4/generated-01-20/';
   const nav=[
     ['tienda.html','Tienda'],
     ['en-casa.html','En Casa'],
@@ -20,6 +21,93 @@
     const link=document.createElement('link');link.rel='stylesheet';link.href='assets/brand-v4-assets.css';document.head.appendChild(link);
   };
   ensureAssetLayer();
+
+  const setImage=(image,src,alt)=>{
+    if(!image)return false;
+    image.src=src;
+    if(alt!==undefined)image.alt=alt;
+    image.removeAttribute('width');
+    image.removeAttribute('height');
+    image.decoding='async';
+    return true;
+  };
+
+  const productAssetMap={
+    'margherita-del-taller':'02-margherita-v4.webp',
+    'la-errante':'03-la-errante-v4.webp',
+    'bosque':'04-bosque-v4.webp',
+    'diavola-errante':'05-diavola-v4.webp',
+    'cuatro-quesos-montana':'06-cuatro-quesos-v4.webp',
+    'crea-la-tuya':'14-crea-la-tuya-v4.webp',
+    'combo-primera-ruta':'15-combo-primera-ruta-v4.webp',
+    'primera-ruta':'15-combo-primera-ruta-v4.webp'
+  };
+
+  function promoteProductDetail(){
+    if(path!=='producto.html')return false;
+    const id=new URLSearchParams(location.search).get('id')||'';
+    const file=productAssetMap[id];
+    if(!file)return false;
+    const image=document.querySelector('#dynamic-product .v305-frame-primary img, #dynamic-product .product-gallery img');
+    if(!image)return false;
+    setImage(image,generated+file,image.alt||'Producto El Errante');
+    const frame=image.closest('[data-v305-frame]');
+    if(frame)frame.dataset.v305Asset=generated+file;
+    document.documentElement.dataset.eeV4GeneratedProduct=id;
+    return true;
+  }
+
+  function promoteCatalogCards(){
+    if(path!=='tienda.html')return;
+    for(const [id,file] of Object.entries(productAssetMap)){
+      const selectors=[
+        `#product-grid [data-product-id="${id}"] img`,
+        `#product-grid [data-id="${id}"] img`,
+        `#product-grid a[href*="id=${id}"] img`
+      ];
+      const image=document.querySelector(selectors.join(','));
+      if(image)setImage(image,generated+file,image.alt||'Producto El Errante');
+    }
+  }
+
+  function insertTrackingVisual(){
+    if(path!=='cuenta.html'||document.querySelector('.v4-generated-tracking'))return;
+    const anchor=document.querySelector('main .section:first-of-type .lead');
+    if(!anchor)return;
+    const figure=document.createElement('figure');
+    figure.className='v4-promoted-visual v4-generated-tracking';
+    figure.innerHTML=`<img src="${generated}19-seguimiento-v4.webp" alt="Preparación y seguimiento de un pedido El Errante" loading="eager" decoding="async">`;
+    anchor.insertAdjacentElement('afterend',figure);
+  }
+
+  function promotePageAssets(){
+    if(path==='tienda.html'){
+      setImage(document.querySelector('.v4p-hero-media img'),generated+'11-tienda-hero-v4.webp','');
+      const media=[...document.querySelectorAll('.v4p-media img')];
+      if(media[0])setImage(media[0],generated+'02-margherita-v4.webp','Pizza Margherita de El Errante');
+      if(media[1])setImage(media[1],generated+'07-despensa-v4.webp','Despensa El Errante');
+      promoteCatalogCards();
+      document.documentElement.dataset.eeV4GeneratedStore='true';
+    }
+    if(path==='metodo.html'){
+      setImage(document.querySelector('.v4ed-hero-media img'),generated+'12-metodo-hero-v4.webp','');
+      document.documentElement.dataset.eeV4GeneratedMethod='true';
+    }
+    if(path==='bitacora.html'){
+      setImage(document.querySelector('.v4ed-hero-media img'),generated+'13-bitacora-hero-v4.webp','');
+      document.documentElement.dataset.eeV4GeneratedJournal='true';
+    }
+    if(path==='ayuda.html'){
+      setImage(document.querySelector('.hero-media img'),generated+'16-ayuda-v4.webp','Centro de ayuda El Errante');
+      document.documentElement.dataset.eeV4GeneratedHelp='true';
+    }
+    if(path==='cobertura.html'){
+      setImage(document.querySelector('.hero-media img'),generated+'17-cobertura-v4.webp','Cobertura y rutas de entrega El Errante');
+      document.documentElement.dataset.eeV4GeneratedCoverage='true';
+    }
+    insertTrackingVisual();
+    promoteProductDetail();
+  }
 
   const isCurrent=href=>{
     if(href==='tienda.html')return path==='tienda.html'||path==='producto.html';
@@ -91,22 +179,33 @@
     }
 
     syncCart();
+    promotePageAssets();
     document.documentElement.dataset.eeV4PublicShell='ready';
   }
 
-  /*
-    The legacy app registers its public-shell renderer on DOMContentLoaded.
-    This V4 script is loaded after the legacy app, so registering our own
-    listener here guarantees V4 wins without modifying the operational runtime.
-  */
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',()=>{
       installShell();
-      requestAnimationFrame(installShell);
+      promotePageAssets();
+      requestAnimationFrame(()=>{installShell();promotePageAssets();});
     },{once:true});
   }else{
     installShell();
-    requestAnimationFrame(installShell);
+    promotePageAssets();
+    requestAnimationFrame(()=>{installShell();promotePageAssets();});
+  }
+
+  const dynamicRoot=document.querySelector('#dynamic-product');
+  if(dynamicRoot){
+    const observer=new MutationObserver(()=>{if(promoteProductDetail())observer.disconnect();});
+    observer.observe(dynamicRoot,{childList:true,subtree:true});
+    setTimeout(()=>observer.disconnect(),8000);
+  }
+  const grid=document.querySelector('#product-grid');
+  if(grid){
+    const observer=new MutationObserver(()=>promoteCatalogCards());
+    observer.observe(grid,{childList:true,subtree:true});
+    setTimeout(()=>observer.disconnect(),5000);
   }
 
   window.addEventListener('storage',event=>{if(event.key==='ee_v2_cart')syncCart();});

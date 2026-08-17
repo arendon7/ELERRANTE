@@ -13,6 +13,7 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(brand.getByText('Pizza contemporánea · Est. 2019',{exact:true})).toBeVisible();
     await expect(brand).not.toHaveAttribute('data-master-status','awaiting-approved-binary');
     await expect(page.locator('#site-header img[src*="logo-mark"]')).toHaveCount(0);
+    await expect(page.locator('img[src$="20-logo-lockup-v4-candidate.webp"]')).toHaveCount(0);
   });
 
   test('Home promueve el banco individual 01-08 y conserva masters superiores ya aprobados',async({page})=>{
@@ -38,15 +39,23 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.locator('.v4ed-hero-media img')).toHaveAttribute('src',GENERATED+'13-bitacora-hero-v4.webp');
   });
 
-  test('Ayuda, Cobertura y Seguimiento usan piezas V4 sin alterar su verdad funcional',async({page})=>{
+  test('Ayuda y Seguimiento bloquean assets rechazados; Cobertura conserva su pieza aprobada',async({page})=>{
     await page.goto('/ayuda.html');
-    await expect(page.locator('.hero-media img')).toHaveAttribute('src',GENERATED+'16-ayuda-v4.webp');
+    await expect(page.locator('.hero-media img')).not.toHaveAttribute('src',GENERATED+'16-ayuda-v4.webp');
     await expect(page.getByText('no envía información a El Errante',{exact:false})).toBeVisible();
+
     await page.goto('/cobertura.html');
     await expect(page.locator('.hero-media img')).toHaveAttribute('src',GENERATED+'17-cobertura-v4.webp');
+
     await page.goto('/cuenta.html');
-    await expect(page.locator('.v4-generated-tracking img')).toHaveAttribute('src',GENERATED+'19-seguimiento-v4.webp');
+    await expect(page.locator('.v4-generated-tracking')).toHaveCount(0);
+    await expect(page.locator(`img[src="${GENERATED}19-seguimiento-v4.webp"]`)).toHaveCount(0);
     await expect(page.getByText('Seguimiento online todavía no activado',{exact:false})).toBeVisible();
+  });
+
+  test('Crea la Tuya no reutiliza el asset 14 mal clasificado',async({page})=>{
+    await page.goto('/producto.html?id=crea-la-tuya');
+    await expect(page.locator(`img[src="${GENERATED}14-crea-la-tuya-v4.webp"]`)).toHaveCount(0);
   });
 
   test('la ficha de La Errante usa el nuevo hero de producto sin tocar la lógica comercial',async({page})=>{

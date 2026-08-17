@@ -1,11 +1,11 @@
 const { test, expect } = require('@playwright/test');
 
 const expected = {
-  'margherita-del-taller': 'producto-margherita.webp',
-  'la-errante': 'producto-la-errante.webp',
-  'bosque': 'producto-bosque.webp',
-  'diavola-errante': 'producto-diavola.webp',
-  'cuatro-quesos-montana': 'producto-cuatro-quesos.webp'
+  'margherita-del-taller': '02-margherita-v4.webp',
+  'la-errante': '03-la-errante-v4.webp',
+  'bosque': '04-bosque-v4.webp',
+  'diavola-errante': '05-diavola-v4.webp',
+  'cuatro-quesos-montana': '06-cuatro-quesos-v4.webp'
 };
 
 const pizzas = Object.keys(expected);
@@ -27,6 +27,7 @@ test.describe('Dirección visual de producto V3.0.5', () => {
       await expect(page.locator('html')).toHaveAttribute('data-ee-product-visual-version', '3.0.5');
 
       const primarySrc = await gallery.locator('[data-v305-frame="primary"] img').getAttribute('src');
+      expect(primarySrc).toContain('assets/images/brand-v4/generated-01-20/');
       expect(primarySrc).toContain(expected[id]);
       expect(primarySrc).not.toContain('home-ingredientes.webp');
       expect(primarySrc).not.toContain('home-masa-fuego.webp');

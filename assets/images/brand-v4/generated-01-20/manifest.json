@@ -1,10 +1,12 @@
 {
   "version": "v4-assets-01-20",
-  "status": "approved-generated-assets-staged",
+  "status": "approved-generated-assets-imported",
+  "import_commit": "272f85d95524eb046f5b261c98ced34d1094f75c",
+  "integrity": "20/20 WebP files verified by SHA-256 before commit",
   "source_zip_drive_id": "1gEKN9d0ASMj5QkCBna7xBnQMoiP3rdmI",
   "source_zip_name": "ELERRANTE_V4_ASSETS_01_20.zip",
   "source_manifest_drive_id": "14J89S5JmlEj7arZgtuZUEEia852TvdWV",
-  "note": "The two most recent collage/contact-sheet generations are explicitly excluded. Only the earlier individual image outputs belong to this approved batch.",
+  "note": "The rejected collage/contact-sheet generations are explicitly excluded. Only the earlier individual image outputs belong to this approved batch.",
   "excluded": [
     "a_clean_product_branding_portfolio_collage_a_grid.png",
     "a_large_composite_grid_image_10_thumbnails_in_a_2.png",

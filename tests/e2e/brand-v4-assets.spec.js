@@ -154,11 +154,17 @@ test.describe('V4 promoted brand assets',()=>{
     expect(imageRequests.some(path=>path.endsWith('/assets/images/brand-final/home-masa-fuego.webp'))).toBeFalsy();
   });
 
-  test('Historia promueve la escena V4 sin reemplazar su copy canónico',async({page})=>{
+  test('Historia usa V4 donde existe reemplazo aprobado y conserva solo la harina sin master V4',async({page})=>{
     await page.goto('/historia.html');
     await expect(page.getByRole('heading',{name:'Viajar hasta una tradición para aprender a no copiarla.'})).toBeVisible();
     expect(await backgroundOf(page.locator('.v4ed-hero-media'))).toContain('assets/images/brand-v4/historia-v4.webp');
     await expect(page.locator('.v4ed-hero-media img')).toHaveCSS('opacity','0');
+    await expect(page.locator('[aria-labelledby="fermentation-history-title"] img')).toHaveAttribute('src',GENERATED+'08-proceso-v4.webp');
+    await expect(page.locator('[aria-labelledby="fire-history-title"] img')).toHaveAttribute('src',GENERATED+'09-ingredientes-v4.webp');
+    await expect(page.locator('#la-errante img')).toHaveAttribute('src',GENERATED+'03-la-errante-v4.webp');
+    await expect(page.locator('#casa img')).toHaveAttribute('src',GENERATED+'02-margherita-v4.webp');
+    await expect(page.locator('main img[src*="assets/images/brand-final/"]')).toHaveCount(1);
+    await expect(page.locator('main img[src="assets/images/brand-final/producto-harina.webp"]')).toHaveCount(1);
   });
 
   test('Centro de confianza incorpora la pieza V4 sin alterar su verdad operativa',async({page})=>{
@@ -186,11 +192,13 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.locator('#casa-products .product-card')).toHaveCount(5);
   });
 
-  test('En Movimiento usa Eventos manteniendo el borrador local',async({page})=>{
+  test('En Movimiento usa Eventos, La Errante V4 y mantiene el borrador local',async({page})=>{
     await page.goto('/en-movimiento.html');
     await expect(page.getByRole('heading',{name:/No llevamos una caja de pizzas/})).toBeVisible();
     expect(await backgroundOf(page.locator('.v4p-hero-media'))).toContain('assets/images/brand-v4/eventos-v4.webp');
     await expect(page.locator('.v4p-hero-media img')).toHaveCSS('opacity','0');
+    await expect(page.locator('[aria-labelledby="menu-event-title"] img')).toHaveAttribute('src',GENERATED+'03-la-errante-v4.webp');
+    await expect(page.locator('main img[src*="assets/images/brand-final/"]')).toHaveCount(0);
     await expect(page.getByText('Este formulario guarda un borrador únicamente en tu navegador',{exact:false})).toBeVisible();
   });
 

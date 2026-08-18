@@ -43,6 +43,9 @@ body[data-v4-public="true"][data-page="producto"] .v304-mobile-buy .btn{border-r
 body[data-v4-public="true"][data-page="producto"] .product-buy .btn-primary,
 body[data-v4-public="true"][data-page="producto"] .buy-product{background:var(--v4-carbon);color:var(--v4-ivory)}
 body[data-v4-public="true"][data-page="producto"] .info-list{border-color:var(--v4-line)}
+body[data-v4-public="true"][data-page="producto"] .product-tabs{border-color:var(--v4-line)}
+body[data-v4-public="true"][data-page="producto"] .tab-btn{color:var(--v4-ink);border-color:transparent;background:transparent}
+body[data-v4-public="true"][data-page="producto"] .tab-btn.active{border-color:var(--v4-gold-deep);background:rgba(140,113,61,.08);color:var(--v4-ink)}
 
 /* Essential product sheet: white-space and thin lines replace rounded-card density. */
 body[data-v4-public="true"][data-page="producto"] .v303-overview{background:var(--v4-ivory);color:var(--v4-ink);padding-top:clamp(80px,9vw,132px)}
@@ -86,6 +89,7 @@ body[data-v4-public="true"][data-page="producto"] .v30-sensory-row{border-bottom
 body[data-v4-public="true"][data-page="producto"] .v30-sensory-bar{height:4px;border-radius:0;background:rgba(23,22,17,.12)}
 body[data-v4-public="true"][data-page="producto"] .v30-sensory-bar span{border-radius:0;background:var(--v4-gold-deep)}
 body[data-v4-public="true"][data-page="producto"] .v30-small{color:var(--v4-muted)}
+body[data-v4-public="true"][data-page="producto"] .quote{border-left:1px solid var(--v4-gold-deep)}
 
 body[data-v4-public="true"][data-page="producto"] .v302-craft-section{background:var(--v4-paper);color:var(--v4-ink)}
 body[data-v4-public="true"][data-page="producto"] .v302-craft-head h2,
@@ -108,6 +112,7 @@ body[data-v4-public="true"][data-page="producto"] [data-v30-block="second-fire"]
 body[data-v4-public="true"][data-page="producto"] [data-v30-block="second-fire"] .eyebrow,
 body[data-v4-public="true"][data-page="producto"] [data-v30-block="second-fire"] .v30-kicker,
 body[data-v4-public="true"][data-page="producto"] .v302-fire-grid small{color:var(--v4-gold)!important}
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="second-fire"] .quote{border-left-color:var(--v4-gold)}
 body[data-v4-public="true"][data-page="producto"] .v302-fire-grid{gap:0;border-top:1px solid var(--v4-line-dark)}
 body[data-v4-public="true"][data-page="producto"] .v302-fire-grid article{padding:24px 28px;border-right:1px solid var(--v4-line-dark)}
 body[data-v4-public="true"][data-page="producto"] .v302-fire-grid article:last-child{border-right:0}

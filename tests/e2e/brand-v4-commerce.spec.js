@@ -42,6 +42,7 @@ test.describe('V4 comercio y hospitalidad',()=>{
     await expect(page.locator('[data-v303-block="service"]')).toContainText('Segundo Fuego');
     await expect(page.locator('.buy-product').first()).toBeVisible();
     await expect(page.locator('link[href="assets/brand-v4-product.css"]')).toHaveCount(1);
+    await expect(page.locator('link[href^="assets/brand-v4-product-refinement.css"]')).toHaveCount(1);
   });
 
   test('Producto normaliza bloques editoriales heredados al canon V4',async({page})=>{
@@ -50,6 +51,21 @@ test.describe('V4 comercio y hospitalidad',()=>{
       const root=document.querySelector('#dynamic-product');
       return root?.dataset?.v303Ready==='true'&&root?.dataset?.v302Ready==='true'&&root?.dataset?.v304Ready==='true';
     });
+
+    const quick=page.locator('.product-buy .v304-quick');
+    await expect(quick).toBeVisible();
+    const quickGeometry=await page.locator('.product-buy').evaluate(buy=>{
+      const node=buy.querySelector('.v304-quick');
+      const buyRect=buy.getBoundingClientRect();
+      const actionRects=[...node.querySelectorAll('.v304-quick-actions button,.v304-quick-actions a')].map(item=>item.getBoundingClientRect());
+      return {
+        columns:getComputedStyle(node).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length,
+        actionsInside:actionRects.every(rect=>rect.left>=buyRect.left-1&&rect.right<=buyRect.right+1)
+      };
+    });
+    expect(quickGeometry.columns).toBe(1);
+    expect(quickGeometry.actionsInside).toBe(true);
+
     const craftCards=page.locator('[data-v302-block="craft-proof"] .v302-craft-card');
     await expect(craftCards).toHaveCount(3);
     const craftStyle=await craftCards.first().evaluate(node=>{
@@ -68,6 +84,8 @@ test.describe('V4 comercio y hospitalidad',()=>{
     const compareEyebrow=page.locator('.v304-compare .eyebrow').first();
     await expect(compareEyebrow).toBeVisible();
     expect(await compareEyebrow.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(140, 113, 61)');
+    const compareHeading=page.locator('.v304-compare h2').first();
+    expect(await compareHeading.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(23, 22, 17)');
 
     const workshopQuote=page.locator('[data-v30-block="workshop"] .quote');
     await expect(workshopQuote).toBeVisible();
@@ -85,6 +103,28 @@ test.describe('V4 comercio y hospitalidad',()=>{
     if(await activeTab.count()){
       expect(await activeTab.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(23, 22, 17)');
     }
+    const activePanelText=page.locator('.product-tabs .tab-panel.active').locator('h1,h2,h3,p').first();
+    if(await activePanelText.count()){
+      expect(await activePanelText.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(23, 22, 17)');
+    }
+
+    const legacyDecisionCards=page.locator('[data-v29-product-story] .feature-card');
+    await expect(legacyDecisionCards).toHaveCount(4);
+    const legacyDecisionStyle=await legacyDecisionCards.first().evaluate(node=>{
+      const style=getComputedStyle(node);
+      return {radius:style.borderRadius,background:style.backgroundColor};
+    });
+    expect(legacyDecisionStyle.radius).toBe('0px');
+    expect(legacyDecisionStyle.background).toBe('rgba(0, 0, 0, 0)');
+
+    const darkPackage=page.locator('[data-v29-product-story] .section-dark .package-list');
+    await expect(darkPackage).toBeVisible();
+    const darkPackageColors=await darkPackage.evaluate(node=>({
+      strong:getComputedStyle(node.querySelector('strong')).color,
+      span:getComputedStyle(node.querySelector('span')).color
+    }));
+    expect(darkPackageColors.strong).toBe('rgb(183, 154, 91)');
+    expect(darkPackageColors.span).not.toBe('rgb(25, 24, 23)');
 
     await expect(page.locator('[data-v30-block="workshop"]')).toBeVisible();
     await expect(page.locator('[data-v30-block="author"]')).toBeVisible();

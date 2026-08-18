@@ -1,0 +1,134 @@
+name: V4 first-paint reconciliation
+
+on:
+  push:
+    branches:
+      - feature/v4-utility-system-v2
+    paths:
+      - .github/workflows/v4-first-paint-reconcile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/v4-utility-system-v2
+          fetch-depth: 0
+
+      - name: Promote approved V4 assets into static first paint
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def read(path):
+              return Path(path).read_text(encoding='utf-8')
+
+          def write(path, text):
+              Path(path).write_text(text, encoding='utf-8')
+
+          def replace_required(path, old, new, count=1):
+              text = read(path)
+              found = text.count(old)
+              if found < count:
+                  raise SystemExit(f'{path}: expected at least {count} occurrence(s), found {found}: {old[:90]!r}')
+              text = text.replace(old, new, count)
+              write(path, text)
+
+          def ensure_after(path, marker, addition):
+              text = read(path)
+              if addition.strip() in text:
+                  return
+              if marker not in text:
+                  raise SystemExit(f'{path}: marker not found: {marker!r}')
+              write(path, text.replace(marker, marker + addition, 1))
+
+          # Home: V4 from first byte, canonical mark, real social card.
+          ensure_after('index.html',
+              '  <meta property="og:url" content="https://arendon7.github.io/ELERRANTE/">\n',
+              '  <meta property="og:image" content="https://arendon7.github.io/ELERRANTE/assets/images/brand-v4/generated-01-20/01-home-hero-v4.webp">\n'
+              '  <meta property="og:image:width" content="1672">\n'
+              '  <meta property="og:image:height" content="941">\n'
+              '  <meta property="og:image:alt" content="Pizza contemporánea El Errante">\n'
+              '  <meta name="twitter:card" content="summary_large_image">\n')
+          ensure_after('index.html','  <link rel="stylesheet" href="assets/brand-v4-home.css">\n','  <link rel="stylesheet" href="assets/brand-v4-assets.css">\n')
+          replace_required('index.html',' data-master-status="awaiting-approved-binary"','')
+          replace_required('index.html',
+              '      <a class="v4-brand-fallback" href="index.html" aria-label="El Errante, inicio">\n        <span class="v4-brand-name">',
+              '      <a class="v4-brand-fallback v4-home-brand" href="index.html" aria-label="El Errante, inicio">\n        <img class="v4-home-brand-mark" src="assets/images/brand-v4/pizzaiolo-mark-v4.webp" alt="" width="44" height="44" decoding="async">\n        <span class="v4-brand-name">')
+          replace_required('index.html','<img src="assets/images/brand-final/producto-margherita.webp" alt="" width="1122" height="1402" fetchpriority="high">','<img src="assets/images/brand-v4/generated-01-20/01-home-hero-v4.webp" alt="" width="1672" height="941" fetchpriority="high">')
+          replace_required('index.html','<img src="assets/images/brand-final/home-masa-fuego.webp" alt="Trabajo de masa y fuego en El Errante" width="1254" height="940" loading="lazy">','<img src="assets/images/brand-v4/generated-01-20/08-proceso-v4.webp" alt="Trabajo de masa y fuego en El Errante" width="1122" height="1402" loading="lazy">')
+          replace_required('index.html','<img src="assets/images/brand-final/producto-la-errante.webp" alt="La Errante" width="1122" height="1402" loading="lazy">','<img src="assets/images/brand-v4/generated-01-20/03-la-errante-v4.webp" alt="La Errante" width="1122" height="1402" loading="lazy">')
+          replace_required('index.html','<img src="assets/images/brand-final/producto-margherita.webp" alt="" width="1122" height="1402" loading="lazy">','<img src="assets/images/brand-v4/generated-01-20/02-margherita-v4.webp" alt="" width="1122" height="1402" loading="lazy">')
+          replace_required('index.html','<img src="assets/images/brand-final/producto-bosque.webp" alt="" width="1122" height="1402" loading="lazy">','<img src="assets/images/brand-v4/generated-01-20/04-bosque-v4.webp" alt="" width="1122" height="1402" loading="lazy">')
+          replace_required('index.html','<img src="assets/images/brand-final/producto-diavola.webp" alt="" width="1122" height="1402" loading="lazy">','<img src="assets/images/brand-v4/generated-01-20/05-diavola-v4.webp" alt="" width="1122" height="1402" loading="lazy">')
+          replace_required('index.html','<img src="assets/images/brand-final/producto-cuatro-quesos.webp" alt="" width="1122" height="1402" loading="lazy">','<img src="assets/images/brand-v4/generated-01-20/06-cuatro-quesos-v4.webp" alt="" width="1122" height="1402" loading="lazy">')
+          replace_required('index.html','<div class="v4-fire-media v4-reveal"><img src="assets/images/brand-final/home-compartir.webp" alt="Pizza compartida en mesa" width="1672" height="941" loading="lazy"></div>','<div class="v4-fire-media v4-reveal"><img src="assets/images/brand-v4/segundo-fuego-v4.webp" alt="Segundo Fuego de El Errante" width="1672" height="941" loading="lazy"></div>')
+          replace_required('index.html','<div class="v4-movement-main v4-reveal"><img src="assets/images/brand-final/evento-noche.webp" alt="Servicio de pizza durante un encuentro nocturno" width="1672" height="941" loading="lazy"></div>','<div class="v4-movement-main v4-reveal"><img src="assets/images/brand-v4/eventos-v4.webp" alt="El Errante En Movimiento" width="1672" height="941" loading="lazy"></div>')
+          replace_required('index.html','<div class="v4-pantry-media"><img src="assets/images/brand-final/home-ingredientes.webp" alt="Ingredientes del trabajo gastronómico de El Errante" width="1122" height="1402" loading="lazy"></div>','<div class="v4-pantry-media"><img src="assets/images/brand-v4/generated-01-20/07-despensa-v4.webp" alt="Despensa El Errante" width="1122" height="1402" loading="lazy"></div>')
+
+          # Shared pages: avoid loading a legacy image before the promoted V4 image.
+          for page in ['tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html']:
+              text=read(page)
+              if 'assets/brand-v4-assets.css' not in text:
+                  marker='  <link rel="stylesheet" href="assets/brand-v4-public.css">\n'
+                  if marker not in text: raise SystemExit(f'{page}: public css marker missing')
+                  write(page,text.replace(marker,marker+'  <link rel="stylesheet" href="assets/brand-v4-assets.css">\n',1))
+
+          replace_required('tienda.html','<img src="assets/images/brand-final/home-compartir.webp" alt="" width="1672" height="941" fetchpriority="high" style="object-position:54% 52%;transform:scale(1.08)">','<img src="assets/images/brand-v4/generated-01-20/11-tienda-hero-v4.webp" alt="" width="1672" height="941" fetchpriority="high" style="object-position:54% 52%;transform:scale(1.08)">')
+          replace_required('tienda.html','<img src="assets/images/brand-final/producto-margherita.webp" alt="Pizza Margherita de El Errante" width="1122" height="1402" loading="lazy" style="object-position:50% 48%;transform:scale(1.14)">','<img src="assets/images/brand-v4/generated-01-20/02-margherita-v4.webp" alt="Pizza Margherita de El Errante" width="1122" height="1402" loading="lazy" style="object-position:50% 48%;transform:scale(1.14)">')
+          replace_required('tienda.html','<img src="assets/images/brand-final/home-ingredientes.webp" alt="Ingredientes del trabajo gastronómico de El Errante" width="1122" height="1402" loading="lazy">','<img src="assets/images/brand-v4/generated-01-20/07-despensa-v4.webp" alt="Despensa El Errante" width="1122" height="1402" loading="lazy">')
+
+          replace_required('metodo.html','<img src="assets/images/brand-final/home-ingredientes.webp" alt="" width="1122" height="1402" fetchpriority="high" style="object-position:50% 48%;transform:scale(1.14)">','<img src="assets/images/brand-v4/generated-01-20/12-metodo-hero-v4.webp" alt="" width="1672" height="941" fetchpriority="high" style="object-position:50% 48%;transform:scale(1.14)">')
+          replace_required('bitacora.html','<img src="assets/images/brand-final/home-masa-fuego.webp" alt="" width="1254" height="940" fetchpriority="high" style="object-position:48% 52%;transform:scale(1.18)">','<img src="assets/images/brand-v4/generated-01-20/13-bitacora-hero-v4.webp" alt="" width="1672" height="941" fetchpriority="high" style="object-position:48% 52%;transform:scale(1.18)">')
+
+          replace_required('en-casa.html','<img src="assets/images/brand-final/producto-margherita.webp" alt="" width="1122" height="1402" fetchpriority="high" style="object-position:50% 55%;transform:scale(1.16)">','<img src="assets/images/brand-v4/segundo-fuego-v4.webp" alt="" width="1672" height="941" fetchpriority="high" style="object-position:50% 55%;transform:scale(1.16)">')
+          replace_required('en-casa.html','<img src="assets/images/brand-final/home-masa-fuego.webp" alt="Trabajo de masa durante el proceso de El Errante" width="1254" height="940" loading="lazy" style="object-position:45% 52%;transform:scale(1.18)">','<img src="assets/images/brand-v4/generated-01-20/08-proceso-v4.webp" alt="Trabajo de masa antes del primer fuego" width="1122" height="1402" loading="lazy" style="object-position:45% 52%;transform:scale(1.18)">')
+          replace_required('en-casa.html','<img src="assets/images/brand-final/producto-cuatro-quesos.webp" alt="Pizza El Errante preparada para su terminado" width="1122" height="1402" loading="lazy" style="object-position:50% 48%;transform:scale(1.12)">','<img src="assets/images/brand-v4/generated-01-20/06-cuatro-quesos-v4.webp" alt="Pizza El Errante preparada para su terminado" width="1122" height="1402" loading="lazy" style="object-position:50% 48%;transform:scale(1.12)">')
+
+          replace_required('en-movimiento.html','<img src="assets/images/brand-final/evento-noche.webp" alt="" width="1672" height="941" fetchpriority="high" style="object-position:78% 52%;transform:scale(1.24)">','<img src="assets/images/brand-v4/eventos-v4.webp" alt="" width="1672" height="941" fetchpriority="high" style="object-position:78% 52%;transform:scale(1.24)">')
+          replace_required('en-movimiento.html','<img src="assets/images/brand-final/home-masa-fuego.webp" alt="Trabajo de masa y fuego durante la preparación" width="1254" height="940" loading="lazy" style="object-position:46% 52%;transform:scale(1.2)">','<img src="assets/images/brand-v4/generated-01-20/08-proceso-v4.webp" alt="Trabajo de masa y fuego durante la preparación" width="1122" height="1402" loading="lazy" style="object-position:46% 52%;transform:scale(1.2)">')
+          replace_required('en-movimiento.html','<div class="v4e-moment-main"><img src="assets/images/brand-final/evento-noche.webp" alt="Servicio nocturno de pizza en un encuentro" width="1672" height="941" loading="lazy"></div>','<div class="v4e-moment-main"><img src="assets/images/brand-v4/eventos-v4.webp" alt="Servicio nocturno de El Errante En Movimiento" width="1672" height="941" loading="lazy"></div>')
+
+          replace_required('historia.html','<img src="assets/images/brand-final/home-ingredientes.webp" alt="" width="1122" height="1402" fetchpriority="high" style="object-position:52% 48%;transform:scale(1.16)">','<img src="assets/images/brand-v4/historia-v4.webp" alt="" fetchpriority="high" style="object-position:52% 48%;transform:scale(1.16)">')
+
+          # Precache the visual layer itself; runtime already guards visual truth.
+          sw=read('service-worker.js')
+          if "'./assets/brand-v4-assets.css'" not in sw:
+              sw=sw.replace("'./assets/brand-v4-editorial.css','./assets/brand-v4-utility.css'", "'./assets/brand-v4-editorial.css','./assets/brand-v4-assets.css','./assets/brand-v4-utility.css'",1)
+          if "url.pathname.endsWith('/assets/brand-v4-assets.css')" not in sw:
+              sw=sw.replace("url.pathname.endsWith('/assets/brand-v4-editorial.css')||url.pathname.endsWith('/assets/brand-v4-utility.css')", "url.pathname.endsWith('/assets/brand-v4-editorial.css')||url.pathname.endsWith('/assets/brand-v4-assets.css')||url.pathname.endsWith('/assets/brand-v4-utility.css')",1)
+          write('service-worker.js',sw)
+
+          # Sanity guards: approved assets present statically; quarantined assets absent from production HTML.
+          checks={
+            'index.html':['01-home-hero-v4.webp','08-proceso-v4.webp','03-la-errante-v4.webp','07-despensa-v4.webp','pizzaiolo-mark-v4.webp','og:image'],
+            'tienda.html':['11-tienda-hero-v4.webp','02-margherita-v4.webp','07-despensa-v4.webp'],
+            'metodo.html':['12-metodo-hero-v4.webp'],
+            'bitacora.html':['13-bitacora-hero-v4.webp'],
+            'en-casa.html':['segundo-fuego-v4.webp','08-proceso-v4.webp','06-cuatro-quesos-v4.webp'],
+            'en-movimiento.html':['eventos-v4.webp','08-proceso-v4.webp'],
+            'historia.html':['historia-v4.webp']
+          }
+          for path,needles in checks.items():
+              text=read(path)
+              for needle in needles:
+                  if needle not in text: raise SystemExit(f'{path}: missing {needle}')
+              for rejected in ['14-crea-la-tuya-v4.webp','16-ayuda-v4.webp','19-seguimiento-v4.webp','20-logo-lockup-v4-candidate.webp']:
+                  if rejected in text: raise SystemExit(f'{path}: rejected asset leaked: {rejected}')
+          PY
+
+      - name: Commit reconciled first paint
+        run: |
+          if git diff --quiet; then
+            echo "No changes required"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html tienda.html metodo.html bitacora.html en-casa.html en-movimiento.html historia.html service-worker.js
+          git commit -m "perf(v4): promote approved assets into first paint"
+          git push origin HEAD:feature/v4-utility-system-v2

@@ -63,9 +63,21 @@ test.describe('V4 comercio y hospitalidad',()=>{
     await expect(kicker).toBeVisible();
     expect(await kicker.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(140, 113, 61)');
 
+    const workshopQuote=page.locator('[data-v30-block="workshop"] .quote');
+    await expect(workshopQuote).toBeVisible();
+    expect(await workshopQuote.evaluate(node=>getComputedStyle(node).borderLeftColor)).toBe('rgb(140, 113, 61)');
+    const secondFireQuote=page.locator('[data-v30-block="second-fire"] .quote');
+    await expect(secondFireQuote).toBeVisible();
+    expect(await secondFireQuote.evaluate(node=>getComputedStyle(node).borderLeftColor)).toBe('rgb(183, 154, 91)');
+
     const option=page.locator('.product-buy .option').first();
     if(await option.count()){
       expect(await option.evaluate(node=>getComputedStyle(node).borderRadius)).toBe('0px');
+    }
+
+    const activeTab=page.locator('.product-tabs .tab-btn.active').first();
+    if(await activeTab.count()){
+      expect(await activeTab.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(23, 22, 17)');
     }
 
     await expect(page.locator('[data-v30-block="workshop"]')).toBeVisible();

@@ -10,6 +10,50 @@ const routes = [
   ['juan-david-ocampo', '/juan-david-ocampo.html']
 ];
 
+async function hydrateVisualSurface(page) {
+  await page.evaluate(async () => {
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const scrollHeight = () => Math.max(
+      document.body?.scrollHeight || 0,
+      document.documentElement?.scrollHeight || 0
+    );
+    const step = Math.max(Math.floor(window.innerHeight * 0.75), 320);
+
+    // Recorre la superficie para disparar IntersectionObserver, reveals y lazy-load.
+    for (let pass = 0; pass < 2; pass += 1) {
+      const height = scrollHeight();
+      for (let y = 0; y <= height; y += step) {
+        window.scrollTo(0, y);
+        await sleep(45);
+      }
+      window.scrollTo(0, scrollHeight());
+      await sleep(120);
+    }
+
+    // Da una ventana acotada a las imágenes ya solicitadas para decodificarse.
+    const decodes = Array.from(document.images).map(async (image) => {
+      try {
+        if (!image.complete) {
+          await Promise.race([
+            new Promise((resolve) => {
+              image.addEventListener('load', resolve, { once: true });
+              image.addEventListener('error', resolve, { once: true });
+            }),
+            sleep(1200)
+          ]);
+        }
+        if (typeof image.decode === 'function') await image.decode();
+      } catch (_) {
+        // La regresión funcional valida fallos reales de recursos; aquí solo hidratamos evidencia visual.
+      }
+    });
+
+    await Promise.race([Promise.all(decodes), sleep(1800)]);
+    window.scrollTo(0, 0);
+    await sleep(180);
+  });
+}
+
 test.describe('V4 visual smoke evidence', () => {
   for (const [slug, route] of routes) {
     test(`${slug} conserva evidencia visual auditable`, async ({ page }, testInfo) => {
@@ -23,7 +67,7 @@ test.describe('V4 visual smoke evidence', () => {
       await page.evaluate(async () => {
         if (document.fonts?.ready) await document.fonts.ready;
       });
-      await page.waitForTimeout(250);
+      await hydrateVisualSurface(page);
 
       const screenshotPath = testInfo.outputPath(`${slug}-${testInfo.project.name}.png`);
       await page.screenshot({

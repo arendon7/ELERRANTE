@@ -62,6 +62,14 @@ test.describe('V4 static first paint',()=>{
     for(const asset of rejected)expect(layer).not.toContain(asset);
   });
 
+  test('Juan David usa oficio V4 sin fingir un retrato no aprobado',async({page})=>{
+    const author=await source(page,'juan-david-ocampo.html');
+    expect(author).toContain('assets/brand-v4-assets.css');
+    expect(author).toContain('assets/images/brand-v4/generated-01-20/08-proceso-v4.webp');
+    expect(author).not.toContain('assets/images/brand-final/home-masa-fuego.webp');
+    expect(author).not.toContain('retrato');
+  });
+
   test('En Casa, En Movimiento e Historia no descargan un hero legado antes del master V4',async({page})=>{
     const casa=await source(page,'en-casa.html');
     const movement=await source(page,'en-movimiento.html');
@@ -133,7 +141,7 @@ test.describe('V4 static first paint',()=>{
   });
 
   test('ninguna superficie de first paint incorpora assets en cuarentena',async({page})=>{
-    const pages=['index.html','tienda.html','producto.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html','ayuda.html','legal.html','cuenta.html','receta.html','articulo.html','caso-evento.html'];
+    const pages=['index.html','tienda.html','producto.html','metodo.html','bitacora.html','juan-david-ocampo.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html','ayuda.html','legal.html','cuenta.html','receta.html','articulo.html','caso-evento.html'];
     for(const path of pages){
       const html=await source(page,path);
       for(const asset of rejected)expect(html).not.toContain(asset);

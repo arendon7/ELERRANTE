@@ -35,8 +35,8 @@ body[data-v4-public="true"][data-page="producto"] .product-buy h1{
 body[data-v4-public="true"][data-page="producto"] .product-buy .eyebrow,
 body[data-v4-public="true"][data-page="producto"] .product-buy .v30-kicker{color:var(--v4-gold-deep)!important}
 body[data-v4-public="true"][data-page="producto"] .product-buy .price{font-family:var(--v4-sans);font-size:1.35rem;font-weight:800}
-body[data-v4-public="true"][data-page="producto"] .product-buy .option{border-radius:999px;border-color:var(--v4-line);font-family:var(--v4-sans);font-size:.72rem;letter-spacing:.03em}
-body[data-v4-public="true"][data-page="producto"] .product-buy .option.active{border-color:var(--v4-gold-deep);background:rgba(183,154,91,.13);color:var(--v4-ink)}
+body[data-v4-public="true"][data-page="producto"] .product-buy .option{border-radius:0;border-color:var(--v4-line);background:transparent;font-family:var(--v4-sans);font-size:.72rem;letter-spacing:.03em;box-shadow:none}
+body[data-v4-public="true"][data-page="producto"] .product-buy .option.active{border-color:var(--v4-carbon);background:var(--v4-carbon);color:var(--v4-ivory)}
 body[data-v4-public="true"][data-page="producto"] .product-buy .btn,
 body[data-v4-public="true"][data-page="producto"] .v304-quick-actions .btn,
 body[data-v4-public="true"][data-page="producto"] .v304-mobile-buy .btn{border-radius:999px;box-shadow:none;font-family:var(--v4-sans);font-size:.72rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase}
@@ -75,6 +75,48 @@ body[data-v4-public="true"][data-page="producto"] .v303-ready{border-color:var(-
 body[data-v4-public="true"][data-page="producto"] .v303-ready h3{font-family:var(--v4-serif);font-size:1.8rem;font-weight:500}
 body[data-v4-public="true"][data-page="producto"] .v303-signal{border-left:1px solid var(--v4-gold-deep)}
 
+/* Legacy V3 editorial blocks are normalized into the same V4 rhythm. */
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="identity"]{background:var(--v4-ivory);color:var(--v4-ink)}
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="identity"] .v30-kicker,
+body[data-v4-public="true"][data-page="producto"] [data-v302-block="craft-proof"] .v30-kicker,
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="workshop"] .eyebrow,
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="author"] .eyebrow,
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="author"] .v30-kicker{color:var(--v4-gold-deep)!important}
+body[data-v4-public="true"][data-page="producto"] .v30-sensory-row{border-bottom:1px solid var(--v4-line);padding:10px 0}
+body[data-v4-public="true"][data-page="producto"] .v30-sensory-bar{height:4px;border-radius:0;background:rgba(23,22,17,.12)}
+body[data-v4-public="true"][data-page="producto"] .v30-sensory-bar span{border-radius:0;background:var(--v4-gold-deep)}
+body[data-v4-public="true"][data-page="producto"] .v30-small{color:var(--v4-muted)}
+
+body[data-v4-public="true"][data-page="producto"] .v302-craft-section{background:var(--v4-paper);color:var(--v4-ink)}
+body[data-v4-public="true"][data-page="producto"] .v302-craft-head h2,
+body[data-v4-public="true"][data-page="producto"] .v30-decision h2,
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="author"] h2,
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="author"] h3{font-family:var(--v4-serif);font-weight:500;letter-spacing:-.03em;text-transform:none}
+body[data-v4-public="true"][data-page="producto"] .v302-craft-grid{gap:0;border-top:1px solid var(--v4-line);border-bottom:1px solid var(--v4-line)}
+body[data-v4-public="true"][data-page="producto"] .v302-craft-card{min-height:0;padding:30px 28px;border:0;border-right:1px solid var(--v4-line);border-radius:0;background:transparent;box-shadow:none}
+body[data-v4-public="true"][data-page="producto"] .v302-craft-card:last-child{border-right:0}
+body[data-v4-public="true"][data-page="producto"] .v302-craft-card small{color:var(--v4-gold-deep)}
+body[data-v4-public="true"][data-page="producto"] .v302-craft-card h3{font-family:var(--v4-serif);font-size:1.55rem;font-weight:500}
+body[data-v4-public="true"][data-page="producto"] .v302-craft-card p{color:var(--v4-muted)}
+body[data-v4-public="true"][data-page="producto"] .v302-craft-rule{border-left:1px solid var(--v4-gold-deep);color:var(--v4-ink)}
+
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="workshop"]{background:var(--v4-ivory);color:var(--v4-ink)}
+body[data-v4-public="true"][data-page="producto"] .v30-decision{max-width:1060px}
+body[data-v4-public="true"][data-page="producto"] .v30-decision .quote{font-family:var(--v4-serif);font-weight:500;letter-spacing:-.025em;color:var(--v4-ink)}
+
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="second-fire"]{background:var(--v4-carbon);color:var(--v4-ivory)}
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="second-fire"] .eyebrow,
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="second-fire"] .v30-kicker,
+body[data-v4-public="true"][data-page="producto"] .v302-fire-grid small{color:var(--v4-gold)!important}
+body[data-v4-public="true"][data-page="producto"] .v302-fire-grid{gap:0;border-top:1px solid var(--v4-line-dark)}
+body[data-v4-public="true"][data-page="producto"] .v302-fire-grid article{padding:24px 28px;border-right:1px solid var(--v4-line-dark)}
+body[data-v4-public="true"][data-page="producto"] .v302-fire-grid article:last-child{border-right:0}
+body[data-v4-public="true"][data-page="producto"] .v302-fire-grid h3{font-family:var(--v4-serif);font-size:1.45rem;font-weight:500;color:var(--v4-ivory)}
+
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="author"]{background:var(--v4-paper);color:var(--v4-ink)}
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="author"] .split{border-top:1px solid var(--v4-line);padding-top:38px}
+body[data-v4-public="true"][data-page="producto"] [data-v30-block="author"] .lead{font-family:var(--v4-serif);font-size:clamp(1.45rem,2.4vw,2.25rem);line-height:1.25;letter-spacing:-.02em}
+
 /* V3.0.4 comparison/quick-buy remains commercial, with quieter framing. */
 body[data-v4-public="true"][data-page="producto"] .v304-selector{background:var(--v4-ivory);color:var(--v4-ink);border-color:var(--v4-line)}
 body[data-v4-public="true"][data-page="producto"] .v304-choice-card{border-radius:0;border-color:var(--v4-line);box-shadow:none;background:var(--v4-ivory)}
@@ -107,4 +149,9 @@ body[data-v4-public="true"][data-page="producto"] .v304-mobile-buy small{color:v
   body[data-v4-public="true"][data-page="producto"] .v303-service-grid article{border-right:0;border-bottom:1px solid var(--v4-line);padding:24px 0}
   body[data-v4-public="true"][data-page="producto"] .v303-service-grid article:last-child{border-bottom:0}
   body[data-v4-public="true"][data-page="producto"] .v303-section-head{gap:18px}
+  body[data-v4-public="true"][data-page="producto"] .v302-craft-grid{border-bottom:0}
+  body[data-v4-public="true"][data-page="producto"] .v302-craft-card{padding:24px 0;border-right:0;border-bottom:1px solid var(--v4-line)}
+  body[data-v4-public="true"][data-page="producto"] .v302-craft-card:last-child{border-bottom:0}
+  body[data-v4-public="true"][data-page="producto"] .v302-fire-grid article{padding:22px 0;border-right:0;border-bottom:1px solid var(--v4-line-dark)}
+  body[data-v4-public="true"][data-page="producto"] .v302-fire-grid article:last-child{border-bottom:0}
 }

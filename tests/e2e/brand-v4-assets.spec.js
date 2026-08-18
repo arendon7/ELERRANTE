@@ -65,11 +65,12 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.getByText('Seguimiento online todavía no activado',{exact:false})).toBeVisible();
   });
 
-  test('Checkout incorpora Confianza-alt sin alterar el estado real del canal',async({page})=>{
+  test('Checkout incorpora Confianza-alt sin falsear el estado real del canal',async({page})=>{
     await page.goto('/checkout.html');
     await expect(page.locator('.v4-checkout-trust img')).toHaveAttribute('src',GENERATED+'18-confianza-v4-alt.webp');
-    await expect(page.getByText('Una confirmación debe ser real.',{exact:false})).toBeVisible();
-    await expect(page.locator('#checkout-v29-status')).toBeVisible();
+    await expect(page.getByText('Compra online todavía no activada',{exact:true})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Tu carrito está listo. El canal que debe recibir el pedido todavía no.'})).toBeVisible();
+    await expect(page.locator('#checkout-v29-status')).toHaveAttribute('data-v29-commerce-guard','true');
   });
 
   test('Crea la Tuya no reutiliza el asset 14 mal clasificado',async({page})=>{

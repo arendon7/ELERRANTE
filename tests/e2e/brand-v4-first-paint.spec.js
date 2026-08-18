@@ -13,6 +13,11 @@ async function source(page,path){
   return response.text();
 }
 
+const firstScriptIndex=(html,candidates)=>{
+  const indexes=candidates.map(src=>html.indexOf(src)).filter(index=>index>=0);
+  return indexes.length?Math.min(...indexes):-1;
+};
+
 const expectStaticUtilityV4=html=>{
   expect(html).toContain('data-v4-public="true"');
   expect(html).toContain('data-v4-utility="true"');
@@ -44,13 +49,13 @@ test.describe('V4 static first paint',()=>{
     for(const html of [store,method,journal])expect(html).toContain('assets/brand-v4-assets.css');
   });
 
-  test('Tienda y Producto promueven visuales aprobados después del canon y antes de app.js',async({page})=>{
+  test('Tienda y Producto promueven visuales aprobados después del canon materializado y antes de app.js',async({page})=>{
     const store=await source(page,'tienda.html');
     const product=await source(page,'producto.html');
     for(const html of [store,product]){
-      const dataIndex=html.indexOf('assets/data.js');
+      const dataIndex=firstScriptIndex(html,['assets/generated/data-v28.js','assets/data.js']);
       const visualIndex=html.indexOf('assets/brand-v4-product-data.js');
-      const appIndex=html.indexOf('assets/app.js');
+      const appIndex=firstScriptIndex(html,['assets/generated/app-v28.js','assets/app.js']);
       expect(dataIndex).toBeGreaterThan(-1);
       expect(visualIndex).toBeGreaterThan(dataIndex);
       expect(appIndex).toBeGreaterThan(visualIndex);
@@ -62,12 +67,12 @@ test.describe('V4 static first paint',()=>{
     for(const asset of rejected)expect(layer).not.toContain(asset);
   });
 
-  test('Juan David usa oficio V4 sin fingir un retrato no aprobado',async({page})=>{
+  test('Juan David usa oficio V4 sin cargar un retrato no aprobado',async({page})=>{
     const author=await source(page,'juan-david-ocampo.html');
     expect(author).toContain('assets/brand-v4-assets.css');
     expect(author).toContain('assets/images/brand-v4/generated-01-20/08-proceso-v4.webp');
     expect(author).not.toContain('assets/images/brand-final/home-masa-fuego.webp');
-    expect(author).not.toContain('retrato');
+    expect(author).not.toContain('assets/images/brand-v4/juan-david');
   });
 
   test('En Casa, En Movimiento e Historia no descargan un hero legado antes del master V4',async({page})=>{

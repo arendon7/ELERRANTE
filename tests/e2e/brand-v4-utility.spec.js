@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-const utilityPages=['/ayuda.html','/cobertura.html','/checkout.html','/legal.html','/cuenta.html','/recetas.html','/receta.html','/herramientas.html','/articulo.html'];
+const utilityPages=['/ayuda.html','/cobertura.html','/checkout.html','/legal.html','/cuenta.html','/recetas.html','/receta.html','/herramientas.html','/articulo.html','/caso-evento.html'];
 
 test.describe('V4 utility public system',()=>{
   test('Ayuda conserva FAQ y borrador local dentro del shell V4',async({page})=>{
@@ -52,6 +52,15 @@ test.describe('V4 utility public system',()=>{
     await page.goto('/herramientas.html');
     await expect(page.locator('body')).toHaveAttribute('data-v4-utility','true');
     await expect(page.getByRole('heading',{name:'Convierte una idea en una primera fórmula.'})).toBeVisible();
+  });
+
+  test('Caso de evento conserva el contenido operativo pero entra al lenguaje V4',async({page})=>{
+    await page.goto('/caso-evento.html');
+    await expect(page.locator('body')).toHaveAttribute('data-v4-utility','true');
+    await expect(page.locator('.v4-public-header')).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Una noche, dos hornos y una cocina en movimiento.'})).toBeVisible();
+    await expect(page.locator('.hero-media img')).toHaveAttribute('src','assets/images/brand-v4/eventos-v4.webp');
+    await expect(page.getByText('Las cifras son ilustrativas y deben ajustarse',{exact:false})).toBeVisible();
   });
 
   for(const path of utilityPages){

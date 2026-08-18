@@ -3,12 +3,20 @@ const { test, expect } = require('@playwright/test');
 const routes = [
   ['home', '/index.html'],
   ['tienda', '/tienda.html'],
+  ['producto-la-errante', '/producto.html?id=la-errante'],
   ['metodo', '/metodo.html'],
   ['historia', '/historia.html'],
   ['en-casa', '/en-casa.html'],
   ['en-movimiento', '/en-movimiento.html'],
   ['juan-david-ocampo', '/juan-david-ocampo.html']
 ];
+
+async function waitForSurfaceReady(page, slug) {
+  if (slug !== 'producto-la-errante') return;
+  await page.waitForFunction(() => document.querySelector('#dynamic-product')?.dataset?.v303Ready === 'true');
+  await expect(page.locator('.product-detail')).toBeVisible();
+  await expect(page.locator('.v305-gallery')).toBeVisible();
+}
 
 async function hydrateVisualSurface(page) {
   await page.evaluate(async () => {
@@ -64,6 +72,7 @@ test.describe('V4 visual smoke evidence', () => {
       await expect(page.locator('body')).toBeVisible();
 
       await page.waitForLoadState('load');
+      await waitForSurfaceReady(page, slug);
       await page.evaluate(async () => {
         if (document.fonts?.ready) await document.fonts.ready;
       });

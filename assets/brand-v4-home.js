@@ -1,6 +1,17 @@
 (()=>{
   'use strict';
 
+  const generatedDimensions={
+    '01-home-hero-v4.webp':[1672,941],
+    '02-margherita-v4.webp':[1122,1402],
+    '03-la-errante-v4.webp':[1122,1402],
+    '04-bosque-v4.webp':[1122,1402],
+    '05-diavola-v4.webp':[1122,1402],
+    '06-cuatro-quesos-v4.webp':[1122,1402],
+    '07-despensa-v4.webp':[1122,1402],
+    '08-proceso-v4.webp':[1122,1402]
+  };
+
   const ensureAssetLayer=()=>{
     if(document.querySelector('link[href="assets/brand-v4-assets.css"]'))return;
     const link=document.createElement('link');link.rel='stylesheet';link.href='assets/brand-v4-assets.css';document.head.appendChild(link);
@@ -26,9 +37,14 @@
     if(!image)return;
     image.src=src;
     if(alt!==undefined)image.alt=alt;
-    image.removeAttribute('width');
-    image.removeAttribute('height');
+    const file=src.split('/').pop();
+    const dimensions=generatedDimensions[file];
+    if(dimensions){image.width=dimensions[0];image.height=dimensions[1];}
     image.decoding='async';
+    if(image.closest('.v4-hero-media')){
+      image.loading='eager';
+      image.setAttribute('fetchpriority','high');
+    }
   };
 
   /* V4 generated bank 01–20: only user-approved individual outputs are promoted. */
@@ -55,19 +71,20 @@
   if(headerAction)headerAction.style.position='relative';
 
   if(header&&toggle&&nav){
-    const close=()=>{
-      header.dataset.open='false';
-      toggle.setAttribute('aria-expanded','false');
-      document.body.classList.remove('v4-menu-open');
+    const setMenuState=open=>{
+      header.dataset.open=String(open);
+      toggle.setAttribute('aria-expanded',String(open));
+      toggle.setAttribute('aria-label',open?'Cerrar navegación':'Abrir navegación');
+      document.body.classList.toggle('v4-menu-open',open);
     };
-    toggle.addEventListener('click',()=>{
-      const open=header.dataset.open==='true';
-      header.dataset.open=String(!open);
-      toggle.setAttribute('aria-expanded',String(!open));
-      document.body.classList.toggle('v4-menu-open',!open);
-    });
+    const close=()=>setMenuState(false);
+    toggle.addEventListener('click',()=>setMenuState(header.dataset.open!=='true'));
     nav.addEventListener('click',event=>{if(event.target.closest('a'))close();});
-    document.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
+    document.addEventListener('keydown',event=>{
+      if(event.key!=='Escape'||header.dataset.open!=='true')return;
+      close();
+      toggle.focus();
+    });
     window.addEventListener('resize',()=>{if(window.innerWidth>1040)close();},{passive:true});
   }
 

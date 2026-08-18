@@ -44,6 +44,34 @@ test.describe('V4 comercio y hospitalidad',()=>{
     await expect(page.locator('link[href="assets/brand-v4-product.css"]')).toHaveCount(1);
   });
 
+  test('Producto normaliza bloques editoriales heredados al canon V4',async({page})=>{
+    await page.goto('/producto.html?id=la-errante');
+    await page.waitForFunction(()=>{
+      const root=document.querySelector('#dynamic-product');
+      return root?.dataset?.v303Ready==='true'&&root?.dataset?.v302Ready==='true';
+    });
+    const craftCards=page.locator('[data-v302-block="craft-proof"] .v302-craft-card');
+    await expect(craftCards).toHaveCount(3);
+    const craftStyle=await craftCards.first().evaluate(node=>{
+      const style=getComputedStyle(node);
+      return {radius:style.borderRadius,background:style.backgroundColor};
+    });
+    expect(craftStyle.radius).toBe('0px');
+    expect(craftStyle.background).toBe('rgba(0, 0, 0, 0)');
+
+    const kicker=page.locator('[data-v302-block="craft-proof"] .v30-kicker').first();
+    await expect(kicker).toBeVisible();
+    expect(await kicker.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(140, 113, 61)');
+
+    const option=page.locator('.product-buy .option').first();
+    if(await option.count()){
+      expect(await option.evaluate(node=>getComputedStyle(node).borderRadius)).toBe('0px');
+    }
+
+    await expect(page.locator('[data-v30-block="workshop"]')).toBeVisible();
+    await expect(page.locator('[data-v30-block="author"]')).toBeVisible();
+  });
+
   test('En Movimiento conserva formulario operativo y elimina terracota como superficie',async({page})=>{
     await page.goto('/en-movimiento.html#cotizar');
     await expect(page.getByRole('heading',{name:'No llevamos una caja de pizzas. Llevamos la cocina.'})).toBeVisible();

@@ -36,6 +36,7 @@ jobs:
           node --check assets/pilot-operations-v37.js
           node --check assets/finance-usability-v351.js
           node --check tests/e2e/finance-usability-v351.spec.js
+          node --check tests/e2e/v4-visual-smoke.spec.js
           python3 scripts/preparar_sitio_materializado_v28.py --output .local_site
       - uses: actions/setup-node@v4
         with:
@@ -66,11 +67,16 @@ jobs:
             echo "commit=${GITHUB_SHA}"
             echo "exit_code=${status}"
             echo
-            echo "=== failure signals ==="
-            grep -E -B 8 -A 24 '([0-9]+\) |Error:|Expected:|Received:|failed|TimeoutError)' playwright-console.log | tail -n 700 || true
+            if [ "$status" -eq 0 ]; then
+              echo "=== result ==="
+              echo "No failure signals: Playwright passed."
+            else
+              echo "=== failure signals ==="
+              grep -E -B 8 -A 24 '([0-9]+\) |Error:|Expected:|Received:|failed|TimeoutError)' playwright-console.log | tail -n 700 || true
+            fi
             echo
             echo "=== final console tail ==="
-            tail -n 300 playwright-console.log || true
+            tail -n 160 playwright-console.log || true
           } > playwright-failure-summary.txt
           exit "$status"
       - name: Conservar resumen diagnóstico

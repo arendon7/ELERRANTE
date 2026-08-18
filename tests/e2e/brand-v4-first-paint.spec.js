@@ -46,8 +46,39 @@ test.describe('V4 static first paint',()=>{
     expect(history).toContain('assets/images/brand-v4/historia-v4.webp');
   });
 
+  test('Recetas, Herramientas y Cobertura nacen ya en sistema visual V4',async({page})=>{
+    const recipes=await source(page,'recetas.html');
+    const tools=await source(page,'herramientas.html');
+    const coverage=await source(page,'cobertura.html');
+    for(const html of [recipes,tools,coverage]){
+      expect(html).toContain('data-v4-public="true"');
+      expect(html).toContain('data-v4-utility="true"');
+      expect(html).toContain('assets/brand-v4-public.css');
+      expect(html).toContain('assets/brand-v4-utility.css');
+      expect(html).toContain('assets/brand-v4-assets.css');
+      expect(html).not.toContain('assets/images/v040/');
+    }
+    expect(recipes).toContain('08-proceso-v4.webp');
+    expect(recipes).toContain('09-ingredientes-v4.webp');
+    expect(recipes).toContain('07-despensa-v4.webp');
+    expect(tools).toContain('08-proceso-v4.webp');
+    expect(tools).toContain('09-ingredientes-v4.webp');
+    expect(coverage).toContain('17-cobertura-v4.webp');
+  });
+
+  test('Checkout muestra confianza V4 desde HTML sin esperar promoción dinámica',async({page})=>{
+    const checkout=await source(page,'checkout.html');
+    expect(checkout).toContain('data-v4-public="true"');
+    expect(checkout).toContain('data-v4-utility="true"');
+    expect(checkout).toContain('assets/brand-v4-public.css');
+    expect(checkout).toContain('assets/brand-v4-utility.css');
+    expect(checkout).toContain('assets/brand-v4-assets.css');
+    expect(checkout).toContain('v4-checkout-trust');
+    expect(checkout).toContain('18-confianza-v4-alt.webp');
+  });
+
   test('ninguna superficie de first paint incorpora assets en cuarentena',async({page})=>{
-    const pages=['index.html','tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html'];
+    const pages=['index.html','tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html'];
     for(const path of pages){
       const html=await source(page,path);
       for(const asset of rejected)expect(html).not.toContain(asset);

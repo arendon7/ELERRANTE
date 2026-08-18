@@ -13,6 +13,15 @@ async function source(page,path){
   return response.text();
 }
 
+const expectStaticUtilityV4=html=>{
+  expect(html).toContain('data-v4-public="true"');
+  expect(html).toContain('data-v4-utility="true"');
+  expect(html).toContain('assets/brand-v4-public.css');
+  expect(html).toContain('assets/brand-v4-utility.css');
+  expect(html).toContain('assets/brand-v4-assets.css');
+  expect(html).not.toContain('href="assets/logo-mark.svg"');
+};
+
 test.describe('V4 static first paint',()=>{
   test('Home nace con identidad, hero y social card V4 antes de ejecutar promociones dinámicas',async({page})=>{
     const html=await source(page,'index.html');
@@ -51,11 +60,7 @@ test.describe('V4 static first paint',()=>{
     const tools=await source(page,'herramientas.html');
     const coverage=await source(page,'cobertura.html');
     for(const html of [recipes,tools,coverage]){
-      expect(html).toContain('data-v4-public="true"');
-      expect(html).toContain('data-v4-utility="true"');
-      expect(html).toContain('assets/brand-v4-public.css');
-      expect(html).toContain('assets/brand-v4-utility.css');
-      expect(html).toContain('assets/brand-v4-assets.css');
+      expectStaticUtilityV4(html);
       expect(html).not.toContain('assets/images/v040/');
     }
     expect(recipes).toContain('08-proceso-v4.webp');
@@ -66,19 +71,42 @@ test.describe('V4 static first paint',()=>{
     expect(coverage).toContain('17-cobertura-v4.webp');
   });
 
+  test('Ayuda nace con V4 aprobado y mantiene bloqueado el visual rechazado',async({page})=>{
+    const help=await source(page,'ayuda.html');
+    expectStaticUtilityV4(help);
+    expect(help).toContain('08-proceso-v4.webp');
+    expect(help).not.toContain('assets/images/brand-final/home-masa-fuego.webp');
+    expect(help).not.toContain('16-ayuda-v4.webp');
+  });
+
+  test('Legal y Cuenta nacen con tokens V4 sin inventar reemplazos visuales',async({page})=>{
+    const legal=await source(page,'legal.html');
+    const account=await source(page,'cuenta.html');
+    expectStaticUtilityV4(legal);
+    expectStaticUtilityV4(account);
+    expect(account).not.toContain('19-seguimiento-v4.webp');
+    const assetsCss=await source(page,'assets/brand-v4-assets.css');
+    expect(assetsCss).toContain('images/brand-v4/confianza-v4.webp');
+  });
+
+  test('Receta y Artículo cargan el shell visual V4 antes de su render dinámico',async({page})=>{
+    const recipe=await source(page,'receta.html');
+    const article=await source(page,'articulo.html');
+    expectStaticUtilityV4(recipe);
+    expectStaticUtilityV4(article);
+    expect(recipe).toContain('id="recipe-page"');
+    expect(article).toContain('id="article-detail"');
+  });
+
   test('Checkout muestra confianza V4 desde HTML sin esperar promoción dinámica',async({page})=>{
     const checkout=await source(page,'checkout.html');
-    expect(checkout).toContain('data-v4-public="true"');
-    expect(checkout).toContain('data-v4-utility="true"');
-    expect(checkout).toContain('assets/brand-v4-public.css');
-    expect(checkout).toContain('assets/brand-v4-utility.css');
-    expect(checkout).toContain('assets/brand-v4-assets.css');
+    expectStaticUtilityV4(checkout);
     expect(checkout).toContain('v4-checkout-trust');
     expect(checkout).toContain('18-confianza-v4-alt.webp');
   });
 
   test('ninguna superficie de first paint incorpora assets en cuarentena',async({page})=>{
-    const pages=['index.html','tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html'];
+    const pages=['index.html','tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html','ayuda.html','legal.html','cuenta.html','receta.html','articulo.html'];
     for(const path of pages){
       const html=await source(page,path);
       for(const asset of rejected)expect(html).not.toContain(asset);

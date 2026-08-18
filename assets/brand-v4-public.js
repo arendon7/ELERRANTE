@@ -32,6 +32,16 @@
     return true;
   };
 
+  const insertVisualAfter=(anchor,src,alt,className)=>{
+    const target=typeof anchor==='string'?document.querySelector(anchor):anchor;
+    if(!target||document.querySelector('.'+className))return false;
+    const figure=document.createElement('figure');
+    figure.className=`v4-promoted-visual ${className}`;
+    figure.innerHTML=`<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`;
+    target.insertAdjacentElement('afterend',figure);
+    return true;
+  };
+
   /* Only assets that passed visual QA are eligible for public promotion. */
   const productAssetMap={
     'margherita-del-taller':'02-margherita-v4.webp',
@@ -70,6 +80,38 @@
     }
   }
 
+  function promoteRecipeLibrary(){
+    if(path!=='recetas.html')return;
+    setImage(document.querySelector('.hero-media img'),generated+'08-proceso-v4.webp','Trabajo de masa y fermentación en El Errante');
+    const visualCards=[...document.querySelectorAll('.visual-card img')];
+    if(visualCards[0])setImage(visualCards[0],generated+'09-ingredientes-v4.webp','Ingredientes y materia de trabajo de El Errante');
+    if(visualCards[1])setImage(visualCards[1],generated+'07-despensa-v4.webp','Despensa de El Errante');
+    document.documentElement.dataset.eeV4GeneratedRecipes='true';
+  }
+
+  function promoteTools(){
+    if(path!=='herramientas.html')return;
+    setImage(document.querySelector('.hero-media img'),generated+'08-proceso-v4.webp','Proceso de masa de El Errante');
+    setImage(document.querySelector('.section-dark .visual-card img'),generated+'09-ingredientes-v4.webp','Ingredientes para una prueba de masa y pizza');
+    document.documentElement.dataset.eeV4GeneratedTools='true';
+  }
+
+  function promoteEnCasaSupport(){
+    if(path!=='en-casa.html')return;
+    const media=[...document.querySelectorAll('.v4p-media img')];
+    if(media[0])setImage(media[0],generated+'08-proceso-v4.webp','Trabajo de masa antes del primer fuego');
+    const lastSection=document.querySelector('main > .v4p-section:last-of-type');
+    if(lastSection)insertVisualAfter(lastSection,generated+'10-ritual-v4.webp','Pizza El Errante compartida alrededor de la mesa','v4-ritual-endcap');
+    document.documentElement.dataset.eeV4GeneratedHomeRitual='true';
+  }
+
+  function promoteCheckoutTrust(){
+    if(path!=='checkout.html')return;
+    const note=document.querySelector('main .data-note');
+    if(note)insertVisualAfter(note,generated+'18-confianza-v4-alt.webp','Pieza editorial de confianza y cuidado de El Errante','v4-checkout-trust');
+    document.documentElement.dataset.eeV4GeneratedCheckoutTrust='true';
+  }
+
   function promotePageAssets(){
     if(path==='tienda.html'){
       setImage(document.querySelector('.v4p-hero-media img'),generated+'11-tienda-hero-v4.webp','');
@@ -87,12 +129,16 @@
       setImage(document.querySelector('.v4ed-hero-media img'),generated+'13-bitacora-hero-v4.webp','');
       document.documentElement.dataset.eeV4GeneratedJournal='true';
     }
-    /* 16-ayuda-v4.webp failed visual QA because it contains baked-in UI/copy; keep the clean existing help hero until regenerated. */
+    /* 16-ayuda-v4.webp failed visual QA because it contains baked-in UI/copy; keep the clean existing help hero. */
     if(path==='cobertura.html'){
       setImage(document.querySelector('.hero-media img'),generated+'17-cobertura-v4.webp','Cobertura y rutas de entrega El Errante');
       document.documentElement.dataset.eeV4GeneratedCoverage='true';
     }
     /* 19-seguimiento-v4.webp failed brand QA because it contains an incorrect descriptor; it must never be injected into Cuenta. */
+    promoteRecipeLibrary();
+    promoteTools();
+    promoteEnCasaSupport();
+    promoteCheckoutTrust();
     promoteProductDetail();
   }
 

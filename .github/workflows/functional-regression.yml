@@ -43,8 +43,17 @@ jobs:
       - name: Instalar dependencias
         run: npm install --no-audit --no-fund
       - name: Instalar Chromium
-        timeout-minutes: 5
-        run: npx playwright install --with-deps chromium
+        timeout-minutes: 6
+        shell: bash
+        run: |
+          set +e
+          timeout 150s npx playwright install --with-deps chromium
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::No fue posible completar --with-deps (status=$status). Reintentando sin apt para evitar bloqueo del mirror de Ubuntu."
+            npx playwright install chromium
+          fi
       - name: Ejecutar regresión funcional
         shell: bash
         run: |

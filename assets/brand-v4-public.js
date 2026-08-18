@@ -15,6 +15,24 @@
     ['juan-david-ocampo.html','Juan David'],
     ['en-movimiento.html','En Movimiento']
   ];
+  const generatedDimensions={
+    '01-home-hero-v4.webp':[1672,941],
+    '02-margherita-v4.webp':[1122,1402],
+    '03-la-errante-v4.webp':[1122,1402],
+    '04-bosque-v4.webp':[1122,1402],
+    '05-diavola-v4.webp':[1122,1402],
+    '06-cuatro-quesos-v4.webp':[1122,1402],
+    '07-despensa-v4.webp':[1122,1402],
+    '08-proceso-v4.webp':[1122,1402],
+    '09-ingredientes-v4.webp':[1122,1402],
+    '10-ritual-v4.webp':[1672,941],
+    '11-tienda-hero-v4.webp':[1672,941],
+    '12-metodo-hero-v4.webp':[1672,941],
+    '13-bitacora-hero-v4.webp':[1672,941],
+    '15-combo-primera-ruta-v4.webp':[1122,1402],
+    '17-cobertura-v4.webp':[1672,941],
+    '18-confianza-v4-alt.webp':[1672,941]
+  };
 
   const ensureAssetLayer=()=>{
     if(document.querySelector('link[href="assets/brand-v4-assets.css"]'))return;
@@ -26,9 +44,14 @@
     if(!image)return false;
     image.src=src;
     if(alt!==undefined)image.alt=alt;
-    image.removeAttribute('width');
-    image.removeAttribute('height');
+    const file=src.split('/').pop();
+    const dimensions=generatedDimensions[file];
+    if(dimensions){image.width=dimensions[0];image.height=dimensions[1];}
     image.decoding='async';
+    if(image.closest('.v4p-hero-media,.v4ed-hero-media')){
+      image.loading='eager';
+      image.setAttribute('fetchpriority','high');
+    }
     return true;
   };
 
@@ -38,6 +61,10 @@
     const figure=document.createElement('figure');
     figure.className=`v4-promoted-visual ${className}`;
     figure.innerHTML=`<img src="${src}" alt="${alt}" loading="lazy" decoding="async">`;
+    const image=figure.querySelector('img');
+    const file=src.split('/').pop();
+    const dimensions=generatedDimensions[file];
+    if(image&&dimensions){image.width=dimensions[0];image.height=dimensions[1];}
     target.insertAdjacentElement('afterend',figure);
     return true;
   };
@@ -158,6 +185,12 @@
   const syncCart=()=>document.querySelectorAll('.cart-count').forEach(node=>{node.textContent=String(cartQuantity());});
 
   function installShell(){
+    if(document.documentElement.dataset.eeV4PublicShell==='ready'){
+      syncCart();
+      promotePageAssets();
+      return;
+    }
+
     const headerHost=document.querySelector('#site-header');
     const footerHost=document.querySelector('#site-footer');
 
@@ -171,9 +204,9 @@
             </a>
             <nav class="main-nav v4-public-nav" aria-label="Navegación principal">${navMarkup()}</nav>
             <a class="v4-public-cart" href="checkout.html">Carrito <span class="cart-count" aria-label="Productos en el carrito">0</span></a>
-            <button class="menu-toggle v4-public-menu-toggle" type="button" aria-expanded="false" aria-controls="v4-public-drawer">Menú</button>
+            <button class="menu-toggle v4-public-menu-toggle" type="button" aria-expanded="false" aria-controls="v4-public-drawer" aria-label="Abrir navegación">Menú</button>
           </div>
-          <nav class="mobile-drawer v4-public-drawer" id="v4-public-drawer" aria-label="Navegación móvil">${navMarkup()}</nav>
+          <nav class="mobile-drawer v4-public-drawer" id="v4-public-drawer" aria-label="Navegación móvil" aria-hidden="true">${navMarkup()}</nav>
         </header>`;
     }
 
@@ -192,40 +225,41 @@
     const header=headerHost?.querySelector('.v4-public-header');
     const toggle=headerHost?.querySelector('.v4-public-menu-toggle');
     const drawer=headerHost?.querySelector('.v4-public-drawer');
-    const closeMenu=()=>{
+    const setMenuState=open=>{
       if(!header||!toggle||!drawer)return;
-      header.dataset.open='false';
-      toggle.setAttribute('aria-expanded','false');
-      drawer.classList.remove('open');
+      header.dataset.open=String(open);
+      toggle.setAttribute('aria-expanded',String(open));
+      toggle.setAttribute('aria-label',open?'Cerrar navegación':'Abrir navegación');
+      drawer.classList.toggle('open',open);
+      drawer.setAttribute('aria-hidden',String(!open));
+      document.body.classList.toggle('v4-public-menu-open',open);
     };
+    const closeMenu=()=>setMenuState(false);
 
     if(header&&toggle&&drawer){
-      toggle.addEventListener('click',()=>{
-        const open=toggle.getAttribute('aria-expanded')==='true';
-        header.dataset.open=String(!open);
-        toggle.setAttribute('aria-expanded',String(!open));
-        drawer.classList.toggle('open',!open);
-      });
+      toggle.addEventListener('click',()=>setMenuState(toggle.getAttribute('aria-expanded')!=='true'));
       drawer.addEventListener('click',event=>{if(event.target.closest('a'))closeMenu();});
-      document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();},{once:false});
+      document.addEventListener('keydown',event=>{
+        if(event.key!=='Escape'||toggle.getAttribute('aria-expanded')!=='true')return;
+        closeMenu();
+        toggle.focus();
+      });
       window.addEventListener('resize',()=>{if(window.innerWidth>1080)closeMenu();},{passive:true});
     }
 
+    document.documentElement.dataset.eeV4PublicShell='ready';
     syncCart();
     promotePageAssets();
-    document.documentElement.dataset.eeV4PublicShell='ready';
   }
 
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',()=>{
       installShell();
-      promotePageAssets();
-      requestAnimationFrame(()=>{installShell();promotePageAssets();});
+      requestAnimationFrame(installShell);
     },{once:true});
   }else{
     installShell();
-    promotePageAssets();
-    requestAnimationFrame(()=>{installShell();promotePageAssets();});
+    requestAnimationFrame(installShell);
   }
 
   const dynamicRoot=document.querySelector('#dynamic-product');

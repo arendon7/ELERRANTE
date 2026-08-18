@@ -1,17 +1,17 @@
 {
-  "name": "El Errante — Masa, Fuego y Territorio",
+  "name": "El Errante — Pizza contemporánea",
   "short_name": "El Errante",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F2ECE1",
-  "theme_color": "#191817",
-  "description": "Masa propia, pizzas para terminar en casa y una pizzería móvil desarrollada en Colombia.",
+  "background_color": "#11110F",
+  "theme_color": "#11110F",
+  "description": "Pizza contemporánea. Masa, fuego y producto interpretados desde Colombia. En Casa y En Movimiento.",
   "icons": [
     {
-      "src": "assets/logo-mark.svg",
+      "src": "assets/images/brand-v4/pizzaiolo-mark-v4.webp",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/webp",
+      "purpose": "any"
     }
   ]
 }

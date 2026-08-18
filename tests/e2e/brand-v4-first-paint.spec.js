@@ -98,6 +98,15 @@ test.describe('V4 static first paint',()=>{
     expect(article).toContain('id="article-detail"');
   });
 
+  test('Caso de evento abandona v040 desde el HTML inicial',async({page})=>{
+    const eventCase=await source(page,'caso-evento.html');
+    expectStaticUtilityV4(eventCase);
+    expect(eventCase).toContain('assets/images/brand-v4/eventos-v4.webp');
+    expect(eventCase).toContain('08-proceso-v4.webp');
+    expect(eventCase).not.toContain('assets/images/v040/');
+    expect(eventCase).toContain('assets/brand-v4-public.js');
+  });
+
   test('Checkout muestra confianza V4 desde HTML sin esperar promoción dinámica',async({page})=>{
     const checkout=await source(page,'checkout.html');
     expectStaticUtilityV4(checkout);
@@ -106,7 +115,7 @@ test.describe('V4 static first paint',()=>{
   });
 
   test('ninguna superficie de first paint incorpora assets en cuarentena',async({page})=>{
-    const pages=['index.html','tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html','ayuda.html','legal.html','cuenta.html','receta.html','articulo.html'];
+    const pages=['index.html','tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html','ayuda.html','legal.html','cuenta.html','receta.html','articulo.html','caso-evento.html'];
     for(const path of pages){
       const html=await source(page,path);
       for(const asset of rejected)expect(html).not.toContain(asset);

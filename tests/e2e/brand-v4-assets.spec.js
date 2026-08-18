@@ -39,6 +39,18 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.locator('.v4ed-hero-media img')).toHaveAttribute('src',GENERATED+'13-bitacora-hero-v4.webp');
   });
 
+  test('Recetas y Herramientas reutilizan proceso e ingredientes V4 en lugar de visuales heredados',async({page})=>{
+    await page.goto('/recetas.html');
+    await expect(page.locator('.hero-media img')).toHaveAttribute('src',GENERATED+'08-proceso-v4.webp');
+    const recipeVisuals=page.locator('.visual-card img');
+    await expect(recipeVisuals.nth(0)).toHaveAttribute('src',GENERATED+'09-ingredientes-v4.webp');
+    await expect(recipeVisuals.nth(1)).toHaveAttribute('src',GENERATED+'07-despensa-v4.webp');
+
+    await page.goto('/herramientas.html');
+    await expect(page.locator('.hero-media img')).toHaveAttribute('src',GENERATED+'08-proceso-v4.webp');
+    await expect(page.locator('.section-dark .visual-card img')).toHaveAttribute('src',GENERATED+'09-ingredientes-v4.webp');
+  });
+
   test('Ayuda y Seguimiento bloquean assets rechazados; Cobertura conserva su pieza aprobada',async({page})=>{
     await page.goto('/ayuda.html');
     await expect(page.locator('.hero-media img')).not.toHaveAttribute('src',GENERATED+'16-ayuda-v4.webp');
@@ -51,6 +63,13 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.locator('.v4-generated-tracking')).toHaveCount(0);
     await expect(page.locator(`img[src="${GENERATED}19-seguimiento-v4.webp"]`)).toHaveCount(0);
     await expect(page.getByText('Seguimiento online todavía no activado',{exact:false})).toBeVisible();
+  });
+
+  test('Checkout incorpora Confianza-alt sin alterar el estado real del canal',async({page})=>{
+    await page.goto('/checkout.html');
+    await expect(page.locator('.v4-checkout-trust img')).toHaveAttribute('src',GENERATED+'18-confianza-v4-alt.webp');
+    await expect(page.getByText('Una confirmación debe ser real.',{exact:false})).toBeVisible();
+    await expect(page.locator('#checkout-v29-status')).toBeVisible();
   });
 
   test('Crea la Tuya no reutiliza el asset 14 mal clasificado',async({page})=>{
@@ -82,11 +101,13 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(note).toContainText('El backend comercial y los canales centrales de soporte/cotización siguen sin estar conectados');
   });
 
-  test('En Casa usa Segundo Fuego sin tocar instrucciones ni productos',async({page})=>{
+  test('En Casa usa Segundo Fuego, proceso y ritual sin tocar instrucciones ni productos',async({page})=>{
     await page.goto('/en-casa.html');
     await expect(page.getByRole('heading',{name:/Nosotros hacemos el tiempo/})).toBeVisible();
     expect(await backgroundOf(page.locator('.v4p-hero-media'))).toContain('assets/images/brand-v4/segundo-fuego-v4.webp');
     await expect(page.locator('.v4p-hero-media img')).toHaveCSS('opacity','0');
+    await expect(page.locator('.v4p-section--paper .v4p-media img').first()).toHaveAttribute('src',GENERATED+'08-proceso-v4.webp');
+    await expect(page.locator('.v4-ritual-endcap img')).toHaveAttribute('src',GENERATED+'10-ritual-v4.webp');
     await expect(page.locator('#casa-products .product-card')).toHaveCount(5);
   });
 
@@ -96,5 +117,13 @@ test.describe('V4 promoted brand assets',()=>{
     expect(await backgroundOf(page.locator('.v4p-hero-media'))).toContain('assets/images/brand-v4/eventos-v4.webp');
     await expect(page.locator('.v4p-hero-media img')).toHaveCSS('opacity','0');
     await expect(page.getByText('Este formulario guarda un borrador únicamente en tu navegador',{exact:false})).toBeVisible();
+  });
+
+  test('el manifiesto PWA usa el pizzaiolo aprobado y no el logo heredado',async({page})=>{
+    const manifest=await page.request.get('/manifest.webmanifest');
+    expect(manifest.ok()).toBeTruthy();
+    const data=await manifest.json();
+    expect(data.icons?.[0]?.src).toBe('assets/images/brand-v4/pizzaiolo-mark-v4.webp');
+    expect(JSON.stringify(data)).not.toContain('assets/logo-mark.svg');
   });
 });

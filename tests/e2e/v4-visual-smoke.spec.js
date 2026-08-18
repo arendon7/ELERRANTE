@@ -18,6 +18,14 @@ async function waitForSurfaceReady(page, slug) {
   await expect(page.locator('.v305-gallery')).toBeVisible();
 }
 
+async function dismissCookieForVisualEvidence(page) {
+  const necessary = page.locator('.cookie-banner.show [data-cookie="necessary"]').first();
+  if (await necessary.count() && await necessary.isVisible()) {
+    await necessary.click();
+    await expect(page.locator('.cookie-banner')).not.toHaveClass(/show/);
+  }
+}
+
 async function hydrateVisualSurface(page) {
   await page.evaluate(async () => {
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -73,6 +81,7 @@ test.describe('V4 visual smoke evidence', () => {
 
       await page.waitForLoadState('load');
       await waitForSurfaceReady(page, slug);
+      await dismissCookieForVisualEvidence(page);
       await page.evaluate(async () => {
         if (document.fonts?.ready) await document.fonts.ready;
       });

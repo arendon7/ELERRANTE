@@ -48,7 +48,7 @@ test.describe('V4 comercio y hospitalidad',()=>{
     await page.goto('/producto.html?id=la-errante');
     await page.waitForFunction(()=>{
       const root=document.querySelector('#dynamic-product');
-      return root?.dataset?.v303Ready==='true'&&root?.dataset?.v302Ready==='true';
+      return root?.dataset?.v303Ready==='true'&&root?.dataset?.v302Ready==='true'&&root?.dataset?.v304Ready==='true';
     });
     const craftCards=page.locator('[data-v302-block="craft-proof"] .v302-craft-card');
     await expect(craftCards).toHaveCount(3);
@@ -59,9 +59,15 @@ test.describe('V4 comercio y hospitalidad',()=>{
     expect(craftStyle.radius).toBe('0px');
     expect(craftStyle.background).toBe('rgba(0, 0, 0, 0)');
 
+    const craftEyebrow=page.locator('[data-v302-block="craft-proof"] .eyebrow').first();
+    await expect(craftEyebrow).toBeVisible();
+    expect(await craftEyebrow.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(140, 113, 61)');
     const kicker=page.locator('[data-v302-block="craft-proof"] .v30-kicker').first();
-    await expect(kicker).toBeVisible();
     expect(await kicker.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(140, 113, 61)');
+
+    const compareEyebrow=page.locator('.v304-compare .eyebrow').first();
+    await expect(compareEyebrow).toBeVisible();
+    expect(await compareEyebrow.evaluate(node=>getComputedStyle(node).color)).toBe('rgb(140, 113, 61)');
 
     const workshopQuote=page.locator('[data-v30-block="workshop"] .quote');
     await expect(workshopQuote).toBeVisible();

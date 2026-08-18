@@ -1,138 +1,63 @@
 {
   "version": "4.0.0-working",
-  "status": "working-not-published",
-  "reviewed_at": "2026-08-12",
+  "status": "visual-bank-integrated-no-new-generation",
+  "reviewed_at": "2026-08-17",
   "brand_master": {
-    "status": "awaiting-approved-binary",
+    "status": "public-shell-active",
+    "asset": "pizzaiolo-mark-v4.webp",
     "expected": "walking pizzaiolo tossing dough; black-dominant; restrained aged-gold details; ivory; serif EL ERRANTE; PIZZA CONTEMPORÁNEA; EST. 2019",
-    "rule": "Never redraw or approximate the approved master from legacy assets."
+    "rule": "Use the approved V4 public mark/wordmark system. Do not fall back to legacy terracotta assets on public V4 surfaces."
   },
-  "source_inventory": "../brand-final/manifest-hq-v13.json",
-  "audit_note": "The accessible HQ V13 bank predates the approved V4 identity. Newer generated V4 images were not found in the repository or accessible ELERRANTE_WEB_HQ_V13 Drive bank during this audit. Legacy assets remain available only according to the status below.",
-  "duplicate_groups": [
-    {
-      "sha256": "b7c6daecd8ac68e572926cf360a1b3425a6bcca2ab4b541c5cc1ef280e7f02d4",
-      "files": ["home-hero.webp", "evento-operacion.webp", "evento-servicio.webp"],
-      "decision": "Do not use as three separate narrative moments."
-    }
+  "generated_bank": {
+    "path": "generated-01-20/",
+    "integrity": "20/20 SHA-256 verified before import",
+    "policy": "No further image generation. Improve the public site by promoting only already-created assets that pass visual QA.",
+    "promoted": [
+      "01-home-hero-v4.webp",
+      "02-margherita-v4.webp",
+      "03-la-errante-v4.webp",
+      "04-bosque-v4.webp",
+      "05-diavola-v4.webp",
+      "06-cuatro-quesos-v4.webp",
+      "07-despensa-v4.webp",
+      "08-proceso-v4.webp",
+      "09-ingredientes-v4.webp",
+      "10-ritual-v4.webp",
+      "11-tienda-hero-v4.webp",
+      "12-metodo-hero-v4.webp",
+      "13-bitacora-hero-v4.webp",
+      "15-combo-primera-ruta-v4.webp",
+      "17-cobertura-v4.webp",
+      "18-confianza-v4-alt.webp"
+    ],
+    "quarantined": [
+      {"file":"14-crea-la-tuya-v4.webp","reason":"misclassified scene and baked-in copy"},
+      {"file":"16-ayuda-v4.webp","reason":"baked-in UI/copy duplicates the real interface"},
+      {"file":"19-seguimiento-v4.webp","reason":"contains incorrect descriptor PIZZA & APERITIVO"},
+      {"file":"20-logo-lockup-v4-candidate.webp","reason":"excessive gold/glow and not canonical enough for master use"}
+    ]
+  },
+  "standalone_masters": [
+    {"file":"historia-v4.webp","role":"historia-hero"},
+    {"file":"segundo-fuego-v4.webp","role":"en-casa-hero"},
+    {"file":"eventos-v4.webp","role":"en-movimiento-hero"},
+    {"file":"confianza-v4.webp","role":"legal-trust"},
+    {"file":"pizzaiolo-mark-v4.webp","role":"public-brand-mark-pwa"}
   ],
-  "assets": [
-    {
-      "file": "home-hero.webp",
-      "status": "REFERENCE",
-      "primary_role": "legacy-movement-concept",
-      "truth_note": "Concept scene, not documentary evidence of a real unit/event.",
-      "v4_note": "Strong lighting and hospitality atmosphere, but dominated by legacy terracotta E branding and generic Tuscan/Italian scenery."
-    },
-    {
-      "file": "home-hero-mobile.webp",
-      "status": "REFERENCE",
-      "primary_role": "legacy-movement-concept-mobile",
-      "truth_note": "Concept scene, not documentary evidence.",
-      "v4_note": "Mobile crop inherits the same legacy identity and scene problem."
-    },
-    {
-      "file": "home-masa-fuego.webp",
-      "status": "CANDIDATE",
-      "primary_role": "process-dough",
-      "truth_note": "Editorial process image; not proof of exact batch or formulation.",
-      "v4_note": "Hands, dough and fire are useful; legacy branding on apron/bag prevents direct V4 publication without a new source or truthful crop."
-    },
-    {
-      "file": "home-fermentacion.webp",
-      "status": "CANDIDATE",
-      "primary_role": "process-dough",
-      "truth_note": "Editorial dough image; not proof of exact fermentation state or timing.",
-      "v4_note": "Strong tactile dough image; legacy E props must not remain dominant in final V4 use."
-    },
-    {
-      "file": "home-ingredientes.webp",
-      "status": "CANDIDATE",
-      "primary_role": "matter",
-      "truth_note": "Contextual ingredients, not exact composition proof for a specific pizza.",
-      "v4_note": "Good natural material/color and easiest legacy mark to remove through replacement/crop."
-    },
-    {
-      "file": "home-compartir.webp",
-      "status": "CANDIDATE",
-      "primary_role": "ritual",
-      "truth_note": "Editorial consumption scene.",
-      "v4_note": "Strong human ritual and pizza focus; legacy E packaging/napkin visible. Best legacy candidate for a controlled crop while awaiting V4 replacement."
-    },
-    {
-      "file": "home-en-casa.webp",
-      "status": "REFERENCE",
-      "primary_role": "legacy-en-casa-concept",
-      "truth_note": "Packaging concept, not approved V4 commercial packshot.",
-      "v4_note": "Composition is useful as direction, but almost every object carries the obsolete identity."
-    },
-    {
-      "file": "home-despensa.webp",
-      "status": "REFERENCE",
-      "primary_role": "legacy-pantry-concept",
-      "truth_note": "Packaging concept, not approved V4 commercial packshot.",
-      "v4_note": "Good still-life logic, but extensive obsolete labels/branding make direct use unsuitable."
-    },
-    {
-      "file": "evento-hero.webp",
-      "status": "REFERENCE",
-      "primary_role": "legacy-movement-event",
-      "truth_note": "Concept visualization; do not claim documentary event evidence.",
-      "v4_note": "Atmosphere useful; vehicle and signage are built around obsolete identity."
-    },
-    {
-      "file": "evento-noche.webp",
-      "status": "REFERENCE",
-      "primary_role": "legacy-movement-service",
-      "truth_note": "Concept visualization; do not claim documentary event evidence.",
-      "v4_note": "Useful night/service reference but obsolete identity remains central."
-    },
-    {
-      "file": "evento-operacion.webp",
-      "status": "REJECTED",
-      "primary_role": "duplicate",
-      "truth_note": "Byte-identical to home-hero.webp.",
-      "v4_note": "Cannot serve as a distinct operation image."
-    },
-    {
-      "file": "producto-margherita.webp",
-      "status": "CANDIDATE",
-      "primary_role": "product-hero",
-      "product": "margherita-del-taller",
-      "truth_note": "Editorial product image; current operational product truth still prevails.",
-      "v4_note": "Pizza is visually strong; obsolete E appears on props. Use only in controlled working-branch crop until replaced."
-    },
-    {
-      "file": "producto-la-errante.webp",
-      "status": "CANDIDATE",
-      "primary_role": "product-hero",
-      "product": "la-errante",
-      "truth_note": "Editorial product image; packaging/label is not V4 master artwork.",
-      "v4_note": "Strong action/finishing gesture; obsolete bottle/box identity prevents final direct publication."
-    },
-    {
-      "file": "producto-bosque.webp",
-      "status": "CANDIDATE",
-      "primary_role": "product-hero",
-      "product": "bosque",
-      "truth_note": "Editorial product image; ingredients shown do not establish exact formula.",
-      "v4_note": "Strong pizza photography; obsolete props require replacement/crop."
-    },
-    {
-      "file": "producto-diavola.webp",
-      "status": "CANDIDATE",
-      "primary_role": "product-hero",
-      "product": "diavola-errante",
-      "truth_note": "Editorial product image; current formulation prevails.",
-      "v4_note": "Strong product focus; legacy E prop remains visible."
-    },
-    {
-      "file": "producto-cuatro-quesos.webp",
-      "status": "CANDIDATE",
-      "primary_role": "product-hero",
-      "product": "cuatro-quesos-montana",
-      "truth_note": "Editorial product image; current formulation prevails.",
-      "v4_note": "Excellent food texture; obsolete E box/napkin visible outside the product crop."
-    }
-  ]
+  "integration": {
+    "home": ["01","02","03","04","05","06","07","08"],
+    "store": ["11","15"],
+    "method": ["12"],
+    "journal": ["13"],
+    "recipes": ["07","08","09"],
+    "tools": ["08","09"],
+    "en_casa": ["08","10","segundo-fuego-v4.webp"],
+    "coverage": ["17"],
+    "checkout": ["18"],
+    "history": ["historia-v4.webp"],
+    "events": ["eventos-v4.webp"],
+    "legal": ["confianza-v4.webp"],
+    "pwa": ["pizzaiolo-mark-v4.webp"]
+  },
+  "legacy_policy": "Legacy V13 images remain contextual fallbacks only where a safe V4 replacement is not already available. Public V4 surfaces must not reintroduce the obsolete terracotta identity."
 }

@@ -14,12 +14,20 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(brand).not.toHaveAttribute('data-master-status','awaiting-approved-binary');
     await expect(page.locator('#site-header img[src*="logo-mark"]')).toHaveCount(0);
     await expect(page.locator('img[src$="20-logo-lockup-v4-candidate.webp"]')).toHaveCount(0);
+    await expect(page.locator('.v4-public-header')).toHaveCount(1);
+    await expect(page.locator('html')).toHaveAttribute('data-ee-v4-public-shell','ready');
   });
 
   test('Home promueve el banco individual 01-08 y conserva masters superiores ya aprobados',async({page})=>{
     await page.goto('/index.html');
-    await expect(page.locator('.v4-hero-media img')).toHaveAttribute('src',GENERATED+'01-home-hero-v4.webp');
+    const hero=page.locator('.v4-hero-media img');
+    await expect(hero).toHaveAttribute('src',GENERATED+'01-home-hero-v4.webp');
+    await expect(hero).toHaveAttribute('width','1672');
+    await expect(hero).toHaveAttribute('height','941');
+    await expect(hero).toHaveAttribute('fetchpriority','high');
     await expect(page.locator('.v4-manifesto-media img')).toHaveAttribute('src',GENERATED+'08-proceso-v4.webp');
+    await expect(page.locator('.v4-manifesto-media img')).toHaveAttribute('width','1122');
+    await expect(page.locator('.v4-manifesto-media img')).toHaveAttribute('height','1402');
     await expect(page.locator('.v4-menu-feature-media img')).toHaveAttribute('src',GENERATED+'03-la-errante-v4.webp');
     await expect(page.locator('.v4-menu-item[href*="margherita-del-taller"] img')).toHaveAttribute('src',GENERATED+'02-margherita-v4.webp');
     await expect(page.locator('.v4-menu-item[href*="bosque"] img')).toHaveAttribute('src',GENERATED+'04-bosque-v4.webp');
@@ -30,13 +38,44 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.locator('.v4-movement-main img')).toHaveAttribute('src','assets/images/brand-v4/eventos-v4.webp');
   });
 
-  test('Tienda, Método y Bitácora usan sus heroes generados V4',async({page})=>{
+  test('Tienda, Método y Bitácora usan sus heroes generados V4 con geometría estable',async({page})=>{
     await page.goto('/tienda.html');
-    await expect(page.locator('.v4p-hero-media img')).toHaveAttribute('src',GENERATED+'11-tienda-hero-v4.webp');
+    const storeHero=page.locator('.v4p-hero-media img');
+    await expect(storeHero).toHaveAttribute('src',GENERATED+'11-tienda-hero-v4.webp');
+    await expect(storeHero).toHaveAttribute('width','1672');
+    await expect(storeHero).toHaveAttribute('height','941');
     await page.goto('/metodo.html');
-    await expect(page.locator('.v4ed-hero-media img')).toHaveAttribute('src',GENERATED+'12-metodo-hero-v4.webp');
+    const methodHero=page.locator('.v4ed-hero-media img');
+    await expect(methodHero).toHaveAttribute('src',GENERATED+'12-metodo-hero-v4.webp');
+    await expect(methodHero).toHaveAttribute('width','1672');
+    await expect(methodHero).toHaveAttribute('height','941');
     await page.goto('/bitacora.html');
-    await expect(page.locator('.v4ed-hero-media img')).toHaveAttribute('src',GENERATED+'13-bitacora-hero-v4.webp');
+    const journalHero=page.locator('.v4ed-hero-media img');
+    await expect(journalHero).toHaveAttribute('src',GENERATED+'13-bitacora-hero-v4.webp');
+    await expect(journalHero).toHaveAttribute('width','1672');
+    await expect(journalHero).toHaveAttribute('height','941');
+  });
+
+  test('el menú móvil compartido expone estado accesible y no deja listeners/shells duplicados',async({page})=>{
+    await page.setViewportSize({width:700,height:900});
+    await page.goto('/tienda.html');
+    const toggle=page.locator('.v4-public-menu-toggle');
+    const drawer=page.locator('#v4-public-drawer');
+    await expect(page.locator('.v4-public-header')).toHaveCount(1);
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded','false');
+    await expect(toggle).toHaveAttribute('aria-label','Abrir navegación');
+    await expect(drawer).toHaveAttribute('aria-hidden','true');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded','true');
+    await expect(toggle).toHaveAttribute('aria-label','Cerrar navegación');
+    await expect(drawer).toHaveAttribute('aria-hidden','false');
+    await expect(page.locator('body')).toHaveClass(/v4-public-menu-open/);
+    await page.keyboard.press('Escape');
+    await expect(toggle).toHaveAttribute('aria-expanded','false');
+    await expect(drawer).toHaveAttribute('aria-hidden','true');
+    await expect(page.locator('body')).not.toHaveClass(/v4-public-menu-open/);
+    await expect(toggle).toBeFocused();
   });
 
   test('Recetas y Herramientas reutilizan proceso e ingredientes V4 en lugar de visuales heredados',async({page})=>{
@@ -67,7 +106,10 @@ test.describe('V4 promoted brand assets',()=>{
 
   test('Checkout incorpora Confianza-alt sin falsear el estado real del canal',async({page})=>{
     await page.goto('/checkout.html');
-    await expect(page.locator('.v4-checkout-trust img')).toHaveAttribute('src',GENERATED+'18-confianza-v4-alt.webp');
+    const trust=page.locator('.v4-checkout-trust img');
+    await expect(trust).toHaveAttribute('src',GENERATED+'18-confianza-v4-alt.webp');
+    await expect(trust).toHaveAttribute('width','1672');
+    await expect(trust).toHaveAttribute('height','941');
     await expect(page.getByText('Compra online todavía no activada',{exact:true})).toBeVisible();
     await expect(page.getByRole('heading',{name:'Tu carrito está listo. El canal que debe recibir el pedido todavía no.'})).toBeVisible();
     await expect(page.locator('#checkout-v29-status')).toHaveAttribute('data-v29-commerce-guard','true');
@@ -83,6 +125,8 @@ test.describe('V4 promoted brand assets',()=>{
     const primary=page.locator('#dynamic-product .v305-frame-primary img, #dynamic-product .product-gallery img').first();
     await expect(primary).toBeVisible();
     await expect(primary).toHaveAttribute('src',GENERATED+'03-la-errante-v4.webp');
+    await expect(primary).toHaveAttribute('width','1122');
+    await expect(primary).toHaveAttribute('height','1402');
     await expect(page.locator('.product-buy')).toBeVisible();
   });
 
@@ -107,8 +151,14 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.getByRole('heading',{name:/Nosotros hacemos el tiempo/})).toBeVisible();
     expect(await backgroundOf(page.locator('.v4p-hero-media'))).toContain('assets/images/brand-v4/segundo-fuego-v4.webp');
     await expect(page.locator('.v4p-hero-media img')).toHaveCSS('opacity','0');
-    await expect(page.locator('.v4p-section--paper .v4p-media img').first()).toHaveAttribute('src',GENERATED+'08-proceso-v4.webp');
-    await expect(page.locator('.v4-ritual-endcap img')).toHaveAttribute('src',GENERATED+'10-ritual-v4.webp');
+    const process=page.locator('.v4p-section--paper .v4p-media img').first();
+    await expect(process).toHaveAttribute('src',GENERATED+'08-proceso-v4.webp');
+    await expect(process).toHaveAttribute('width','1122');
+    await expect(process).toHaveAttribute('height','1402');
+    const ritual=page.locator('.v4-ritual-endcap img');
+    await expect(ritual).toHaveAttribute('src',GENERATED+'10-ritual-v4.webp');
+    await expect(ritual).toHaveAttribute('width','1672');
+    await expect(ritual).toHaveAttribute('height','941');
     await expect(page.locator('#casa-products .product-card')).toHaveCount(5);
   });
 

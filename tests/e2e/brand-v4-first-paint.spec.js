@@ -1,0 +1,62 @@
+const { test, expect } = require('@playwright/test');
+
+const rejected=[
+  '14-crea-la-tuya-v4.webp',
+  '16-ayuda-v4.webp',
+  '19-seguimiento-v4.webp',
+  '20-logo-lockup-v4-candidate.webp'
+];
+
+async function source(page,path){
+  const response=await page.request.get('/'+path);
+  expect(response.ok()).toBeTruthy();
+  return response.text();
+}
+
+test.describe('V4 static first paint',()=>{
+  test('Home nace con identidad, hero y social card V4 antes de ejecutar promociones dinámicas',async({page})=>{
+    const html=await source(page,'index.html');
+    expect(html).toContain('assets/brand-v4-assets.css');
+    expect(html).toContain('assets/images/brand-v4/pizzaiolo-mark-v4.webp');
+    expect(html).toContain('assets/images/brand-v4/generated-01-20/01-home-hero-v4.webp');
+    expect(html).toContain('property="og:image"');
+    expect(html).toContain('01-home-hero-v4.webp');
+    expect(html).not.toContain('data-master-status="awaiting-approved-binary"');
+    expect(html).not.toContain('src="assets/images/brand-final/producto-margherita.webp" alt="" width="1122" height="1402" fetchpriority="high"');
+  });
+
+  test('Tienda, Método y Bitácora cargan sus heroes V4 directamente desde HTML',async({page})=>{
+    const store=await source(page,'tienda.html');
+    const method=await source(page,'metodo.html');
+    const journal=await source(page,'bitacora.html');
+    expect(store).toContain('11-tienda-hero-v4.webp');
+    expect(method).toContain('12-metodo-hero-v4.webp');
+    expect(journal).toContain('13-bitacora-hero-v4.webp');
+    for(const html of [store,method,journal])expect(html).toContain('assets/brand-v4-assets.css');
+  });
+
+  test('En Casa, En Movimiento e Historia no descargan un hero legado antes del master V4',async({page})=>{
+    const casa=await source(page,'en-casa.html');
+    const movement=await source(page,'en-movimiento.html');
+    const history=await source(page,'historia.html');
+    expect(casa).toContain('assets/images/brand-v4/segundo-fuego-v4.webp');
+    expect(casa).toContain('08-proceso-v4.webp');
+    expect(movement).toContain('assets/images/brand-v4/eventos-v4.webp');
+    expect(movement).toContain('08-proceso-v4.webp');
+    expect(history).toContain('assets/images/brand-v4/historia-v4.webp');
+  });
+
+  test('ninguna superficie de first paint incorpora assets en cuarentena',async({page})=>{
+    const pages=['index.html','tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html'];
+    for(const path of pages){
+      const html=await source(page,path);
+      for(const asset of rejected)expect(html).not.toContain(asset);
+    }
+  });
+
+  test('service worker trata la capa visual V4 como recurso fresco y cacheable',async({page})=>{
+    const sw=await source(page,'service-worker.js');
+    expect(sw).toContain("'./assets/brand-v4-assets.css'");
+    expect(sw).toContain("url.pathname.endsWith('/assets/brand-v4-assets.css')");
+  });
+});

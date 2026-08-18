@@ -44,6 +44,24 @@ test.describe('V4 static first paint',()=>{
     for(const html of [store,method,journal])expect(html).toContain('assets/brand-v4-assets.css');
   });
 
+  test('Tienda y Producto promueven visuales aprobados después del canon y antes de app.js',async({page})=>{
+    const store=await source(page,'tienda.html');
+    const product=await source(page,'producto.html');
+    for(const html of [store,product]){
+      const dataIndex=html.indexOf('assets/data.js');
+      const visualIndex=html.indexOf('assets/brand-v4-product-data.js');
+      const appIndex=html.indexOf('assets/app.js');
+      expect(dataIndex).toBeGreaterThan(-1);
+      expect(visualIndex).toBeGreaterThan(dataIndex);
+      expect(appIndex).toBeGreaterThan(visualIndex);
+    }
+    const layer=await source(page,'assets/brand-v4-product-data.js');
+    expect(layer).toContain("'margherita-del-taller':'02-margherita-v4.webp'");
+    expect(layer).toContain("'la-errante':'03-la-errante-v4.webp'");
+    expect(layer).toContain("product.id==='combo-primera-ruta'");
+    for(const asset of rejected)expect(layer).not.toContain(asset);
+  });
+
   test('En Casa, En Movimiento e Historia no descargan un hero legado antes del master V4',async({page})=>{
     const casa=await source(page,'en-casa.html');
     const movement=await source(page,'en-movimiento.html');
@@ -115,16 +133,18 @@ test.describe('V4 static first paint',()=>{
   });
 
   test('ninguna superficie de first paint incorpora assets en cuarentena',async({page})=>{
-    const pages=['index.html','tienda.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html','ayuda.html','legal.html','cuenta.html','receta.html','articulo.html','caso-evento.html'];
+    const pages=['index.html','tienda.html','producto.html','metodo.html','bitacora.html','en-casa.html','en-movimiento.html','historia.html','recetas.html','herramientas.html','cobertura.html','checkout.html','ayuda.html','legal.html','cuenta.html','receta.html','articulo.html','caso-evento.html'];
     for(const path of pages){
       const html=await source(page,path);
       for(const asset of rejected)expect(html).not.toContain(asset);
     }
   });
 
-  test('service worker trata la capa visual V4 como recurso fresco y cacheable',async({page})=>{
+  test('service worker trata las capas visuales V4 como recursos frescos y cacheables',async({page})=>{
     const sw=await source(page,'service-worker.js');
     expect(sw).toContain("'./assets/brand-v4-assets.css'");
     expect(sw).toContain("url.pathname.endsWith('/assets/brand-v4-assets.css')");
+    expect(sw).toContain("'./assets/brand-v4-product-data.js'");
+    expect(sw).toContain("url.pathname.endsWith('/assets/brand-v4-product-data.js')");
   });
 });

@@ -130,6 +130,30 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(page.locator('.product-buy')).toBeVisible();
   });
 
+  test('las pizzas aprobadas nacen con V4 en datos y no descargan la galería primaria heredada',async({page})=>{
+    const imageRequests=[];
+    page.on('request',request=>{
+      const pathname=new URL(request.url()).pathname;
+      if(pathname.includes('/assets/images/'))imageRequests.push(pathname);
+    });
+    await page.goto('/producto.html?id=la-errante');
+    const primary=page.locator('#dynamic-product .v305-frame-primary img, #dynamic-product .product-gallery img').first();
+    await expect(primary).toBeVisible();
+    const visual=await page.evaluate(()=>{
+      const product=window.EE_DATA.products.find(item=>item.id==='la-errante');
+      const crea=window.EE_DATA.products.find(item=>item.id==='crea-la-tuya');
+      return {image:product.image,gallery:product.gallery,status:product.v4_visual_status,creaImage:crea.image,creaStatus:crea.v4_visual_status||null};
+    });
+    expect(visual.image).toBe(GENERATED+'03-la-errante-v4.webp');
+    expect(visual.gallery).toEqual([GENERATED+'03-la-errante-v4.webp',GENERATED+'09-ingredientes-v4.webp',GENERATED+'08-proceso-v4.webp']);
+    expect(visual.status).toBe('approved');
+    expect(visual.creaImage).toContain('assets/images/brand-final/producto-crea-tuya.webp');
+    expect(visual.creaStatus).toBeNull();
+    expect(imageRequests.some(path=>path.endsWith('/assets/images/brand-final/producto-la-errante.webp'))).toBeFalsy();
+    expect(imageRequests.some(path=>path.endsWith('/assets/images/brand-final/home-ingredientes.webp'))).toBeFalsy();
+    expect(imageRequests.some(path=>path.endsWith('/assets/images/brand-final/home-masa-fuego.webp'))).toBeFalsy();
+  });
+
   test('Historia promueve la escena V4 sin reemplazar su copy canónico',async({page})=>{
     await page.goto('/historia.html');
     await expect(page.getByRole('heading',{name:'Viajar hasta una tradición para aprender a no copiarla.'})).toBeVisible();

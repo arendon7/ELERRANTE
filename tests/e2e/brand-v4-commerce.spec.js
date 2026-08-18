@@ -56,15 +56,30 @@ test.describe('V4 comercio y hospitalidad',()=>{
     await expect(quick).toBeVisible();
     const quickGeometry=await page.locator('.product-buy').evaluate(buy=>{
       const node=buy.querySelector('.v304-quick');
+      const copy=node.querySelector('.v304-quick-copy');
+      const facts=node.querySelector('.v304-quick-facts');
+      const actions=node.querySelector('.v304-quick-actions');
       const buyRect=buy.getBoundingClientRect();
-      const actionRects=[...node.querySelectorAll('.v304-quick-actions button,.v304-quick-actions a')].map(item=>item.getBoundingClientRect());
+      const quickRect=node.getBoundingClientRect();
+      const copyRect=copy.getBoundingClientRect();
+      const factsRect=facts.getBoundingClientRect();
+      const actionsRect=actions.getBoundingClientRect();
+      const actionRects=[...actions.querySelectorAll('button,a')].map(item=>item.getBoundingClientRect());
       return {
-        columns:getComputedStyle(node).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length,
-        actionsInside:actionRects.every(rect=>rect.left>=buyRect.left-1&&rect.right<=buyRect.right+1)
+        display:getComputedStyle(node).display,
+        actionsInside:actionRects.every(rect=>rect.left>=buyRect.left-1&&rect.right<=buyRect.right+1),
+        verticalFlow:copyRect.bottom<=factsRect.top+1&&factsRect.bottom<=actionsRect.top+1,
+        copyCoverage:copyRect.width/quickRect.width,
+        factsInside:factsRect.left>=quickRect.left-1&&factsRect.right<=quickRect.right+1,
+        actionsInsideQuick:actionsRect.left>=quickRect.left-1&&actionsRect.right<=quickRect.right+1
       };
     });
-    expect(quickGeometry.columns).toBe(1);
+    expect(quickGeometry.display).toBe('block');
     expect(quickGeometry.actionsInside).toBe(true);
+    expect(quickGeometry.verticalFlow).toBe(true);
+    expect(quickGeometry.copyCoverage).toBeGreaterThan(.9);
+    expect(quickGeometry.factsInside).toBe(true);
+    expect(quickGeometry.actionsInsideQuick).toBe(true);
 
     const craftCards=page.locator('[data-v302-block="craft-proof"] .v302-craft-card');
     await expect(craftCards).toHaveCount(3);
@@ -116,6 +131,7 @@ test.describe('V4 comercio y hospitalidad',()=>{
     });
     expect(legacyDecisionStyle.radius).toBe('0px');
     expect(legacyDecisionStyle.background).toBe('rgba(0, 0, 0, 0)');
+    expect(await legacyDecisionCards.first().locator('.intent-index').evaluate(node=>getComputedStyle(node).color)).toBe('rgb(183, 154, 91)');
 
     const darkPackage=page.locator('[data-v29-product-story] .section-dark .package-list');
     await expect(darkPackage).toBeVisible();

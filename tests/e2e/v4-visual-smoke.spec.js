@@ -43,6 +43,11 @@ async function dismissCookieForVisualEvidence(page) {
   if (await necessary.count() && await necessary.isVisible()) {
     await necessary.click();
     await expect(page.locator('.cookie-banner')).not.toHaveClass(/show/);
+    await page.waitForTimeout(80);
+    const savedToast = page.getByText('Preferencias guardadas.', { exact: true });
+    if (await savedToast.count()) {
+      await savedToast.evaluateAll(nodes => nodes.forEach(node => node.remove()));
+    }
   }
 }
 

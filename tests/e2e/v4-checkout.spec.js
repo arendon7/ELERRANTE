@@ -31,7 +31,8 @@ test.describe('V4 checkout', () => {
     await expect(page.locator('.checkout-summary')).toContainText('Total estimado');
   });
 
-  test('preview usa composición V4 y neutraliza chrome heredado', async ({ page }) => {
+  test('preview desktop usa composición V4 y neutraliza chrome heredado', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name.includes('mobile'), 'Gate desktop');
     await openCheckout(page);
 
     const style = await page.locator('.ee-v29-commerce-offline .btn').first().evaluate(node => {

@@ -3,8 +3,8 @@ const { test, expect } = require('@playwright/test');
 async function seedCart(page) {
   await page.addInitScript(() => {
     localStorage.setItem('ee_v2_cart', JSON.stringify([
-      { productId: 'la-errante', quantity: 1 },
-      { productId: 'panela-maracuya', quantity: 1 }
+      { productId: 'la-errante', qty: 1 },
+      { productId: 'panela-maracuya', qty: 1 }
     ]));
   });
 }
@@ -25,6 +25,7 @@ test.describe('V4 checkout', () => {
     await expect(page.locator('.v4-checkout-intro')).toBeVisible();
     await expect(page.locator('.ee-v29-commerce-offline')).toBeVisible();
     await expect(page.locator('.ee-v29-summary-line')).toHaveCount(2);
+    await expect(page.locator('.v4-public-cart .cart-count')).toHaveText('2');
     await expect(page.locator('#checkout-v29-status input, #checkout-v29-status textarea, #checkout-v29-status select')).toHaveCount(0);
     await expect(page.locator('#checkout-v29-status')).toContainText('Compra online todavía no activada');
     await expect(page.locator('#checkout-v29-status')).toContainText('no te pediremos dirección, comprobante ni datos personales');

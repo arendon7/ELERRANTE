@@ -4,6 +4,7 @@ const routes = [
   ['home', '/index.html'],
   ['tienda', '/tienda.html'],
   ['producto-la-errante', '/producto.html?id=la-errante'],
+  ['checkout', '/checkout.html'],
   ['metodo', '/metodo.html'],
   ['historia', '/historia.html'],
   ['en-casa', '/en-casa.html'],
@@ -11,11 +12,30 @@ const routes = [
   ['juan-david-ocampo', '/juan-david-ocampo.html']
 ];
 
+async function prepareRouteState(page, slug) {
+  if (slug !== 'checkout') return;
+  await page.addInitScript(() => {
+    localStorage.setItem('ee_v2_cart', JSON.stringify([
+      { productId: 'la-errante', quantity: 1 },
+      { productId: 'panela-maracuya', quantity: 1 }
+    ]));
+  });
+}
+
 async function waitForSurfaceReady(page, slug) {
-  if (slug !== 'producto-la-errante') return;
-  await page.waitForFunction(() => document.querySelector('#dynamic-product')?.dataset?.v303Ready === 'true');
-  await expect(page.locator('.product-detail')).toBeVisible();
-  await expect(page.locator('.v305-gallery')).toBeVisible();
+  if (slug === 'producto-la-errante') {
+    await page.waitForFunction(() => document.querySelector('#dynamic-product')?.dataset?.v303Ready === 'true');
+    await expect(page.locator('.product-detail')).toBeVisible();
+    await expect(page.locator('.v305-gallery')).toBeVisible();
+    return;
+  }
+  if (slug === 'checkout') {
+    await page.waitForFunction(() => window.EE_DATA?.products?.length === 11);
+    await page.waitForFunction(() => document.documentElement.dataset.eePublicCommerce === 'not-connected');
+    await page.evaluate(() => window.EE_PUBLIC_COMMERCE_GUARD_V29?.renderCheckoutSummary?.());
+    await expect(page.locator('.ee-v29-commerce-offline')).toBeVisible();
+    await expect(page.locator('.ee-v29-summary-line')).toHaveCount(2);
+  }
 }
 
 async function dismissCookieForVisualEvidence(page) {
@@ -73,6 +93,7 @@ async function hydrateVisualSurface(page) {
 test.describe('V4 visual smoke evidence', () => {
   for (const [slug, route] of routes) {
     test(`${slug} conserva evidencia visual auditable`, async ({ page }, testInfo) => {
+      await prepareRouteState(page, slug);
       const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
 
       expect(response, `${route} debe responder`).not.toBeNull();

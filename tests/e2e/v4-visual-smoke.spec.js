@@ -5,6 +5,7 @@ const routes = [
   ['tienda', '/tienda.html'],
   ['producto-la-errante', '/producto.html?id=la-errante'],
   ['checkout', '/checkout.html'],
+  ['cuenta', '/cuenta.html'],
   ['metodo', '/metodo.html'],
   ['historia', '/historia.html'],
   ['en-casa', '/en-casa.html'],
@@ -36,6 +37,11 @@ async function waitForSurfaceReady(page, slug) {
     await expect(page.locator('.ee-v29-commerce-offline')).toBeVisible();
     await expect(page.locator('.ee-v29-summary-line')).toHaveCount(2);
     await expect(page.locator('.v4-public-cart .cart-count')).toHaveText('2');
+    return;
+  }
+  if (slug === 'cuenta') {
+    await page.waitForFunction(() => document.documentElement.dataset.eePublicCommerce === 'not-connected');
+    await expect(page.locator('.ee-v29-account-offline')).toBeVisible();
   }
 }
 

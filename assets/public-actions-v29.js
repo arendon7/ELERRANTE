@@ -1,7 +1,9 @@
 (()=>{
   'use strict';
-  const VERSION='2.9.0';
+  const VERSION='2.9.1';
+  const SETTINGS_KEY='ee_v14_settings';
   const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+  const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch(_){return fallback;}};
 
   function valueOf(form,name){
     const field=form.elements.namedItem(name);
@@ -21,13 +23,64 @@
     return lines.join('\n');
   }
 
+  function localOrdering(){
+    const saved=read(SETTINGS_KEY,{});
+    const base=window.EL_ERRANTE_COMMERCE_CONFIG?.ordering||{};
+    return {...base,...(saved.ordering||{})};
+  }
+
+  function backendConfig(){
+    return window.EL_ERRANTE_COMMERCE_CONFIG?.backend||window.EL_ERRANTE_RUNTIME_CONFIG?.backend||{};
+  }
+
+  let supportPromise;
+  async function configuredOrdering(){
+    if(supportPromise)return supportPromise;
+    supportPromise=(async()=>{
+      const local=localOrdering();
+      const backend=backendConfig();
+      if(!backend.url||!backend.publishableKey)return local;
+      try{
+        const module=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+        const client=module.createClient(backend.url,backend.publishableKey,{
+          auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+        });
+        const response=await client.from('public_settings').select('value').eq('key','ordering').maybeSingle();
+        if(response.error||!response.data?.value)return local;
+        return {...local,...response.data.value};
+      }catch(_){
+        return local;
+      }
+    })();
+    return supportPromise;
+  }
+
+  async function handoffMarkup(text){
+    const config=await configuredOrdering();
+    const actions=[];
+    const whatsapp=String(config.supportWhatsapp||'').replace(/\D/g,'');
+    const email=String(config.supportEmail||'').trim();
+    if(whatsapp){
+      const href=`https://wa.me/${whatsapp}?text=${encodeURIComponent(text)}`;
+      actions.push(`<a class="btn btn-primary btn-small" data-public-action-channel="whatsapp" href="${escapeHtml(href)}" target="_blank" rel="noopener">Abrir WhatsApp con el resumen</a>`);
+    }
+    if(email){
+      const subject=(text.split('\n')[0]||'El Errante').trim();
+      const href=`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+      actions.push(`<a class="btn btn-outline btn-small" data-public-action-channel="email" href="${escapeHtml(href)}">Preparar correo con el resumen</a>`);
+    }
+    if(!actions.length)return '';
+    return `<div class="button-row ee-v29-handoff-actions">${actions.join('')}</div><span class="ee-v29-handoff-note">Abrir un canal no envía nada por sí solo: revisa el mensaje y confirma el envío en WhatsApp o en tu correo.</span>`;
+  }
+
   async function copyOrExpose(text,status){
+    const handoff=await handoffMarkup(text);
     try{
       if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
       await navigator.clipboard.writeText(text);
-      status.innerHTML='<strong>Resumen copiado y borrador guardado.</strong><span>La web no lo ha enviado. Puedes conservar este texto para compartirlo por el canal de atención cuando esté configurado.</span>';
+      status.innerHTML=`<strong>Resumen copiado y borrador guardado.</strong>${handoff||'<span>La web no lo ha enviado. Conserva este texto para compartirlo cuando exista un canal de atención configurado.</span>'}`;
     }catch(_){
-      status.innerHTML=`<strong>Borrador guardado en este navegador.</strong><span>La web no lo ha enviado. Copia el resumen manualmente:</span><textarea class="ee-v29-copy-output" readonly>${escapeHtml(text)}</textarea>`;
+      status.innerHTML=`<strong>Borrador guardado en este navegador.</strong><span>La web no lo ha enviado. Copia el resumen manualmente:</span><textarea class="ee-v29-copy-output" readonly>${escapeHtml(text)}</textarea>${handoff}`;
       const area=status.querySelector('textarea');area?.focus();area?.select();
     }
   }
@@ -42,7 +95,12 @@
       const text=summary(form,title,fields);
       const draft={version:VERSION,updatedAt:new Date().toISOString(),text};
       localStorage.setItem(key,JSON.stringify(draft));
-      await copyOrExpose(text,status);
+      button.disabled=true;
+      try{
+        await copyOrExpose(text,status);
+      }finally{
+        button.disabled=false;
+      }
     });
   }
 

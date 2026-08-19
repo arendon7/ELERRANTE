@@ -16,8 +16,8 @@ async function prepareRouteState(page, slug) {
   if (slug !== 'checkout') return;
   await page.addInitScript(() => {
     localStorage.setItem('ee_v2_cart', JSON.stringify([
-      { productId: 'la-errante', quantity: 1 },
-      { productId: 'panela-maracuya', quantity: 1 }
+      { productId: 'la-errante', qty: 1 },
+      { productId: 'panela-maracuya', qty: 1 }
     ]));
   });
 }
@@ -35,6 +35,7 @@ async function waitForSurfaceReady(page, slug) {
     await page.evaluate(() => window.EE_PUBLIC_COMMERCE_GUARD_V29?.renderCheckoutSummary?.());
     await expect(page.locator('.ee-v29-commerce-offline')).toBeVisible();
     await expect(page.locator('.ee-v29-summary-line')).toHaveCount(2);
+    await expect(page.locator('.v4-public-cart .cart-count')).toHaveText('2');
   }
 }
 

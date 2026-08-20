@@ -75,6 +75,7 @@
 
   async function copyOrExpose(text,status){
     const handoff=await handoffMarkup(text);
+    status.classList.add('show');
     try{
       if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
       await navigator.clipboard.writeText(text);

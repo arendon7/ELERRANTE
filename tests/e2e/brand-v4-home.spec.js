@@ -61,4 +61,17 @@ test.describe('Home V4 brand and UX gates', () => {
     });
     expect(values).toEqual({carbon:'#11110f',ivory:'#f1ebdd',gold:'#b79a5b'});
   });
+
+  test('ninguna sección puede permanecer oculta si falla el reveal progresivo', async ({ page }) => {
+    await page.goto('/index.html',{waitUntil:'load'});
+    await expect(page.locator('html')).toHaveAttribute('data-ee-v4-reveal-fallback','complete',{timeout:3500});
+    const hidden=await page.locator('.v4-reveal').evaluateAll(nodes=>nodes.filter(node=>{
+      const style=getComputedStyle(node);
+      return style.opacity==='0'||style.visibility==='hidden'||style.display==='none';
+    }).length);
+    expect(hidden).toBe(0);
+    await expect(page.locator('.v4-movement-head')).toBeVisible();
+    await expect(page.locator('.v4-pantry-grid')).toBeVisible();
+    await expect(page.locator('.v4-evidence-grid')).toBeVisible();
+  });
 });

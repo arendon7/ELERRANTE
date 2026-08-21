@@ -20,14 +20,18 @@ async function prepareHelpDraft(page){
   await form.locator('#ee-v29-help-copy').click();
 }
 
+async function saveChannels(settings,{whatsapp='',email='',hours='24'}){
+  await settings.locator('#ee-public-whatsapp').fill(whatsapp);
+  await settings.locator('#ee-public-email').fill(email);
+  await settings.locator('#ee-public-response-hours').fill(hours);
+  await settings.locator('#ee-save-public-channels').click();
+  await expect(settings.locator('#ee-public-channel-status')).toContainText('Canales guardados en esta simulación');
+}
+
 test.describe('V4 configuración operativa de canales públicos',()=>{
   test('admin local configura WhatsApp y correo que Ayuda consume en el mismo navegador',async({page})=>{
     const settings=await openLocalAdmin(page);
-    await settings.locator('#ee-public-whatsapp').fill('+57 300 123 4567');
-    await settings.locator('#ee-public-email').fill('hola@elerrante.co');
-    await settings.locator('#ee-public-response-hours').fill('12');
-    await settings.locator('#ee-save-public-channels').click();
-    await expect(settings.locator('#ee-public-channel-status')).toContainText('Canales guardados en esta simulación');
+    await saveChannels(settings,{whatsapp:'+57 300 123 4567',email:'hola@elerrante.co',hours:'12'});
 
     const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v14_settings')||'{}').ordering||{});
     expect(saved.supportWhatsapp).toBe('+57 300 123 4567');
@@ -44,12 +48,13 @@ test.describe('V4 configuración operativa de canales públicos',()=>{
   });
 
   test('vaciar los canales desde admin vuelve a ocultar los handoffs públicos',async({page})=>{
-    await page.addInitScript(()=>localStorage.setItem('ee_v14_settings',JSON.stringify({ordering:{supportWhatsapp:'+57 300 111 2233',supportEmail:'hola@elerrante.co'}})));
     const settings=await openLocalAdmin(page);
-    await settings.locator('#ee-public-whatsapp').fill('');
-    await settings.locator('#ee-public-email').fill('');
-    await settings.locator('#ee-save-public-channels').click();
-    await expect(settings.locator('#ee-public-channel-status')).toContainText('Canales guardados en esta simulación');
+    await saveChannels(settings,{whatsapp:'+57 300 111 2233',email:'hola@elerrante.co'});
+    await saveChannels(settings,{whatsapp:'',email:''});
+
+    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('ee_v14_settings')||'{}').ordering||{});
+    expect(saved.supportWhatsapp).toBe('');
+    expect(saved.supportEmail).toBe('');
 
     await prepareHelpDraft(page);
     await expect(page.locator('[data-public-action-channel]')).toHaveCount(0);

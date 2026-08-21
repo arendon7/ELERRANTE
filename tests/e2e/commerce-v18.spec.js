@@ -16,13 +16,13 @@ async function configurePreviewBank(page) {
   });
 }
 
-test.describe('Experiencia comercial V3.0', () => {
-  test('tienda usa la jerarquía comercial V3 sin capas V1.8 duplicadas', async ({ page }) => {
+test.describe('Experiencia comercial V3.0 + superficie V4', () => {
+  test('tienda conserva la jerarquía comercial y la expresa con la nueva superficie V4', async ({ page }) => {
     await page.goto('/tienda.html');
-    await expect(page.getByRole('heading', { name: 'Elige en qué momento quieres entrar al proceso.' })).toBeVisible();
-    await expect(page.getByText('Cuatro puertas. Distintos niveles de participación.')).toBeVisible();
-    await expect(page.getByText('Once referencias. Cada una con una razón de existir.')).toBeVisible();
-    await expect(page.getByText('En Casa nombra la línea. Segundo Fuego explica cómo la pensamos.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Entra al proceso donde quieras.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Elige qué parte quieres hacer tú.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Once referencias. Una razón para cada una.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'No la recalientas. La terminas.' })).toBeVisible();
     await expect(page.locator('[data-v18="store-trust"]')).toHaveCount(0);
     await expect(page.locator('html')).not.toHaveAttribute('data-commerce-ux-version', '1.8.0');
   });

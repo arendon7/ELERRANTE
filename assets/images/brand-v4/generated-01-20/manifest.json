@@ -1,0 +1,64 @@
+{
+  "version": "v4-assets-01-20",
+  "status": "imported-visual-qa-completed",
+  "import_commit": "272f85d95524eb046f5b261c98ced34d1094f75c",
+  "integrity": "20/20 WebP files verified by SHA-256 before commit",
+  "source_zip_drive_id": "1gEKN9d0ASMj5QkCBna7xBnQMoiP3rdmI",
+  "source_zip_name": "ELERRANTE_V4_ASSETS_01_20.zip",
+  "source_manifest_drive_id": "14J89S5JmlEj7arZgtuZUEEia852TvdWV",
+  "note": "All 20 binaries remain versioned for traceability, but visual QA determines promotion eligibility. Rejected or held assets must never be promoted merely because they exist in this directory.",
+  "excluded": [
+    "a_clean_product_branding_portfolio_collage_a_grid.png",
+    "a_large_composite_grid_image_10_thumbnails_in_a_2.png",
+    "a_clean_high_resolution_flat_presentation_image.png",
+    "a_wide_gallery_brand_guideline_style_collage_image.png"
+  ],
+  "visual_qa": {
+    "approved_for_promotion": [
+      "01-home-hero-v4.webp",
+      "02-margherita-v4.webp",
+      "03-la-errante-v4.webp",
+      "04-bosque-v4.webp",
+      "05-diavola-v4.webp",
+      "06-cuatro-quesos-v4.webp",
+      "07-despensa-v4.webp",
+      "08-proceso-v4.webp",
+      "09-ingredientes-v4.webp",
+      "10-ritual-v4.webp",
+      "11-tienda-hero-v4.webp",
+      "12-metodo-hero-v4.webp",
+      "13-bitacora-hero-v4.webp",
+      "15-combo-primera-ruta-v4.webp",
+      "17-cobertura-v4.webp",
+      "18-confianza-v4-alt.webp"
+    ],
+    "rejected_or_hold": {
+      "14-crea-la-tuya-v4.webp": "misclassified: depicts En Movimiento/event service and includes baked-in marketing copy; not a Crea la Tuya asset",
+      "16-ayuda-v4.webp": "baked-in headings, brand lockup and UI copy duplicate live HTML and make the image unsuitable as a clean help hero",
+      "19-seguimiento-v4.webp": "contains incorrect brand descriptor PIZZA & APERITIVO; prohibited from public use",
+      "20-logo-lockup-v4-candidate.webp": "fails canonical master criteria: gold-dominant glow, excessive effects and non-subtle treatment; must not replace the approved public mark/wordmark system"
+    }
+  },
+  "assets": [
+    {"file":"01-home-hero-v4.webp","sha256":"0a5306c29d434581ca9f2218de5d22a5763eed09a7e382660dd8b0638e041ed4","role":"home-hero","approval_state":"approved-promoted"},
+    {"file":"02-margherita-v4.webp","sha256":"241bfb1c74a380fbd955330e10bf85d95dc5297750b2ba8e864a01ab7c44ed9f","role":"product-margherita","approval_state":"approved-promoted"},
+    {"file":"03-la-errante-v4.webp","sha256":"33ebe6e6d8e78ac944bb112378ef794158a2f361dac489b3fd6db93c023d1792","role":"product-la-errante","approval_state":"approved-promoted"},
+    {"file":"04-bosque-v4.webp","sha256":"502527501ff9971410a816a904fbe4312423fbadde7d65ddc42e858173120a54","role":"product-bosque","approval_state":"approved-promoted"},
+    {"file":"05-diavola-v4.webp","sha256":"8338cb4eb2333aba327ec8a3c80b8fc1a230d6082fc464ac20d415f88bd48ac7","role":"product-diavola","approval_state":"approved-promoted"},
+    {"file":"06-cuatro-quesos-v4.webp","sha256":"67e67eebe88e6e602ed7d6387ad785af4626898504daa7833734696ec3f6e914","role":"product-cuatro-quesos","approval_state":"approved-promoted"},
+    {"file":"07-despensa-v4.webp","sha256":"16c87a241609fb0e05a8271f5b22f69da44da3c87d5923e271ed56eeff48bfa1","role":"despensa","approval_state":"approved-promoted"},
+    {"file":"08-proceso-v4.webp","sha256":"052966c9c3ce7ee9dfda06f9f2042243451ab9f338574484c8319b046d329b38","role":"process","approval_state":"approved-promoted"},
+    {"file":"09-ingredientes-v4.webp","sha256":"5e39a078de162503115065c829c232666256de413a01a8f9de18dc99736c6fa5","role":"ingredients","approval_state":"approved-candidate"},
+    {"file":"10-ritual-v4.webp","sha256":"c8be4aba03647e6af6e298e638ae25337fa1f770c2c2c5f8ce13f6719f44af63","role":"ritual","approval_state":"approved-candidate"},
+    {"file":"11-tienda-hero-v4.webp","sha256":"d79c1a01e5d097740830c5e022f7f86864e863b64edaa22e93bbe3125b55e4a5","role":"shop-hero","approval_state":"approved-promoted"},
+    {"file":"12-metodo-hero-v4.webp","sha256":"81d9912483fc6833b3ac2fef7965286f9f0c62bb845839d12a5f0c4b46f212f6","role":"method-hero","approval_state":"approved-promoted"},
+    {"file":"13-bitacora-hero-v4.webp","sha256":"a7cbfdf7fbc9909d957935099f0d49002dea797f0e8fc6de4e6d558e6791097d","role":"journal-hero","approval_state":"approved-promoted"},
+    {"file":"14-crea-la-tuya-v4.webp","sha256":"f0dc02260cce45a01138db716b4c1ef5a31e0950f715f3f34e0b9c2cf5d03a51","role":"misclassified-en-movimiento-collateral","approval_state":"rejected"},
+    {"file":"15-combo-primera-ruta-v4.webp","sha256":"e4d8127888df66fd6088c51fa6b4ad247f8edc066eead08d2d5dab4bfc1406d4","role":"first-route-combo","approval_state":"approved-candidate"},
+    {"file":"16-ayuda-v4.webp","sha256":"8f50746c04d1bd53fb7c460011f761a8ea99fac8997bf2d894f9f2861c26cd64","role":"help-rejected","approval_state":"rejected"},
+    {"file":"17-cobertura-v4.webp","sha256":"12829f8acf1c9778f7dbc5aee62bfd41271268557ed108871fa0b85353624bcd","role":"coverage","approval_state":"approved-promoted"},
+    {"file":"18-confianza-v4-alt.webp","sha256":"0f248c9f98ac28e8ed0cbfdc27ea2bd315074fedb4f55f8f996bbedda5df0e94","role":"trust-alt","approval_state":"approved-candidate"},
+    {"file":"19-seguimiento-v4.webp","sha256":"89e3c5cd2c14b71c8c6d88f497534827c369ffdca724545a2960be029b4ef13f","role":"tracking-rejected","approval_state":"rejected"},
+    {"file":"20-logo-lockup-v4-candidate.webp","sha256":"9bee82e0677abb0b7d63e900b26e3414caa52e85c9c4bd74756b60bdeb637340","role":"logo-lockup-rejected","approval_state":"rejected"}
+  ]
+}

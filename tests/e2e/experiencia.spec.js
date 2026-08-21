@@ -38,4 +38,17 @@ test.describe('Herramientas internas',()=>{
   for(const [path,selector,needsData] of modules){test(`${path} renderiza su modelo`,async({page})=>{const clean=observe(page);await seedInternalSession(page);await open(page,path,needsData);const target=page.locator(selector).first();await expect(target).toBeVisible();expect((await target.innerText()).trim().length).toBeGreaterThan(20);await clean();});}
 });
 
-test('menú móvil expone solo destinos públicos principales V3',async({page},testInfo)=>{test.skip(!testInfo.project.name.includes('mobile'),'Prueba exclusiva del proyecto móvil');const clean=observe(page);await open(page,'/index.html');const toggle=page.locator('.menu-toggle');await expect(toggle).toBeVisible();await toggle.click();const drawer=page.locator('.mobile-drawer');await expect(drawer).toHaveClass(/open/);for(const href of ['tienda.html','en-casa.html','metodo.html','bitacora.html','juan-david-ocampo.html','en-movimiento.html'])await expect(drawer.locator(`a[href="${href}"]`)).toBeVisible();for(const href of ['nosotros.html','equipo.html','admin.html','control.html','centro-interno.html'])await expect(drawer.locator(`a[href="${href}"]`)).toHaveCount(0);await clean();});
+test('menú móvil expone solo destinos públicos principales V4',async({page},testInfo)=>{
+  test.skip(!testInfo.project.name.includes('mobile'),'Prueba exclusiva del proyecto móvil');
+  const clean=observe(page);
+  await open(page,'/index.html');
+  const toggle=page.locator('.v4-menu-toggle');
+  await expect(toggle).toBeVisible();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded','true');
+  const nav=page.locator('.v4-nav');
+  await expect(nav).toBeVisible();
+  for(const href of ['tienda.html','en-casa.html','metodo.html','bitacora.html','juan-david-ocampo.html','en-movimiento.html'])await expect(nav.locator(`a[href="${href}"]`)).toBeVisible();
+  for(const href of ['nosotros.html','equipo.html','admin.html','control.html','centro-interno.html'])await expect(nav.locator(`a[href="${href}"]`)).toHaveCount(0);
+  await clean();
+});

@@ -1,0 +1,163 @@
+/* EL ERRANTE · Product V4 refinement
+   Correcciones surgidas de QA visual full-page. Presentación únicamente: no altera datos, precio, variantes, disponibilidad ni carrito. */
+
+/* El viewport puede ser ancho aunque el panel sticky sea estrecho. La decisión rápida se adapta al contenedor real. */
+body[data-v4-public="true"][data-page="producto"] .product-buy .v304-quick{
+  display:block!important;
+  grid-template-columns:none!important;
+  width:100%;
+  gap:0;
+  margin:24px 0 22px;
+  padding:20px 0;
+}
+body[data-v4-public="true"][data-page="producto"] .product-buy .v304-quick-copy{
+  min-width:0;
+  width:100%;
+  margin:0 0 18px;
+}
+body[data-v4-public="true"][data-page="producto"] .product-buy .v304-quick-copy strong{
+  font-size:clamp(1.25rem,1.8vw,1.55rem);
+  line-height:1.18;
+}
+body[data-v4-public="true"][data-page="producto"] .product-buy .v304-quick-facts{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  width:100%;
+  margin:0 0 16px;
+  border-left:0;
+  border-top:1px solid var(--v4-line);
+}
+body[data-v4-public="true"][data-page="producto"] .product-buy .v304-quick-facts span{
+  min-width:0;
+  padding:12px 10px;
+  overflow-wrap:anywhere;
+}
+body[data-v4-public="true"][data-page="producto"] .product-buy .v304-quick-actions{
+  position:static!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-column:auto!important;
+  gap:8px;
+  min-width:0;
+  width:100%;
+  margin:0;
+  transform:none!important;
+}
+body[data-v4-public="true"][data-page="producto"] .product-buy .v304-quick-actions .btn{
+  width:100%;
+  min-width:0;
+  white-space:normal;
+}
+body[data-v4-public="true"][data-page="producto"] .product-buy .v304-detail-link{
+  display:block;
+  width:100%;
+  text-align:center;
+}
+
+/* Tabs heredados: el contenido debe conservar contraste de lectura sobre marfil. */
+body[data-v4-public="true"][data-page="producto"] .product-tabs{
+  background:var(--v4-ivory);
+  color:var(--v4-ink);
+}
+body[data-v4-public="true"][data-page="producto"] .product-tabs .tab-panel{
+  color:var(--v4-ink);
+}
+body[data-v4-public="true"][data-page="producto"] .product-tabs .tab-panel :where(h1,h2,h3,h4,p,li,strong,span,blockquote){
+  color:var(--v4-ink)!important;
+}
+body[data-v4-public="true"][data-page="producto"] .product-tabs .tab-panel a{
+  color:var(--v4-gold-deep)!important;
+}
+
+/* Comparación: la sección es papel claro y no debe heredar el marfil del body oscuro. */
+body[data-v4-public="true"][data-page="producto"] .v304-compare{
+  color:var(--v4-ink);
+}
+body[data-v4-public="true"][data-page="producto"] .v304-compare-head p{
+  color:var(--v4-muted);
+}
+body[data-v4-public="true"][data-page="producto"] .v304-compare-head strong{
+  color:var(--v4-ink);
+}
+body[data-v4-public="true"][data-page="producto"] .v304-compare .text-link{
+  color:var(--v4-gold-deep);
+}
+
+/* Narrativa V2.9 aún útil: conservar contenido, eliminar el card-wall heredado. */
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story]>.section:first-child{
+  background:var(--v4-carbon);
+  color:var(--v4-ivory);
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story]>.section:first-child h2,
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story]>.section:first-child h3{
+  color:var(--v4-ivory);
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story]>.section:first-child .lead,
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story]>.section:first-child p{
+  color:rgba(241,235,221,.72);
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .grid-2{
+  gap:0;
+  border-top:1px solid var(--v4-line-dark);
+  border-bottom:1px solid var(--v4-line-dark);
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card{
+  min-height:0;
+  padding:24px 20px;
+  border:0;
+  border-right:1px solid var(--v4-line-dark);
+  border-bottom:1px solid var(--v4-line-dark);
+  border-radius:0;
+  background:transparent;
+  color:var(--v4-ivory);
+  box-shadow:none;
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card:nth-child(even){
+  border-right:0;
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card:nth-last-child(-n+2){
+  border-bottom:0;
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card .intent-index{
+  color:var(--v4-gold)!important;
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card p{
+  margin:10px 0 0;
+  color:rgba(241,235,221,.68);
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .text-link{
+  color:var(--v4-gold-deep)!important;
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .section-dark .text-link{
+  color:var(--v4-gold)!important;
+}
+
+/* La lista operativa de la sección oscura tenía color carbono inline: la V4 restaura contraste y jerarquía. */
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .section-dark .package-list{
+  color:var(--v4-ivory)!important;
+  border-top:1px solid var(--v4-line-dark);
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .section-dark .package-list>div{
+  border-bottom:1px solid var(--v4-line-dark);
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .section-dark .package-list strong{
+  color:var(--v4-gold)!important;
+  font-family:var(--v4-serif);
+  font-weight:500;
+  text-transform:none;
+}
+body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .section-dark .package-list span{
+  color:rgba(241,235,221,.68)!important;
+}
+
+@media(max-width:620px){
+  body[data-v4-public="true"][data-page="producto"] .product-buy .v304-quick-facts{grid-template-columns:1fr!important}
+  body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .grid-2{grid-template-columns:1fr}
+  body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card,
+  body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card:nth-child(even),
+  body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card:nth-last-child(-n+2){
+    border-right:0;
+    border-bottom:1px solid var(--v4-line-dark);
+  }
+  body[data-v4-public="true"][data-page="producto"] [data-v29-product-story] .feature-card:last-child{border-bottom:0}
+}

@@ -5,14 +5,34 @@
   const INTERNAL_PAGES=new Set(['centro-interno','admin','activacion','control','operacion','finanzas','studio','actas','presentacion']);
   const INTERNAL_TARGETS=new Set(['centro-interno.html','admin.html','activacion.html','control.html','operacion.html','finanzas.html','studio.html','actas.html','presentacion.html']);
   const LOW_PRIORITY_NAV=new Set(['recetas.html','herramientas.html','cobertura.html','ayuda.html','legal.html']);
+  const UTILITY_PATHS=new Set(['ayuda.html','cobertura.html','checkout.html','legal.html','cuenta.html','recetas.html','receta.html','herramientas.html','articulo.html']);
 
   function readText(path){
     const request=new XMLHttpRequest();request.open('GET',path,false);request.send(null);
     if(request.status!==200&&request.status!==0)throw new Error('No se pudo cargar '+path);
-    return request.responseText;
+    return request.responseText||'';
   }
   if(!window.EL_ERRANTE_BRAND_V28)(0,eval)(readText('assets/brand-canon-v28.js'));
   const BRAND=window.EL_ERRANTE_BRAND_V28;
+
+  function currentPath(){return (location.pathname.split('/').pop()||'index.html').toLowerCase();}
+  function ensureStylesheet(href){
+    if(document.querySelector(`link[href="${href}"]`))return;
+    const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);
+  }
+
+  function applyUtilityV4(){
+    const body=document.body;if(!body||!UTILITY_PATHS.has(currentPath()))return false;
+    body.dataset.v4Public='true';body.dataset.v4Utility='true';
+    const theme=document.querySelector('meta[name="theme-color"]');if(theme)theme.setAttribute('content','#11110F');
+    document.querySelectorAll('link[rel="icon"][href*="logo-mark"]').forEach(link=>link.remove());
+    ensureStylesheet('assets/brand-v4-public.css');ensureStylesheet('assets/brand-v4-utility.css');
+    if(document.documentElement.dataset.eeV4UtilityShell!=='ready'){
+      document.documentElement.dataset.eeV4UtilityShell='ready';
+      try{(0,eval)(readText('assets/brand-v4-public.js'));}catch(error){console.warn('No fue posible activar el shell público V4.',error);}
+    }
+    return true;
+  }
 
   function applySpecialPageAssets(){
     const page=document.body?.dataset?.page||'';
@@ -94,7 +114,10 @@
     document.documentElement.dataset.eeVisualSystem='brand-canon-v28';document.documentElement.dataset.eeVisualQuality='brand-final-hq';document.documentElement.dataset.eeVersion=BRAND.version;document.documentElement.dataset.eeRelease='3.0.0-editorial-authority-candidate';document.documentElement.dataset.eeMode=isInternal?'team-demo':'public';document.documentElement.dataset.eePublicCache='brand-canon-v28';
     if(hosted&&!isInternal){document.querySelectorAll('.local-runtime-badge,[data-internal-only],.internal-only').forEach(element=>element.remove());document.querySelectorAll('.demo-badge').forEach(element=>{const text=(element.textContent||'').toLowerCase();if(text.includes('gold master')||text.includes('demo')||text.includes('sin internet')||text.includes('biblioteca editorial completa'))element.remove();});}
     if(isInternal){document.querySelectorAll('a[href="equipo.html"]:not([data-public-target])').forEach(link=>{link.href='centro-interno.html';if((link.textContent||'').trim().toLowerCase()==='equipo')link.textContent='Centro interno';});}
-    else{curatePublicNav(document.querySelector('.main-nav'));curatePublicNav(document.querySelector('.mobile-drawer .drawer-list'),true);curatePublicChrome();removeInternalPublicLinks();markActive(page);}
+    else{
+      curatePublicNav(document.querySelector('.main-nav'));curatePublicNav(document.querySelector('.mobile-drawer .drawer-list'),true);curatePublicChrome();removeInternalPublicLinks();markActive(page);
+      applyUtilityV4();
+    }
   }
 
   refresh();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhance,{once:true});else enhance();

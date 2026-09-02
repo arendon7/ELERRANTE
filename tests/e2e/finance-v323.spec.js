@@ -1,6 +1,7 @@
 const {test,expect}=require('@playwright/test');
 
 async function seed(page){
+  await page.clock.setFixedTime(new Date('2026-08-15T12:00:00-05:00'));
   await page.addInitScript(()=>{
     sessionStorage.setItem('ee_v31_session',JSON.stringify({version:'3.1.0',username:'juan',displayName:'Juan',role:'Administrador',issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+8*3600000).toISOString()}));
     if(sessionStorage.getItem('ee_v323_test_seeded')==='1')return;

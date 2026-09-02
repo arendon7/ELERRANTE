@@ -1,8 +1,8 @@
-# EL ERRANTE · Design Skills Lock
+# EL ERRANTE · Skills Lock
 
-Updated: 2026-08-12
+Updated: 2026-09-02
 
-The V4 branch uses project-scoped Agent Skills following the open Agent Skills format.
+The project uses project-scoped Agent Skills following the open Agent Skills format.
 
 ## Project canon
 
@@ -10,26 +10,41 @@ The V4 branch uses project-scoped Agent Skills following the open Agent Skills f
 |---|---|---|
 | `el-errante-brand` | local | Binding brand, art direction, UX, copy and asset rules. |
 
-## External skills selected for V4
+## External skills selected
 
-| Skill | Upstream | Role | License / note |
+| Skill | Upstream | Role | Note |
 |---|---|---|---|
-| `frontend-app-builder` | `openai/plugins` | Current OpenAI frontend redesign workflow; concept → implementation → browser verification. | Upstream plugin skill; verify upstream license when refreshing. |
-| `impeccable` | `pbakaus/impeccable` | Design-quality system: typography, color, spatial, motion, interaction, responsive and UX writing. | Apache-2.0. |
-| `emil-design-eng` | `emilkowalski/skills` | Design engineering craft, UI polish and motion restraint. | See upstream repository license. |
-| `find-animation-opportunities` | `emilkowalski/skills` | Read-only motion opportunity pass; rejects unnecessary animation. | See upstream repository license. |
-| `design-taste-frontend` | `Leonxlnx/taste-skill` | Anti-template / anti-slop frontend direction, audit-first redesign, layout variance. | MIT. |
-| `redesign-existing-projects` | `Leonxlnx/taste-skill` | Existing-project UI audit and targeted redesign without breaking functionality. | MIT. |
-| `web-design-guidelines` | `vercel-labs/agent-skills` | Final accessibility, performance and UX review gate. | See upstream repository license. |
+| `frontend-app-builder` | `openai/plugins` | Existing-project frontend workflow: concept → implementation → browser verification. | Adapted project-locally. |
+| `impeccable` | `pbakaus/impeccable` | Typography, color, spatial, motion, interaction, responsive and UX-writing craft. | Apache-2.0 upstream. |
+| `emil-design-eng` | `emilkowalski/skills` | Design-engineering polish and restrained interaction craft. | Adapted project-locally. |
+| `find-animation-opportunities` | `emilkowalski/skills` | Read-only motion opportunity pass; rejects unnecessary animation. | Adapted project-locally. |
+| `design-taste-frontend` | `Leonxlnx/taste-skill` | Anti-template frontend direction and layout variance. | MIT upstream. |
+| `redesign-existing-projects` | `Leonxlnx/taste-skill` | Audit-first targeted redesign without breaking functionality. | MIT upstream. |
+| `high-end-visual-design` | project-vendored external skill | High-end visual composition review supporting V4 direction. | Supporting lens only. |
+| `web-design-guidelines` | `vercel-labs/agent-skills` | Accessibility, performance and UX review gate. | Supporting lens only. |
+| `find-skills` | `vercel-labs/skills` | Governed discovery/evaluation of future skills. | Added 2026-09-02. |
+| `web-quality-audit` | `addyosmani/web-quality-skills` | Evidence-led performance/accessibility/SEO/best-practices audit. | MIT upstream; added 2026-09-02. |
+| `seo-aeo-best-practices` | `sanity-io/agent-toolkit` | Technical SEO, sitemap/robots, canonical, structured data, EEAT/AEO. | Added 2026-09-02. |
 
-## Why this set
+## Architecture fit
 
-El Errante currently uses vanilla HTML/CSS/JS. React/Next-specific skills are intentionally excluded from the V4 visual cycle because they would add irrelevant implementation context and could encourage unnecessary framework migration.
+El Errante currently uses vanilla HTML/CSS/JS. React/Next-specific implementation skills remain excluded unless a framework migration is separately approved. A skill may contain framework examples while still being useful as a principles reference, but those examples must not drive migration.
 
 ## Precedence
 
-`el-errante-brand` > current culinary/editorial truth > accessibility/functionality > external craft skills.
+`el-errante-brand` > current culinary/editorial/product/commercial truth > security/privacy > accessibility/functionality > external craft/growth skills.
+
+## Selection policy
+
+Before adding another external skill:
+
+1. name the uncovered capability gap;
+2. check the installed stack for overlap;
+3. verify source reputation, adoption, license/security signals and required tooling;
+4. reject candidates whose mandatory tools are unavailable;
+5. reject framework-mismatched or duplicative skills unless they add a clear, bounded reference value;
+6. record upstream source and review date.
 
 ## Refresh policy
 
-Before a major visual release, compare these project copies/recipes with upstream. Do not silently upgrade a design skill in the same commit as production UI changes. Skill upgrades and visual implementation must remain independently reviewable.
+Before a major release, compare project copies/adaptations with upstream. Do not silently upgrade a skill in the same change as production UI behavior. Skill upgrades and production implementation must remain independently reviewable.

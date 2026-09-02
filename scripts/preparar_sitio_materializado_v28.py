@@ -30,7 +30,7 @@ def copy_surface(target: Path) -> None:
     if target.exists(): shutil.rmtree(target)
     target.mkdir(parents=True)
     for source in sorted(ROOT.glob('*.html')): shutil.copy2(source, target / source.name)
-    for name in ('service-worker.js','manifest.webmanifest','deploy-version.txt','historical-cost-version.txt','inventory-valuation-version.txt','demo-manifest.json','.nojekyll'):
+    for name in ('service-worker.js','manifest.webmanifest','robots.txt','sitemap.xml','deploy-version.txt','historical-cost-version.txt','inventory-valuation-version.txt','demo-manifest.json','.nojekyll'):
         source = ROOT / name
         if source.exists(): shutil.copy2(source, target / name)
     shutil.copytree(ROOT / 'assets', target / 'assets', ignore=asset_ignore)
@@ -58,7 +58,7 @@ def patch_html(target: Path) -> dict[str, int]:
     return counters
 
 def verify_surface(target: Path,counters:dict[str,int])->None:
-    required=['index.html','tienda.html','admin.html','activacion.html','service-worker.js','deploy-version.txt','historical-cost-version.txt','inventory-valuation-version.txt','assets/brand-canon-v28.js','assets/generated/data-v28.js','assets/generated/app-v28.js','assets/generated/preprod-v28.js','assets/generated/manifest-v28.json','assets/data-finalize-v28.js','assets/app-contract-v28.js','assets/preprod-contract-v28.js','assets/finance-v27.js','assets/procurement-v25.js','assets/images/brand-final/home-hero.webp','assets/images/brand-final/producto-margherita.webp']
+    required=['index.html','tienda.html','admin.html','activacion.html','service-worker.js','manifest.webmanifest','robots.txt','sitemap.xml','deploy-version.txt','historical-cost-version.txt','inventory-valuation-version.txt','assets/brand-canon-v28.js','assets/generated/data-v28.js','assets/generated/app-v28.js','assets/generated/preprod-v28.js','assets/generated/manifest-v28.json','assets/data-finalize-v28.js','assets/app-contract-v28.js','assets/preprod-contract-v28.js','assets/finance-v27.js','assets/procurement-v25.js','assets/images/brand-final/home-hero.webp','assets/images/brand-final/producto-margherita.webp']
     missing=[path for path in required if not (target/path).is_file()]
     if missing: raise SystemExit(f'Superficie materializada incompleta: {missing}')
     forbidden=['archive','assets/source','assets/chunks','assets/data.js','assets/app.js','assets/preprod.js','assets/brand-final-editorial.js','assets/brand-final-products-a.js','assets/brand-final-products-b.js','assets/brand-final-products-c.js']

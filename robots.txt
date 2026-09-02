@@ -1,0 +1,33 @@
+User-agent: *
+Allow: /
+
+# Internal / administrative surfaces. robots.txt is not access control.
+Disallow: /acceso.html
+Disallow: /actas.html
+Disallow: /activacion.html
+Disallow: /admin.html
+Disallow: /centro-interno.html
+Disallow: /control.html
+Disallow: /finanzas.html
+Disallow: /operacion.html
+Disallow: /piloto-operativo.html
+Disallow: /presentacion.html
+Disallow: /studio.html
+
+# Transactional / account / offline surfaces are not acquisition destinations.
+Disallow: /checkout.html
+Disallow: /cuenta.html
+Disallow: /offline.html
+
+# Project/support artifacts are not public content destinations.
+Disallow: /.agents/
+Disallow: /.github/
+Disallow: /archive/
+Disallow: /backend/
+Disallow: /docs/
+Disallow: /documentacion/
+Disallow: /knowledge/
+Disallow: /scripts/
+Disallow: /tests/
+
+Sitemap: https://arendon7.github.io/ELERRANTE/sitemap.xml

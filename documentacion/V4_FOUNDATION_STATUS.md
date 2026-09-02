@@ -1,6 +1,8 @@
 # V4 Foundation Status
 
-As of 2026-08-18 the V4 working branch has moved beyond foundation and into final-candidate review.
+Updated: 2026-09-02
+
+V4 foundation and structural public implementation are complete and the certified public redesign has been merged into `main`.
 
 ## Foundation completed
 
@@ -21,16 +23,21 @@ As of 2026-08-18 the V4 working branch has moved beyond foundation and into fina
 - Método, Historia, Juan David and Bitácora;
 - Recetas, recipe detail and Herramientas;
 - Cobertura, Ayuda, Checkout, Cuenta and Centro de confianza;
-- user-access surface aligned visually with V4 without changing the V3.1.1 authentication model.
+- user-access surface aligned visually with V4 without changing the integral authentication model by collateral effect.
 
 ## Visual-bank policy
 
-No new image generation is required for this candidate. Existing approved V4 assets are promoted by narrative role. Generated assets `14-crea-la-tuya-v4.webp`, `16-ayuda-v4.webp`, `19-seguimiento-v4.webp` and `20-logo-lockup-v4-candidate.webp` remain quarantined.
+No new image generation is required merely to continue the V4 cycle. Existing approved V4 assets are promoted by narrative role.
 
-Legacy product photography may remain only where no valid V4 replacement exists, notably Aire y Tiempo and Crea la Tuya. Where an approved replacement exists, the public surface should use V4 directly and avoid unnecessary legacy downloads.
+Generated assets `14-crea-la-tuya-v4.webp`, `16-ayuda-v4.webp`, `19-seguimiento-v4.webp` and `20-logo-lockup-v4-candidate.webp` remain quarantined unless a later explicit review promotes them.
 
-## Current release gate
+Legacy product photography may remain only where no valid approved V4 replacement exists, notably Aire y Tiempo and Crea la Tuya. Where an approved replacement exists, public surfaces should use V4 directly and avoid unnecessary legacy downloads.
 
-The remaining task is not structural expansion. It is final desktop/mobile visual review, regression certification and an explicit publication decision. See `V4_NEXT_GATE.md`.
+## Current release state
 
-`main` remains intentionally untouched until that decision.
+- Published V4 baseline on `main`: `a281a8ab52ac4968996ad5a6d0fbf6d0b7d57a04`.
+- PR #146 is the next high-priority Home reveal/visibility hardening.
+- PR #145 is the next governed public-channel configuration wave and should follow #146.
+- The next project phase is post-publication hardening, governance, technical SEO/AEO and measured quality improvement — not another structural redesign.
+
+See `V4_NEXT_GATE.md` and `AUDITORIA_INTEGRAL_Y_PROCESO_DESARROLLO_2026-09-02.md`.

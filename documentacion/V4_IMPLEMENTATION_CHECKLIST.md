@@ -2,7 +2,7 @@
 
 Updated: 2026-09-02
 
-This checklist now reflects the post-merge state of V4. Checked items are already implemented in the certified V4 public baseline; remaining items belong to hardening, governance and measurable quality work.
+This checklist now reflects the post-merge state of V4. Checked items are already implemented in the certified V4 public baseline or, where explicitly noted, implemented in the current audit PR and still pending promotion to `main`.
 
 ## Foundation
 
@@ -63,13 +63,15 @@ This checklist now reflects the post-merge state of V4. Checked items are alread
 
 ## SEO / AEO
 
-- [ ] Add `robots.txt` with explicit public/internal crawl boundary.
-- [ ] Add public-only `sitemap.xml`.
+Implemented in draft PR #147; these checked items are not production state until that PR is rebased, certified and merged.
+
+- [x] Add `robots.txt` with explicit public/internal crawl boundary.
+- [x] Add public-only `sitemap.xml`.
 - [ ] Add canonical URLs across indexable public pages.
 - [ ] Add `noindex` to internal/transactional surfaces where appropriate.
 - [ ] Add truthful baseline JSON-LD and page-specific structured data only where governed data exists.
 - [ ] Define canonical/index strategy for parametrized product/article/recipe URLs.
-- [ ] Add automated regression preventing internal surfaces from entering the public sitemap.
+- [x] Add automated regression preventing internal surfaces from entering the public sitemap.
 
 ## Governance
 

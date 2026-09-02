@@ -93,6 +93,7 @@ test.describe('Caja y tendencias V3.2.3',()=>{
     expect(counts[0].amount).toBe(1950000);
     expect(counts[0].supersedes).toBeNull();
 
+    await page.clock.setFixedTime(new Date('2026-08-15T12:00:01-05:00'));
     const second=await page.evaluate(date=>window.EL_ERRANTE_FINANCE_V323.recordCashCount({month:'2026-08',date,amount:1960000,evidence:'CONFIRMADO',note:'Segundo cierre'}),counts[0].date);
     expect(second.supersedes).toBe(counts[0].id);
     counts=await page.evaluate(()=>window.EL_ERRANTE_FINANCE_V323.allCounts());

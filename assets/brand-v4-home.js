@@ -90,6 +90,7 @@
 
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const items=[...document.querySelectorAll('.v4-reveal')];
+  const revealAll=()=>items.forEach(item=>item.classList.add('is-visible'));
   if(!reduced&&'IntersectionObserver' in window&&items.length){
     document.documentElement.classList.add('v4-motion');
     const observer=new IntersectionObserver(entries=>{
@@ -100,7 +101,16 @@
       }
     },{rootMargin:'0px 0px -8% 0px',threshold:.08});
     items.forEach(item=>observer.observe(item));
+
+    /* Motion is enhancement, never a content gate. If the observer misses a
+       section (background tab, screenshot, browser quirk), reveal everything. */
+    window.setTimeout(()=>{
+      revealAll();
+      document.documentElement.dataset.eeV4RevealFallback='complete';
+      observer.disconnect();
+    },1800);
   }else{
-    items.forEach(item=>item.classList.add('is-visible'));
+    revealAll();
+    document.documentElement.dataset.eeV4RevealFallback='not-required';
   }
 })();

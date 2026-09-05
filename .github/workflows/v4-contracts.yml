@@ -1,0 +1,33 @@
+name: Contratos V4 · gate rápido
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "v4-contracts-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Contratos V4 · canales públicos y seguridad
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validar sintaxis V4
+        run: |
+          node --check assets/public-channel-settings-v4.js
+          node --check assets/public-actions-v29.js
+          node --check tests/e2e/v4-public-channel-settings.spec.js
+      - name: Verificar contratos V4
+        run: python3 scripts/verificar_v4_public_channels.py

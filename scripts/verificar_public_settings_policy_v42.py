@@ -42,6 +42,8 @@ require(migration, "using (key in ('ordering','payment'));", "la migración no l
 require(migration, 'drop policy if exists "admins manage public settings"', "la migración no reafirma política administrativa")
 require(migration, "using (public.is_admin())", "la migración perdió autorización administrativa")
 require(migration, "with check (public.is_admin())", "la migración perdió control de escritura administrativa")
+require(migration, "insert into public.schema_migrations(version,description)", "la migración V2.6 no se registra")
+require(migration, "values('2.6'", "schema_migrations no registra la versión 2.6")
 forbid(migration, "using (true)", "la migración contiene una política RLS pública abierta")
 
 # Contratos consumidores públicos conocidos.
@@ -56,4 +58,4 @@ require(admin, 'client.from("public_settings").upsert({key:"payment"', "admin de
 for public_key in ("ordering", "payment"):
     require(migration, f"'{public_key}'", f"falta {public_key} en allowlist pública")
 
-print("PASS: public_settings limita lectura pública a ordering/payment y conserva acceso admin")
+print("PASS: public_settings limita lectura pública a ordering/payment, conserva acceso admin y registra V2.6")

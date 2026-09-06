@@ -41,6 +41,11 @@ require(connectivity, "client.rpc('is_admin')", "la capa no revalida autorizaci�
 require(connectivity, "auth.onAuthStateChange", "la capa no observa cambios de autenticación")
 require(connectivity, "event==='SIGNED_OUT'", "SIGNED_OUT no tiene tratamiento explícito")
 require(connectivity, "'TOKEN_REFRESHED'", "TOKEN_REFRESHED no dispara revalidación")
+require(connectivity, "let validationPromise=null", "la capa no serializa revalidaciones concurrentes")
+require(connectivity, "if(validationPromise)return validationPromise", "una mutación podría saltar una revalidación ya en curso")
+require(connectivity, "validationPromise=(async()=>", "la validación no comparte una promesa única")
+require(connectivity, ").finally(()=>{validationPromise=null;})", "la promesa de validación no se libera de forma gobernada")
+forbid(connectivity, "if(validating)return state", "la capa conserva el retorno de estado obsoleto durante validación concurrente")
 require(connectivity, "node.inert=shouldBlock", "las regiones no se bloquean semánticamente con inert")
 require(connectivity, "aria-disabled", "el bloqueo no expone estado accesible")
 require(connectivity, "aria-live", "el estado de conectividad no es anunciado")
@@ -82,4 +87,4 @@ for marker in (
 ):
     require(e2e, marker, f"E2E V4.2 no cubre contrato: {marker}")
 
-print("PASS: conectividad admin V4.2 observa auth, distingue estados, ejecuta preflight remoto y bloquea mutaciones")
+print("PASS: conectividad admin V4.2 serializa auth, distingue estados, ejecuta preflight remoto y bloquea mutaciones")

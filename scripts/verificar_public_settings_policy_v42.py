@@ -26,6 +26,7 @@ migration = read("backend/supabase/schema-v26.sql")
 activation = read("backend/supabase/schema-v20.sql")
 checkout = read("assets/checkout-v15.js")
 actions = read("assets/public-actions-v29.js")
+trust = read("assets/trust-v19.js")
 channels = read("assets/public-channel-settings-v4.js")
 admin = read("assets/admin-v15.js")
 
@@ -55,6 +56,8 @@ forbid(migration, "using (true)", "la migración contiene una política RLS púb
 require(checkout, '.from("public_settings")', "checkout dejó de usar public_settings")
 require(checkout, '.in("key",["payment","ordering"])', "checkout solicita claves fuera de payment/ordering")
 require(actions, ".from('public_settings').select('value').eq('key','ordering').maybeSingle()", "handoff público dejó de limitarse a ordering")
+require(trust, ".from('public_settings').select('value').eq('key','ordering').maybeSingle()", "Cuenta/confianza comercial dejó de limitar lectura a ordering")
+require(trust, ".from('public_settings').upsert({key:'ordering'", "administración de confianza dejó de escribir ordering explícitamente")
 require(channels, ".from('public_settings').select('value').eq('key','ordering').maybeSingle()", "editor V4 dejó de leer ordering explícitamente")
 require(channels, ".from('public_settings').upsert({key:'ordering'", "editor V4 dejó de escribir ordering explícitamente")
 require(admin, 'client.from("public_settings").upsert({key:"payment"', "admin dejó de escribir payment explícitamente")
@@ -63,4 +66,4 @@ require(admin, 'client.from("public_settings").upsert({key:"payment"', "admin de
 for public_key in ("ordering", "payment"):
     require(migration, f"'{public_key}'", f"falta {public_key} en allowlist pública")
 
-print("PASS: public_settings limita lectura pública a ordering/payment, conserva acceso admin y registra V2.6 en app_migrations")
+print("PASS: public_settings limita lectura pública a ordering/payment, cubre consumidores conocidos y registra V2.6 en app_migrations")

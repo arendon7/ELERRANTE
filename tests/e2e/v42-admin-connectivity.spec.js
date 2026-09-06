@@ -110,6 +110,23 @@ test.describe('V4.2 verdad de sesión y conectividad administrativa',()=>{
     expect(JSON.parse(value.local)).toEqual({ordering:{sentinel:'preserve'}});
   });
 
+  test('preflight detecta expiración silenciosa justo antes del upsert',async({page})=>{
+    await prepare(page);
+    await mountRemote(page);
+
+    await page.evaluate(()=>{window.__v42Connectivity.session=null;});
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.adminConnectivityState||''))
+      .toBe('CONNECTED');
+
+    await page.locator('#ee-save-public-channels').click();
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.adminConnectivityState||''))
+      .toBe('AUTH_REQUIRED');
+    await expect(page.locator('#ee-public-channel-status')).toContainText('sesión administrativa', {ignoreCase:true});
+    const value=await snapshot(page);
+    expect(value.upserts).toBe(0);
+    expect(value.inert).toBe(true);
+  });
+
   test('pérdida de is_admin cambia a FORBIDDEN y mantiene cero escrituras',async({page})=>{
     await prepare(page);
     await mountRemote(page);

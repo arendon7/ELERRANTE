@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +22,16 @@ def forbid(text: str, marker: str, message: str) -> None:
         raise SystemExit(f"FAIL: {message}")
 
 
+def require_version_values(text: str, version: str, message: str) -> None:
+    if not re.search(rf"values\s*\(\s*'{re.escape(version)}'", text, flags=re.IGNORECASE):
+        raise SystemExit(f"FAIL: {message}")
+
+
+def forbid_version_values(text: str, version: str, message: str) -> None:
+    if re.search(rf"values\s*\(\s*'{re.escape(version)}'", text, flags=re.IGNORECASE):
+        raise SystemExit(f"FAIL: {message}")
+
+
 v20 = read("backend/supabase/schema-v20.sql")
 v23 = read("backend/supabase/schema-v23.sql")
 v24 = read("backend/supabase/schema-v24.sql")
@@ -39,7 +50,7 @@ for version, schema, activation in (
     ("2.5", v25, a25),
 ):
     require(schema, "insert into public.app_migrations(version,label)", f"schema V{version} no registra app_migrations")
-    require(schema, f"values('{version}'", f"schema V{version} no registra su versión")
+    require_version_values(schema, version, f"schema V{version} no registra su versión")
     forbid(schema, "public.schema_migrations", f"schema V{version} todavía depende de schema_migrations")
     require(activation, ".from('app_migrations').select('version')", f"activation V{version} no consulta app_migrations")
     require(activation, f".eq('version','{version}')", f"activation V{version} no verifica su versión")
@@ -60,7 +71,7 @@ require(v27, "from public.schema_migrations", "V2.7 no contiene el bridge legacy
 require(v27, "where version::text in ('2.3','2.4','2.5')", "V2.7 importa versiones fuera del alcance")
 require(v27, "on conflict(version) do nothing", "V2.7 podría sobrescribir evidencia canónica existente")
 require(v27, "insert into public.app_migrations(version,label)", "V2.7 no registra su propia migración")
-require(v27, "values('2.7'", "V2.7 no registra la versión 2.7")
+require_version_values(v27, "2.7", "V2.7 no registra la versión 2.7")
 
 # La referencia legacy debe aparecer dentro del bloque condicional, nunca antes.
 legacy_guard = v27.index("if v_legacy is not null then")
@@ -71,6 +82,6 @@ if not (legacy_guard < column_guard < legacy_read):
 
 # El bridge jamás puede fabricar 2.3–2.5 mediante VALUES directos.
 for version in ("2.3", "2.4", "2.5"):
-    forbid(v27, f"values('{version}'", f"V2.7 fabrica evidencia para {version}")
+    forbid_version_values(v27, version, f"V2.7 fabrica evidencia para {version}")
 
 print("PASS: app_migrations es canónico; V2.3–V2.6 lo usan y V2.7 sólo reconcilia evidencia legacy real")

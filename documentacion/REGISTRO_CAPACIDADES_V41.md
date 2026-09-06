@@ -25,7 +25,7 @@
 | Configuración de canales · local | V4.4.0 interno / gobierno V4.1 | `assets/public-channel-settings-v4.js` | `ee_v14_settings` | `admin.html` en simulación local | `v4-public-channel-settings.spec.js` + gate V4 | ACTIVE |
 | Configuración de canales · remoto | contrato V4.2 | `assets/public-channel-settings-v4.js` | `public_settings.ordering`; publishable key + `is_admin` + RLS | `admin.html` conectado | `v42-public-channel-connected.spec.js` + gate V4 | PREPARED |
 | Backend público Supabase | preparado | `assets/commerce-runtime-config.js` + schemas versionados | URL + publishable key sólo en deploy; RLS | checkout/admin/consumidores autorizados | gate V4 + schemas | PREPARED |
-| Política pública de `public_settings` | V4.2 pendiente | schema/migración por crear | allowlist prevista: `ordering`, `payment` | consumidores públicos | requiere verificador + pruebas de política | PREPARED |
+| Política pública de `public_settings` | V4.2 · allowlist preparada | `schema-v14.sql` + migración `schema-v26.sql` | público: sólo `ordering`, `payment`; admin: cualquier clave con `is_admin()` | Checkout / handoffs / administración | `verificar_public_settings_policy_v42.py` + gate V4 | PREPARED |
 | WhatsApp/correo automático | no existe | — | — | — | contrato prohíbe afirmar envío automático | INACTIVE |
 
 ## Capacidades internas
@@ -53,7 +53,7 @@
 7. Ningún módulo cliente puede contener `service_role`.
 8. Configuración pública remota requiere publishable key, autorización administrativa y RLS para escritura.
 9. Un error remoto nunca autoriza a presentar o persistir silenciosamente `ee_v14_settings` como si fuera configuración compartida.
-10. La lectura pública de `public_settings` debe limitarse explícitamente antes de activar backend real; hoy los consumidores conocidos requieren `ordering` y `payment`.
+10. La lectura pública preparada de `public_settings` queda limitada a `ordering` y `payment`; cualquier ampliación exige cambio deliberado de política y gates. Sigue `PREPARED` hasta aplicar la migración en un backend aprobado.
 11. Handoff WhatsApp/correo prepara un canal revisable; nunca implica envío automático.
 12. Plan, hecho, compra, COGS, estándar vigente y costo histórico siguen siendo conceptos separados.
 13. `desconocido` nunca se convierte silenciosamente en cero.
@@ -62,4 +62,4 @@
 
 Este registro complementa `documentacion/MAPA_VERSIONES_ACTIVAS.md`. El mapa explica la convivencia histórica de versiones; este registro responde **qué capacidad existe, quién la posee, de dónde lee, quién la consume, cómo se prueba y si está activa**.
 
-La evidencia específica de la primera ola V4.2 se documenta en `documentacion/V42_CONNECTED_CHANNEL_SCOPE.md`.
+La evidencia de contratos conectados se documenta en `documentacion/V42_CONNECTED_CHANNEL_SCOPE.md`. La política de lectura pública preparada se documenta en `documentacion/V42_PUBLIC_SETTINGS_POLICY.md`.

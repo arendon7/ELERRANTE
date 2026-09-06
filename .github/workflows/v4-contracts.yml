@@ -34,3 +34,4 @@ jobs:
         run: |
           python3 scripts/verificar_v4_public_channels.py
           python3 scripts/verificar_registro_capacidades_v41.py
+          python3 scripts/verificar_public_settings_policy_v42.py

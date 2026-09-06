@@ -125,7 +125,7 @@ create policy "admins review receipts" on public.payment_receipts for update to 
 create policy "public reads active catalog operations" on public.product_operations for select to anon, authenticated using (active=true or public.is_admin());
 create policy "admins manage catalog operations" on public.product_operations for all to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy "admins manage fixed costs" on public.fixed_costs for all to authenticated using (public.is_admin()) with check (public.is_admin());
-create policy "public reads public settings" on public.public_settings for select to anon, authenticated using (true);
+create policy "public reads approved public settings" on public.public_settings for select to anon, authenticated using (key in ('ordering','payment'));
 create policy "admins manage public settings" on public.public_settings for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)

@@ -1,0 +1,89 @@
+name: Verificar publicación pública V4
+
+on:
+  workflow_run:
+    workflows: ["Validar y publicar El Errante"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  PUBLIC_BASE: https://arendon7.github.io/ELERRANTE
+
+concurrency:
+  group: "public-health-v4-${{ github.event.workflow_run.head_sha }}"
+  cancel-in-progress: true
+
+jobs:
+  health-v4:
+    name: GitHub Pages publica contratos públicos V4
+    if: github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Definir expectativa
+        run: |
+          echo "EXPECTED_SHA=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_ENV"
+          echo "SOURCE_CONCLUSION=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_ENV"
+
+      - name: Exigir despliegue fuente exitoso
+        run: test "$SOURCE_CONCLUSION" = "success"
+
+      - name: Esperar SHA publicado
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            curl --fail --silent --show-error --location --max-time 20 \
+              -H 'Cache-Control: no-cache' \
+              "$PUBLIC_BASE/deploy-version.txt?verify=$EXPECTED_SHA&attempt=$attempt" > deploy-version-v4.txt || true
+            sha="$(sed -n 's/^release_commit=//p' deploy-version-v4.txt | tr -d '\r')"
+            if [ "$sha" = "$EXPECTED_SHA" ]; then success=1; break; fi
+            sleep 5
+          done
+          test "$success" -eq 1
+
+      - name: Verificar superficie V4 publicada
+        run: |
+          set -euo pipefail
+          fetch_public() {
+            local url="$1" output="$2"
+            curl --fail --silent --show-error --location --max-time 20 \
+              --retry 5 --retry-delay 2 --retry-all-errors \
+              -H 'Cache-Control: no-cache' "$url" > "$output"
+          }
+
+          fetch_public "$PUBLIC_BASE/admin.html?verify=$EXPECTED_SHA" public-admin-v4.html
+          fetch_public "$PUBLIC_BASE/ayuda.html?verify=$EXPECTED_SHA" public-help-v4.html
+          fetch_public "$PUBLIC_BASE/en-movimiento.html?verify=$EXPECTED_SHA" public-moving-v4.html
+          fetch_public "$PUBLIC_BASE/assets/public-channel-settings-v4.js?verify=$EXPECTED_SHA" public-channel-settings-v4.js
+          fetch_public "$PUBLIC_BASE/assets/public-actions-v29.js?verify=$EXPECTED_SHA" public-actions-v29.js
+
+          grep -q 'assets/admin-v15.js' public-admin-v4.html
+          grep -q 'assets/public-channel-settings-v4.js' public-admin-v4.html
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('public-admin-v4.html').read_text(encoding='utf-8')
+          legacy='assets/admin-v15.js'
+          channels='assets/public-channel-settings-v4.js'
+          assert legacy in html and channels in html
+          assert html.index(channels) > html.index(legacy), 'public-channel-settings-v4.js debe cargar después de admin-v15.js'
+          PY
+
+          grep -q 'public-actions-v29.js' public-help-v4.html
+          grep -q 'public-actions-v29.js' public-moving-v4.html
+          grep -q "SETTINGS_KEY='ee_v14_settings'" public-channel-settings-v4.js
+          grep -q "rpc('is_admin')" public-channel-settings-v4.js
+          grep -q "from('public_settings').upsert" public-channel-settings-v4.js
+          grep -q 'publishableKey' public-channel-settings-v4.js
+          ! grep -qi 'service_role' public-channel-settings-v4.js
+
+          grep -q "from('public_settings').select('value').eq('key','ordering').maybeSingle()" public-actions-v29.js
+          grep -q 'https://wa.me/' public-actions-v29.js
+          grep -q 'mailto:' public-actions-v29.js
+          grep -q 'No ha sido enviado automáticamente' public-actions-v29.js
+          grep -q 'Abrir un canal no envía nada por sí solo' public-actions-v29.js
+
+          node --check public-channel-settings-v4.js
+          node --check public-actions-v29.js

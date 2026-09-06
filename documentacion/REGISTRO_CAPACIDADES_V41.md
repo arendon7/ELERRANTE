@@ -1,7 +1,7 @@
 # Registro de capacidades V4.1 — El Errante
 
-**Estado:** canónico para gobierno de capacidades desde V4.1  
-**Baseline:** `main` posterior a PR #153  
+**Estado:** canónico para gobierno de capacidades desde V4.1; extendido por contratos V4.2  
+**Baseline:** `main` posterior a PR #153 + ola V4.1 de registro/health  
 **Propósito:** separar versión integral, versión de contrato, asset propietario, fuente de datos, consumidores, pruebas y estado operativo.
 
 ## Estados
@@ -21,9 +21,11 @@
 | Producto | V4 | refinamientos V4 | catálogo, variantes y disponibilidad canónicos | producto | V4 product specs | ACTIVE |
 | Checkout | V4 | `brand-v4-checkout.css` + runtime histórico | carrito + backend sólo si está configurado | checkout | V4 checkout specs | ACTIVE |
 | Cuenta / seguimiento | V4 | `brand-v4-account.css` + contratos de cuenta | fuente real cuando exista; offline no simula pedidos | cuenta | V4 account specs | ACTIVE |
-| Handoff público | V4 | `assets/public-actions-v29.js` | `public_settings.ordering` o configuración local gobernada | Ayuda / En Movimiento | `v4-public-handoff.spec.js` | ACTIVE |
-| Configuración de canales | V4.4.0 interno / gobierno V4.1 | `assets/public-channel-settings-v4.js` | local `ee_v14_settings`; remoto `public_settings` | `admin.html` | `v4-public-channel-settings.spec.js` + gate V4 | ACTIVE |
-| Backend público Supabase | preparado | `assets/commerce-runtime-config.js` + schema V1.4 | URL + publishable key sólo en deploy; RLS | checkout/admin/consumidores autorizados | gate V4 + schemas | PREPARED |
+| Handoff público | V4 | `assets/public-actions-v29.js` | `public_settings.ordering` cuando backend esté conectado; configuración local gobernada en preview | Ayuda / En Movimiento | `v4-public-handoff.spec.js` | ACTIVE |
+| Configuración de canales · local | V4.4.0 interno / gobierno V4.1 | `assets/public-channel-settings-v4.js` | `ee_v14_settings` | `admin.html` en simulación local | `v4-public-channel-settings.spec.js` + gate V4 | ACTIVE |
+| Configuración de canales · remoto | contrato V4.2 | `assets/public-channel-settings-v4.js` | `public_settings.ordering`; publishable key + `is_admin` + RLS | `admin.html` conectado | `v42-public-channel-connected.spec.js` + gate V4 | PREPARED |
+| Backend público Supabase | preparado | `assets/commerce-runtime-config.js` + schemas versionados | URL + publishable key sólo en deploy; RLS | checkout/admin/consumidores autorizados | gate V4 + schemas | PREPARED |
+| Política pública de `public_settings` | V4.2 pendiente | schema/migración por crear | allowlist prevista: `ordering`, `payment` | consumidores públicos | requiere verificador + pruebas de política | PREPARED |
 | WhatsApp/correo automático | no existe | — | — | — | contrato prohíbe afirmar envío automático | INACTIVE |
 
 ## Capacidades internas
@@ -44,15 +46,20 @@
 
 1. La release integral publicada sigue identificándose por `deploy-version.txt`; no se deduce por el mayor número de módulo.
 2. V4 identifica el sistema público/visual y sus contratos contemporáneos; V4.1 identifica la ola de gobierno y verificación, no una renumeración de todos los motores históricos.
-3. `public-channel-settings-v4.js` puede declarar una versión interna propia sin redefinir la versión integral.
-4. `PREPARED` nunca equivale a activado.
-5. Backend vacío por defecto es una condición válida y debe conservar verdad operativa.
-6. Ningún módulo cliente puede contener `service_role`.
-7. Configuración pública remota requiere RLS y autorización administrativa para escritura.
-8. Handoff WhatsApp/correo prepara un canal revisable; nunca implica envío automático.
-9. Plan, hecho, compra, COGS, estándar vigente y costo histórico siguen siendo conceptos separados.
-10. `desconocido` nunca se convierte silenciosamente en cero.
+3. V4.2 identifica la preparación verificable del modo conectado; no equivale a activar Supabase productivo ni a migrar los motores internos.
+4. `public-channel-settings-v4.js` puede declarar una versión interna propia sin redefinir la versión integral.
+5. `PREPARED` nunca equivale a activado.
+6. Backend vacío por defecto es una condición válida y debe conservar verdad operativa.
+7. Ningún módulo cliente puede contener `service_role`.
+8. Configuración pública remota requiere publishable key, autorización administrativa y RLS para escritura.
+9. Un error remoto nunca autoriza a presentar o persistir silenciosamente `ee_v14_settings` como si fuera configuración compartida.
+10. La lectura pública de `public_settings` debe limitarse explícitamente antes de activar backend real; hoy los consumidores conocidos requieren `ordering` y `payment`.
+11. Handoff WhatsApp/correo prepara un canal revisable; nunca implica envío automático.
+12. Plan, hecho, compra, COGS, estándar vigente y costo histórico siguen siendo conceptos separados.
+13. `desconocido` nunca se convierte silenciosamente en cero.
 
 ## Fuente de verdad
 
 Este registro complementa `documentacion/MAPA_VERSIONES_ACTIVAS.md`. El mapa explica la convivencia histórica de versiones; este registro responde **qué capacidad existe, quién la posee, de dónde lee, quién la consume, cómo se prueba y si está activa**.
+
+La evidencia específica de la primera ola V4.2 se documenta en `documentacion/V42_CONNECTED_CHANNEL_SCOPE.md`.

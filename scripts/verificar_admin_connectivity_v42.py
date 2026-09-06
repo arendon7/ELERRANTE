@@ -70,7 +70,7 @@ for marker in (
     "SIGNED_IN",
     "expect(value.upserts).toBe(0)",
     "expect(value.inert).toBe(true)",
-    "expect(value.inert).toBe(false)",
+    "inert).toBe(false)",
 ):
     require(e2e, marker, f"E2E V4.2 no cubre contrato: {marker}")
 

@@ -27,6 +27,7 @@ actions = read("assets/public-actions-v29.js")
 runtime = read("assets/commerce-runtime-config.js")
 schema = read("backend/supabase/schema-v14.sql")
 spec = read("tests/e2e/v4-public-channel-settings.spec.js")
+remote_spec = read("tests/e2e/v42-public-channel-connected.spec.js")
 
 # Montaje y aislamiento de superficie.
 admin_v15 = '<script src="assets/admin-v15.js"></script>'
@@ -61,14 +62,26 @@ require(actions, "mailto:", "falta handoff de correo")
 require(actions, "No ha sido enviado automáticamente", "se perdió la advertencia de no envío automático")
 require(actions, "Abrir un canal no envía nada por sí solo", "se perdió la confirmación explícita del handoff")
 
-# Campos funcionales del contrato.
+# Campos funcionales del contrato local/publicado.
 for marker in ("supportWhatsapp", "supportEmail", "expectedResponseHours"):
     require(channels, marker, f"falta {marker} en el editor V4")
-    require(spec, marker, f"falta cobertura E2E para {marker}")
+    require(spec, marker, f"falta cobertura E2E local para {marker}")
+    require(remote_spec, marker, f"falta cobertura E2E conectada para {marker}")
 
-# Cobertura mínima de verdad operativa: persistencia local y ocultamiento al vaciar canales.
+# Cobertura mínima de verdad operativa local: persistencia y ocultamiento al vaciar canales.
 require(spec, "ee_v14_settings", "la prueba E2E no verifica persistencia local")
 require(spec, "vaciar los canales", "la prueba E2E no cubre el vaciado de canales")
 require(spec, "toHaveCount(0)", "la prueba E2E no verifica ocultamiento de handoffs")
 
-print("PASS: contratos V4 de canales públicos, seguridad y handoff preservados")
+# V4.2: el modo conectado se prueba sin Supabase real y no puede degradar silenciosamente a local.
+require(remote_spec, "__EE_PUBLIC_CHANNEL_SUPABASE__", "falta harness remoto controlado V4.2")
+require(remote_spec, "Administración conectada", "la suite V4.2 no monta explícitamente modo remoto")
+require(remote_spec, "isAdmin:false", "falta escenario is_admin=false")
+require(remote_spec, "JWT expired", "falta escenario de sesión/RPC expirada")
+require(remote_spec, "network unavailable", "falta escenario de fallo de lectura remota")
+require(remote_spec, "row-level security policy", "falta escenario de rechazo RLS")
+require(remote_spec, "expect(await localSnapshot(page)).toEqual(localSeed)", "la suite V4.2 no protege aislamiento de ee_v14_settings")
+require(remote_spec, "Canales públicos sincronizados", "falta escenario remoto exitoso")
+require(remote_spec, "upserts", "la suite V4.2 no verifica escritura remota")
+
+print("PASS: contratos V4/V4.2 de canales públicos, seguridad, aislamiento y handoff preservados")

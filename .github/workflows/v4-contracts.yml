@@ -29,6 +29,7 @@ jobs:
           node --check assets/public-channel-settings-v4.js
           node --check assets/public-actions-v29.js
           node --check tests/e2e/v4-public-channel-settings.spec.js
+          node --check tests/e2e/v42-public-channel-connected.spec.js
       - name: Verificar contratos V4
         run: |
           python3 scripts/verificar_v4_public_channels.py

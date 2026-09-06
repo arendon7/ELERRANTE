@@ -28,8 +28,10 @@ jobs:
         run: |
           node --check assets/public-channel-settings-v4.js
           node --check assets/public-actions-v29.js
+          node --check assets/admin-connectivity-v42.js
           node --check tests/e2e/v4-public-channel-settings.spec.js
           node --check tests/e2e/v42-public-channel-connected.spec.js
+          node --check tests/e2e/v42-admin-connectivity.spec.js
           node --check assets/activation-v23.js
           node --check assets/activation-v24.js
           node --check assets/activation-v25.js
@@ -39,3 +41,4 @@ jobs:
           python3 scripts/verificar_registro_capacidades_v41.py
           python3 scripts/verificar_public_settings_policy_v42.py
           python3 scripts/verificar_migration_registry_v42.py
+          python3 scripts/verificar_admin_connectivity_v42.py

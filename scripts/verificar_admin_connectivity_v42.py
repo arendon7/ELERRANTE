@@ -53,9 +53,16 @@ forbid(connectivity, "setInterval(", "la capa introduce polling periódico agres
 forbid(connectivity.lower(), "service_role", "la capa de cliente referencia service_role")
 forbid(connectivity, "localStorage.setItem", "la capa de conectividad no debe persistir datos de negocio")
 
-# El editor de canales mantiene su aislamiento existente; la nueva capa gobierna su región
-# y el harness conectado ahora declara sesión administrativa explícita.
+# El editor de canales conserva su aislamiento, pero toda escritura remota debe ejecutar
+# además un preflight central justo antes del upsert para cubrir expiraciones silenciosas.
 require(channels, "data-public-channel-settings", "el editor V4 dejó de ser identificable para el guard")
+require(channels, "window.EL_ERRANTE_ADMIN_CONNECTIVITY", "el editor remoto no consulta el guard central")
+require(channels, "guard?.assertConnected", "el editor remoto no expone preflight assertConnected")
+preflight = channels.index("await assertRemoteConnectivity();")
+upsert = channels.index("client.from('public_settings').upsert")
+if preflight > upsert:
+    raise SystemExit("FAIL: el preflight de conectividad debe ocurrir antes del upsert remoto")
+
 require(connected_e2e, "__v42AdminState", "el harness de canales no modela sesión administrativa")
 require(connected_e2e, "adminConnectivityState", "el harness de canales no espera CONNECTED")
 
@@ -68,10 +75,11 @@ for marker in (
     "SIGNED_OUT",
     "TOKEN_REFRESHED",
     "SIGNED_IN",
+    "preflight detecta expiración silenciosa justo antes del upsert",
     "expect(value.upserts).toBe(0)",
     "expect(value.inert).toBe(true)",
     "inert).toBe(false)",
 ):
     require(e2e, marker, f"E2E V4.2 no cubre contrato: {marker}")
 
-print("PASS: conectividad admin V4.2 observa auth, distingue estados, bloquea mutaciones y conserva preview local")
+print("PASS: conectividad admin V4.2 observa auth, distingue estados, ejecuta preflight remoto y bloquea mutaciones")

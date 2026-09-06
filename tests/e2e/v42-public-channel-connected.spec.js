@@ -25,6 +25,8 @@ async function prepareConnected(page,overrides={}){
 
   await page.addInitScript(config=>{
     window.__v42Calls={rpc:[],reads:0,upserts:[]};
+    window.__v42AdminState={session:null,isAdmin:false,rpcError:''};
+    window.__v42AdminAuthCallback=null;
 
     const publicTable=()=>({
       select(){return this;},
@@ -53,26 +55,41 @@ async function prepareConnected(page,overrides={}){
       }
     };
 
-    // Mantiene admin-v15 completamente aislado de red. La suite prueba el contrato
-    // del módulo V4, no autenticación real de Supabase.
+    // Admin-v15 inicia sin sesión para no consultar tablas operativas. El harness cambia
+    // explícitamente a sesión admin antes de montar la superficie remota sintética.
     window.__EE_ADMIN_SUPABASE__={
       auth:{
-        async getSession(){return {data:{session:null},error:null};},
+        async getSession(){return {data:{session:window.__v42AdminState.session},error:null};},
         async signInWithPassword(){return {data:{session:null},error:{message:'Login deshabilitado en harness V4.2'}};},
-        async signOut(){return {error:null};}
+        async signOut(){
+          window.__v42AdminState.session=null;
+          window.__v42AdminAuthCallback?.('SIGNED_OUT',null);
+          return {error:null};
+        },
+        onAuthStateChange(callback){
+          window.__v42AdminAuthCallback=callback;
+          return {data:{subscription:{unsubscribe(){if(window.__v42AdminAuthCallback===callback)window.__v42AdminAuthCallback=null;}}}};
+        }
       },
-      async rpc(){return {data:false,error:null};}
+      async rpc(){
+        if(window.__v42AdminState.rpcError)return {data:null,error:{message:window.__v42AdminState.rpcError}};
+        return {data:window.__v42AdminState.isAdmin,error:null};
+      }
     };
   },scenario);
 
   await page.goto('/admin.html',{waitUntil:'load'});
   await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.publicChannelSettingsVersion||''))
     .toBe('4.4.0');
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.adminConnectivityVersion||''))
+    .toBe('4.2.0');
 }
 
 async function mountRemote(page,localSeed={ordering:{supportWhatsapp:'LOCAL-ONLY',supportEmail:'local@example.com',expectedResponseHours:48,sentinel:'preserve'}}){
   await page.evaluate(({key,seed})=>{
     localStorage.setItem(key,JSON.stringify(seed));
+    window.__v42AdminState.session={user:{id:'admin-v42',email:'admin@elerrante.co',is_anonymous:false}};
+    window.__v42AdminState.isAdmin=true;
     const root=document.getElementById('admin-dynamic');
     if(!root)throw new Error('Falta #admin-dynamic');
     root.innerHTML=`<section data-v42-remote-harness>
@@ -80,6 +97,8 @@ async function mountRemote(page,localSeed={ordering:{supportWhatsapp:'LOCAL-ONLY
       <div class="ee-v14-grid"></div>
     </section>`;
   },{key:LOCAL_KEY,seed:localSeed});
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.adminConnectivityState||''))
+    .toBe('CONNECTED');
   return localSeed;
 }
 

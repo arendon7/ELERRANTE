@@ -23,6 +23,7 @@ def forbid(text: str, marker: str, message: str) -> None:
 
 base = read("backend/supabase/schema-v14.sql")
 migration = read("backend/supabase/schema-v26.sql")
+activation = read("backend/supabase/schema-v20.sql")
 checkout = read("assets/checkout-v15.js")
 actions = read("assets/public-actions-v29.js")
 channels = read("assets/public-channel-settings-v4.js")
@@ -42,8 +43,12 @@ require(migration, "using (key in ('ordering','payment'));", "la migración no l
 require(migration, 'drop policy if exists "admins manage public settings"', "la migración no reafirma política administrativa")
 require(migration, "using (public.is_admin())", "la migración perdió autorización administrativa")
 require(migration, "with check (public.is_admin())", "la migración perdió control de escritura administrativa")
-require(migration, "insert into public.schema_migrations(version,description)", "la migración V2.6 no se registra")
-require(migration, "values('2.6'", "schema_migrations no registra la versión 2.6")
+
+# Registro canónico de migraciones: V2.0 crea app_migrations y V2.6 debe usar esa tabla real.
+require(activation, "create table if not exists public.app_migrations", "V2.0 dejó de crear app_migrations")
+require(migration, "insert into public.app_migrations(version,label)", "la migración V2.6 no se registra en app_migrations")
+require(migration, "values('2.6'", "app_migrations no registra la versión 2.6")
+forbid(migration, "public.schema_migrations", "V2.6 depende de schema_migrations, tabla no canónica/no creada por la secuencia base")
 forbid(migration, "using (true)", "la migración contiene una política RLS pública abierta")
 
 # Contratos consumidores públicos conocidos.
@@ -58,4 +63,4 @@ require(admin, 'client.from("public_settings").upsert({key:"payment"', "admin de
 for public_key in ("ordering", "payment"):
     require(migration, f"'{public_key}'", f"falta {public_key} en allowlist pública")
 
-print("PASS: public_settings limita lectura pública a ordering/payment, conserva acceso admin y registra V2.6")
+print("PASS: public_settings limita lectura pública a ordering/payment, conserva acceso admin y registra V2.6 en app_migrations")

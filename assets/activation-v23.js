@@ -36,7 +36,7 @@
       const client=module.createClient(CONFIG.backend.url,CONFIG.backend.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,storageKey:CONFIG.backend.adminStorageKey||'ee-admin-auth-v15'}});
       const session=await client.auth.getSession();
       if(!session.data?.session)return;
-      const result=await client.from('schema_migrations').select('version').eq('version','2.3').maybeSingle();
+      const result=await client.from('app_migrations').select('version').eq('version','2.3').maybeSingle();
       const ready=!result.error&&Boolean(result.data);
       const list=root.querySelector('.ee-v20-checklist');
       if(!list)return;

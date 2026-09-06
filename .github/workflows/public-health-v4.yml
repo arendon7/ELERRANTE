@@ -59,16 +59,21 @@ jobs:
           fetch_public "$PUBLIC_BASE/en-movimiento.html?verify=$EXPECTED_SHA" public-moving-v4.html
           fetch_public "$PUBLIC_BASE/assets/public-channel-settings-v4.js?verify=$EXPECTED_SHA" public-channel-settings-v4.js
           fetch_public "$PUBLIC_BASE/assets/public-actions-v29.js?verify=$EXPECTED_SHA" public-actions-v29.js
+          fetch_public "$PUBLIC_BASE/assets/admin-connectivity-v42.js?verify=$EXPECTED_SHA" admin-connectivity-v42.js
 
           grep -q 'assets/admin-v15.js' public-admin-v4.html
           grep -q 'assets/public-channel-settings-v4.js' public-admin-v4.html
+          grep -q 'assets/admin-connectivity-v42.js' public-admin-v4.html
           python3 - <<'PY'
           from pathlib import Path
           html=Path('public-admin-v4.html').read_text(encoding='utf-8')
           legacy='assets/admin-v15.js'
           channels='assets/public-channel-settings-v4.js'
-          assert legacy in html and channels in html
+          trust='assets/trust-v19.js'
+          connectivity='assets/admin-connectivity-v42.js'
+          assert legacy in html and channels in html and trust in html and connectivity in html
           assert html.index(channels) > html.index(legacy), 'public-channel-settings-v4.js debe cargar después de admin-v15.js'
+          assert html.index(connectivity) > html.index(trust), 'admin-connectivity-v42.js debe cargar al final de la superficie administrada'
           PY
 
           grep -q 'public-actions-v29.js' public-help-v4.html
@@ -79,6 +84,16 @@ jobs:
           grep -q 'publishableKey' public-channel-settings-v4.js
           ! grep -qi 'service_role' public-channel-settings-v4.js
 
+          grep -q "CONNECTED:'CONNECTED'" admin-connectivity-v42.js
+          grep -q "AUTH_REQUIRED:'AUTH_REQUIRED'" admin-connectivity-v42.js
+          grep -q "FORBIDDEN:'FORBIDDEN'" admin-connectivity-v42.js
+          grep -q "REMOTE_ERROR:'REMOTE_ERROR'" admin-connectivity-v42.js
+          grep -q "LOCAL_PREVIEW:'LOCAL_PREVIEW'" admin-connectivity-v42.js
+          grep -q 'onAuthStateChange' admin-connectivity-v42.js
+          grep -q "rpc('is_admin')" admin-connectivity-v42.js
+          grep -q 'node.inert=shouldBlock' admin-connectivity-v42.js
+          ! grep -qi 'service_role' admin-connectivity-v42.js
+
           grep -q "from('public_settings').select('value').eq('key','ordering').maybeSingle()" public-actions-v29.js
           grep -q 'https://wa.me/' public-actions-v29.js
           grep -q 'mailto:' public-actions-v29.js
@@ -87,3 +102,4 @@ jobs:
 
           node --check public-channel-settings-v4.js
           node --check public-actions-v29.js
+          node --check admin-connectivity-v42.js

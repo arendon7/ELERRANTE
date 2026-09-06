@@ -126,8 +126,8 @@ revoke all on function public.save_material_purchase_v24(jsonb) from public, ano
 grant execute on function public.save_production_measurement_v24(jsonb) to authenticated;
 grant execute on function public.save_material_purchase_v24(jsonb) to authenticated;
 
-insert into public.schema_migrations(version,description)
+insert into public.app_migrations(version,label)
 values('2.4','Medición de lotes, proveedores y compras observadas')
-on conflict(version) do nothing;
+on conflict(version) do update set label=excluded.label,applied_at=now();
 
 commit;

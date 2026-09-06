@@ -30,8 +30,12 @@ jobs:
           node --check assets/public-actions-v29.js
           node --check tests/e2e/v4-public-channel-settings.spec.js
           node --check tests/e2e/v42-public-channel-connected.spec.js
+          node --check assets/activation-v23.js
+          node --check assets/activation-v24.js
+          node --check assets/activation-v25.js
       - name: Verificar contratos V4
         run: |
           python3 scripts/verificar_v4_public_channels.py
           python3 scripts/verificar_registro_capacidades_v41.py
           python3 scripts/verificar_public_settings_policy_v42.py
+          python3 scripts/verificar_migration_registry_v42.py

@@ -272,8 +272,8 @@ grant execute on function public.save_material_purchase_order_v25(jsonb) to auth
 grant execute on function public.transition_material_purchase_order_v25(uuid,text,text) to authenticated;
 grant execute on function public.receive_material_purchase_order_v25(uuid,jsonb) to authenticated;
 
-insert into public.schema_migrations(version,description)
+insert into public.app_migrations(version,label)
 values('2.5','Órdenes de compra, autorización, recepción y reconciliación de inventario')
-on conflict(version) do nothing;
+on conflict(version) do update set label=excluded.label,applied_at=now();
 
 commit;

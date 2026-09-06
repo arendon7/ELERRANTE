@@ -26,7 +26,7 @@
   let state='';
   let detail='';
   let remoteSeen=false;
-  let validating=false;
+  let validationPromise=null;
   let observedMode='';
   let subscribedClient=null;
   let subscription=null;
@@ -144,39 +144,38 @@
     subscription=result?.data?.subscription||null;
   }
 
-  async function validateRemote(context=''){
-    if(validating)return state;
-    const client=adminClient();
-    if(!client){
-      if(remoteSeen)setState(STATES.REMOTE_ERROR,'El cliente administrativo no está disponible.');
-      return state;
-    }
-    validating=true;
-    try{
-      subscribe(client);
-      const sessionResult=await client.auth.getSession();
-      if(sessionResult?.error)throw sessionResult.error;
-      const session=sessionResult?.data?.session;
-      if(!session||session.user?.is_anonymous){
-        remoteSeen=true;
-        return setState(STATES.AUTH_REQUIRED);
+  function validateRemote(context=''){
+    if(validationPromise)return validationPromise;
+    validationPromise=(async()=>{
+      const client=adminClient();
+      if(!client){
+        if(remoteSeen)setState(STATES.REMOTE_ERROR,'El cliente administrativo no está disponible.');
+        return state;
       }
-      const authorized=await client.rpc('is_admin');
-      if(authorized?.error)throw authorized.error;
-      remoteSeen=true;
-      if(authorized?.data!==true)return setState(STATES.FORBIDDEN);
-      return setState(STATES.CONNECTED,context&&context!=='dom'?'Verificación actualizada.':'');
-    }catch(error){
-      remoteSeen=true;
-      return setState(STATES.REMOTE_ERROR,error?.message||'Error remoto de validación.');
-    }finally{
-      validating=false;
-    }
+      try{
+        subscribe(client);
+        const sessionResult=await client.auth.getSession();
+        if(sessionResult?.error)throw sessionResult.error;
+        const session=sessionResult?.data?.session;
+        if(!session||session.user?.is_anonymous){
+          remoteSeen=true;
+          return setState(STATES.AUTH_REQUIRED);
+        }
+        const authorized=await client.rpc('is_admin');
+        if(authorized?.error)throw authorized.error;
+        remoteSeen=true;
+        if(authorized?.data!==true)return setState(STATES.FORBIDDEN);
+        return setState(STATES.CONNECTED,context&&context!=='dom'?'Verificación actualizada.':'');
+      }catch(error){
+        remoteSeen=true;
+        return setState(STATES.REMOTE_ERROR,error?.message||'Error remoto de validación.');
+      }
+    })().finally(()=>{validationPromise=null;});
+    return validationPromise;
   }
 
   async function assertConnected(){
-    if(state!==STATES.CONNECTED)await validateRemote('mutation');
-    else await validateRemote('mutation');
+    await validateRemote('mutation');
     if(state!==STATES.CONNECTED){
       const error=new Error(
         state===STATES.AUTH_REQUIRED?'La sesión administrativa ya no está disponible.':

@@ -29,4 +29,8 @@ comment on policy "public reads approved public settings" on public.public_setti
 comment on policy "admins manage public settings" on public.public_settings is
 'Administradores activos conservan lectura y escritura completa mediante public.is_admin().';
 
+insert into public.schema_migrations(version,description)
+values('2.6','Allowlist RLS pública de public_settings para ordering y payment')
+on conflict(version) do nothing;
+
 commit;

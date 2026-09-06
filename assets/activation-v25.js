@@ -29,7 +29,7 @@
       const module=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
       const client=module.createClient(CONFIG.backend.url,CONFIG.backend.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,storageKey:CONFIG.backend.adminStorageKey||'ee-admin-auth-v15'}});
       const session=await client.auth.getSession();if(!session.data?.session)return;
-      const result=await client.from('schema_migrations').select('version').eq('version','2.5').maybeSingle();
+      const result=await client.from('app_migrations').select('version').eq('version','2.5').maybeSingle();
       const ready=!result.error&&Boolean(result.data);const list=root.querySelector('.ee-v20-checklist');if(!list)return;
       const item=document.createElement('li');item.dataset.ready=ready?'true':'false';item.dataset.v25MigrationCheck='true';
       item.innerHTML=`<span class="ee-v20-check">${ready?'✓':'!'}</span><div><strong>Abastecimiento controlado V2.5</strong><small>${ready?'Migración 2.5 registrada.':'Ejecuta schema-v25.sql después de schema-v24.sql.'}</small></div>`;

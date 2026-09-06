@@ -99,8 +99,8 @@ $$;
 revoke all on function public.save_material_inventory_v23(jsonb) from public, anon;
 grant execute on function public.save_material_inventory_v23(jsonb) to authenticated;
 
-insert into public.schema_migrations(version, description)
+insert into public.app_migrations(version,label)
 values ('2.3','Materias primas, BOM provisional e inventario inteligente')
-on conflict(version) do nothing;
+on conflict(version) do update set label=excluded.label,applied_at=now();
 
 commit;

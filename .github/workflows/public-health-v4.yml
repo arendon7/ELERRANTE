@@ -60,10 +60,12 @@ jobs:
           fetch_public "$PUBLIC_BASE/assets/public-channel-settings-v4.js?verify=$EXPECTED_SHA" public-channel-settings-v4.js
           fetch_public "$PUBLIC_BASE/assets/public-actions-v29.js?verify=$EXPECTED_SHA" public-actions-v29.js
           fetch_public "$PUBLIC_BASE/assets/admin-connectivity-v42.js?verify=$EXPECTED_SHA" admin-connectivity-v42.js
+          fetch_public "$PUBLIC_BASE/assets/admin-config-promotion-v42.js?verify=$EXPECTED_SHA" admin-config-promotion-v42.js
 
           grep -q 'assets/admin-v15.js' public-admin-v4.html
           grep -q 'assets/public-channel-settings-v4.js' public-admin-v4.html
           grep -q 'assets/admin-connectivity-v42.js' public-admin-v4.html
+          grep -q 'assets/admin-config-promotion-v42.js' public-admin-v4.html
           python3 - <<'PY'
           from pathlib import Path
           html=Path('public-admin-v4.html').read_text(encoding='utf-8')
@@ -71,9 +73,11 @@ jobs:
           channels='assets/public-channel-settings-v4.js'
           trust='assets/trust-v19.js'
           connectivity='assets/admin-connectivity-v42.js'
-          assert legacy in html and channels in html and trust in html and connectivity in html
+          promotion='assets/admin-config-promotion-v42.js'
+          assert all(item in html for item in (legacy,channels,trust,connectivity,promotion))
           assert html.index(channels) > html.index(legacy), 'public-channel-settings-v4.js debe cargar después de admin-v15.js'
           assert html.index(connectivity) > html.index(trust), 'admin-connectivity-v42.js debe cargar al final de la superficie administrada'
+          assert html.index(promotion) > html.index(connectivity), 'admin-config-promotion-v42.js depende del guard de conectividad'
           PY
 
           grep -q 'public-actions-v29.js' public-help-v4.html
@@ -94,6 +98,20 @@ jobs:
           grep -q 'node.inert=shouldBlock' admin-connectivity-v42.js
           ! grep -qi 'service_role' admin-connectivity-v42.js
 
+          grep -q "SETTINGS_KEY='ee_v14_settings'" admin-config-promotion-v42.js
+          grep -q "window.__EE_ADMIN_SUPABASE__" admin-config-promotion-v42.js
+          grep -q "window.EL_ERRANTE_ADMIN_CONNECTIVITY" admin-config-promotion-v42.js
+          grep -q "from('public_settings').select('key,value,updated_at')" admin-config-promotion-v42.js
+          grep -q "from('public_settings').upsert" admin-config-promotion-v42.js
+          grep -q "CONFLICT" admin-config-promotion-v42.js
+          grep -q "window.confirm" admin-config-promotion-v42.js
+          grep -q "function invalidateEditors" admin-config-promotion-v42.js
+          grep -q "remoteSnapshotStale='true'" admin-config-promotion-v42.js
+          grep -q '#ee-save-payment' admin-config-promotion-v42.js
+          grep -q 'data-public-channel-settings' admin-config-promotion-v42.js
+          ! grep -q 'localStorage.setItem' admin-config-promotion-v42.js
+          ! grep -qi 'service_role' admin-config-promotion-v42.js
+
           grep -q "from('public_settings').select('value').eq('key','ordering').maybeSingle()" public-actions-v29.js
           grep -q 'https://wa.me/' public-actions-v29.js
           grep -q 'mailto:' public-actions-v29.js
@@ -103,3 +121,4 @@ jobs:
           node --check public-channel-settings-v4.js
           node --check public-actions-v29.js
           node --check admin-connectivity-v42.js
+          node --check admin-config-promotion-v42.js

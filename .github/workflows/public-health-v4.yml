@@ -105,6 +105,10 @@ jobs:
           grep -q "from('public_settings').upsert" admin-config-promotion-v42.js
           grep -q "CONFLICT" admin-config-promotion-v42.js
           grep -q "window.confirm" admin-config-promotion-v42.js
+          grep -q "function invalidateEditors" admin-config-promotion-v42.js
+          grep -q "remoteSnapshotStale='true'" admin-config-promotion-v42.js
+          grep -q '#ee-save-payment' admin-config-promotion-v42.js
+          grep -q 'data-public-channel-settings' admin-config-promotion-v42.js
           ! grep -q 'localStorage.setItem' admin-config-promotion-v42.js
           ! grep -qi 'service_role' admin-config-promotion-v42.js
 

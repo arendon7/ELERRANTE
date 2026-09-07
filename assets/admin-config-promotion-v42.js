@@ -8,17 +8,14 @@
     payment:Object.freeze(['bank','accountType','accountNumber','key','accountHolder','instructions']),
     ordering:Object.freeze(['deliveryPolicy','deliveryFeePolicy','coverageDetails','supportWhatsapp','supportEmail','expectedResponseHours','requireReceipt','maxReceiptBytesPreview'])
   });
-  const LABELS=Object.freeze({
-    payment:'Pago / transferencias',
-    ordering:'Pedidos / canales públicos'
-  });
+  const LABELS=Object.freeze({payment:'Pago / transferencias',ordering:'Pedidos / canales públicos'});
   const FIELD_LABELS=Object.freeze({
     bank:'Banco',accountType:'Tipo de cuenta',accountNumber:'Número de cuenta',key:'Llave',accountHolder:'Titular',instructions:'Instrucciones',
     deliveryPolicy:'Política de entrega',deliveryFeePolicy:'Política de tarifa',coverageDetails:'Cobertura',supportWhatsapp:'WhatsApp público',supportEmail:'Correo público',expectedResponseHours:'Horas de respuesta',requireReceipt:'Exigir comprobante',maxReceiptBytesPreview:'Máximo de comprobante en preview'
   });
 
   const isRecord=value=>Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
-  const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+  const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt',"'":'&#39;','"':'&quot;'}[char]));
   const hasOwn=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
   const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
 
@@ -76,16 +73,10 @@
     const result=await db.from('public_settings').select('key,value,updated_at').eq('key',group).maybeSingle();
     if(result.error)throw result.error;
     const row=result.data||null;
-    return {
-      exists:Boolean(row),
-      raw:isRecord(row?.value)?clone(row.value):{},
-      updatedAt:row?.updated_at||''
-    };
+    return {exists:Boolean(row),raw:isRecord(row?.value)?clone(row.value):{},updatedAt:row?.updated_at||''};
   }
 
-  function snapshotRemote(remote){
-    return fingerprint({exists:Boolean(remote?.exists),raw:isRecord(remote?.raw)?remote.raw:{}});
-  }
+  function snapshotRemote(remote){return fingerprint({exists:Boolean(remote?.exists),raw:isRecord(remote?.raw)?remote.raw:{}});}
 
   function groupModel(localRoot,group,remote){
     const localRaw=isRecord(localRoot[group])?clone(localRoot[group]):{};
@@ -162,13 +153,22 @@
   }
 
   function setGroupResult(root,group,text,type='ok',state=''){
-    const section=root.querySelector(`[data-promotion-group="${CSS.escape(group)}"]`);
+    const section=root?.querySelector(`[data-promotion-group="${CSS.escape(group)}"]`);
     const result=section?.querySelector('[data-promotion-result]');
     if(result){result.textContent=text;result.dataset.type=type;}
     if(state){
       const badge=section?.querySelector('[data-promotion-status]');
       if(badge){badge.textContent=state;badge.dataset.state=state;badge.dataset.type=statusClass(state);}
     }
+  }
+
+  function replaceGroup(root,group,remote){
+    const current=root.querySelector(`[data-promotion-group="${CSS.escape(group)}"]`);
+    if(!current)return null;
+    const holder=document.createElement('div');
+    holder.innerHTML=groupMarkup(groupModel(localSnapshot,group,remote)).trim();
+    current.replaceWith(holder.firstElementChild);
+    return root.querySelector(`[data-promotion-group="${CSS.escape(group)}"]`);
   }
 
   let busy=false;
@@ -185,10 +185,7 @@
       await assertConnected();
       const db=client();
       const localRoot=readLocalRoot();
-      const [payment,ordering]=await Promise.all([
-        readRemoteGroup(db,'payment'),
-        readRemoteGroup(db,'ordering')
-      ]);
+      const [payment,ordering]=await Promise.all([readRemoteGroup(db,'payment'),readRemoteGroup(db,'ordering')]);
       currentRoot=root;
       currentDb=db;
       localSnapshot=clone(localRoot);
@@ -225,7 +222,8 @@
     if(!section)return;
     const selected=[...section.querySelectorAll(`[data-promote-field^="${CSS.escape(group)}:"]:checked`)].map(input=>input.dataset.promoteField.split(':').slice(1).join(':'));
     if(!selected.length){setGroupResult(root,group,'Selecciona al menos un campo local diferente.','error');return;}
-    const approved=selected.filter(field=>GROUPS[group].includes(field)&&hasOwn(allowedView(localSnapshot[group],group),field));
+    const localAllowed=allowedView(localSnapshot[group],group);
+    const approved=selected.filter(field=>GROUPS[group].includes(field)&&hasOwn(localAllowed,field));
     if(!approved.length){setGroupResult(root,group,'La selección no contiene campos permitidos.','error');return;}
     if(!window.confirm(`Promover ${approved.length} campo(s) locales de ${LABELS[group]} al remoto?`))return;
 
@@ -237,15 +235,13 @@
       if(snapshotRemote(beforeWrite)!==remoteSnapshots[group]){
         remoteState[group]=beforeWrite;
         remoteSnapshots[group]=snapshotRemote(beforeWrite);
-        setGroupResult(root,group,'El remoto cambió desde la lectura inicial. Revisa nuevamente antes de promover.','error','CONFLICT');
+        replaceGroup(root,group,beforeWrite);
+        setGroupResult(root,group,'CONFLICT: el remoto cambió desde la lectura inicial. Los valores visibles fueron actualizados; revisa y selecciona nuevamente.','error','CONFLICT');
         return;
       }
 
-      const localAllowed=allowedView(localSnapshot[group],group);
       const nextRaw=clone(beforeWrite.raw)||{};
       approved.forEach(field=>{nextRaw[field]=clone(localAllowed[field]);});
-
-      await assertConnected();
       const result=await db.from('public_settings').upsert({key:group,value:nextRaw,updated_at:new Date().toISOString()},{onConflict:'key'});
       if(result.error)throw result.error;
 
@@ -253,10 +249,7 @@
       if(!confirmed.exists||!same(confirmed.raw,nextRaw))throw new Error('El remoto respondió, pero la relectura no confirmó exactamente la configuración promovida.');
       remoteState[group]=confirmed;
       remoteSnapshots[group]=snapshotRemote(confirmed);
-      const model=groupModel(localSnapshot,group,confirmed);
-      const fresh=document.createElement('div');
-      fresh.innerHTML=groupMarkup(model).trim();
-      section.replaceWith(fresh.firstElementChild);
+      replaceGroup(root,group,confirmed);
       setGroupResult(root,group,'Promoción confirmada por relectura remota. La copia local permanece intacta.','ok');
     }catch(error){
       setGroupResult(root,group,error?.message||'No fue posible promover la selección.','error');

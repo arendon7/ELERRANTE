@@ -215,6 +215,7 @@
   function blockStaleMutation(event){
     if(!remoteSeen||state===STATES.CONNECTED||state===STATES.LOCAL_PREVIEW)return;
     const target=event.target instanceof Element?event.target:null;
+    if(target?.closest('#ee-admin-login'))return;
     if(!target?.closest(MUTATION_SELECTOR))return;
     event.preventDefault();
     event.stopImmediatePropagation();

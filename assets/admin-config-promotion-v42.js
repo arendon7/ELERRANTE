@@ -15,7 +15,7 @@
   });
 
   const isRecord=value=>Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
-  const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt',"'":'&#39;','"':'&quot;'}[char]));
+  const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
   const hasOwn=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
   const clone=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
 
@@ -215,6 +215,7 @@
   }
 
   async function promote(group){
+    if(!GROUPS[group])return;
     const root=currentRoot;
     const db=currentDb;
     if(!root||!db)return;
@@ -254,8 +255,7 @@
     }catch(error){
       setGroupResult(root,group,error?.message||'No fue posible promover la selección.','error');
     }finally{
-      const active=root.querySelector(`[data-promotion-group="${CSS.escape(group)}"] [data-promote-group="${CSS.escape(group)}"]`);
-      if(active)active.disabled=false;
+      if(button?.isConnected)button.disabled=false;
     }
   }
 

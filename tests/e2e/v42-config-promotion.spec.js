@@ -76,7 +76,7 @@ async function prepare(page,{local={},remote={}}={}){
     window.__promotionHarness.session=session;
     window.__promotionHarness.isAdmin=true;
     const root=document.getElementById('admin-dynamic');
-    root.innerHTML='<div class="ee-v15-sessionbar"><div><strong>Administración conectada</strong></div></div><div class="ee-v14-grid"></div>';
+    root.innerHTML='<div class="ee-v15-sessionbar"><div><strong>Administración conectada</strong></div></div><div id="ee-admin-message" aria-live="polite"></div><div class="ee-v14-grid"><section class="ee-v14-card" data-legacy-payment-test><button id="ee-save-payment" type="button">Guardar pago heredado</button></section></div>';
   },{local,session:ADMIN_SESSION});
 
   await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.adminConnectivityState||''))
@@ -84,7 +84,7 @@ async function prepare(page,{local={},remote={}}={}){
   await expect(page.locator('[data-config-promotion-v42]')).toBeVisible();
 }
 
-const group= (page,name)=>page.locator(`[data-promotion-group="${name}"]`);
+const group=(page,name)=>page.locator(`[data-promotion-group="${name}"]`);
 const status=(page,name)=>group(page,name).locator('[data-promotion-status]');
 
 async function promote(page,name,field){
@@ -112,7 +112,7 @@ test.describe('V4.2 promoción explícita local → remoto',()=>{
     expect((await harness(page)).writes).toBe(0);
   });
 
-  test('SÓLO LOCAL promueve selección explícita, ignora campos desconocidos y conserva local',async({page})=>{
+  test('SÓLO LOCAL promueve selección explícita, ignora campos desconocidos, conserva local e invalida editor stale',async({page})=>{
     const local={payment:{accountNumber:'123456',futureSecret:'NO-COPIAR'}};
     await prepare(page,{local,remote:{payment:null}});
     await expect(status(page,'payment')).toHaveText('SÓLO LOCAL');
@@ -120,6 +120,12 @@ test.describe('V4.2 promoción explícita local → remoto',()=>{
 
     await promote(page,'payment','accountNumber');
     await expect(group(page,'payment').locator('[data-promotion-result]')).toContainText('Promoción confirmada');
+    await expect(group(page,'payment').locator('[data-promote-group="payment"]')).toBeDisabled();
+    const legacy=page.locator('[data-legacy-payment-test]');
+    await expect(legacy).toHaveAttribute('data-remote-snapshot-stale','true');
+    expect(await legacy.evaluate(node=>node.inert)).toBe(true);
+    await expect(page.locator('#ee-admin-message')).toContainText('Usa Actualizar');
+
     const state=await harness(page);
     expect(state.rows.payment).toEqual({accountNumber:'123456'});
     expect(state.rows.payment.futureSecret).toBeUndefined();

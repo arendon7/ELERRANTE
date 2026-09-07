@@ -44,6 +44,11 @@
     return {client,ordering:{...(base().ordering||{}),...(result.data?.value||{})}};
   }
 
+  async function assertRemoteConnectivity(){
+    const guard=window.EL_ERRANTE_ADMIN_CONNECTIVITY;
+    if(guard?.assertConnected)await guard.assertConnected();
+  }
+
   function markup(mode,ordering){
     const remote=mode==='remote';
     return `<section class="ee-v14-card" data-public-channel-settings data-version="${VERSION}">
@@ -120,6 +125,7 @@
           setStatus(section,'Canales guardados en esta simulación. Ayuda y En Movimiento los usarán en este navegador.');
           return;
         }
+        await assertRemoteConnectivity();
         const result=await client.from('public_settings').upsert({key:'ordering',value:current,updated_at:new Date().toISOString()},{onConflict:'key'});
         if(result.error)throw result.error;
         setStatus(section,'Canales públicos sincronizados. Ayuda y En Movimiento usarán esta configuración.');

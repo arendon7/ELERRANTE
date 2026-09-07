@@ -171,6 +171,23 @@
     return root.querySelector(`[data-promotion-group="${CSS.escape(group)}"]`);
   }
 
+  function invalidateEditors(root,group){
+    const stale=[];
+    if(group==='ordering')stale.push(root.querySelector('[data-public-channel-settings][data-mode="remote"]'));
+    if(group==='payment')stale.push(root.querySelector('#ee-save-payment')?.closest('.ee-v14-card'));
+    stale.filter(Boolean).forEach(node=>{
+      node.inert=true;
+      node.setAttribute('aria-disabled','true');
+      node.dataset.remoteSnapshotStale='true';
+    });
+    const message=root.querySelector('#ee-admin-message');
+    if(message){
+      message.textContent=`${LABELS[group]} cambió en remoto. Usa Actualizar antes de volver a editar ese formulario.`;
+      message.dataset.type='ok';
+    }
+    window.dispatchEvent(new CustomEvent('ee:public-settings-promoted',{detail:{group,version:VERSION}}));
+  }
+
   let busy=false;
   let currentRoot=null;
   let currentDb=null;
@@ -251,6 +268,7 @@
       remoteState[group]=confirmed;
       remoteSnapshots[group]=snapshotRemote(confirmed);
       replaceGroup(root,group,confirmed);
+      invalidateEditors(root,group);
       setGroupResult(root,group,'Promoción confirmada por relectura remota. La copia local permanece intacta.','ok');
     }catch(error){
       setGroupResult(root,group,error?.message||'No fue posible promover la selección.','error');

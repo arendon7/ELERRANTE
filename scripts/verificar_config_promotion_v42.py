@@ -66,6 +66,16 @@ require(asset, "const confirmed=await readRemoteGroup(db,group)", "falta relectu
 require(asset, "!confirmed.exists||!same(confirmed.raw,nextRaw)", "la relectura no confirma el valor exacto")
 require(asset, "La copia local permanece intacta", "la UX no declara separación de la copia local")
 
+# Tras una promoción, los editores que conservan el snapshot previo deben quedar bloqueados
+# hasta que el operador pulse Actualizar y recargue la verdad remota.
+require(asset, "function invalidateEditors(root,group)", "falta invalidación de editores con snapshot obsoleto")
+require(asset, "[data-public-channel-settings][data-mode=\"remote\"]", "falta invalidación del editor remoto de ordering")
+require(asset, "#ee-save-payment", "falta invalidación del editor heredado de payment")
+require(asset, "node.inert=true", "los editores stale no se bloquean con inert")
+require(asset, "node.dataset.remoteSnapshotStale='true'", "los editores stale no quedan identificados")
+require(asset, "Usa Actualizar", "la UX no indica cómo salir del estado stale")
+require(asset, "invalidateEditors(root,group)", "la promoción exitosa no invalida editores hermanos")
+
 # RLS pública preparada sigue limitada a las dos claves expuestas; la gestión admin general no se redefine aquí.
 require(schema, "using (key in ('ordering','payment'))", "schema-v26 perdió allowlist pública ordering/payment")
 require(schema, "with check (public.is_admin())", "schema-v26 perdió protección administrativa")
@@ -82,6 +92,9 @@ for marker in (
     "AUTH_REQUIRED",
     "RLS reject",
     "network unavailable",
+    "data-remote-snapshot-stale",
+    "node=>node.inert",
+    "Usa Actualizar",
     "expect(state.writes).toBe(0)",
     "expect(JSON.parse(state.local)).toEqual(local)",
 ):
@@ -89,4 +102,4 @@ for marker in (
 
 require(registry, "Promoción explícita local → remota", "registro canónico no declara la capacidad de promoción")
 
-print("PASS: promoción V4.2 es explícita, allowlisted, conflict-aware, fail-closed y no muta la copia local")
+print("PASS: promoción V4.2 es explícita, allowlisted, conflict-aware, invalida snapshots stale y no muta la copia local")

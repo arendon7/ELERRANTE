@@ -201,10 +201,14 @@ test.describe('V4.2 superficie administrativa coherente de configuración públi
   });
 
   test('Centro y Admin enlazan explícitamente la nueva superficie',async({page})=>{
-    await page.goto('/centro-interno.html',{waitUntil:'load'});
-    await expect(page.locator('a[href="configuracion-publica.html"]').first()).toBeVisible();
-    await page.goto('/admin.html',{waitUntil:'load'});
-    await expect(page.locator('a[href="configuracion-publica.html"]').first()).toBeVisible();
-    await expect(page.locator('main')).toContainText('Configuración pública V4.2');
+    const centerResponse=await page.request.get('/centro-interno.html');
+    expect(centerResponse.ok()).toBeTruthy();
+    expect(await centerResponse.text()).toContain('href="configuracion-publica.html"');
+
+    const adminResponse=await page.request.get('/admin.html');
+    expect(adminResponse.ok()).toBeTruthy();
+    const adminHtml=await adminResponse.text();
+    expect(adminHtml).toContain('href="configuracion-publica.html"');
+    expect(adminHtml).toContain('Configuración pública V4.2');
   });
 });

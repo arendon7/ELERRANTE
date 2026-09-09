@@ -36,6 +36,8 @@ if admin_html.index('assets/admin-connectivity-v42.js') < admin_html.index('asse
 for state in ("CONNECTED", "AUTH_REQUIRED", "FORBIDDEN", "REMOTE_ERROR", "LOCAL_PREVIEW"):
     require(connectivity, f"{state}:'{state}'", f"falta estado {state}")
 
+require(connectivity, "new Set(['admin','configuracion-publica'])", "el guard no reconoce la superficie contemporánea")
+require(connectivity, "document.querySelector('[data-admin-connectivity-root]')", "el guard no acepta un root explícito")
 require(connectivity, "auth.getSession()", "la capa no revalida la sesión actual")
 require(connectivity, "client.rpc('is_admin')", "la capa no revalida autorización is_admin")
 require(connectivity, "auth.onAuthStateChange", "la capa no observa cambios de autenticación")
@@ -51,6 +53,7 @@ require(connectivity, "aria-disabled", "el bloqueo no expone estado accesible")
 require(connectivity, "aria-live", "el estado de conectividad no es anunciado")
 require(connectivity, "ee:admin-connectivity", "la capa no publica un evento de estado auditable")
 require(connectivity, "document.addEventListener('click',blockStaleMutation,true)", "falta barrera de captura para mutaciones obsoletas")
+require(connectivity, "target?.closest('#ee-admin-login')", "la barrera remota puede bloquear el formulario de autenticación")
 require(connectivity, "window.EL_ERRANTE_ADMIN_CONNECTIVITY=api", "falta API central de conectividad")
 require(connectivity, "assertConnected", "falta preflight explícito reutilizable")
 require(connectivity, "setTimeout(()=>", "los callbacks auth deben diferir revalidación fuera del callback")
@@ -87,4 +90,4 @@ for marker in (
 ):
     require(e2e, marker, f"E2E V4.2 no cubre contrato: {marker}")
 
-print("PASS: conectividad admin V4.2 serializa auth, distingue estados, ejecuta preflight remoto y bloquea mutaciones")
+print("PASS: conectividad admin V4.2 serializa auth, distingue estados, mantiene login utilizable y bloquea mutaciones")

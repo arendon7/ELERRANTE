@@ -1,10 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
-  <title id="title">E terracota de El Errante</title>
-  <desc id="desc">Isotipo oficial de El Errante: una letra E geométrica en color terracota.</desc>
-  <g fill="#A5432D">
-    <rect x="22" y="16" width="22" height="88" rx="5"/>
-    <rect x="38" y="16" width="60" height="20" rx="5"/>
-    <rect x="38" y="50" width="48" height="20" rx="5"/>
-    <rect x="38" y="84" width="60" height="20" rx="5"/>
-  </g>
+  <title id="title">El Errante · pizzaiolo</title>
+  <desc id="desc">Alias de compatibilidad del isotipo V4 aprobado de El Errante.</desc>
+  <rect width="120" height="120" rx="18" fill="#F2ECE1"/>
+  <image href="images/brand-v4/pizzaiolo-mark-v4.webp" x="4" y="4" width="112" height="112" preserveAspectRatio="xMidYMid meet"/>
 </svg>

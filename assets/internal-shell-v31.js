@@ -4,6 +4,7 @@ const VERSION='3.1.1';
 const UX_VERSION='3.8.0';
 const EFFICIENCY_VERSION='3.9.0';
 const SESSION_KEY='ee_v31_session';
+const V4_FAVICON='assets/images/brand-v4/pizzaiolo-mark-v4.webp';
 let expiryTimer=null;
 function read(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY));}catch(_){return null;}}
 function session(){const s=read();if(!s||!s.expiresAt||Date.parse(s.expiresAt)<=Date.now()){sessionStorage.removeItem(SESSION_KEY);return null;}return s;}
@@ -31,6 +32,10 @@ function enforceSession(){
  const s=session();
  if(!s){redirectExpired();return null;}
  scheduleExpiry(s);return s;
+}
+function ensureBrandIcon(){
+ document.querySelectorAll('link[rel~="icon"]').forEach(link=>link.remove());
+ const link=document.createElement('link');link.rel='icon';link.type='image/webp';link.href=V4_FAVICON;link.dataset.eeBrandIcon='v4.3';document.head.appendChild(link);
 }
 function ensureUxStyle(){
  const existing=document.querySelector('link[data-internal-ux-v38]');
@@ -70,6 +75,7 @@ function ensureEfficiencyScript(){
 function rollbackEfficiencyStyle(){document.querySelector('link[data-internal-ux-v39]')?.remove();document.documentElement.removeAttribute('data-internal-efficiency-version');}
 async function boot(){
  const body=document.body;if(!body)return;
+ ensureBrandIcon();
  const s=enforceSession();
  if(!s)return;
  await ensureUxStyle();
@@ -93,6 +99,6 @@ async function boot(){
  if(!efficiency)rollbackEfficiencyStyle();
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-window.EL_ERRANTE_INTERNAL_V31={version:VERSION,uxVersion:UX_VERSION,efficiencyVersion:EFFICIENCY_VERSION,session,signOut,requestedTarget,accessUrl,enforceSession,ensureUxStyle,ensureUxScript,rollbackUxStyle,ensureEfficiencyStyle,ensureEfficiencyScript,rollbackEfficiencyStyle};
+window.EL_ERRANTE_INTERNAL_V31={version:VERSION,uxVersion:UX_VERSION,efficiencyVersion:EFFICIENCY_VERSION,session,signOut,requestedTarget,accessUrl,enforceSession,ensureBrandIcon,ensureUxStyle,ensureUxScript,rollbackUxStyle,ensureEfficiencyStyle,ensureEfficiencyScript,rollbackEfficiencyStyle};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>void boot(),{once:true});else void boot();
 })();

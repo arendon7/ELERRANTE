@@ -22,10 +22,12 @@
 | Checkout | V4 | `brand-v4-checkout.css` + runtime histórico | carrito + backend sólo si está configurado | checkout | V4 checkout specs | ACTIVE |
 | Cuenta / seguimiento | V4 | `brand-v4-account.css` + contratos de cuenta | fuente real cuando exista; offline no simula pedidos | cuenta | V4 account specs | ACTIVE |
 | Handoff público | V4 | `assets/public-actions-v29.js` | `public_settings.ordering` cuando backend esté conectado; configuración local gobernada en preview | Ayuda / En Movimiento | `v4-public-handoff.spec.js` | ACTIVE |
+| Configuración pública unificada | contrato V4.2 | `configuracion-publica.html` + `assets/public-config-admin-v42.js` | local: `ee_v14_settings`; remoto: `public_settings.ordering/payment`; disponibilidad: catálogo `active/inventory` derivado | administración interna contemporánea | `v42-public-config-surface.spec.js` + `verificar_public_config_surface_v42.py` + health Pages | ACTIVE |
+| Administración heredada | compatibilidad V2.8/V3.1.1 | `admin.html` + motores históricos | stores históricos + adaptadores V4.2 | compatibilidad y diagnóstico | regresión integral | LEGACY |
 | Configuración de canales · local | V4.4.0 interno / gobierno V4.1 | `assets/public-channel-settings-v4.js` | `ee_v14_settings` | `admin.html` en simulación local | `v4-public-channel-settings.spec.js` + gate V4 | ACTIVE |
 | Configuración de canales · remoto | contrato V4.2 | `assets/public-channel-settings-v4.js` | `public_settings.ordering`; publishable key + `is_admin` + RLS | `admin.html` conectado | `v42-public-channel-connected.spec.js` + gate V4 | PREPARED |
-| Verdad de sesión / conectividad administrativa | contrato V4.2 | `assets/admin-connectivity-v42.js` | sesión admin + `rpc('is_admin')`; sin store de negocio | `admin.html` y módulos heredados contenidos | `v42-admin-connectivity.spec.js` + `verificar_admin_connectivity_v42.py` + health Pages | ACTIVE |
-| Promoción explícita local → remota | contrato V4.2 | `assets/admin-config-promotion-v42.js` | lectura `ee_v14_settings` + escritura allowlisted en `public_settings.ordering/payment`; copia local read-only | `admin.html` conectado | `v42-config-promotion.spec.js` + `verificar_config_promotion_v42.py` + health Pages | PREPARED |
+| Verdad de sesión / conectividad administrativa | contrato V4.2 | `assets/admin-connectivity-v42.js` | sesión admin + `rpc('is_admin')`; sin store de negocio | `admin.html`, `configuracion-publica.html` y módulos contenidos | `v42-admin-connectivity.spec.js` + `verificar_admin_connectivity_v42.py` + health Pages | ACTIVE |
+| Promoción explícita local → remota | contrato V4.2 | `assets/admin-config-promotion-v42.js` | lectura `ee_v14_settings` + escritura allowlisted en `public_settings.ordering/payment`; copia local read-only | `admin.html` y `configuracion-publica.html` conectados | `v42-config-promotion.spec.js` + `verificar_config_promotion_v42.py` + health Pages | PREPARED |
 | Backend público Supabase | preparado | `assets/commerce-runtime-config.js` + schemas versionados | URL + publishable key sólo en deploy; RLS | checkout/admin/consumidores autorizados | gate V4 + schemas | PREPARED |
 | Política pública de `public_settings` | V4.2 · allowlist preparada | `schema-v14.sql` + migración `schema-v26.sql` | público: sólo `ordering`, `payment`; admin: cualquier clave con `is_admin()` | Checkout / handoffs / administración | `verificar_public_settings_policy_v42.py` + gate V4 | PREPARED |
 | WhatsApp/correo automático | no existe | — | — | — | contrato prohíbe afirmar envío automático | INACTIVE |
@@ -58,9 +60,12 @@
 10. La lectura pública preparada de `public_settings` queda limitada a `ordering` y `payment`; cualquier ampliación exige cambio deliberado de política y gates. Sigue `PREPARED` hasta aplicar la migración en un backend aprobado.
 11. La superficie administrativa remota sólo se considera operable mientras el estado central sea `CONNECTED`; `AUTH_REQUIRED`, `FORBIDDEN` y `REMOTE_ERROR` bloquean mutaciones, mientras `LOCAL_PREVIEW` conserva la simulación local explícita.
 12. La promoción local → remota nunca es automática: sólo puede copiar campos allowlisted y seleccionados conscientemente, conserva campos remotos no conocidos, revalida sesión, aborta con `CONFLICT` si el snapshot remoto cambió y nunca borra `ee_v14_settings`.
-13. Handoff WhatsApp/correo prepara un canal revisable; nunca implica envío automático.
-14. Plan, hecho, compra, COGS, estándar vigente y costo histórico siguen siendo conceptos separados.
-15. `desconocido` nunca se convierte silenciosamente en cero.
+13. `configuracion-publica.html` es la interfaz contemporánea preferida para `ordering/payment`; `admin.html` conserva sus editores equivalentes sólo como compatibilidad y no recibe nuevas responsabilidades de configuración pública.
+14. La disponibilidad comercial mostrada en Configuración pública es una lectura derivada de `active/inventory` y del contrato de cobertura; no existe ni debe crearse silenciosamente un setting `availability`. Inventario ausente conserva estado `desconocido`, nunca cero.
+15. La página de Configuración pública no carga motores funcionales de Operación o Finanzas y no puede convertirse en una cuarta fuente de hechos.
+16. Handoff WhatsApp/correo prepara un canal revisable; nunca implica envío automático.
+17. Plan, hecho, compra, COGS, estándar vigente y costo histórico siguen siendo conceptos separados.
+18. `desconocido` nunca se convierte silenciosamente en cero.
 
 ## Fuente de verdad
 

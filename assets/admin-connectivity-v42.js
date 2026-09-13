@@ -2,6 +2,7 @@
   'use strict';
 
   const VERSION='4.2.0';
+  const SUPPORTED_PAGES=new Set(['admin','configuracion-publica']);
   const STATES=Object.freeze({
     CONNECTED:'CONNECTED',
     AUTH_REQUIRED:'AUTH_REQUIRED',
@@ -19,7 +20,7 @@
   ].join(',');
 
   const root=document.documentElement;
-  const adminRoot=()=>document.getElementById('admin-dynamic');
+  const adminRoot=()=>document.querySelector('[data-admin-connectivity-root]')||document.getElementById('admin-dynamic');
   const config=()=>window.EL_ERRANTE_COMMERCE_CONFIG||{};
   const backendReady=()=>Boolean(config().backend?.url&&config().backend?.publishableKey);
 
@@ -214,6 +215,7 @@
   function blockStaleMutation(event){
     if(!remoteSeen||state===STATES.CONNECTED||state===STATES.LOCAL_PREVIEW)return;
     const target=event.target instanceof Element?event.target:null;
+    if(target?.closest('#ee-admin-login'))return;
     if(!target?.closest(MUTATION_SELECTOR))return;
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -232,7 +234,7 @@
   }
 
   function init(){
-    if(document.body?.dataset.page!=='admin')return;
+    if(!SUPPORTED_PAGES.has(document.body?.dataset.page||''))return;
     const container=adminRoot();
     if(!container)return;
     ensureBanner();

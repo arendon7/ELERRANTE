@@ -22,8 +22,11 @@ v42_scope = read("documentacion/V42_CONNECTED_CHANNEL_SCOPE.md")
 channels = read("assets/public-channel-settings-v4.js")
 actions = read("assets/public-actions-v29.js")
 promotion = read("assets/admin-config-promotion-v42.js")
+public_config = read("assets/public-config-admin-v42.js")
+public_config_page = read("configuracion-publica.html")
 remote_spec = read("tests/e2e/v42-public-channel-connected.spec.js")
 promotion_spec = read("tests/e2e/v42-config-promotion.spec.js")
+public_config_spec = read("tests/e2e/v42-public-config-surface.spec.js")
 
 for state in ("ACTIVE", "PREPARED", "INACTIVE", "LEGACY"):
     require(registry, state, f"falta estado {state} en el registro de capacidades")
@@ -33,6 +36,8 @@ for capability in (
     "Tienda / catálogo",
     "Checkout",
     "Handoff público",
+    "Configuración pública unificada",
+    "Administración heredada",
     "Configuración de canales · local",
     "Configuración de canales · remoto",
     "Verdad de sesión / conectividad administrativa",
@@ -55,9 +60,13 @@ require(registry, "desconocido", "el registro no preserva la semántica de desco
 require(registry, "MAPA_VERSIONES_ACTIVAS.md", "el registro no enlaza conceptualmente con el mapa de versiones")
 require(registry, "V42_CONNECTED_CHANNEL_SCOPE.md", "el registro no enlaza la evidencia V4.2")
 require(registry, "CONFLICT", "el registro no gobierna concurrencia de promoción local/remota")
+require(registry, "configuracion-publica.html", "el registro no identifica la superficie contemporánea")
+require(registry, "setting `availability`", "el registro no prohíbe inventar disponibilidad editable")
+require(registry, "`admin.html`", "el registro no conserva la superficie heredada como compatibilidad")
 
 require(roadmap, "Registro de capacidades y versiones", "el roadmap perdió la deuda de registro de capacidades")
 require(roadmap, "allowlist", "el roadmap perdió la necesidad de limitar public_settings")
+require(roadmap, "superficie administrativa coherente", "el roadmap perdió la consolidación administrativa V4.2")
 require(v42_scope, "test-first", "el alcance V4.2 no declara estrategia test-first")
 require(v42_scope, "is_admin", "el alcance V4.2 no exige autorización administrativa")
 require(v42_scope, "RLS", "el alcance V4.2 no exige rechazo gobernado")
@@ -70,5 +79,9 @@ require(actions, "No ha sido enviado automáticamente", "el contrato de handoff 
 require(remote_spec, "V4.2 contrato conectado", "falta evidencia E2E del estado PREPARED remoto")
 require(promotion, "data-config-promotion-v42", "el registro declara promoción pero falta su runtime")
 require(promotion_spec, "promoción explícita local → remoto", "falta evidencia E2E de promoción explícita")
+require(public_config, "data-public-config-card", "falta runtime de la superficie unificada")
+require(public_config, "stock desconocido", "la superficie unificada perdió disponibilidad derivada")
+require(public_config_page, 'data-page="configuracion-publica"', "falta página contemporánea declarada")
+require(public_config_spec, "superficie administrativa coherente", "falta evidencia E2E de Configuración pública")
 
-print("PASS: registro de capacidades V4.1/V4.2 consistente con roadmap, alcance y runtime público")
+print("PASS: registro de capacidades V4.1/V4.2 consistente con roadmap, superficies contemporáneas y runtime público")

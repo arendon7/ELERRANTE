@@ -55,17 +55,23 @@ jobs:
           }
 
           fetch_public "$PUBLIC_BASE/admin.html?verify=$EXPECTED_SHA" public-admin-v4.html
+          fetch_public "$PUBLIC_BASE/configuracion-publica.html?verify=$EXPECTED_SHA" public-config-page-v42.html
+          fetch_public "$PUBLIC_BASE/centro-interno.html?verify=$EXPECTED_SHA" public-center-v42.html
           fetch_public "$PUBLIC_BASE/ayuda.html?verify=$EXPECTED_SHA" public-help-v4.html
           fetch_public "$PUBLIC_BASE/en-movimiento.html?verify=$EXPECTED_SHA" public-moving-v4.html
           fetch_public "$PUBLIC_BASE/assets/public-channel-settings-v4.js?verify=$EXPECTED_SHA" public-channel-settings-v4.js
           fetch_public "$PUBLIC_BASE/assets/public-actions-v29.js?verify=$EXPECTED_SHA" public-actions-v29.js
           fetch_public "$PUBLIC_BASE/assets/admin-connectivity-v42.js?verify=$EXPECTED_SHA" admin-connectivity-v42.js
           fetch_public "$PUBLIC_BASE/assets/admin-config-promotion-v42.js?verify=$EXPECTED_SHA" admin-config-promotion-v42.js
+          fetch_public "$PUBLIC_BASE/assets/public-config-admin-v42.js?verify=$EXPECTED_SHA" public-config-admin-v42.js
 
           grep -q 'assets/admin-v15.js' public-admin-v4.html
           grep -q 'assets/public-channel-settings-v4.js' public-admin-v4.html
           grep -q 'assets/admin-connectivity-v42.js' public-admin-v4.html
           grep -q 'assets/admin-config-promotion-v42.js' public-admin-v4.html
+          grep -q 'configuracion-publica.html' public-admin-v4.html
+          grep -q 'configuracion-publica.html' public-center-v42.html
+
           python3 - <<'PY'
           from pathlib import Path
           html=Path('public-admin-v4.html').read_text(encoding='utf-8')
@@ -76,8 +82,19 @@ jobs:
           promotion='assets/admin-config-promotion-v42.js'
           assert all(item in html for item in (legacy,channels,trust,connectivity,promotion))
           assert html.index(channels) > html.index(legacy), 'public-channel-settings-v4.js debe cargar después de admin-v15.js'
-          assert html.index(connectivity) > html.index(trust), 'admin-connectivity-v42.js debe cargar al final de la superficie administrada'
+          assert html.index(connectivity) > html.index(trust), 'admin-connectivity-v42.js debe cargar después de trust-v19.js'
           assert html.index(promotion) > html.index(connectivity), 'admin-config-promotion-v42.js depende del guard de conectividad'
+
+          public_config=Path('public-config-page-v42.html').read_text(encoding='utf-8')
+          runtime='assets/public-config-admin-v42.js'
+          guard='assets/admin-connectivity-v42.js'
+          promotion='assets/admin-config-promotion-v42.js'
+          assert 'data-page="configuracion-publica"' in public_config
+          assert 'data-admin-connectivity-root' in public_config
+          assert all(item in public_config for item in (runtime,guard,promotion))
+          assert public_config.index(runtime) < public_config.index(guard) < public_config.index(promotion)
+          for forbidden in ('assets/finance-v27.js','assets/operations-v16.js','assets/daily-ops-v21.js','assets/production-v22.js','assets/materials-v23.js','assets/procurement-v25.js'):
+              assert forbidden not in public_config, f'configuración pública carga motor fuera de alcance: {forbidden}'
           PY
 
           grep -q 'public-actions-v29.js' public-help-v4.html
@@ -93,6 +110,8 @@ jobs:
           grep -q "FORBIDDEN:'FORBIDDEN'" admin-connectivity-v42.js
           grep -q "REMOTE_ERROR:'REMOTE_ERROR'" admin-connectivity-v42.js
           grep -q "LOCAL_PREVIEW:'LOCAL_PREVIEW'" admin-connectivity-v42.js
+          grep -q "new Set(\['admin','configuracion-publica'\])" admin-connectivity-v42.js
+          grep -q 'data-admin-connectivity-root' admin-connectivity-v42.js
           grep -q 'onAuthStateChange' admin-connectivity-v42.js
           grep -q "rpc('is_admin')" admin-connectivity-v42.js
           grep -q 'node.inert=shouldBlock' admin-connectivity-v42.js
@@ -107,10 +126,22 @@ jobs:
           grep -q "window.confirm" admin-config-promotion-v42.js
           grep -q "function invalidateEditors" admin-config-promotion-v42.js
           grep -q "remoteSnapshotStale='true'" admin-config-promotion-v42.js
-          grep -q '#ee-save-payment' admin-config-promotion-v42.js
-          grep -q 'data-public-channel-settings' admin-config-promotion-v42.js
           ! grep -q 'localStorage.setItem' admin-config-promotion-v42.js
           ! grep -qi 'service_role' admin-config-promotion-v42.js
+
+          grep -q "SETTINGS_KEY='ee_v14_settings'" public-config-admin-v42.js
+          grep -q "PRODUCTS_KEY='ee_v14_products'" public-config-admin-v42.js
+          grep -q "ordering:Object.freeze(\['deliveryPolicy','deliveryFeePolicy','coverageDetails','supportWhatsapp','supportEmail','expectedResponseHours','requireReceipt','maxReceiptBytesPreview'\])" public-config-admin-v42.js
+          grep -q "payment:Object.freeze(\['bank','accountType','accountHolder','accountNumber','key','instructions'\])" public-config-admin-v42.js
+          grep -q "window.__EE_ADMIN_SUPABASE__" public-config-admin-v42.js
+          grep -q "window.EL_ERRANTE_ADMIN_CONNECTIVITY" public-config-admin-v42.js
+          grep -q "from('public_settings').select('key,value,updated_at')" public-config-admin-v42.js
+          grep -q "from('public_settings').upsert" public-config-admin-v42.js
+          grep -q "from('product_operations').select('product_id,product_name,inventory,active,sale_price')" public-config-admin-v42.js
+          grep -q 'stock desconocido' public-config-admin-v42.js
+          grep -q 'sólo lectura' public-config-admin-v42.js
+          ! grep -q "key:'availability'" public-config-admin-v42.js
+          ! grep -qi 'service_role' public-config-admin-v42.js
 
           grep -q "from('public_settings').select('value').eq('key','ordering').maybeSingle()" public-actions-v29.js
           grep -q 'https://wa.me/' public-actions-v29.js
@@ -122,3 +153,4 @@ jobs:
           node --check public-actions-v29.js
           node --check admin-connectivity-v42.js
           node --check admin-config-promotion-v42.js
+          node --check public-config-admin-v42.js

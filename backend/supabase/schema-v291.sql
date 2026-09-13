@@ -64,6 +64,25 @@ with check (
   )
 );
 
+-- El archivo privado sólo puede subirse dentro de <auth.uid>/<order_id>/...
+-- y el pedido debe pertenecer al mismo usuario en una fase que admita comprobante.
+drop policy if exists "shopper uploads receipt in own folder" on storage.objects;
+create policy "shopper uploads receipt in own folder"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id='payment-receipts'
+  and (storage.foldername(name))[1]=auth.uid()::text
+  and (storage.foldername(name))[2] is not null
+  and exists(
+    select 1 from public.orders o
+    where o.id=(storage.foldername(name))[2]
+      and o.customer_user_id=auth.uid()
+      and o.status in ('pending_payment','payment_review','rejected')
+  )
+);
+
 -- El metadata sólo puede vincular el pedido propio con un objeto privado ya subido.
 -- La carpeta debe ser exactamente <auth.uid>/<order_id>/archivo.
 drop policy if exists "shopper inserts own receipt metadata" on public.payment_receipts;
@@ -89,7 +108,7 @@ with check (
 );
 
 insert into public.app_migrations(version,label)
-values('2.9.1','Catálogo privado e integridad shopper; estados de pedido sólo por RPC')
+values('2.9.1','Catálogo privado e integridad shopper; pedidos/estados/comprobantes endurecidos')
 on conflict(version) do update set label=excluded.label,applied_at=now();
 
 commit;

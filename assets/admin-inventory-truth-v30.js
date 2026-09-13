@@ -23,13 +23,15 @@
     if(!inputs.length)return;
     patching=true;
     try{
-      const result=await db().from('product_operations').select('product_id,inventory');
+      const result=await db().from('product_operations').select('product_id,inventory,active');
       if(result.error)throw result.error;
-      const remote=new Map((result.data||[]).map(row=>[String(row.product_id),row.inventory]));
+      const remote=new Map((result.data||[]).map(row=>[String(row.product_id),row]));
       inputs.forEach(input=>{
         const id=String(input.dataset.productInventory||'');
-        if(!remote.has(id))return;
-        const value=remote.get(id);
+        const row=remote.get(id);
+        if(!row)return;
+        input.dataset.productActive=row.active===false?'false':'true';
+        const value=row.inventory;
         if(value===null||value===undefined||value===''){
           input.value='';
           input.placeholder='No contado';
@@ -66,7 +68,7 @@
           sale_price:number(price?.value),
           unit_cost:number(cost?.value),
           inventory:rawInventory===''?null:number(rawInventory),
-          active:true,
+          active:inventoryInput?.dataset.productActive!=='false',
           updated_at:new Date().toISOString()
         };
       }).filter(row=>row.product_id);

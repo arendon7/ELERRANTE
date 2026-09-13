@@ -1,6 +1,37 @@
 (()=>{
   const runtime = window.EL_ERRANTE_RUNTIME_CONFIG || {};
   const runtimeBackend = runtime.backend || {};
+  const HOSTED_PUBLIC_BACKEND = Object.freeze({
+    provider: "supabase",
+    url: "https://mqyxsymbmpvkmdxkrqgj.supabase.co",
+    publishableKey: "sb_publishable_EZgM0VHAb2h99yDCPJLPpw_NqbU331r"
+  });
+  const hostedProduction = (()=>{
+    try{
+      const host = String(location.hostname || '').toLowerCase();
+      const path = String(location.pathname || '').toLowerCase();
+      return host === 'arendon7.github.io' && (path === '/elerrante' || path.startsWith('/elerrante/'));
+    }catch(_){
+      return false;
+    }
+  })();
+  const runtimeBackendReady = Boolean(runtimeBackend.url && runtimeBackend.publishableKey);
+  const hostedFallbackActive = !runtimeBackendReady && hostedProduction;
+  const resolvedBackend = runtimeBackendReady ? runtimeBackend : (hostedFallbackActive ? HOSTED_PUBLIC_BACKEND : {});
+  if(hostedFallbackActive){
+    window.EL_ERRANTE_RUNTIME_CONFIG = Object.freeze({
+      ...runtime,
+      environment: "connected",
+      backend: Object.freeze({
+        provider: HOSTED_PUBLIC_BACKEND.provider,
+        url: HOSTED_PUBLIC_BACKEND.url,
+        publishableKey: HOSTED_PUBLIC_BACKEND.publishableKey,
+        receiptBucket: runtimeBackend.receiptBucket || "payment-receipts",
+        shopperStorageKey: runtimeBackend.shopperStorageKey || "ee-shopper-auth-v15",
+        adminStorageKey: runtimeBackend.adminStorageKey || "ee-admin-auth-v15"
+      })
+    });
+  }
   const INTERNAL_DEMO_PAGES = new Set(['centro-interno','control','operacion','finanzas']);
   const operationalDemoActive = (()=>{
     try{
@@ -10,13 +41,14 @@
       return false;
     }
   })();
+  const connected = Boolean(resolvedBackend.url && resolvedBackend.publishableKey) && !operationalDemoActive;
   window.EL_ERRANTE_COMMERCE_CONFIG = Object.freeze({
     version: "2.5.0",
-    environment: runtime.environment || "preview",
+    environment: connected ? "connected" : (runtime.environment || "preview"),
     backend: {
-      provider: runtimeBackend.provider || "supabase",
-      url: operationalDemoActive ? "" : (runtimeBackend.url || ""),
-      publishableKey: operationalDemoActive ? "" : (runtimeBackend.publishableKey || ""),
+      provider: resolvedBackend.provider || runtimeBackend.provider || "supabase",
+      url: connected ? resolvedBackend.url : "",
+      publishableKey: connected ? resolvedBackend.publishableKey : "",
       receiptBucket: runtimeBackend.receiptBucket || "payment-receipts",
       shopperStorageKey: runtimeBackend.shopperStorageKey || "ee-shopper-auth-v15",
       adminStorageKey: runtimeBackend.adminStorageKey || "ee-admin-auth-v15"

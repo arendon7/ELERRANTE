@@ -1,6 +1,6 @@
 begin;
 
--- EL ERRANTE V2.9.1 — catálogo operativo privado.
+-- EL ERRANTE V2.9.1 — privacidad del catálogo operativo + integridad shopper.
 -- Precio operativo, costo unitario, inventario y umbrales son datos internos.
 -- La tienda pública continúa usando el catálogo canónico publicado en frontend;
 -- las superficies conectadas que consultan product_operations son administrativas.
@@ -27,8 +27,55 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
+-- Un shopper anónimo sólo puede crear la fase previa a verificación de pago.
+-- Nunca puede autoaprobar, iniciar preparación, despachar o cerrar un pedido.
+drop policy if exists "shopper inserts own order" on public.orders;
+create policy "shopper inserts own order"
+on public.orders
+for insert
+to authenticated
+with check (
+  customer_user_id = auth.uid()
+  and coalesce((auth.jwt()->>'is_anonymous')::boolean,false) = true
+  and status in ('pending_payment','payment_review')
+  and payment_method = 'bank_transfer'
+  and source = 'web'
+);
+
+-- Los ítems sólo pueden añadirse al pedido propio mientras sigue en fase shopper.
+-- Tras aprobación/revisión administrativa, el cliente no puede anexar líneas tardías.
+drop policy if exists "shopper inserts own order items" on public.order_items;
+create policy "shopper inserts own order items"
+on public.order_items
+for insert
+to authenticated
+with check (
+  exists(
+    select 1 from public.orders o
+    where o.id=order_id
+      and o.customer_user_id=auth.uid()
+      and o.status in ('pending_payment','payment_review')
+  )
+);
+
+-- El metadata del comprobante debe apuntar a un pedido del mismo shopper.
+drop policy if exists "shopper inserts own receipt metadata" on public.payment_receipts;
+create policy "shopper inserts own receipt metadata"
+on public.payment_receipts
+for insert
+to authenticated
+with check (
+  owner_id=auth.uid()
+  and exists(
+    select 1 from public.orders o
+    where o.id=order_id
+      and o.customer_user_id=auth.uid()
+      and o.status in ('pending_payment','payment_review','rejected')
+  )
+);
+
 insert into public.app_migrations(version,label)
-values('2.9.1','Catálogo operativo privado: costos e inventario sólo para administradores')
+values('2.9.1','Catálogo operativo privado e integridad de inserciones shopper')
 on conflict(version) do update set label=excluded.label,applied_at=now();
 
 commit;

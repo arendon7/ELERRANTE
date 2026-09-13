@@ -1,10 +1,12 @@
 begin;
 
--- EL ERRANTE V2.9.2 — reconciliación guardada de gastos fijos del piloto.
--- Sólo acepta dos estados conocidos para el mes actual:
--- A) seed legacy V1.4 exacto: 4 filas / COP 6.000.000;
--- B) baseline piloto exacto: 6 filas / COP 370.000.
--- Cualquier tercer estado aborta toda la migración para no pisar datos reales.
+-- EL ERRANTE V2.9.2 — reconciliación guardada de defaults demostrativos.
+-- 1) Gastos fijos: sólo acepta dos estados conocidos para el mes actual:
+--    A) seed legacy V1.4 exacto: 4 filas / COP 6.000.000;
+--    B) baseline piloto exacto: 6 filas / COP 370.000.
+--    Cualquier tercer estado aborta toda la migración para no pisar datos reales.
+-- 2) Pago: limpia Bancolombia/Cuenta de ahorros únicamente si siguen siendo
+--    exactamente los placeholders V1.5 y titular/cuenta/llave continúan vacíos.
 
 do $$
 declare
@@ -76,8 +78,23 @@ begin
   end if;
 end $$;
 
+-- Retira únicamente los defaults bancarios heredados cuando no existe ningún
+-- dato de pago real. Una configuración parcial/real queda intacta.
+update public.public_settings
+set value=jsonb_set(
+            jsonb_set(value,'{bank}','""'::jsonb,true),
+            '{accountType}','""'::jsonb,true
+          ),
+    updated_at=now()
+where key='payment'
+  and coalesce(value->>'bank','')='Bancolombia'
+  and coalesce(value->>'accountType','')='Cuenta de ahorros'
+  and coalesce(value->>'accountHolder','')=''
+  and coalesce(value->>'accountNumber','')=''
+  and coalesce(value->>'key','')='';
+
 insert into public.app_migrations(version,label)
-values('2.9.2','Reconciliación fail-closed de seed financiero legacy al baseline provisional del piloto')
+values('2.9.2','Reconciliación fail-closed de defaults demo financieros y bancarios')
 on conflict(version) do update set label=excluded.label,applied_at=now();
 
 commit;

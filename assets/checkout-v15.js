@@ -25,6 +25,8 @@
   });
 
   const backendReady = config => Boolean(config?.backend?.url && config?.backend?.publishableKey);
+  const paymentReady = config => Boolean(config?.payment?.accountNumber || config?.payment?.key);
+  const commerceReady = config => backendReady(config) && paymentReady(config);
   const publishRuntime = (backendState, runtime, pageState) => {
     document.documentElement.dataset.eeCommerceBackend = backendState;
     document.documentElement.dataset.eeCheckoutRuntime = runtime;
@@ -72,6 +74,11 @@
       if(!backendReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
         restoreV29Root();
         publishRuntime("preview", "v29-offline", "checkout-preview");
+        return;
+      }
+      if(!commerceReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
+        restoreV29Root();
+        publishRuntime("connected", "v29-payment-pending", "checkout-preview");
         return;
       }
       exposeLegacyRoot();

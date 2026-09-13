@@ -42,6 +42,12 @@ with check (
   and source = 'web'
 );
 
+-- Las transiciones administrativas de estado son un dominio, no un UPDATE genérico.
+-- transition_order_v21/v22 son SECURITY DEFINER, validan is_admin(), grafo de estados,
+-- comprobante antes de aprobar y checklist antes de despachar. Se retira el atajo REST.
+drop policy if exists "admins update orders" on public.orders;
+revoke update on table public.orders from authenticated;
+
 -- Los ítems sólo pueden añadirse al pedido propio mientras sigue en fase shopper.
 -- Tras aprobación/revisión administrativa, el cliente no puede anexar líneas tardías.
 drop policy if exists "shopper inserts own order items" on public.order_items;
@@ -83,7 +89,7 @@ with check (
 );
 
 insert into public.app_migrations(version,label)
-values('2.9.1','Catálogo operativo privado e integridad de pedidos/comprobantes shopper')
+values('2.9.1','Catálogo privado e integridad shopper; estados de pedido sólo por RPC')
 on conflict(version) do update set label=excluded.label,applied_at=now();
 
 commit;

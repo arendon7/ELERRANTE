@@ -1,6 +1,17 @@
 (()=>{
   'use strict';
 
+  const TAB_ICON='assets/images/brand-v4/pizzaiolo-mark-v4.webp';
+  function ensureBrowserIdentity(){
+    const head=document.head;if(!head)return;
+    let icon=head.querySelector('link[rel~="icon"]');
+    if(!icon){icon=document.createElement('link');icon.rel='icon';head.appendChild(icon);}
+    icon.type='image/webp';icon.href=TAB_ICON;
+    if(!String(document.title||'').trim())document.title='El Errante · Pizza contemporánea';
+    document.documentElement.dataset.eeBrowserIdentity='v4.2.1';
+  }
+  ensureBrowserIdentity();
+
   const hosted=location.protocol==='https:'||location.hostname.endsWith('github.io');
   const INTERNAL_PAGES=new Set(['centro-interno','admin','activacion','control','operacion','finanzas','studio','actas','presentacion']);
   const INTERNAL_TARGETS=new Set(['centro-interno.html','admin.html','activacion.html','control.html','operacion.html','finanzas.html','studio.html','actas.html','presentacion.html']);
@@ -26,6 +37,7 @@
     body.dataset.v4Public='true';body.dataset.v4Utility='true';
     const theme=document.querySelector('meta[name="theme-color"]');if(theme)theme.setAttribute('content','#11110F');
     document.querySelectorAll('link[rel="icon"][href*="logo-mark"]').forEach(link=>link.remove());
+    ensureBrowserIdentity();
     ensureStylesheet('assets/brand-v4-public.css');ensureStylesheet('assets/brand-v4-utility.css');
     if(document.documentElement.dataset.eeV4UtilityShell!=='ready'){
       document.documentElement.dataset.eeV4UtilityShell='ready';
@@ -110,6 +122,7 @@
   }
 
   function enhance(){
+    ensureBrowserIdentity();
     const page=document.body?.dataset?.page||'';const isInternal=INTERNAL_PAGES.has(page);recover();observe();
     document.documentElement.dataset.eeVisualSystem='brand-canon-v28';document.documentElement.dataset.eeVisualQuality='brand-final-hq';document.documentElement.dataset.eeVersion=BRAND.version;document.documentElement.dataset.eeRelease='3.0.0-editorial-authority-candidate';document.documentElement.dataset.eeMode=isInternal?'team-demo':'public';document.documentElement.dataset.eePublicCache='brand-canon-v28';
     if(hosted&&!isInternal){document.querySelectorAll('.local-runtime-badge,[data-internal-only],.internal-only').forEach(element=>element.remove());document.querySelectorAll('.demo-badge').forEach(element=>{const text=(element.textContent||'').toLowerCase();if(text.includes('gold master')||text.includes('demo')||text.includes('sin internet')||text.includes('biblioteca editorial completa'))element.remove();});}

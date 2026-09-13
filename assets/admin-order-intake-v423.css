@@ -1,0 +1,1 @@
+.ee-v423-line{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important}.ee-v423-line label,.ee-v423-line input,.ee-v423-line select{min-width:0;width:100%}.ee-v423-line [data-remove-line]{align-self:end}@media(max-width:640px){.ee-v423-line{grid-template-columns:1fr!important}.ee-v423-line>span{display:none}.ee-v423-line [data-remove-line]{width:100%}}

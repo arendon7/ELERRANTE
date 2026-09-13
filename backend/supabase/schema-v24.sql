@@ -79,7 +79,7 @@ begin
     nullif(trim(coalesce(p_payload->>'note','')),''),
     auth.uid()
   ) returning id into v_id;
-  insert into public.admin_audit_log(actor_id,action,entity_type,entity_id,detail)
+  insert into public.admin_audit_log(actor_id,action,entity,entity_id,payload)
   values(auth.uid(),'production_measurement_created','production_measurement',v_id::text,p_payload);
   return v_id;
 end;
@@ -115,7 +115,7 @@ begin
     nullif(trim(coalesce(p_payload->>'note','')),''),
     auth.uid()
   ) returning id into v_purchase_id;
-  insert into public.admin_audit_log(actor_id,action,entity_type,entity_id,detail)
+  insert into public.admin_audit_log(actor_id,action,entity,entity_id,payload)
   values(auth.uid(),'material_purchase_created','material_purchase',v_purchase_id::text,p_payload - 'note');
   return v_purchase_id;
 end;

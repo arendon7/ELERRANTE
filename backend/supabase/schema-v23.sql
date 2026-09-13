@@ -90,7 +90,7 @@ begin
       updated_by=excluded.updated_by;
     v_count := v_count + 1;
   end loop;
-  insert into public.admin_audit_log(actor_id, action, entity_type, entity_id, detail)
+  insert into public.admin_audit_log(actor_id, action, entity, entity_id, payload)
   values (auth.uid(),'material_inventory_count','material_inventory','batch',jsonb_build_object('rows',v_count));
   return v_count;
 end;

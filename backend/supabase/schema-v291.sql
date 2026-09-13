@@ -13,6 +13,11 @@ drop policy if exists "public reads active catalog operations" on public.product
 revoke select on table public.product_operations from anon;
 grant select on table public.product_operations to authenticated;
 
+-- is_admin sólo es una dependencia de sesiones authenticated/RLS administrativa.
+-- El rol anon sin sesión no necesita invocarla directamente por REST.
+revoke execute on function public.is_admin() from public, anon;
+grant execute on function public.is_admin() to authenticated;
+
 -- Reconstituye la política administrativa de forma explícita e idempotente.
 drop policy if exists "admins manage catalog operations" on public.product_operations;
 create policy "admins manage catalog operations"

@@ -4,6 +4,7 @@ const path=require('path');
 
 const source=fs.readFileSync(path.join(process.cwd(),'assets','web-order-rpc-v32.js'),'utf8');
 const schema=fs.readFileSync(path.join(process.cwd(),'backend','supabase','schema-v32.sql'),'utf8');
+const receiptSchema=fs.readFileSync(path.join(process.cwd(),'backend','supabase','schema-v321.sql'),'utf8');
 
 async function harness(page){
   await page.setContent(`<!doctype html><html><body>
@@ -58,12 +59,16 @@ test.describe('V3.2 · pedido web server-priced',()=>{
     expect(state.metadata).not.toHaveProperty('reviewed_at');
   });
 
-  test('contrato SQL retira inserts directos y restringe comprobante shopper',async()=>{
+  test('contrato SQL retira inserts directos y separa comprobantes shopper/admin',async()=>{
     expect(schema).toContain('revoke insert on table public.orders from anon,authenticated');
     expect(schema).toContain('revoke insert on table public.order_items from anon,authenticated');
     expect(schema).toContain("and status='pending'");
     expect(schema).toContain('create_web_order_v32');
     expect(schema).toContain('resolve_delivery_fee_v32');
     expect(schema).toContain("jsonb_set(coalesce(value,'{}'::jsonb),'{commerceEnabled}','false'::jsonb,true)");
+    expect(receiptSchema).toContain("is_anonymous')::boolean,false)=true");
+    expect(receiptSchema).toContain('admins insert receipt metadata v321');
+    expect(receiptSchema).toContain('public.is_admin()');
+    expect(receiptSchema).toContain("and status='pending'");
   });
 });

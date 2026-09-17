@@ -26,13 +26,21 @@
 
   const backendReady = config => Boolean(config?.backend?.url && config?.backend?.publishableKey);
   const paymentReady = config => Boolean(config?.payment?.accountNumber || config?.payment?.key);
-  const commerceReady = config => backendReady(config) && paymentReady(config);
+  const commerceEnabled = config => config?.ordering?.commerceEnabled === true;
+  const commerceReady = config => backendReady(config) && paymentReady(config) && commerceEnabled(config);
   const publishRuntime = (backendState, runtime, pageState) => {
     document.documentElement.dataset.eeCommerceBackend = backendState;
     document.documentElement.dataset.eeCheckoutRuntime = runtime;
     if(document.body) document.body.dataset.page = pageState;
     document.dispatchEvent(new CustomEvent("ee:checkout-runtime", {detail:{backendState,runtime,pageState}}));
   };
+
+  function normalizePaymentPresentation(config){
+    const payment={...(config.payment||{})};
+    payment.bank=String(payment.bank||'').trim()||'Transferencia';
+    payment.accountType=String(payment.accountType||'').trim()||'No especificado';
+    return Object.freeze({...config,payment:Object.freeze(payment)});
+  }
 
   async function hydratePublicSettings(config){
     if(!backendReady(config)) return config;
@@ -70,15 +78,20 @@
     }
 
     try{
-      window.EL_ERRANTE_COMMERCE_CONFIG = await hydratePublicSettings(initial);
+      window.EL_ERRANTE_COMMERCE_CONFIG = normalizePaymentPresentation(await hydratePublicSettings(initial));
       if(!backendReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
         restoreV29Root();
         publishRuntime("preview", "v29-offline", "checkout-preview");
         return;
       }
-      if(!commerceReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
+      if(!paymentReady(window.EL_ERRANTE_COMMERCE_CONFIG)){
         restoreV29Root();
         publishRuntime("connected", "v29-payment-pending", "checkout-preview");
+        return;
+      }
+      if(!commerceEnabled(window.EL_ERRANTE_COMMERCE_CONFIG)){
+        restoreV29Root();
+        publishRuntime("connected", "v29-pilot-locked", "checkout-preview");
         return;
       }
       exposeLegacyRoot();

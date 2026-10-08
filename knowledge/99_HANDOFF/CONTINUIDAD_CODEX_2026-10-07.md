@@ -95,7 +95,7 @@ El archivo **assets/images/brand-v4/pizzaiolo-mark-v4.webp** figura como marca p
 
 **Fotografías:** preservar autenticidad culinaria (producto, masa, ingredientes, rótulos, tamaño y composición). No inventar etiquetas ni gramos. Aire y Tiempo y Crea la Tuya tienen excepciones históricas de fotografía mientras no exista reemplazo aprobado; no confundir excepción con autorización general para volver a la identidad antigua.
 
-**Sobre prompts visuales históricos:** las conversaciones previas describieron un paquete maestro de decenas de prompts y generación individual con control de marca, propósito UX, ratio, verdad de producto y criterios de rechazo. Este dossier **no afirma haber recuperado una transcripción literal completa de esos prompts**. El canon verificable y el banco de activos hoy están en el repositorio y sus manifiestos. Si se recupera el paquete original, archivarlo como referencia versionada, no modificar ni publicar imágenes sin auditoría.
+**Sobre prompts visuales históricos (verificación adicional del 7-oct-2026):** se localizó en Google Drive el archivo exacto **`EL_ERRANTE_MASTER_VISUAL_PROMPTS_V1.xlsx`**, con **56 filas de Prompt Specs** (ID, familia, página, ratio, prioridad, Truth lock, función UX, prompt final, criterio de rechazo) y matrices de control de verdad visual. **No está copiado al repositorio ni embebido en este dossier.** El archivo contiene una contradicción importante: declara **`EST. 2024`**, mientras el canon oficial V4 de `main` declara **`EST. 2019`**; también usa referencias terracota que deben revisarse frente al canon V4. Por tanto, **NO aplicar esa planilla literalmente sin normalizarla contra AGENTS.md, V4_BRAND_DIRECTION.md y los manifiestos aprobados**. No regenerar/reemplazar imágenes V4 ya publicables sólo porque existan prompts antiguos. Ver inventario de fuentes externas en §11.
 
 ## 4. Mapa de la aplicación y fuentes canónicas
 
@@ -273,6 +273,36 @@ No reconstruyas el producto desde cero ni cambies el diseño aprobado.
 - **Conversaciones anteriores:** se incorporaron decisiones y referencias conocidas del proyecto, no una transcripción exhaustiva de cada chat ni todas las decenas de prompts externos. Evitar la afirmación “todo está recuperado” sin contraste documental.
 - **Datos comerciales:** precios, coberturas, medio de pago, domicilio, WhatsApp, inventario físico y costos aprobados deben provenir de fuentes reales autorizadas; no completarlos por inferencia.
 - **Evolución:** al finalizar cada PR con cambio sustantivo, registrar fecha, nuevo SHA, verificación, capacidades afectadas, bloqueos restantes y decisión GO/NO-GO. Mantener este dossier como índice y transferir hechos canónicos estables a los documentos propietarios.
+
+## 11. Inventario contrastado de fuentes fuera de GitHub (Google Drive)
+
+**Inspección de Drive del 7 de octubre de 2026.** Los siguientes nombres corresponden a archivos reales encontrados por búsqueda en la cuenta conectada. Se consignan **sólo nombres**, no URLs/IDs de documentos privados ni datos sensibles, porque `arendon7/ELERRANTE` es un repositorio **público**. Codex debe solicitar acceso autorizado a Drive o usar una copia privada local; no interpretar los títulos como fuentes ya importadas al repo.
+
+| Archivo o carpeta localizable en Drive | Uso / contenido verificado | Autoridad y tratamiento |
+|---|---|---|
+| `EL_ERRANTE_MASTER_VISUAL_PROMPTS_V1.xlsx` | **56 specs** de imágenes para la web; truth locks, ratios, prompts y rechazos. Tiene reglas útiles de balsámico de panela/maracuyá de **250 ml**, Crea la Tuya, cinco pizzas y fotografías. | **REFERENCIA A NORMALIZAR**: contiene `EST. 2024`, incompatible con el canon actual `EST. 2019`; paleta antigua parcialmente terracota. No usar como brand master ni editar web sin reconciliar. |
+| `EL_ERRANTE_Transferencia_Financiera_Operativa_Respuesta_Completa_v1.docx` | Transferencia detallada de 18 módulos: materias primas, recetas provisionales, producción, costos, inventarios, ventas, MFO, caja, implementación web, gaps y fuentes. El propio archivo se marca **CONFIDENCIAL**. | **PRIVADO / DATOS PROVISIONALES**. No subir a GitHub público; recetas, costos y pagos necesitan validación humana y soporte. |
+| `EL_ERRANTE_Cuestionario_Maestro_Transferencia_Financiera_Operativa.docx` | Cuestionario de obtención/validación de datos; aporta qué sigue faltando y cómo confirmarlo. | **CHECKLIST PRIVADO**; no sustituye medidas reales ni fuentes actuales. |
+| `MFO_EL_ERRANTE_v3_3_Decisiones_y_Escenarios.xlsx` | Libro financiero de referencia nombrado en el contrato del exportador MFO v3.3 en main. | **PRIVADO**; no copiar cifras reales al repo; cotejar perfil, pestañas y vigencia antes de importar en Finanzas. |
+| `MFO_EL_ERRANTE_24_MESES_v2_CLARO.xlsx` y `v1.xlsx` | Versiones anteriores del modelo 24 meses. | **HISTÓRICO/COMPARATIVO**; no reemplazar v3.3 ni asumir validez financiera actual. |
+| `Receta estandar EL ERRANTE.xlsx` (varias copias) | Archivo de formulación culinaria; la búsqueda encontró duplicados. | **VERIFICAR versión y aprobación de Juan David**; no inventar receta vigente por el título ni fijar gramajes sin cotejo. |
+| `Base de Datos EL ERRANTE.xlsx` (varias copias) | Fuente comercial histórica potencial con duplicados. | **NO fuente única**; reconciliar antes de usar datos de clientes, proveedores o producto. |
+| `El Errante proyecto.docx` (varias copias) | Documentación de origen del proyecto. | **HISTÓRICO** frente a contratos actuales del repositorio. |
+| Carpetas `Fotos El Errante` y `ELERRANTE_PAQUETE_VISUAL_V1_10` | Referencias fotográficas/primer lote visual en Drive. | **REQUIEREN QA de canon y permisos de publicación**; no sustituir manifiesto V4 sólo por disponibilidad. |
+| `ELERRANTE_WEB_HQ_V13` | Material visual web anterior. | **LEGACY**; no promover por defecto. |
+
+**No se han copiado ni auditado exhaustivamente todas las celdas, fotografías o versiones de estas fuentes externas.** Esta es una **cartografía verificable para recuperarlas**, no una integración de contenido privado. El diseño final/publicable se gobierna por el canon V4, los manifiestos y las validaciones de main. Ante diferencias entre una matriz histórica y el código final, no sobrescribir; documentar la contradicción, responsable y evidencia de aprobación.
+
+### Brechas de trazabilidad que aún impiden calificar este expediente como exhaustivo
+
+1. **Prompts visuales:** existe el workbook de 56 specs en Drive, pero falta versionar una **edición V4 normalizada** y revisar la correspondencia fila → asset → página → aprobación. Conservar siempre el original sin modificar.
+2. **Evidencia gastronómica:** vincular cada receta y dato de vida útil/rotulado/gramaje con la aprobación de Juan David y/o documento medido vigente; distinguir preliminar de aprobado.
+3. **Fuentes financieras y comerciales:** inventario seguro de MFO, costos con soportes, tarifas/precios por variante y datos reales, **fuera del repositorio público**; exponer únicamente estado y esquema.
+4. **Estado productivo de backend:** el proyecto Supabase aparece **INACTIVE** al 7-oct; falta revisar esquema, migraciones, RLS, Storage, Auth y pedido cero después de reactivación autorizada.
+5. **Evidencia E2E actual:** faltan resultados de ejecución en un entorno vivo reciente (Pages, desktop/móvil, rol admin/shopper, inventario y restock) contra un mismo SHA y release.
+6. **Conversaciones y archivos históricos:** no se ha exportado íntegramente cada conversación de ChatGPT; la base técnica y el inventario de fuentes reducen dependencia, pero no constituyen archivo literal exhaustivo.
+
+**Criterio de suficiencia:** hoy el dossier **sí sirve para que Codex reanude el desarrollo con seguridad y orden**; **NO es suficiente por sí solo para declarar terminada la aplicación o activar el piloto**. Primero resolver, medir y certificar las brechas anteriores.
 
 ---
 

@@ -38,3 +38,7 @@ Generated visuals are not automatically publishable. Classify them as PUBLICABLE
 - reduced-motion support;
 - no layout shift caused by unbounded media;
 - store and checkout clarity outrank decorative storytelling.
+
+## Codex continuity handoff
+
+When continuing development after a conversation handoff, read `knowledge/99_HANDOFF/CONTINUIDAD_CODEX_2026-10-07.md` as a dated orientation and task map. Confirm the real current `main` SHA, open PRs, CI and live backend status before acting. The repo source, brand canon, tests and approved business data supersede the dated handoff. Do not activate real orders or modify production merely because a capability is described as prepared.

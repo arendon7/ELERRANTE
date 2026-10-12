@@ -8,6 +8,8 @@
 **Último commit observado en main:** 13 de septiembre de 2026 (hora de Colombia); merge de PR #185 / V4.2.4  
 **Alcance de este documento:** consolidar decisiones de producto, diseño, arquitectura, trabajo implementado, deuda abierta y ruta concreta para que una nueva sesión de Codex pueda retomar sin depender de chats anteriores.
 
+> **Actualización y corrección posterior (12-oct-2026):** este documento conserva el corte narrativo del 7-oct. El archivo original de prompts contiene **65 especificaciones**, no 56: la auditoría inicial omitió las familias PM/BO al contarlas. La matriz V1 contiene 61 piezas de núcleo y 4 opcionales; el año de marca V1 `EST. 2024` no sustituye `EST. 2019` del canon V4. Ver **[índice central](INDICE_CODEX_2026-10-12.md)**, **[matriz visual](MATRIZ_VISUAL_65_SPECS_2026-10-12.md)**, **[autoridad de fuentes](INVENTARIO_FUENTES_Y_AUTORIDAD_2026-10-12.md)** y **[plan de beta](PLAN_VERIFICABLE_BETA_CODEX_2026-10-12.md)**. Supabase seguía `INACTIVE` al 12-oct; Graphify está construido desde `a6edba45`, coincidente con el `main` observado. Esta rama solo contiene documentación y está pendiente de PR #190.
+
 > **Jerarquía de verdad:** 1) código, tests y estado de GitHub en el HEAD real de main; 2) AGENTS.md y contratos canónicos del repositorio; 3) este dossier, fechado; 4) actas/conversaciones y documentos históricos. **Este dossier no sustituye una lectura en vivo del repo ni certifica funciones en producción.** No se han ejecutado aquí pruebas locales ni compras reales. Las verificaciones señaladas son lecturas de fuentes conectadas.
 
 ## 1. Qué estamos construyendo y para qué
@@ -95,7 +97,7 @@ El archivo **assets/images/brand-v4/pizzaiolo-mark-v4.webp** figura como marca p
 
 **Fotografías:** preservar autenticidad culinaria (producto, masa, ingredientes, rótulos, tamaño y composición). No inventar etiquetas ni gramos. Aire y Tiempo y Crea la Tuya tienen excepciones históricas de fotografía mientras no exista reemplazo aprobado; no confundir excepción con autorización general para volver a la identidad antigua.
 
-**Sobre prompts visuales históricos (verificación adicional del 7-oct-2026):** se localizó en Google Drive el archivo exacto **`EL_ERRANTE_MASTER_VISUAL_PROMPTS_V1.xlsx`**, con **56 filas de Prompt Specs** (ID, familia, página, ratio, prioridad, Truth lock, función UX, prompt final, criterio de rechazo) y matrices de control de verdad visual. **No está copiado al repositorio ni embebido en este dossier.** El archivo contiene una contradicción importante: declara **`EST. 2024`**, mientras el canon oficial V4 de `main` declara **`EST. 2019`**; también usa referencias terracota que deben revisarse frente al canon V4. Por tanto, **NO aplicar esa planilla literalmente sin normalizarla contra AGENTS.md, V4_BRAND_DIRECTION.md y los manifiestos aprobados**. No regenerar/reemplazar imágenes V4 ya publicables sólo porque existan prompts antiguos. Ver inventario de fuentes externas en §11.
+**Sobre prompts visuales históricos (verificación adicional del 7-oct-2026):** se localizó en Google Drive el archivo exacto **`EL_ERRANTE_MASTER_VISUAL_PROMPTS_V1.xlsx`**, con **65 filas de Prompt Specs** (ID, familia, página, ratio, prioridad, Truth lock, función UX, prompt final, criterio de rechazo) y matrices de control de verdad visual. **No está copiado al repositorio ni embebido en este dossier.** El archivo contiene una contradicción importante: declara **`EST. 2024`**, mientras el canon oficial V4 de `main` declara **`EST. 2019`**; también usa referencias terracota que deben revisarse frente al canon V4. Por tanto, **NO aplicar esa planilla literalmente sin normalizarla contra AGENTS.md, V4_BRAND_DIRECTION.md y los manifiestos aprobados**. No regenerar/reemplazar imágenes V4 ya publicables sólo porque existan prompts antiguos. Ver inventario de fuentes externas en §11.
 
 ## 4. Mapa de la aplicación y fuentes canónicas
 
@@ -280,7 +282,7 @@ No reconstruyas el producto desde cero ni cambies el diseño aprobado.
 
 | Archivo o carpeta localizable en Drive | Uso / contenido verificado | Autoridad y tratamiento |
 |---|---|---|
-| `EL_ERRANTE_MASTER_VISUAL_PROMPTS_V1.xlsx` | **56 specs** de imágenes para la web; truth locks, ratios, prompts y rechazos. Tiene reglas útiles de balsámico de panela/maracuyá de **250 ml**, Crea la Tuya, cinco pizzas y fotografías. | **REFERENCIA A NORMALIZAR**: contiene `EST. 2024`, incompatible con el canon actual `EST. 2019`; paleta antigua parcialmente terracota. No usar como brand master ni editar web sin reconciliar. |
+| `EL_ERRANTE_MASTER_VISUAL_PROMPTS_V1.xlsx` | **65 specs** de imágenes para la web; truth locks, ratios, prompts y rechazos. Tiene reglas útiles de balsámico de panela/maracuyá de **250 ml**, Crea la Tuya, cinco pizzas y fotografías. | **REFERENCIA A NORMALIZAR**: contiene `EST. 2024`, incompatible con el canon actual `EST. 2019`; paleta antigua parcialmente terracota. No usar como brand master ni editar web sin reconciliar. |
 | `EL_ERRANTE_Transferencia_Financiera_Operativa_Respuesta_Completa_v1.docx` | Transferencia detallada de 18 módulos: materias primas, recetas provisionales, producción, costos, inventarios, ventas, MFO, caja, implementación web, gaps y fuentes. El propio archivo se marca **CONFIDENCIAL**. | **PRIVADO / DATOS PROVISIONALES**. No subir a GitHub público; recetas, costos y pagos necesitan validación humana y soporte. |
 | `EL_ERRANTE_Cuestionario_Maestro_Transferencia_Financiera_Operativa.docx` | Cuestionario de obtención/validación de datos; aporta qué sigue faltando y cómo confirmarlo. | **CHECKLIST PRIVADO**; no sustituye medidas reales ni fuentes actuales. |
 | `MFO_EL_ERRANTE_v3_3_Decisiones_y_Escenarios.xlsx` | Libro financiero de referencia nombrado en el contrato del exportador MFO v3.3 en main. | **PRIVADO**; no copiar cifras reales al repo; cotejar perfil, pestañas y vigencia antes de importar en Finanzas. |
@@ -295,7 +297,7 @@ No reconstruyas el producto desde cero ni cambies el diseño aprobado.
 
 ### Brechas de trazabilidad que aún impiden calificar este expediente como exhaustivo
 
-1. **Prompts visuales:** existe el workbook de 56 specs en Drive, pero falta versionar una **edición V4 normalizada** y revisar la correspondencia fila → asset → página → aprobación. Conservar siempre el original sin modificar.
+1. **Prompts visuales:** existe el workbook de 65 specs en Drive, pero falta versionar una **edición V4 normalizada** y revisar la correspondencia fila → asset → página → aprobación. Conservar siempre el original sin modificar.
 2. **Evidencia gastronómica:** vincular cada receta y dato de vida útil/rotulado/gramaje con la aprobación de Juan David y/o documento medido vigente; distinguir preliminar de aprobado.
 3. **Fuentes financieras y comerciales:** inventario seguro de MFO, costos con soportes, tarifas/precios por variante y datos reales, **fuera del repositorio público**; exponer únicamente estado y esquema.
 4. **Estado productivo de backend:** el proyecto Supabase aparece **INACTIVE** al 7-oct; falta revisar esquema, migraciones, RLS, Storage, Auth y pedido cero después de reactivación autorizada.

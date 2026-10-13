@@ -59,6 +59,25 @@ test.describe('V3.2 · pedido web server-priced',()=>{
     expect(state.metadata).not.toHaveProperty('reviewed_at');
   });
 
+  test('idempotencia reutiliza el ID para el mismo carrito y lo rota si cambian productos o cantidades',async({page})=>{
+    await harness(page);
+    const state=await page.evaluate(()=>{
+      const id1=window.EL_ERRANTE_WEB_ORDER_RPC_V32.requestId();
+      const repeated=window.EL_ERRANTE_WEB_ORDER_RPC_V32.requestId();
+      const cart=JSON.parse(localStorage.getItem('ee_v2_cart'));
+      cart[0].quantity=3;
+      localStorage.setItem('ee_v2_cart',JSON.stringify(cart));
+      const afterChange=window.EL_ERRANTE_WEB_ORDER_RPC_V32.requestId();
+      const nextRetry=window.EL_ERRANTE_WEB_ORDER_RPC_V32.requestId();
+      return {id1,repeated,afterChange,nextRetry,
+        persistedSignature:localStorage.getItem('ee_v32_checkout_cart_signature')};
+    });
+    expect(state.id1).toBe(state.repeated);
+    expect(state.afterChange).not.toBe(state.id1);
+    expect(state.nextRetry).toBe(state.afterChange);
+    expect(JSON.parse(state.persistedSignature)).toEqual([{product_id:'la-errante',variant_id:'unidad',quantity:3}]);
+  });
+
   test('contrato SQL retira inserts directos y separa comprobantes shopper/admin',async()=>{
     expect(schema).toContain('revoke insert on table public.orders from anon,authenticated');
     expect(schema).toContain('revoke insert on table public.order_items from anon,authenticated');

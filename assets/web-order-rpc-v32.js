@@ -61,7 +61,7 @@
     if(/delivery policy not approved|delivery quote required|delivery tariff not approved/i.test(message))return 'Todavía no existe una tarifa de entrega aprobada para este destino.';
     if(/payment configuration is not ready/i.test(message))return 'Los datos reales de transferencia todavía no están completos.';
     if(/anonymous|sign.?in/i.test(message))return 'No fue posible iniciar la sesión segura del pedido. La compra sigue protegida.';
-    return 'No pudimos registrar el pedido de forma segura. No se realizó ningún cobro.';
+    return 'No fue posible confirmar el pedido. No se realizó ningún cobro automático. Reintenta con el mismo carrito para evitar duplicados.';
   }
 
   async function uploadReceipt(db,session,orderId,file){
@@ -103,6 +103,7 @@
     const button=form.querySelector('button[type="submit"]');
     if(errorBox)errorBox.textContent='';
     if(button){button.disabled=true;button.textContent='Confirmando precio y pedido…';}
+    let registeredOrder=null;
     try{
       const items=itemsPayload();
       if(!items.length)throw new Error('Tu carrito está vacío.');
@@ -124,13 +125,21 @@
       if(created?.error)throw created.error;
       const result=created?.data||{};
       if(!result.order_id)throw new Error('El servidor no devolvió referencia de pedido.');
+      registeredOrder=result;
       const receipt=form.querySelector('#ee-receipt')?.files?.[0]||null;
       const receiptAttached=await uploadReceipt(db,session,result.order_id,receipt);
       success(form,result,receiptAttached);
     }catch(error){
       console.error(error);
-      if(errorBox)errorBox.textContent=humanError(error);
-      if(button){button.disabled=false;button.textContent='Enviar pedido y comprobante';}
+      if(registeredOrder?.order_id){
+        // The database has already accepted this order. A failed upload or
+        // metadata insert must never be displayed as "order not created".
+        if(errorBox)errorBox.textContent=`El pedido ${registeredOrder.order_id} ya quedó registrado, pero no se pudo adjuntar el comprobante. Reintenta con este mismo carrito: no se creará otro pedido.`;
+        if(button){button.disabled=false;button.textContent='Reintentar comprobante';}
+      }else{
+        if(errorBox)errorBox.textContent=humanError(error);
+        if(button){button.disabled=false;button.textContent='Enviar pedido y comprobante';}
+      }
     }
   }
 

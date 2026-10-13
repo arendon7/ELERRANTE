@@ -7,7 +7,13 @@ const schema=fs.readFileSync(path.join(process.cwd(),'backend','supabase','schem
 const receiptSchema=fs.readFileSync(path.join(process.cwd(),'backend','supabase','schema-v321.sql'),'utf8');
 
 async function harness(page){
-  await page.setContent(`<!doctype html><html><body>
+  // An HTTP origin is required for localStorage and crypto.randomUUID().
+  // page.setContent() on about:blank has an opaque origin in some browsers.
+  const url='http://127.0.0.1:4173/__ee_v32_harness.html';
+  await page.route(url,route=>route.fulfill({
+    status:200,
+    contentType:'text/html; charset=utf-8',
+    body:`<!doctype html><html><body>
     <form id="checkout-form-v14" class="form-card">
       <input name="name" value="Cliente Prueba"><input name="email" value="cliente@example.com"><input name="phone" value="3001234567">
       <input name="city" value="Medellín"><input name="neighborhood" value="Laureles"><input name="address" value="Calle 1 # 2-3">
@@ -26,7 +32,9 @@ async function harness(page){
         from(name){if(name!=='payment_receipts')throw new Error('direct table write unexpected: '+name);return {async insert(payload){window.__v32.metadata.push(payload);return {data:null,error:null};}};}
       };
     <\/script><script>${source}<\/script>
-  </body></html>`);
+  </body></html>`
+  }));
+  await page.goto(url);
 }
 
 test.describe('V3.2 · pedido web server-priced',()=>{

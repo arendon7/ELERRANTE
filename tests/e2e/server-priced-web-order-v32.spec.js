@@ -78,6 +78,33 @@ test.describe('V3.2 · pedido web server-priced',()=>{
     expect(JSON.parse(state.persistedSignature)).toEqual([{product_id:'la-errante',variant_id:'unidad',quantity:3}]);
   });
 
+  test('fallo del comprobante no oculta pedido ya registrado y reintento no duplica orden',async({page})=>{
+    await harness(page);
+    await page.locator('#ee-receipt').setInputFiles({name:'comprobante.png',mimeType:'image/png',buffer:Buffer.from('receipt')});
+    await page.evaluate(()=>{
+      window.__v32.originalStorageFrom=window.__EE_SUPABASE__.storage.from;
+      window.__EE_SUPABASE__.storage.from=()=>({async upload(){return {data:null,error:{message:'Storage temporalmente no disponible'}};}});
+    });
+    await page.locator('button[type="submit"]').click();
+    await expect(page.locator('#ee-checkout-error')).toContainText('EE-WEB-TEST ya quedó registrado');
+    await expect(page.locator('button[type="submit"]')).toHaveText('Reintentar comprobante');
+    await page.evaluate(()=>{window.__EE_SUPABASE__.storage.from=window.__v32.originalStorageFrom;});
+    await page.locator('button[type="submit"]').click();
+    await expect.poll(()=>page.evaluate(()=>window.__v32.rpc.length)).toBe(2);
+    const state=await page.evaluate(()=>({
+      first:window.__v32.rpc[0].args.p_payload.client_request_id,
+      second:window.__v32.rpc[1].args.p_payload.client_request_id,
+      metadataCount:window.__v32.metadata.length,
+      currentRequest:localStorage.getItem('ee_v32_checkout_request_id'),
+      cartSignature:localStorage.getItem('ee_v32_checkout_cart_signature')
+    }));
+    expect(state.second).toBe(state.first);
+    expect(state.metadataCount).toBe(1);
+    expect(state.currentRequest).toBeNull();
+    expect(state.cartSignature).toBeNull();
+    await expect(page.locator('.ee-v14-order-success')).toBeVisible();
+  });
+
   test('contrato SQL retira inserts directos y separa comprobantes shopper/admin',async()=>{
     expect(schema).toContain('revoke insert on table public.orders from anon,authenticated');
     expect(schema).toContain('revoke insert on table public.order_items from anon,authenticated');

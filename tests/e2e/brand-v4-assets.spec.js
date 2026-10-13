@@ -111,7 +111,7 @@ test.describe('V4 promoted brand assets',()=>{
     await expect(trust).toHaveAttribute('width','1672');
     await expect(trust).toHaveAttribute('height','941');
     await expect(page.getByText('Compra online todavía no activada',{exact:true})).toBeVisible();
-    await expect(page.getByRole('heading',{name:'Tu carrito está listo. El canal que debe recibir el pedido todavía no.'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'Tu carrito está listo. El canal comercial sigue protegido.'})).toBeVisible();
     await expect(page.locator('#checkout-v29-status')).toHaveAttribute('data-v29-commerce-guard','true');
   });
 

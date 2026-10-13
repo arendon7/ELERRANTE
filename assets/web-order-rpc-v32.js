@@ -2,6 +2,7 @@
   'use strict';
   const VERSION='3.2.0';
   const REQUEST_KEY='ee_v32_checkout_request_id';
+  const REQUEST_CART_KEY='ee_v32_checkout_cart_signature';
   const CART_KEY='ee_v2_cart';
   const guard=()=>window.EE_PUBLIC_COMMERCE_GUARD_V29||null;
   const config=()=>window.EL_ERRANTE_COMMERCE_CONFIG||{};
@@ -11,12 +12,22 @@
   const readCart=()=>{try{const rows=JSON.parse(localStorage.getItem(CART_KEY)||'[]');return Array.isArray(rows)?rows:[];}catch(_){return [];}};
   const safeName=name=>String(name||'comprobante').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/^-+|-+$/g,'').slice(-120)||'comprobante';
 
-  function requestId(){
+  function requestId(items=itemsPayload()){
+    // The idempotency key belongs to one canonical cart, not to any future
+    // order from this browser. Keep it across retries of the same cart.
+    const signature=JSON.stringify(items);
     let id='';
-    try{id=localStorage.getItem(REQUEST_KEY)||'';}catch(_){/* noop */}
-    if(!id){
+    let previousSignature='';
+    try{
+      id=localStorage.getItem(REQUEST_KEY)||'';
+      previousSignature=localStorage.getItem(REQUEST_CART_KEY)||'';
+    }catch(_){/* noop */}
+    if(!id||previousSignature!==signature){
       id=crypto.randomUUID();
-      try{localStorage.setItem(REQUEST_KEY,id);}catch(_){/* noop */}
+      try{
+        localStorage.setItem(REQUEST_KEY,id);
+        localStorage.setItem(REQUEST_CART_KEY,signature);
+      }catch(_){/* noop */}
     }
     return id;
   }
@@ -74,7 +85,7 @@
   }
 
   function success(form,result,receiptAttached){
-    try{localStorage.removeItem(CART_KEY);localStorage.removeItem(REQUEST_KEY);}catch(_){/* noop */}
+    try{localStorage.removeItem(CART_KEY);localStorage.removeItem(REQUEST_KEY);localStorage.removeItem(REQUEST_CART_KEY);}catch(_){/* noop */}
     const root=form.closest('.form-card')||form;
     root.innerHTML=`<div class="ee-v14-order-success"><p class="eyebrow">Pedido recibido</p><h2>La referencia ya quedó registrada.</h2><p>Referencia: <strong>${escapeHtml(result.order_id)}</strong></p><p>Total confirmado por el servidor: <strong>${money(result.total)}</strong></p><p>${receiptAttached?'El comprobante privado quedó vinculado y pasará a revisión.':'El pedido quedó pendiente de comprobante.'}</p><p class="ee-v14-help">Subtotal ${money(result.subtotal)} · Entrega ${money(result.delivery_fee)}</p><a class="btn btn-primary" href="cuenta.html?order=${encodeURIComponent(result.order_id)}" style="margin-top:18px">Consultar pedido</a></div>`;
     document.querySelector('#checkout-lines')?.replaceChildren();
@@ -98,7 +109,7 @@
       const data=new FormData(form);
       const session=await ensureAnonymousSession(db);
       const payload={
-        client_request_id:requestId(),
+        client_request_id:requestId(items),
         customer_name:String(data.get('name')||'').trim(),
         customer_email:String(data.get('email')||'').trim(),
         customer_phone:String(data.get('phone')||'').trim(),

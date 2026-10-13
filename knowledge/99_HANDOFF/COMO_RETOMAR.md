@@ -12,3 +12,9 @@ Mensaje recomendado:
 4. historial/PR únicamente si es necesario.
 
 Las relaciones `INFERRED` de Graphify nunca sustituyen la verificación del código.
+
+## Ruta de continuidad actualizada para Codex (12-oct-2026)
+
+La ruta histórica anterior permanece válida para ubicar Graphify, pero la sesión nueva debe empezar por **[`INDICE_CODEX_2026-10-12.md`](INDICE_CODEX_2026-10-12.md)**. Allí están el dossier integral, el inventario de fuentes originales, la matriz de **65** Prompt Specs y la ruta verificable del piloto de 30 días.
+
+El `main` observado sigue en `a6edba45...` y Graphify indica `Built from commit a6edba45`; volver a comprobar ambos antes de continuar. El proyecto Supabase `el-errante-production` estaba **INACTIVE** al 12-oct-2026, así que no se puede inferir disponibilidad real a partir de schemas o CI en verde. Esta actualización está propuesta en la rama `docs/codex-handoff-20261007`/PR #190, no fusionada todavía.

@@ -9,10 +9,10 @@ async function seedCart(page) {
 async function assertPublicCommerceBlocked(page) {
   await expect(page.locator('html')).toHaveAttribute('data-ee-public-commerce', 'not-connected');
   await expect(page.getByText('Compra online todavía no activada', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal que debe recibir el pedido todavía no.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal comercial sigue protegido.' })).toBeVisible();
   await page.waitForTimeout(1400);
   await expect(page.getByText('Compra online todavía no activada', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal que debe recibir el pedido todavía no.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu carrito está listo. El canal comercial sigue protegido.' })).toBeVisible();
   await expect(page.locator('#ee-name')).toHaveCount(0);
   await expect(page.locator('#ee-email')).toHaveCount(0);
   await expect(page.locator('#ee-address')).toHaveCount(0);
@@ -41,7 +41,7 @@ test.describe('Operación comercial V2.9', () => {
     await expect(adminPanel.getByRole('heading', { name: 'Precios, costos e inventario' })).toBeVisible();
     await expect(adminPanel.getByRole('heading', { name: 'Gastos fijos' })).toBeVisible();
     await expect(adminPanel.getByText('$ 370.000', { exact: true })).toBeVisible();
-    await expect(adminPanel.getByRole('heading', { name: 'Datos bancarios visibles en checkout' })).toBeVisible();
+    await expect(adminPanel.getByRole('heading', { name: 'Datos de transferencia visibles en checkout' })).toBeVisible();
   });
 
   test('datos bancarios de una simulación interna no se exponen como canal público', async ({ page }) => {
